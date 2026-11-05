@@ -2,12 +2,21 @@
 
 module Archgen
   # Manifeste de chargement du noyau pur. Aucun fichier du noyau ne fait de
-  # `require` interne et $LOAD_PATH n'est jamais modifié (docs/RUBY_SKETCHUP.md).
+  # `require` interne et le chemin de chargement reste intact (docs/RUBY_SKETCHUP.md).
   module Loader
     ROOT = __dir__
 
     CORE = %w[
       version
+      core/limits
+      core/result
+      core/quant
+      core/canonical
+      core/strict_json
+      core/schema_validator
+      core/building_config
+      core/constraint_validator
+      core/intake
     ].freeze
 
     def self.load_core

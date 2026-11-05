@@ -5,6 +5,7 @@ require 'json'
 require File.expand_path('../archgen/loader', __dir__)
 
 Archgen::Loader.load_core
+require_relative 'support/data'
 
 module TestSupport
   REPO = File.expand_path('..', __dir__)

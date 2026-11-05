@@ -25,9 +25,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
 - Avancement — Jalons et tickets, statuts à jour (→ planning/TASKS.md)
   - J0 Base — Projet testable et panneau local installable sur un hôte de référence. AG-001, 002. (→ planning/ROADMAP.md)
     - [fait] AG-001 Dépôt et CI — Arborescence, version, Gemfile, Rakefile, smoke, matrice de poste. Preuve : rake test local ; CI à confirmer au premier push.
-    - [afaire] AG-002 Extension — Chargeur, menu, HtmlDialog de diagnostic, RBZ de dev. Recette H01. Dép. AG-001.
+    - [code] AG-002 Extension — archgen.rb, main.rb, panneau de diagnostic, scripts/package_rbz.rb (rake package, ZIP reproductible). Tests Ruby du paquet OK. Recette H01 non exécutée. Dép. AG-001.
   - J1 Données — Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.
-    - [afaire] AG-003 Validation — Parseur JSON borné, diagnostics, BuildingConfig immuable. U01. Dép. AG-001.
+    - [fait] AG-003 Validation — core/strict_json (≤64 Kio, profondeur 12, doublons), schema_validator (sous-ensemble fermé, mot-clé inconnu = erreur), intake, building_config, constraint_validator. U01 vert.
     - [afaire] AG-004 Profils — Registre, héritage, fidélité, fusion, transition de style. U02. Dép. AG-003.
     - [afaire] AG-005 Hasard — RNG par clé SHA-256, canonicalisation, quantification. U03. Dép. AG-003.
   - J2 Enveloppe neutre — Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.
