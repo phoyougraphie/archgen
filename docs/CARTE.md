@@ -7,12 +7,17 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — Lancer la recette hôte H01 (AG-002) dans SketchUp 2026, puis AG-011. Sans hôte, la suite Ruby pure s'arrête à AG-010 ; AG-015 et au-delà dépendent de J3.
+  - Prochaine action — Installer pkg/archgen-0.1.0-dev.rbz dans SketchUp 2026 et dérouler H01 pour valider AG-002, puis AG-011 (writer). J1 et le code de J2 sont verts ; tout le reste exige l'hôte. Trancher aussi la décision ouverte D-01 sur le jitter.
+  - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
+  - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
   - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
   - Commande de test — bundle exec rake test (Ruby pur, sans SketchUp). Le script hôte test/host/run.rb se charge à la main dans la console SketchUp.
   - Journal — Écarts et décisions rencontrés en développement
-    - 2026-11-05 — Spec relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).
+    - 2026-11-05 Spec — Relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).
+    - 2026-11-05 Écart jitter — Mesuré à l'implémentation d'AG-010 ; contrat conservé, voir D-01.
+    - 2026-11-05 Ajouts — E_PLAN (ADR-11), refus de LOD 1 avant AG-015 (ADR-12), données embarquées (ADR-13).
+    - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -35,7 +40,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-007 Travées et percements — geometry/facade_solver, opening_solver. U05 vert.
     - [fait] AG-008 Murs et dalles — geometry/wall_builder (FacadeGrid, Shell, Structural, dalles). U06 et U07 verts.
     - [fait] AG-009 Toitures — geometry/roof_solver. U08 vert. Capacités gable, hip, mansard déclarées dans composition.rb.
-    - [afaire] AG-010 Plan et budgets — Engine, plan sérialisable, PlanValidator, projection, budgets. U09, U10. Dép. AG-008, 009.
+    - [fait] AG-010 Plan et budgets — core/geometry_engine, plan_validator, plan_projection, budget. U09, U10 verts, digests neutres dans test/fixtures/plan_digests.json. LOD 1 refusé jusqu'à AG-015.
   - J3 Adaptateur et persistance — Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.
     - [afaire] AG-011 Writer — Writer isolé, unités, matériaux, sonde native. H02. Dép. AG-002, 010.
     - [afaire] AG-012 Créer et relire — Service, transaction, métadonnées, réouverture. H03, H04. Dép. AG-011.
@@ -95,6 +100,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-08 — Cible Desktop 2024–2026, Ruby 3.2, Windows et macOS ; aucune compatibilité annoncée avant recette.
     - ADR-09 — API minimale, géométrie locale, pas de purge globale.
     - ADR-10 — Migrations de format distinctes des changements de règles.
+    - ADR-11 — Code E_PLAN pour tout invariant de plan violé.
+    - ADR-12 — LOD 1 refusé par le moteur jusqu'à AG-015.
+    - ADR-13 — Copie embarquée des schémas, profils et matériaux, identité vérifiée par test.
   - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
@@ -126,7 +134,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - Résolution — 1 contrôle taille/clés/types ; 2 profil exact ou courant ; 3 fusion feuille à feuille, tableaux remplacés, chances avant overrides ; 4 canonisation ; 5 vérification, gel.
   - Transition de toit — Plat 0° ; deux pans/croupe 25° ; mansarde 25°/65°/0,9 m ; débord 0 ; puis champs explicites. Champ inactif explicite non nul ⇒ refus.
   - Édition — Même profil : base + champs envoyés. Nouveau profil : garde name, mode, lod, seed, fidelity, footprint, levels, building_type ; reprend le reste.
-  - Diagnostics — E_SCHEMA, E_VERSION, E_PROFILE_UNAVAILABLE, E_HISTORICAL, W_HISTORICAL, E_OPENING_CLEARANCE, E_ROOF_GEOMETRY, E_BUDGET, E_TARGET_STALE, E_CONFIRMATION_STALE, E_WRITE.
+  - Diagnostics — E_SCHEMA, E_VERSION, E_PROFILE_UNAVAILABLE, E_HISTORICAL, W_HISTORICAL, E_OPENING_CLEARANCE, E_ROOF_GEOMETRY, E_BUDGET, E_PLAN, E_TARGET_STALE, E_CONFIRMATION_STALE, E_WRITE.
   - Empreintes — JSON canonique trié. Empreinte géométrie sans name, UUID, révision, transformation ; empreinte config complète avec name pour le contrôle de cible.
   - Exemples — creation-draft → haussmann-12x9 ; rect-neutre-shell et structural ; toulousain ; brutalist. (→ examples/README.md)
 - Styles — Données, pas de code (→ docs/STYLE_SCHEMA.md)

@@ -28,6 +28,10 @@ module Archgen
       geometry/opening_solver
       geometry/wall_builder
       geometry/roof_solver
+      core/budget
+      core/plan_validator
+      core/plan_projection
+      core/geometry_engine
       composition
     ].freeze
 

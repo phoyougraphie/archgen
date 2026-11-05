@@ -1,8 +1,8 @@
 # ARCHGEN — dossier de développement V0.1
 
-ARCHGEN est une extension SketchUp Desktop qui génère des bâtiments paramétriques pour la maquette architecturale et la création de décors. Ce dossier est la spécification à placer à la racine du futur dépôt. Il ne contient pas encore d'extension installable.
+ARCHGEN est une extension SketchUp Desktop qui génère des bâtiments paramétriques pour la maquette architecturale et la création de décors. Ce dépôt contient la spécification et le code en cours de développement. Il ne contient pas encore d'extension utilisable : le noyau Ruby calcule les plans, l'écriture dans SketchUp reste à faire.
 
-**Pour commencer :** lire [AGENTS.md](AGENTS.md), puis [ROADMAP](planning/ROADMAP.md) et prendre **AG-001** dans [TASKS](planning/TASKS.md). Le premier démonstrateur est un rectangle neutre. Les styles arrivent après le noyau.
+**Pour commencer :** lire [la carte mentale](docs/CARTE.md) (résumé à jour, version graphique dans [docs/carte/index.html](docs/carte/index.html)), [AGENTS.md](AGENTS.md), puis prendre le prochain ticket indiqué sur la carte. Tests : `bundle exec rake test`. Le premier démonstrateur est un rectangle neutre. Les styles arrivent après le noyau.
 
 | Besoin | Document |
 |---|---|
