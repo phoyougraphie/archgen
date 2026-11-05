@@ -40,6 +40,8 @@ module Archgen
       adapters/sketchup/native_host
       adapters/sketchup/resources
       adapters/sketchup/geometry_writer
+      adapters/sketchup/component_repository
+      adapters/sketchup/building_service
     ].freeze
 
     def self.load_core

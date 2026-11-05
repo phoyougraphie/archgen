@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-012 (service de création, transaction, métadonnées, réouverture ; recettes H03, H04). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Prochaine action — AG-013 (régénérer une instance : cible par jeton, copie, remplacement de définition, révision ; recette H05). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
@@ -20,6 +20,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 H01 — Réussi sur SketchUp 26.2.243. Le noyau dans le Ruby embarqué 3.2.2 redonne les empreintes de plan exactes. L'ordre du menu Extensions varie d'un démarrage à l'autre : ne pas viser une position fixe en recette.
     - 2026-11-05 H02 — Réussi. Rapport de sonde écrit dans tmp/h02-<label>.txt (ignoré par Git) : plus fiable qu'une capture. Installer le RBZ puis redémarrer SketchUp pour charger un nouveau fichier du manifeste.
     - 2026-11-05 D-02 tranchée — Arêtes de grille masquées (ADR-15), H02 rejoué et réussi.
+    - 2026-11-05 H03 et H04 — Réussis. Un Annuler ramène matériaux, tags et définitions à l'identique. Menus SketchUp : cliquer d'abord dans la vue, sinon le premier clic sur Édition après la console ne l'ouvre pas.
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
@@ -46,7 +47,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-010 Plan et budgets — core/geometry_engine, plan_validator, plan_projection, budget. U09, U10 verts, digests neutres dans test/fixtures/plan_digests.json. LOD 1 refusé jusqu'à AG-015.
   - J3 Adaptateur et persistance — Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.
     - [fait] AG-011 Writer — adapters/sketchup/{native_host, resources, geometry_writer}, doubles dans test/support/fake_sketchup.rb, sonde test/host/run.rb. H02 réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
-    - [afaire] AG-012 Créer et relire — Service, transaction, métadonnées, réouverture. H03, H04. Dép. AG-011.
+    - [fait] AG-012 Créer et relire — adapters/sketchup/{component_repository, building_service}, sonde test/host/creation.rb. H03 et H04 réussis sur Windows / 26.2.243, Annuler et Rétablir par le menu, réouverture après avoir quitté SketchUp. (→ docs/recette/H03-H04.md)
     - [afaire] AG-013 Régénérer — Cible par jeton, copie, remplacement de définition. H05. Dép. AG-012.
     - [afaire] AG-014 Rejeter et restaurer — Garde de transaction, injection de fautes. H06, H07. Dép. AG-013.
   - J4 Styles et panneau — Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.
@@ -89,7 +90,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - Adaptateur SketchUp — Seul à toucher au natif
     - GeometryWriter — write(plan, entities:, resources:) ; ne crée ni transaction ni racine.
     - ComponentRepository — read, insert, swap ; appartenance, révision, contexte.
-    - BuildingService — preview, create, regenerate ; propriétaire de la transaction.
+    - BuildingService — preview, create, load_building, regenerate (AG-013) ; propriétaire de la transaction. Écrit, testé avec doubles et en natif sauf regenerate.
   - UI — DialogController.dispatch(envelope) → Response ; jetons de session et de confirmation ; l'UI ne reproduit aucune règle de faisabilité.
   - Arborescence — archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.
   - Décisions ADR — Choix révisables par décision écrite (→ docs/DECISIONS.md)
@@ -108,6 +109,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-13 — Copie embarquée des schémas, profils et matériaux, identité vérifiée par test.
     - ADR-14 — Ressources marquées archgen.resource ; tags sur les conteneurs de premier niveau ; homonyme utilisateur intact.
     - ADR-15 — Le writer masque les arêtes entre faces coplanaires de même matériau ; plan et comptes inchangés.
+    - ADR-16 — Marqueur de définition non autoritaire ; création refusée en contexte d'édition ; message natif jamais exposé.
   - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
@@ -188,8 +190,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
-    - H03 — Un seul Undo, ressources utilisateur intactes.
-    - H04 — Sauver, rouvrir ; version future refusée.
+    - H03 — Un seul Undo, ressources utilisateur intactes. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
+    - H04 — Sauver, rouvrir ; version future refusée. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
     - H05 — Copie partagée, A modifié : B intact, PID et transfo conservés.
     - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté.
     - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture.

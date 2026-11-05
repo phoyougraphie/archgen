@@ -20,6 +20,14 @@ module Archgen
           entity.is_a?(::Sketchup::Edge)
         end
 
+        def component_instance?(entity)
+          entity.is_a?(::Sketchup::ComponentInstance)
+        end
+
+        def identity
+          ::Geom::Transformation.new
+        end
+
         def color(red, green, blue)
           ::Sketchup::Color.new(red, green, blue)
         end

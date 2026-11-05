@@ -12,6 +12,7 @@ module Archgen
       # transaction ni racine. Les mètres ne sont convertis qu'ici, une seule fois.
       class GeometryWriter
         METERS_PER_INCH = 0.0254
+        DEFINITION_DICTIONARY = 'archgen.definition'
         NORMAL_MIN_DOT = 0.0
         # Cosinus minimal entre normales pour traiter deux faces voisines comme coplanaires.
         COPLANAR_MIN_COS = 1.0 - 1e-9
@@ -28,6 +29,13 @@ module Archgen
           raise WriteError, "Faces écrites #{stats.face_count}, attendues #{expected}" unless stats.face_count == expected
 
           stats
+        end
+
+        # Marqueur d'origine sans valeur d'autorité : la configuration vit sur l'instance.
+        def mark_definition(definition, plan_digest:)
+          definition.set_attribute(DEFINITION_DICTIONARY, 'kind', 'building')
+          definition.set_attribute(DEFINITION_DICTIONARY, 'engine_version', ENGINE_VERSION)
+          definition.set_attribute(DEFINITION_DICTIONARY, 'plan_digest', plan_digest)
         end
 
         private

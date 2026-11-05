@@ -17,6 +17,7 @@
 | ADR-13 | Copie embarquée de `schemas/`, `examples/profiles/` et `materials.v1.json` dans `archgen/`, identité vérifiée par test | Le RBZ ne contient que `archgen.rb` et `archgen/`. `composition.rb` est le seul lecteur de fichiers du noyau. |
 | ADR-14 | Ressources ARCHGEN marquées par `archgen.resource` : matériaux « ARCHGEN <libellé> », tags ARCHGEN Murs, Dalles, Toiture et Détails sur les seuls conteneurs de premier niveau | Réutilisation seulement si marqueur, révision et couleur concordent ; un homonyme utilisateur reste intact et ARCHGEN prend un nom suffixé. Le writer refuse les définitions partagées jusqu'à AG-015. |
 | ADR-15 | Le writer masque les arêtes entre deux faces coplanaires de même matériau d'une même pièce (ex-D-02, choix du propriétaire) | Constat en H02 : la grille de découpe traversait les façades. Les arêtes restent dans la topologie : plan, faces, pièces et volumes inchangés, `ENGINE_VERSION` inchangée. Contours, baies et onglets restent dessinés. Une arête masquée reste affichable avec « Géométrie masquée ». |
+| ADR-16 | Marqueur de définition `archgen.definition` non autoritaire ; une création depuis un contexte d'édition est refusée par `E_TARGET_STALE` ; `E_WRITE` ne transporte le message d'erreur que pour les `WriteError` | La configuration vit uniquement sur l'instance. Le message d'une exception native peut contenir des chemins personnels. La racine reste Untagged : seuls ses conteneurs portent un tag. |
 
 **Décisions ouvertes** (à trancher par le propriétaire du projet, sans changement de comportement avant cela) :
 

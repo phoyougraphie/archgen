@@ -20,6 +20,14 @@ module FakeSketchUp
       entity.is_a?(Edge)
     end
 
+    def component_instance?(entity)
+      entity.is_a?(Instance)
+    end
+
+    def identity
+      :identity
+    end
+
     def color(red, green, blue)
       Color.new(red, green, blue)
     end
@@ -193,6 +201,108 @@ module FakeSketchUp
     def initialize
       @materials = Collection.new(Material)
       @layers = Collection.new(Tag)
+    end
+  end
+
+  class Definition
+    include Attributes
+    attr_reader :name, :entities
+
+    def initialize(name, behaviour)
+      @name = name
+      @entities = Entities.new(behaviour)
+    end
+  end
+
+  class Instance
+    include Attributes
+    attr_accessor :name
+    attr_reader :definition, :transform, :parent, :persistent_id
+
+    def initialize(definition, transform, parent, persistent_id)
+      @definition = definition
+      @transform = transform
+      @parent = parent
+      @persistent_id = persistent_id
+    end
+
+    def valid?
+      true
+    end
+  end
+
+  # Document complet pour le service : journalise les appels de transaction.
+  class ServiceModel < Model
+    attr_reader :operations, :instances, :definition_list
+    attr_accessor :active_path, :valid, :start_result, :commit_result, :abort_result, :fail_insert, :writer_behaviour
+
+    def initialize
+      super
+      @operations = []
+      @instances = []
+      @definition_list = []
+      @valid = true
+      @start_result = true
+      @commit_result = true
+      @abort_result = true
+      @writer_behaviour = {}
+    end
+
+    def valid?
+      @valid
+    end
+
+    def start_operation(name, disable_ui)
+      @operations << [:start, name, disable_ui]
+      @start_result
+    end
+
+    def commit_operation
+      @operations << [:commit]
+      @commit_result
+    end
+
+    def abort_operation
+      @operations << [:abort]
+      @abort_result
+    end
+
+    def definitions
+      DefinitionsPort.new(self)
+    end
+
+    def entities
+      RootEntities.new(self)
+    end
+
+    def find_entity_by_persistent_id(persistent_id)
+      @instances.find { |i| i.persistent_id == persistent_id }
+    end
+
+    def add_definition(name)
+      Definition.new(name, @writer_behaviour).tap { |d| @definition_list << d }
+    end
+
+    def add_instance(definition, transform)
+      raise 'panne d’insertion' if @fail_insert
+
+      Instance.new(definition, transform, self, 1000 + @instances.size).tap { |i| @instances << i }
+    end
+
+    def mutation_count
+      @instances.size + @definition_list.size + @materials.count + @layers.count
+    end
+  end
+
+  DefinitionsPort = Struct.new(:model) do
+    def add(name)
+      model.add_definition(name)
+    end
+  end
+
+  RootEntities = Struct.new(:model) do
+    def add_instance(definition, transform)
+      model.add_instance(definition, transform)
     end
   end
 end
