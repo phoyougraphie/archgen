@@ -294,6 +294,6 @@ class BuildingServiceTest < Minitest::Test
   def test_real_composition_publishes_only_implemented_profiles
     registry = Archgen::Composition.registry
     assert registry.ok?, registry.errors.map(&:to_h).inspect
-    assert_equal %w[brutalist], registry.value.active_profiles.map(&:id), 'les deux autres attendent AG-015'
+    assert_equal %w[brutalist haussmann toulousain], registry.value.active_profiles.map(&:id)
   end
 end

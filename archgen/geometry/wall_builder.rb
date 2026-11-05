@@ -175,25 +175,10 @@ module Archgen
         t = config['structure']['wall_m']
         box = [t, footprint.width_m - t, t, footprint.depth_m - t]
         levels.drop(1).map do |level|
-          Node.leaf("slab/#{level.index}", 'slab', box_solid(*box, level.slab_bottom_z_m, level.base_z_m, material))
+          Node.leaf("slab/#{level.index}", 'slab', Boxes.solid(*box, level.slab_bottom_z_m, level.base_z_m, material))
         end
       end
       private_class_method :slabs
-
-      def box_solid(x0, x1, y0, y1, z0, z1, material)
-        a = [x0, y0, z0]
-        b = [x1, y0, z0]
-        c = [x1, y1, z0]
-        d = [x0, y1, z0]
-        e = [x0, y0, z1]
-        f = [x1, y0, z1]
-        g = [x1, y1, z1]
-        h = [x0, y1, z1]
-        mesh = MeshBuilder.new('solid')
-        [[a, d, c, b], [e, f, g, h], [a, b, f, e], [b, c, g, f], [c, d, h, g], [d, a, e, h]].each { |q| mesh.add_face(q, material) }
-        mesh.to_primitive
-      end
-      private_class_method :box_solid
     end
   end
 end

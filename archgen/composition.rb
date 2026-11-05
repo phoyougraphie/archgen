@@ -8,8 +8,8 @@ module Archgen
   module Composition
     ROOT = __dir__
     # Capacités géométriques réellement implémentées : un profil qui en requiert
-    # d'autres reste indisponible (porte AG-015 pour les trois feuilles V0.1).
-    IMPLEMENTED_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard].freeze
+    # d'autres reste indisponible. La liste complète publie les trois feuilles V0.1.
+    IMPLEMENTED_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds].freeze
 
     module_function
 

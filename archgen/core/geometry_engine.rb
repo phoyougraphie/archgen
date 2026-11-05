@@ -11,10 +11,6 @@ module Archgen
 
       def generate(config, materials: nil)
         input = config.geometry_input
-        if input['lod'] != 0
-          return Result.fail([Diagnostic.error('E_PROFILE_UNAVAILABLE', '/lod', reason: 'lod_not_implemented', lod: input['lod'])])
-        end
-
         footprint = Geometry::FootprintSolver.call(width_m: input['footprint']['width_m'], depth_m: input['footprint']['depth_m'])
         levels = Geometry::FloorPlanner.call(input['levels'], slab_m: input['structure']['slab_m'])
         candidates = Geometry::FacadeSolver.call(footprint, levels, input['facade'])
@@ -44,11 +40,14 @@ module Archgen
         roof = Geometry::RoofSolver.call(footprint, levels.last.top_z_m, input['roof'], materials: input['materials'])
         return roof unless roof.ok?
 
-        plan = build_plan(footprint, levels, openings, grids.value, roof.value, input)
+        details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input)
+        return details unless details.ok?
+
+        plan = build_plan(footprint, levels, openings, grids.value, roof.value, details.value, input)
         problems = PlanValidator.call(plan, materials: materials)
         return Result.fail(problems) unless problems.empty?
 
-        Result.ok(Canonical.deep_freeze(plan))
+        Result.ok(Canonical.deep_freeze(plan), details.diagnostics)
       end
       private_class_method :assemble
 
@@ -64,22 +63,27 @@ module Archgen
       end
       private_class_method :estimate_budget
 
-      def build_plan(footprint, levels, openings, grids, roof, input)
+      def build_plan(footprint, levels, openings, grids, roof, details, input)
         children = Geometry::WallBuilder.call(footprint, levels, grids, input) + roof.nodes
+        children << Geometry::Node.group('details', 'details', details.nodes) unless details.nodes.empty?
         nodes = [Geometry::Node.group('building', 'building', children)]
-        faces = count_faces(nodes)
+        definition_faces = details.definitions.transform_values { |list| count_faces(list) }
+        own = count_faces(nodes)
+        instances = instance_definitions(nodes)
         {
           'schema_version' => SCHEMA_VERSION,
           'engine_version' => ENGINE_VERSION,
           'units' => 'm',
           'nodes' => nodes,
-          'definitions' => {},
+          'definitions' => details.definitions,
           'openings' => openings.map(&:to_h),
           'metrics' => {
             'width_m' => footprint.width_m, 'depth_m' => footprint.depth_m,
             'wall_top_z_m' => levels.last.top_z_m, 'roof_top_z_m' => roof.top_z_m,
-            'opening_count' => openings.size, 'unique_face_count' => faces, 'expanded_face_count' => faces,
-            'wall_cell_count' => grids.sum(&:cell_count), 'detail_definition_count' => 0
+            'opening_count' => openings.size,
+            'unique_face_count' => own + definition_faces.values.sum,
+            'expanded_face_count' => own + instances.sum { |id| definition_faces.fetch(id) },
+            'wall_cell_count' => grids.sum(&:cell_count), 'detail_definition_count' => details.definitions.size
           }
         }
       end
@@ -87,11 +91,20 @@ module Archgen
 
       def count_faces(nodes)
         nodes.sum do |node|
-          own = node['primitive'] ? node['primitive']['faces'].size : 0
+          primitive = node['primitive']
+          own = primitive && primitive['type'] != 'instance' ? primitive['faces'].size : 0
           own + count_faces(node['children'])
         end
       end
       private_class_method :count_faces
+
+      def instance_definitions(nodes)
+        nodes.flat_map do |node|
+          own = node.dig('primitive', 'type') == 'instance' ? [node['primitive']['definition_id']] : []
+          own + instance_definitions(node['children'])
+        end
+      end
+      private_class_method :instance_definitions
     end
   end
 end

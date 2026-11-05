@@ -164,12 +164,6 @@ class GeometryWriterTest < Minitest::Test
     assert_raises(WriteError) { write(plan('rect-neutre-shell'), entities: entities) }
   end
 
-  def test_shared_definitions_are_refused_until_details_exist
-    altered = JSON.parse(JSON.generate(plan('rect-neutre-shell')))
-    altered['definitions'] = { 'frame' => [] }
-    assert_raises(WriteError) { write(altered) }
-  end
-
   def test_wrong_units_refused
     altered = JSON.parse(JSON.generate(plan('rect-neutre-shell')))
     altered['units'] = 'in'

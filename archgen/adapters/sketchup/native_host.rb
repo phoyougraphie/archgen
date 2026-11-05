@@ -24,8 +24,16 @@ module Archgen
           entity.is_a?(::Sketchup::ComponentInstance)
         end
 
+        def group?(entity)
+          entity.is_a?(::Sketchup::Group)
+        end
+
         def identity
           ::Geom::Transformation.new
+        end
+
+        def transformation(matrix)
+          ::Geom::Transformation.new(matrix)
         end
 
         def color(red, green, blue)

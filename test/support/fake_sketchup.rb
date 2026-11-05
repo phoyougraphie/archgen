@@ -24,8 +24,16 @@ module FakeSketchUp
       entity.is_a?(Instance)
     end
 
+    def group?(entity)
+      entity.is_a?(Group)
+    end
+
     def identity
       :identity
+    end
+
+    def transformation(matrix)
+      Transformation.new(matrix)
     end
 
     def color(red, green, blue)
@@ -118,6 +126,10 @@ module FakeSketchUp
 
     def add_group
       Group.new(@behaviour).tap { |g| @items << g }
+    end
+
+    def add_instance(definition, transform)
+      Instance.new(definition, transform, nil, 9000 + @items.size).tap { |i| @items << i }
     end
 
     def build
@@ -359,6 +371,12 @@ module FakeSketchUp
   end
 
   DefinitionsPort = Struct.new(:model) do
+    include Enumerable
+
+    def each(&block)
+      model.definition_list.each(&block)
+    end
+
     def add(name)
       model.add_definition(name)
     end

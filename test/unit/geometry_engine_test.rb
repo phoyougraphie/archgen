@@ -127,11 +127,6 @@ class GeometryEngineTest < Minitest::Test
     assert_in_delta expected, built.value['metrics']['roof_top_z_m'], 1e-5
   end
 
-  def test_lod_one_is_refused_until_details_exist
-    result = generate('rect-neutre-shell', lod: 1)
-    assert_equal ['E_PROFILE_UNAVAILABLE', '/lod'], [result.errors.first.code, result.errors.first.path]
-  end
-
   def test_opening_problem_stops_before_plan
     result = generate('rect-neutre-shell', facade: { 'window_width_m' => 3.0 })
     refute result.ok?

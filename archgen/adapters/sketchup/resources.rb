@@ -23,6 +23,7 @@ module Archgen
           @host = host
           @materials = {}
           @tags = {}
+          @definitions = {}
           @created = []
         end
 
@@ -38,7 +39,45 @@ module Archgen
           @tags[category] ||= find_tag(category) || create_tag(category, label)
         end
 
+        # Une définition par clé et par modèle, réutilisée seulement si son marqueur et
+        # son contenu concordent ; sinon on en crée une autre sans toucher à l'existante.
+        def shared_definition(key, label:, expected_faces:)
+          @definitions[key] ||= find_definition(key, expected_faces) || create_definition(key, label) { |definition| yield definition }
+        end
+
         private
+
+        def find_definition(key, expected_faces)
+          @model.definitions.find do |definition|
+            definition.get_attribute(DICTIONARY, 'kind') == 'detail' &&
+              definition.get_attribute(DICTIONARY, 'key') == key &&
+              definition.get_attribute(DICTIONARY, 'revision') == @revision &&
+              definition.get_attribute(DICTIONARY, 'engine_version') == ENGINE_VERSION &&
+              deep_face_count(definition.entities) == expected_faces
+          end
+        end
+
+        def create_definition(key, label)
+          definition = @model.definitions.add(label)
+          raise WriteError, "Création de la définition refusée : #{key}" unless definition
+
+          yield definition
+          definition.set_attribute(DICTIONARY, 'kind', 'detail')
+          definition.set_attribute(DICTIONARY, 'key', key)
+          definition.set_attribute(DICTIONARY, 'revision', @revision)
+          definition.set_attribute(DICTIONARY, 'engine_version', ENGINE_VERSION)
+          @created << definition
+          definition
+        end
+
+        def deep_face_count(entities)
+          entities.sum do |entity|
+            if @host.face?(entity) then 1
+            elsif @host.group?(entity) then deep_face_count(entity.entities)
+            else 0
+            end
+          end
+        end
 
         def entry(id)
           @catalog.fetch(id) { raise WriteError, "Matériau absent du catalogue : #{id}" }

@@ -43,12 +43,40 @@ module Archgen
         def check_preconditions(plan, entities)
           raise WriteError, 'Unité de plan non prise en charge' unless plan['units'] == 'm'
           raise WriteError, 'Destination non vide' unless entities.length.zero?
-          # Les définitions partagées arrivent avec les cadres, en AG-015.
-          raise WriteError, 'Définitions de détail non prises en charge' unless plan['definitions'].empty?
+
+          @definitions = plan['definitions']
+        end
+
+        # Un cadre répété est une instance de définition partagée, sans groupe intermédiaire.
+        def write_instance(node, parent, resources, stats)
+          primitive = node['primitive']
+          definition, faces = shared_definition(primitive['definition_id'], resources)
+          instance = parent.add_instance(definition, @host.transformation(inches_matrix(primitive['matrix'])))
+          raise WriteError, "Instance refusée : #{node['id']}" unless instance
+
+          instance.name = node['id']
+          stats.face_count += faces
+        end
+
+        def shared_definition(id, resources)
+          nodes = @definitions.fetch(id) { raise WriteError, "Définition absente du plan : #{id}" }
+          faces = nodes.sum { |node| node['primitive']['faces'].size }
+          definition = resources.shared_definition(id, label: "ARCHGEN #{id.tr('/', ' ')}", expected_faces: faces) do |created|
+            local = WriteStats.new(face_count: 0, group_count: 0, hidden_edge_count: 0)
+            nodes.each { |node| write_node(node, created.entities, resources, local) }
+          end
+          [definition, faces]
+        end
+
+        # La translation seule est une longueur ; la rotation reste sans unité.
+        def inches_matrix(matrix)
+          matrix.each_with_index.map { |value, index| [12, 13, 14].include?(index) ? value / METERS_PER_INCH : value }
         end
 
         # Une collection d'entités par pièce : les jonctions ne fusionnent pas.
         def write_node(node, parent, resources, stats)
+          return write_instance(node, parent, resources, stats) if node.dig('primitive', 'type') == 'instance'
+
           group = parent.add_group
           raise WriteError, "Groupe refusé : #{node['id']}" unless group
 
