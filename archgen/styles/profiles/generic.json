@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "generic",
+  "revision": 1,
+  "kind": "base",
+  "status": "internal",
+  "parent": null,
+  "family_id": "generic",
+  "label": "Générique (interne)",
+  "context": {
+    "period": "",
+    "regions": [],
+    "typologies": []
+  },
+  "requires": [
+    "rectangle",
+    "rect_opening",
+    "flat"
+  ],
+  "defaults": {
+    "building_type": "residential",
+    "mode": "shell",
+    "lod": 0,
+    "seed": 42,
+    "fidelity": "plausible",
+    "footprint": {
+      "width_m": 12,
+      "depth_m": 9
+    },
+    "levels": {
+      "count": 4,
+      "height_m": 3.2,
+      "heights_m": []
+    },
+    "facade": {
+      "front_bays": 4,
+      "side_bays": 0,
+      "margin_m": 0.6,
+      "window_width_m": 1.2,
+      "window_height_m": 1.8,
+      "sill_m": 0.85,
+      "entry_bay": 1,
+      "door_width_m": 1,
+      "door_height_m": 2.2,
+      "jitter_m": 0
+    },
+    "structure": {
+      "wall_m": 0.24,
+      "slab_m": 0.2
+    },
+    "roof": {
+      "type": "flat",
+      "overhang_m": 0,
+      "pitch_deg": 0,
+      "lower_pitch_deg": 0,
+      "inset_m": 0
+    },
+    "materials": {
+      "wall": "lime_plaster",
+      "roof": "concrete",
+      "frames": "painted_wood"
+    },
+    "features": {
+      "cornice": false,
+      "balcony": false,
+      "surrounds": false
+    }
+  },
+  "rules": []
+}

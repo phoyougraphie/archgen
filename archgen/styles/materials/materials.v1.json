@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "materials": {
+    "lime_plaster": {
+      "label": "Enduit à la chaux",
+      "srgb": "#E7DDCA"
+    },
+    "concrete": {
+      "label": "Béton brut",
+      "srgb": "#AAA9A4"
+    },
+    "painted_wood": {
+      "label": "Bois peint",
+      "srgb": "#465551"
+    },
+    "limestone": {
+      "label": "Pierre calcaire",
+      "srgb": "#DDCBB0"
+    },
+    "zinc": {
+      "label": "Zinc",
+      "srgb": "#717E88"
+    },
+    "brick_foraine": {
+      "label": "Brique foraine",
+      "srgb": "#B46A57"
+    },
+    "terracotta_canal": {
+      "label": "Tuile canal",
+      "srgb": "#A75236"
+    },
+    "dark_metal": {
+      "label": "Métal foncé",
+      "srgb": "#3D4145"
+    }
+  }
+}

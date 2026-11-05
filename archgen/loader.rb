@@ -17,6 +17,11 @@ module Archgen
       core/building_config
       core/constraint_validator
       core/intake
+      core/deterministic_random
+      core/style_registry
+      core/fidelity_rules
+      core/config_resolver
+      composition
     ].freeze
 
     def self.load_core

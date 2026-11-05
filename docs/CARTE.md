@@ -28,8 +28,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [code] AG-002 Extension — archgen.rb, main.rb, panneau de diagnostic, scripts/package_rbz.rb (rake package, ZIP reproductible). Tests Ruby du paquet OK. Recette H01 non exécutée. Dép. AG-001.
   - J1 Données — Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.
     - [fait] AG-003 Validation — core/strict_json (≤64 Kio, profondeur 12, doublons), schema_validator (sous-ensemble fermé, mot-clé inconnu = erreur), intake, building_config, constraint_validator. U01 vert.
-    - [afaire] AG-004 Profils — Registre, héritage, fidélité, fusion, transition de style. U02. Dép. AG-003.
-    - [afaire] AG-005 Hasard — RNG par clé SHA-256, canonicalisation, quantification. U03. Dép. AG-003.
+    - [fait] AG-004 Profils — core/style_registry, fidelity_rules, config_resolver ; composition.rb seul lecteur de fichiers ; copies embarquées dans archgen/{schemas,styles} vérifiées identiques. U02 vert.
+    - [fait] AG-005 Hasard — core/deterministic_random, canonical, quant. Goldens U03 vérifiés. Dép. AG-003.
   - J2 Enveloppe neutre — Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.
     - [afaire] AG-006 Emprise et niveaux — Anneau CCW, repères, hauteurs, bandes de dalles. U04. Dép. AG-004, 005.
     - [afaire] AG-007 Travées et percements — Centres, jitter, porte, distances. U05. Dép. AG-006.
