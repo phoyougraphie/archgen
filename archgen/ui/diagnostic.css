@@ -1,0 +1,5 @@
+body { font: 14px/1.4 system-ui, "Segoe UI", sans-serif; margin: 16px; color: #16242c; background: #f6f8f9; }
+h1 { font-size: 16px; margin: 0 0 8px; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+dt { color: #566a75; }
+dd { margin: 0; font-variant-numeric: tabular-nums; }
