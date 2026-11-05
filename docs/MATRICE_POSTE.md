@@ -4,7 +4,7 @@ Consigne les versions réellement accessibles (ADR-08). Une ligne n'annonce aucu
 
 | Poste | OS | SketchUp | Ruby embarqué | Ruby de dev | Relevé |
 |---|---|---|---|---|---|
-| Poste principal | Windows 11 Home 10.0.26200 | SketchUp 2026 — `SketchUp.exe` 26.2.243 | 3.2.2p53 (`x64-ucrt-ruby320.dll`) | 3.2.11 x64-mingw-ucrt, Bundler 2.4.19, Minitest 5.25, Rake 13.0 | 2026-11-05, propriétés des fichiers ; aucune recette exécutée |
+| Poste principal | Windows 11 Home 10.0.26200 | SketchUp 2026 — `SketchUp.exe` 26.2.243 | 3.2.2p53 (`x64-ucrt-ruby320.dll`) | 3.2.11 x64-mingw-ucrt, Bundler 2.4.19, Minitest 5.25, Rake 13.0 | 2026-11-05, propriétés des fichiers ; [H01](recette/H01.md) réussi |
 
 **Non accessibles à ce jour :** macOS ; SketchUp 2024 et 2025. Le plancher 2024 de la recette reste donc à trouver avant AG-019.
 

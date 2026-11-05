@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — Installer pkg/archgen-0.1.0-dev.rbz dans SketchUp 2026 et dérouler H01 pour valider AG-002, puis AG-011 (writer). J1 et le code de J2 sont verts ; tout le reste exige l'hôte. Trancher aussi la décision ouverte D-01 sur le jitter.
+  - Prochaine action — AG-011 (writer SketchUp) et sa recette H02 : toutes ses dépendances sont validées. J0, J1 et J2 sont fermés sur Windows / SketchUp 26.2. Restent à faire par le propriétaire : pousser sur GitHub et trancher D-01 sur le jitter. L'extension de dev reste installée et active dans son SketchUp 2026.
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
@@ -17,6 +17,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 Spec — Relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).
     - 2026-11-05 Écart jitter — Mesuré à l'implémentation d'AG-010 ; contrat conservé, voir D-01.
     - 2026-11-05 Ajouts — E_PLAN (ADR-11), refus de LOD 1 avant AG-015 (ADR-12), données embarquées (ADR-13).
+    - 2026-11-05 H01 — Réussi sur SketchUp 26.2.243. Le noyau dans le Ruby embarqué 3.2.2 redonne les empreintes de plan exactes. L'ordre du menu Extensions varie d'un démarrage à l'autre : ne pas viser une position fixe en recette.
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
@@ -30,7 +31,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
 - Avancement — Jalons et tickets, statuts à jour (→ planning/TASKS.md)
   - J0 Base — Projet testable et panneau local installable sur un hôte de référence. AG-001, 002. (→ planning/ROADMAP.md)
     - [fait] AG-001 Dépôt et CI — Arborescence, version, Gemfile, Rakefile, smoke, matrice de poste. Preuve : rake test local ; CI à confirmer au premier push.
-    - [code] AG-002 Extension — archgen.rb, main.rb, panneau de diagnostic, scripts/package_rbz.rb (rake package, ZIP reproductible). Tests Ruby du paquet OK. Recette H01 non exécutée. Dép. AG-001.
+    - [fait] AG-002 Extension — archgen.rb, main.rb, panneau de diagnostic, scripts/package_rbz.rb (rake package, ZIP reproductible). H01 réussi sur Windows 11 / SketchUp 26.2.243 seulement. (→ docs/recette/H01.md)
   - J1 Données — Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.
     - [fait] AG-003 Validation — core/strict_json (≤64 Kio, profondeur 12, doublons), schema_validator (sous-ensemble fermé, mot-clé inconnu = erreur), intake, building_config, constraint_validator. U01 vert.
     - [fait] AG-004 Profils — core/style_registry, fidelity_rules, config_resolver ; composition.rb seul lecteur de fichiers ; copies embarquées dans archgen/{schemas,styles} vérifiées identiques. U02 vert.
@@ -181,7 +182,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U11 — 3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.
     - U12 — Pont adverse, faux writer, panne avant/après swap.
   - H01–H12 — Recette dans SketchUp, seule preuve native
-    - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre.
+    - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags.
     - H03 — Un seul Undo, ressources utilisateur intactes.
     - H04 — Sauver, rouvrir ; version future refusée.
