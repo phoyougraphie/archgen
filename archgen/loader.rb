@@ -35,8 +35,19 @@ module Archgen
       composition
     ].freeze
 
+    # Chargé seulement par main.rb ou par les tests de contrat du writer.
+    ADAPTER = %w[
+      adapters/sketchup/native_host
+      adapters/sketchup/resources
+      adapters/sketchup/geometry_writer
+    ].freeze
+
     def self.load_core
       CORE.each { |path| load_internal(path) }
+    end
+
+    def self.load_adapter
+      ADAPTER.each { |path| load_internal(path) }
     end
 
     def self.load_internal(relative)
