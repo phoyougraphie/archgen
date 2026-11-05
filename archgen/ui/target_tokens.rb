@@ -4,8 +4,10 @@ require 'securerandom'
 
 module Archgen
   module UI
-    # Jetons de cible opaques, limités à la session et au modèle. L'interface ne voit
+    # Jetons de cible opaques, limités à la session et au document. L'interface ne voit
     # jamais le PID. Le service revalide toujours la référence avant d'écrire.
+    # Le document se reconnaît à Model#guid : sous Windows, l'objet Model reste le même
+    # d'un document à l'autre (mesuré en H07). Enregistrer change le guid, donc périme le jeton.
     class TargetTokens
       MAX_ENTRIES = 64
 
@@ -17,7 +19,7 @@ module Archgen
       def issue(target, model:)
         token = @generator.call
         @entries.shift while @entries.size >= MAX_ENTRIES
-        @entries[token] = { target: target, model: model }
+        @entries[token] = { target: target, document: model.guid }
         token
       end
 
@@ -25,7 +27,7 @@ module Archgen
       def resolve(token, model:)
         entry = token.is_a?(String) ? @entries[token] : nil
         return stale('unknown_token') unless entry
-        return stale('other_model') unless entry[:model] == model
+        return stale('other_model') unless entry[:document] == model.guid
 
         Core::Result.ok(entry[:target])
       end

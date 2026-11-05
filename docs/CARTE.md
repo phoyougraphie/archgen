@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-014 (rejeter et restaurer : garde de transaction, vérifications de contexte, injection de fautes, version incompatible ; recettes H06, H07). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Prochaine action — AG-015 (détails LOD 1 et trois profils V0.1 ; U11, H08), le writer doit alors accepter les définitions partagées. J3 est fermé sur Windows / SketchUp 26.2. Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
@@ -22,6 +22,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 D-02 tranchée — Arêtes de grille masquées (ADR-15), H02 rejoué et réussi.
     - 2026-11-05 H03 et H04 — Réussis. Un Annuler ramène matériaux, tags et définitions à l'identique. Menus SketchUp : cliquer d'abord dans la vue, sinon le premier clic sur Édition après la console ne l'ouvre pas.
     - 2026-11-05 H05 — Réussi. Le copier-coller réel reproduit bien l'UUID et partage la définition. Cliquer dans la vue vide déselectionne : ne pas le faire avant un Copier au menu.
+    - 2026-11-05 H06 et H07 — 10 pannes natives, aucun résidu ni ligne d'historique. H07 a trouvé un vrai défaut : jeton lié à l'objet Model, sans valeur sous Windows ; corrigé par le guid (ADR-18). H03 à H07 rejoués sur le code final. À faire en AG-017 : recharger la sélection après un enregistrement.
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
@@ -50,7 +51,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-011 Writer — adapters/sketchup/{native_host, resources, geometry_writer}, doubles dans test/support/fake_sketchup.rb, sonde test/host/run.rb. H02 réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
     - [fait] AG-012 Créer et relire — adapters/sketchup/{component_repository, building_service}, sonde test/host/creation.rb. H03 et H04 réussis sur Windows / 26.2.243, Annuler et Rétablir par le menu, réouverture après avoir quitté SketchUp. (→ docs/recette/H03-H04.md)
     - [fait] AG-013 Régénérer — BuildingService#regenerate et load_selection, ComponentRepository#swap, ui/target_tokens, sonde test/host/regeneration.rb. H05 réussi sur Windows / 26.2.243 avec vraie copie et Annuler/Rétablir au menu. (→ docs/recette/H05.md)
-    - [afaire] AG-014 Rejeter et restaurer — Garde de transaction, injection de fautes. H06, H07. Dép. AG-013.
+    - [fait] AG-014 Rejeter et restaurer — adapters/sketchup/transaction_guard, contrôle de version dans regenerate, sonde test/host/faults.rb. H06 réussi ; H07 réussi sauf la confirmation, reportée à AG-017. (→ docs/recette/H06-H07.md)
   - J4 Styles et panneau — Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.
     - [afaire] AG-015 Détails et profils — Cadres, corniche, balcon, encadrements ; active les 3 profils. U11, H08. Dép. AG-014.
     - [afaire] AG-016 Formulaire et aperçu — UI locale, protocole init/lecture/aperçu. H09. Dép. AG-015.
@@ -92,6 +93,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - GeometryWriter — write(plan, entities:, resources:) ; ne crée ni transaction ni racine.
     - ComponentRepository — read, insert, swap ; appartenance, révision, contexte.
     - BuildingService — preview, create, load_building, load_selection, regenerate ; propriétaire de la transaction. Testé avec doubles et en natif.
+    - TransactionGuard — run(model, name, instance:) ; une opération, abandon unique, relevé d'intégrité.
   - UI — DialogController.dispatch(envelope) → Response ; jetons de session et de confirmation ; l'UI ne reproduit aucune règle de faisabilité.
   - Arborescence — archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.
   - Décisions ADR — Choix révisables par décision écrite (→ docs/DECISIONS.md)
@@ -112,6 +114,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-15 — Le writer masque les arêtes entre faces coplanaires de même matériau ; plan et comptes inchangés.
     - ADR-16 — Marqueur de définition non autoritaire ; création refusée en contexte d'édition ; message natif jamais exposé.
     - ADR-17 — Cible = PID, définition, révision, empreinte de config ; jeton opaque borné ; la régénération ne renomme pas l'instance.
+    - ADR-18 — Document reconnu à Model#guid (l'objet Model ne distingue rien sous Windows) ; enregistrer périme la cible.
+    - ADR-19 — TransactionGuard : jamais imbriquée, abandon unique, relevé après abandon, restore_incomplete bloquant ; moteur plus récent non régénérable.
   - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
@@ -195,8 +199,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H03 — Un seul Undo, ressources utilisateur intactes. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
     - H04 — Sauver, rouvrir ; version future refusée. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
     - H05 — Copie partagée, A modifié : B intact, PID et transfo conservés. Réussi sur Windows / 26.2.243. (→ docs/recette/H05.md)
-    - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté.
-    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture.
+    - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté. Réussi sur Windows / 26.2.243. (→ docs/recette/H06-H07.md)
+    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture. Réussi sur Windows / 26.2.243, sauf confirmation (AG-017). (→ docs/recette/H06-H07.md)
     - H08 — 3 profils en LOD 0/1 et Shell/Structural.
     - H09 — Saisie rapide, invalide, clavier, hors ligne.
     - H10 — Double clic, confirmation annulée puis refaite.

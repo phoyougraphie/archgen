@@ -14,13 +14,14 @@ module Archgen
       class BuildingService
         DEFINITION_NAME = 'ARCHGEN bâtiment'
 
-        def self.default(allow_internal: false)
+        def self.default(allow_internal: false, writer: nil, repository: nil)
           registry = Composition.registry
           raise ArgumentError, registry.errors.map(&:to_h).inspect unless registry.ok?
 
           materials = Composition.materials
           new(registry: registry.value, intake: Composition.intake, materials: materials.fetch('materials'),
-              material_revision: materials.fetch('schema_version'), allow_internal: allow_internal)
+              material_revision: materials.fetch('schema_version'), allow_internal: allow_internal,
+              writer: writer, repository: repository)
         end
 
         def initialize(registry:, intake:, materials:, material_revision:, allow_internal: false, host: NativeHost,
@@ -34,6 +35,7 @@ module Archgen
           @writer = writer || GeometryWriter.new(host: host)
           @repository = repository || ComponentRepository.new(host: host)
           @uuid = uuid
+          @guard = TransactionGuard.new
         end
 
         # Aucune écriture, aucune trace dans l'Undo. La cible arrive avec AG-013.
@@ -58,7 +60,7 @@ module Archgen
           return Core::Result.fail([context]) if context
 
           config, plan = prepared.value
-          written = in_operation(model, 'ARCHGEN : créer') { write_new_root(model, config, plan) }
+          written = @guard.run(model, 'ARCHGEN : créer') { write_new_root(model, config, plan) }
           return written unless written.ok?
 
           Core::Result.ok(written.value, prepared.diagnostics)
@@ -69,7 +71,7 @@ module Archgen
           record = @repository.read(model, persistent_id: persistent_id)
           return record unless record.ok?
 
-          load_record(record.value)
+          load_record(model, record.value)
         end
 
         # Lit l'unique racine sélectionnée. Lecture seule, aucun UUID n'est réécrit ici.
@@ -80,7 +82,7 @@ module Archgen
           record = @repository.read_instance(model, selection.first)
           return record unless record.ok?
 
-          load_record(record.value)
+          load_record(model, record.value)
         end
 
         # Remplace la géométrie d'une seule instance : racine, placement, nom, tag et
@@ -89,11 +91,15 @@ module Archgen
           loaded = verify_target(model, target)
           return loaded unless loaded.ok?
 
+          version = version_problem(loaded.value.record.metadata)
+          return Core::Result.fail([version]) if version
+
           prepared = prepare(draft, base: loaded.value.config)
           return prepared unless prepared.ok?
 
           config, plan = prepared.value
-          written = in_operation(model, 'ARCHGEN : régénérer') { replace_definition(model, loaded.value.record, config, plan) }
+          record = loaded.value.record
+          written = @guard.run(model, 'ARCHGEN : régénérer', instance: record.instance) { replace_definition(model, record, config, plan) }
           return written unless written.ok?
 
           Core::Result.ok(written.value, prepared.diagnostics)
@@ -105,18 +111,18 @@ module Archgen
           Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/target', reason: reason, **params)])
         end
 
-        def load_record(record)
+        def load_record(model, record)
           config = Core::ConfigResolver.load_effective(
             record.metadata['config_json'], registry: @registry, intake: @intake, allow_internal: @allow_internal
           )
           return config unless config.ok?
 
-          Core::Result.ok(LoadedBuilding.new(record: record, config: config.value, target: target_for(record.instance, record.metadata)),
+          Core::Result.ok(LoadedBuilding.new(record: record, config: config.value, target: target_for(model, record.instance, record.metadata)),
                           config.diagnostics)
         end
 
-        def target_for(instance, metadata)
-          TargetRef.new(persistent_id: instance.persistent_id, definition_id: instance.definition.persistent_id,
+        def target_for(model, instance, metadata)
+          TargetRef.new(document_key: model.guid, persistent_id: instance.persistent_id, definition_id: instance.definition.persistent_id,
                         revision: metadata['revision'], config_digest: Core::Canonical.digest(Core::StrictJson.parse(metadata['config_json']).value))
         end
 
@@ -125,6 +131,8 @@ module Archgen
           context = context_problem(model)
           return Core::Result.fail([context]) if context
           return stale('invalid_target') unless target.is_a?(TargetRef)
+          # Avant toute lecture : un même PID peut exister dans un autre document.
+          return stale('document_changed') unless target.document_key == model.guid
 
           loaded = load_building(model: model, persistent_id: target.persistent_id)
           return loaded unless loaded.ok?
@@ -152,7 +160,7 @@ module Archgen
           uuid = @repository.uuid_shared?(model, previous['building_uuid'], except: record.instance) ? @uuid.call : previous['building_uuid']
           metadata = metadata_for(config, digest, uuid: uuid, revision: previous['revision'] + 1)
           store_metadata(record.instance, metadata)
-          summary_for(record.instance, config, plan, metadata)
+          summary_for(model, record.instance, config, plan, metadata)
         end
 
         def write_definition(model, plan)
@@ -173,10 +181,10 @@ module Archgen
           raise WriteError, 'Relecture des métadonnées incohérente'
         end
 
-        def summary_for(instance, config, plan, metadata)
+        def summary_for(model, instance, config, plan, metadata)
           BuildingSummary.new(persistent_id: instance.persistent_id, building_uuid: metadata['building_uuid'], revision: metadata['revision'],
                               name: config.to_h['name'], plan_digest: metadata['plan_digest'], metrics: plan['metrics'],
-                              target: target_for(instance, metadata))
+                              target: target_for(model, instance, metadata))
         end
 
         def prepare(draft, base: nil)
@@ -203,7 +211,7 @@ module Archgen
           instance.name = config.to_h['name']
           metadata = metadata_for(config, digest, uuid: @uuid.call, revision: 1)
           store_metadata(instance, metadata)
-          summary_for(instance, config, plan, metadata)
+          summary_for(model, instance, config, plan, metadata)
         end
 
         def metadata_for(config, digest, uuid:, revision:)
@@ -218,49 +226,18 @@ module Archgen
           }
         end
 
-        # Les références ne sont rendues que si le commit réussit. Abandon appelé une seule
-        # fois ; un abandon refusé est un incident bloquant, jamais un succès.
-        def in_operation(model, name)
-          return failure('operation_not_started') unless start(model, name)
-
-          begin
-            value = yield
-          rescue StandardError => e
-            return abort_with(model, 'write_failed', e)
+        # Un moteur ou un catalogue plus récent a produit ce bâtiment : consultable, non
+        # régénérable, pour ne jamais l'écraser avec des règles plus anciennes.
+        def version_problem(metadata)
+          engine = Integer(metadata['engine_version'], exception: false)
+          if engine.nil? || engine > Integer(ENGINE_VERSION)
+            return Core::Diagnostic.error('E_VERSION', '/metadata/engine_version', reason: 'newer_engine',
+                                          value: metadata['engine_version'], supported: ENGINE_VERSION)
           end
-          return Core::Result.ok(value) if commit(model)
+          return nil unless metadata['material_revision'] > @material_revision
 
-          abort_with(model, 'commit_failed', nil)
-        end
-
-        def start(model, name)
-          model.start_operation(name, true)
-        rescue StandardError
-          false
-        end
-
-        def commit(model)
-          model.commit_operation
-        rescue StandardError
-          false
-        end
-
-        def abort_with(model, reason, error)
-          aborted = begin
-            model.abort_operation
-          rescue StandardError
-            false
-          end
-          # Le message d'une exception native peut contenir des chemins personnels.
-          params = error ? { error: error.class.name } : {}
-          params[:detail] = error.message if error.is_a?(WriteError)
-          return failure('abort_failed', cause: reason, **params) unless aborted
-
-          failure(reason, **params)
-        end
-
-        def failure(reason, **params)
-          Core::Result.fail([Core::Diagnostic.error('E_WRITE', '/model', reason: reason, **params)])
+          Core::Diagnostic.error('E_VERSION', '/metadata/material_revision', reason: 'newer_materials',
+                                 value: metadata['material_revision'], supported: @material_revision)
         end
       end
     end

@@ -182,6 +182,10 @@ module FakeSketchUp
       @items.each(&block)
     end
 
+    def replace_items(items)
+      @items = items
+    end
+
     def [](name)
       @items.find { |item| item.name == name }
     end
@@ -245,6 +249,12 @@ module FakeSketchUp
 
     attr_reader :transformation
 
+    def restore(definition, attrs, transformation)
+      @definition = definition
+      self.attrs.replace(attrs)
+      @transformation = transformation
+    end
+
     def locked?
       @locked
     end
@@ -263,10 +273,11 @@ module FakeSketchUp
   # Document complet pour le service : journalise les appels de transaction.
   class ServiceModel < Model
     attr_reader :operations, :instances, :definition_list, :selection
-    attr_accessor :active_path, :valid, :start_result, :commit_result, :abort_result, :fail_insert, :writer_behaviour
+    attr_accessor :guid, :active_path, :valid, :start_result, :commit_result, :abort_result, :fail_insert, :writer_behaviour, :abort_restores
 
     def initialize
       super
+      @guid = "guid-#{object_id}"
       @operations = []
       @instances = []
       @definition_list = []
@@ -274,6 +285,7 @@ module FakeSketchUp
       @start_result = true
       @commit_result = true
       @abort_result = true
+      @abort_restores = true
       @writer_behaviour = {}
       @selection = Selection.new
     end
@@ -291,7 +303,21 @@ module FakeSketchUp
 
     def start_operation(name, disable_ui)
       @operations << [:start, name, disable_ui]
+      @saved = [@instances.dup, @definition_list.dup, @materials.to_a, @layers.to_a,
+                @instances.to_h { |i| [i, [i.definition, i.attrs.dup, i.transformation]] }]
       @start_result
+    end
+
+    # Comme le natif : un abandon réussi ramène le document à l'état d'ouverture.
+    def rollback
+      instances, definitions, materials, layers, states = @saved
+      @instances = instances
+      @definition_list = definitions
+      @materials.replace_items(materials)
+      @layers.replace_items(layers)
+      states.each do |instance, (definition, attrs, transformation)|
+        instance.restore(definition, attrs, transformation)
+      end
     end
 
     def commit_operation
@@ -301,6 +327,7 @@ module FakeSketchUp
 
     def abort_operation
       @operations << [:abort]
+      rollback if @abort_result && @abort_restores
       @abort_result
     end
 
@@ -334,6 +361,10 @@ module FakeSketchUp
   DefinitionsPort = Struct.new(:model) do
     def add(name)
       model.add_definition(name)
+    end
+
+    def length
+      model.definition_list.size
     end
   end
 

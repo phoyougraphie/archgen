@@ -6,7 +6,7 @@ module Archgen
       BuildingRecord = Struct.new(:instance, :persistent_id, :metadata, keyword_init: true)
 
       # Référence Ruby d'une cible : tout ce qui doit encore concorder avant d'écrire.
-      TargetRef = Struct.new(:persistent_id, :definition_id, :revision, :config_digest, keyword_init: true)
+      TargetRef = Struct.new(:document_key, :persistent_id, :definition_id, :revision, :config_digest, keyword_init: true)
 
       # Identifie, lit et écrit les racines. Ne démarre jamais d'opération. Un marqueur
       # d'attribut ne garantit rien : chaque lecture contrôle appartenance et types.

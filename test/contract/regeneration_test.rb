@@ -268,6 +268,20 @@ class RegenerationTest < Minitest::Test
     assert_stale 'config_changed', regenerate(target: target)
   end
 
+  # Sous Windows, l'objet Model reste le même d'un document à l'autre : seul le guid les distingue.
+  def test_same_model_object_with_other_document_is_refused
+    created
+    model.guid = 'autre-document'
+    assert_stale 'document_changed'
+  end
+
+  def test_document_is_checked_before_reading_a_coinciding_pid
+    created
+    model.guid = 'fichier-rouvert'
+    result = service.regenerate(model: model, target: created.target, draft: EDIT)
+    assert_equal 'document_changed', result.errors.first.params['reason']
+  end
+
   def test_old_target_is_refused_after_a_regeneration
     target = created.target
     assert regenerate.ok?
@@ -358,6 +372,12 @@ class RegenerationTest < Minitest::Test
     token = tokens.issue(:cible, model: model)
     assert_equal :cible, tokens.resolve(token, model: model).value
     assert_equal 'other_model', tokens.resolve(token, model: FakeSketchUp::ServiceModel.new).errors.first.params['reason']
+  end
+
+  def test_token_is_bound_to_the_document_not_the_ruby_object
+    token = tokens.issue(:cible, model: model)
+    model.guid = 'autre-document'
+    assert_equal 'other_model', tokens.resolve(token, model: model).errors.first.params['reason']
   end
 
   def test_forged_or_cleared_token_is_stale

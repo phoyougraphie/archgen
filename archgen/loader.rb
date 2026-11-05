@@ -41,6 +41,7 @@ module Archgen
       adapters/sketchup/resources
       adapters/sketchup/geometry_writer
       adapters/sketchup/component_repository
+      adapters/sketchup/transaction_guard
       adapters/sketchup/building_service
       ui/target_tokens
     ].freeze
