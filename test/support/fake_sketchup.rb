@@ -206,34 +206,63 @@ module FakeSketchUp
 
   class Definition
     include Attributes
-    attr_reader :name, :entities
+    attr_reader :name, :entities, :persistent_id
 
-    def initialize(name, behaviour)
+    def initialize(name, behaviour, persistent_id)
       @name = name
       @entities = Entities.new(behaviour)
+      @persistent_id = persistent_id
     end
   end
 
+  Transformation = Struct.new(:values) do
+    def to_a
+      values
+    end
+  end
+
+  IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0].freeze
+
   class Instance
     include Attributes
-    attr_accessor :name
-    attr_reader :definition, :transform, :parent, :persistent_id
+    attr_accessor :name, :layer, :locked, :valid, :parent, :swap_corrupts
+    attr_writer :transformation
+    attr_reader :definition, :transform, :persistent_id
 
     def initialize(definition, transform, parent, persistent_id)
       @definition = definition
       @transform = transform
       @parent = parent
       @persistent_id = persistent_id
+      @transformation = Transformation.new(IDENTITY)
+      @valid = true
+    end
+
+    def definition=(definition)
+      @definition = definition
+      @transformation = Transformation.new(IDENTITY.dup.tap { |m| m[12] = 99.0 }) if @swap_corrupts
+    end
+
+    attr_reader :transformation
+
+    def locked?
+      @locked
     end
 
     def valid?
-      true
+      @valid
+    end
+  end
+
+  class Selection < Array
+    def length
+      size
     end
   end
 
   # Document complet pour le service : journalise les appels de transaction.
   class ServiceModel < Model
-    attr_reader :operations, :instances, :definition_list
+    attr_reader :operations, :instances, :definition_list, :selection
     attr_accessor :active_path, :valid, :start_result, :commit_result, :abort_result, :fail_insert, :writer_behaviour
 
     def initialize
@@ -246,10 +275,18 @@ module FakeSketchUp
       @commit_result = true
       @abort_result = true
       @writer_behaviour = {}
+      @selection = Selection.new
     end
 
     def valid?
       @valid
+    end
+
+    # Copie comme le fait SketchUp : même définition, attributs recopiés, nouveau PID.
+    def copy_instance(source)
+      copy = add_instance(source.definition, source.transform)
+      copy.attrs.merge!(source.attrs)
+      copy
     end
 
     def start_operation(name, disable_ui)
@@ -280,7 +317,7 @@ module FakeSketchUp
     end
 
     def add_definition(name)
-      Definition.new(name, @writer_behaviour).tap { |d| @definition_list << d }
+      Definition.new(name, @writer_behaviour, 5000 + @definition_list.size).tap { |d| @definition_list << d }
     end
 
     def add_instance(definition, transform)
@@ -301,8 +338,14 @@ module FakeSketchUp
   end
 
   RootEntities = Struct.new(:model) do
+    include Enumerable
+
     def add_instance(definition, transform)
       model.add_instance(definition, transform)
+    end
+
+    def each(&block)
+      model.instances.each(&block)
     end
   end
 end

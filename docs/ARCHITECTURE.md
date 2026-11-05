@@ -36,7 +36,7 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::PlanValidator | call(plan) → Diagnostic[] | Topologie, indices, limites et matériaux. |
 | Adapters::SketchUp::GeometryWriter | write(plan, entities:, resources:) → WriteStats | Géométrie native dans une définition vide ; ne crée ni transaction ni racine. |
 | Adapters::SketchUp::ComponentRepository | read(model, persistent_id:) ; insert(model, definition:, transform:) ; swap(instance, definition:) | Identifie, lit et écrit les racines ; contrôle appartenance, révision et contexte. |
-| Adapters::SketchUp::BuildingService | preview(draft:, model: nil, target: nil) ; create(model:, draft:) ; load_building(model:, persistent_id:) ; regenerate(model:, target:, draft:) | Résout, calcule, vérifie le contexte, tient la transaction et le journal des ressources. |
+| Adapters::SketchUp::BuildingService | preview(draft:, model: nil, target: nil) ; create(model:, draft:) ; load_building(model:, persistent_id:) ; load_selection(model:) ; regenerate(model:, target:, draft:) | Résout, calcule, vérifie le contexte, tient la transaction et le journal des ressources. |
 | UI::DialogController | dispatch(envelope) → Response | Liaison modèle/session, validation du protocole et sérialisation. |
 
 `Result` contient `value` en cas de succès et toujours `diagnostics`. Un diagnostic : `{code, severity, path, params}` ; severities `error` et `warning`. Les erreurs attendues reviennent en données ; une anomalie inattendue du writer remonte au service pour abandon. Aucun objet SketchUp dans les diagnostics.

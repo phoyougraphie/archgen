@@ -42,6 +42,7 @@ module Archgen
       adapters/sketchup/geometry_writer
       adapters/sketchup/component_repository
       adapters/sketchup/building_service
+      ui/target_tokens
     ].freeze
 
     def self.load_core

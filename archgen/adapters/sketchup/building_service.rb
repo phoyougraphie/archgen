@@ -5,8 +5,8 @@ require 'securerandom'
 module Archgen
   module Adapters
     module SketchUp
-      BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, keyword_init: true)
-      LoadedBuilding = Struct.new(:record, :config, keyword_init: true)
+      BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, :target, keyword_init: true)
+      LoadedBuilding = Struct.new(:record, :config, :target, keyword_init: true)
       Preview = Struct.new(:config, :plan, :projection, :plan_digest, keyword_init: true)
 
       # Résout, calcule, vérifie le contexte et tient la transaction. Seul propriétaire
@@ -69,18 +69,118 @@ module Archgen
           record = @repository.read(model, persistent_id: persistent_id)
           return record unless record.ok?
 
-          config = Core::ConfigResolver.load_effective(
-            record.value.metadata['config_json'], registry: @registry, intake: @intake, allow_internal: @allow_internal
-          )
-          return config unless config.ok?
+          load_record(record.value)
+        end
 
-          Core::Result.ok(LoadedBuilding.new(record: record.value, config: config.value), config.diagnostics)
+        # Lit l'unique racine sélectionnée. Lecture seule, aucun UUID n'est réécrit ici.
+        def load_selection(model:)
+          selection = model.selection
+          return stale('selection_not_single') unless selection.length == 1
+
+          record = @repository.read_instance(model, selection.first)
+          return record unless record.ok?
+
+          load_record(record.value)
+        end
+
+        # Remplace la géométrie d'une seule instance : racine, placement, nom, tag et
+        # attributs tiers sont conservés ; l'ancienne définition n'est jamais touchée.
+        def regenerate(model:, target:, draft:)
+          loaded = verify_target(model, target)
+          return loaded unless loaded.ok?
+
+          prepared = prepare(draft, base: loaded.value.config)
+          return prepared unless prepared.ok?
+
+          config, plan = prepared.value
+          written = in_operation(model, 'ARCHGEN : régénérer') { replace_definition(model, loaded.value.record, config, plan) }
+          return written unless written.ok?
+
+          Core::Result.ok(written.value, prepared.diagnostics)
         end
 
         private
 
-        def prepare(draft)
-          resolved = Core::ConfigResolver.resolve(draft, registry: @registry, intake: @intake, allow_internal: @allow_internal)
+        def stale(reason, **params)
+          Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/target', reason: reason, **params)])
+        end
+
+        def load_record(record)
+          config = Core::ConfigResolver.load_effective(
+            record.metadata['config_json'], registry: @registry, intake: @intake, allow_internal: @allow_internal
+          )
+          return config unless config.ok?
+
+          Core::Result.ok(LoadedBuilding.new(record: record, config: config.value, target: target_for(record.instance, record.metadata)),
+                          config.diagnostics)
+        end
+
+        def target_for(instance, metadata)
+          TargetRef.new(persistent_id: instance.persistent_id, definition_id: instance.definition.persistent_id,
+                        revision: metadata['revision'], config_digest: Core::Canonical.digest(Core::StrictJson.parse(metadata['config_json']).value))
+        end
+
+        # Relit l'entité avant chaque écriture : rien de ce que dit l'interface n'est cru.
+        def verify_target(model, target)
+          context = context_problem(model)
+          return Core::Result.fail([context]) if context
+          return stale('invalid_target') unless target.is_a?(TargetRef)
+
+          loaded = load_building(model: model, persistent_id: target.persistent_id)
+          return loaded unless loaded.ok?
+
+          problem = target_problem(model, target, loaded.value)
+          problem ? stale(problem) : loaded
+        end
+
+        def target_problem(model, target, loaded)
+          instance = loaded.record.instance
+          return 'selection_changed' unless model.selection.length == 1 && model.selection.first == instance
+          return 'target_locked' if instance.locked?
+          return 'non_rigid_transform' unless @repository.rigid_direct?(instance.transformation)
+          return 'definition_changed' unless instance.definition.persistent_id == target.definition_id
+          return 'revision_changed' unless loaded.target.revision == target.revision
+          return 'config_changed' unless loaded.target.config_digest == target.config_digest
+
+          nil
+        end
+
+        def replace_definition(model, record, config, plan)
+          definition, digest = write_definition(model, plan)
+          @repository.swap(record.instance, definition: definition)
+          previous = record.metadata
+          uuid = @repository.uuid_shared?(model, previous['building_uuid'], except: record.instance) ? @uuid.call : previous['building_uuid']
+          metadata = metadata_for(config, digest, uuid: uuid, revision: previous['revision'] + 1)
+          store_metadata(record.instance, metadata)
+          summary_for(record.instance, config, plan, metadata)
+        end
+
+        def write_definition(model, plan)
+          resources = Resources.new(model, catalog: @materials, revision: @material_revision, host: @host)
+          definition = model.definitions.add(DEFINITION_NAME)
+          raise WriteError, 'Création de la définition refusée' unless definition
+
+          @writer.write(plan, entities: definition.entities, resources: resources)
+          digest = Core::GeometryEngine.plan_digest(plan)
+          @writer.mark_definition(definition, plan_digest: digest)
+          [definition, digest]
+        end
+
+        def store_metadata(instance, metadata)
+          @repository.write_metadata(instance, metadata)
+          return if @repository.read_metadata(instance) == metadata
+
+          raise WriteError, 'Relecture des métadonnées incohérente'
+        end
+
+        def summary_for(instance, config, plan, metadata)
+          BuildingSummary.new(persistent_id: instance.persistent_id, building_uuid: metadata['building_uuid'], revision: metadata['revision'],
+                              name: config.to_h['name'], plan_digest: metadata['plan_digest'], metrics: plan['metrics'],
+                              target: target_for(instance, metadata))
+        end
+
+        def prepare(draft, base: nil)
+          resolved = Core::ConfigResolver.resolve(draft, registry: @registry, intake: @intake, base: base, allow_internal: @allow_internal)
           return resolved unless resolved.ok?
 
           plan = Core::GeometryEngine.generate(resolved.value, materials: @materials)
@@ -98,30 +198,19 @@ module Archgen
         end
 
         def write_new_root(model, config, plan)
-          resources = Resources.new(model, catalog: @materials, revision: @material_revision, host: @host)
-          definition = model.definitions.add(DEFINITION_NAME)
-          raise WriteError, 'Création de la définition refusée' unless definition
-
-          @writer.write(plan, entities: definition.entities, resources: resources)
-          digest = Core::GeometryEngine.plan_digest(plan)
-          @writer.mark_definition(definition, plan_digest: digest)
+          definition, digest = write_definition(model, plan)
           instance = @repository.insert(model, definition: definition)
           instance.name = config.to_h['name']
-          metadata = metadata_for(config, digest)
-          @repository.write_metadata(instance, metadata)
-          unless @repository.read_metadata(instance) == metadata
-            raise WriteError, 'Relecture des métadonnées incohérente'
-          end
-
-          BuildingSummary.new(persistent_id: instance.persistent_id, building_uuid: metadata['building_uuid'], revision: 1,
-                              name: config.to_h['name'], plan_digest: digest, metrics: plan['metrics'])
+          metadata = metadata_for(config, digest, uuid: @uuid.call, revision: 1)
+          store_metadata(instance, metadata)
+          summary_for(instance, config, plan, metadata)
         end
 
-        def metadata_for(config, digest)
+        def metadata_for(config, digest, uuid:, revision:)
           {
             'metadata_version' => ComponentRepository::METADATA_VERSION,
-            'building_uuid' => @uuid.call,
-            'revision' => 1,
+            'building_uuid' => uuid,
+            'revision' => revision,
             'config_json' => Core::Canonical.dump(config.to_h),
             'plan_digest' => digest,
             'engine_version' => ENGINE_VERSION,
