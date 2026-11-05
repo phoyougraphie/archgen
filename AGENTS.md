@@ -1,5 +1,6 @@
 # Instructions de développement — ARCHGEN
 
+0. Commencer par [la carte](docs/CARTE.md), résumé à jour de tout le dossier ; n'ouvrir que les documents cités par la branche utile. La tenir à jour à chaque ticket (statut, état courant, journal, `rake carte`).
 1. Lire [README](README.md), [décisions](docs/DECISIONS.md), puis le ticket et les contrats qu'il cite. Exécuter le premier ticket dont toutes les dépendances sont validées. Si le dépôt contient déjà du code, comparer d'abord les contrats à l'existant ; intégrer progressivement.
 2. Garder le noyau Ruby exécutable sans SketchUp. Les solveurs produisent un plan déterministe en mètres ; le writer le traduit dans SketchUp. Aucun objet natif, mutation de modèle, accès réseau ni aléatoire global dans le noyau.
 3. Traiter les contraintes géométriques et limites de plateforme comme bloquantes dans tous les modes de fidélité. Rejeter une entrée incompatible avec un diagnostic localisé. N'inventer ni champ, ni réglage silencieux, ni profil supposé pris en charge.

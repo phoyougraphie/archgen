@@ -1,0 +1,198 @@
+# Carte mentale ARCHGEN
+
+Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le dossier**, puis n'ouvrir que le document cité par la branche utile. Il est la source unique de la carte graphique [docs/carte/index.html](carte/index.html), générée par `bundle exec rake carte`.
+
+**À chaque ticket :** mettre à jour le statut, l'état courant et le journal ci-dessous, relancer `rake carte`, committer les deux fichiers. `rake test` échoue si la page est périmée ou si un ticket de TASKS manque.
+
+Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
+
+- État courant — Où en est le développement, à lire en premier
+  - Prochaine action — Lancer la recette hôte H01 (AG-002) dans SketchUp 2026, puis AG-011. Sans hôte, la suite Ruby pure s'arrête à AG-010 ; AG-015 et au-delà dépendent de J3.
+  - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
+  - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
+  - Commande de test — bundle exec rake test (Ruby pur, sans SketchUp). Le script hôte test/host/run.rb se charge à la main dans la console SketchUp.
+  - Journal — Écarts et décisions rencontrés en développement
+    - 2026-11-05 — Spec relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).
+- Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
+  - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
+  - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
+  - Contraintes bloquantes — Géométrie et limites de plateforme bloquent dans tous les modes de fidélité ; diagnostic localisé ; ni champ inventé, ni réglage silencieux.
+  - Undo — Action réussie = une opération Undo ; action rejetée = document intact ; géométrie partagée jamais modifiée sur place ; revalider la cible avant chaque écriture.
+  - Styles — Données versionnées ; capacité et tests avant profil ; règles = clés d'un registre fermé, jamais de code chargé.
+  - Livraison — Centrée sur le ticket ; décision documentée et test/migration pour tout changement de format ou comportement.
+  - Rapport — Commandes, résultats, versions, limites ; distinguer Ruby, writer et essai réel ; aucun contrôle hôte réussi sans preuve. Sans SketchUp la sortie V0.1 reste bloquée.
+  - Priorité documentaire — AGENTS > PRD (périmètre) > contrats (détail) > tickets (ordre). Divergence = résolue dans la même modification.
+- Avancement — Jalons et tickets, statuts à jour (→ planning/TASKS.md)
+  - J0 Base — Projet testable et panneau local installable sur un hôte de référence. AG-001, 002. (→ planning/ROADMAP.md)
+    - [fait] AG-001 Dépôt et CI — Arborescence, version, Gemfile, Rakefile, smoke, matrice de poste. Preuve : rake test local ; CI à confirmer au premier push.
+    - [afaire] AG-002 Extension — Chargeur, menu, HtmlDialog de diagnostic, RBZ de dev. Recette H01. Dép. AG-001.
+  - J1 Données — Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.
+    - [afaire] AG-003 Validation — Parseur JSON borné, diagnostics, BuildingConfig immuable. U01. Dép. AG-001.
+    - [afaire] AG-004 Profils — Registre, héritage, fidélité, fusion, transition de style. U02. Dép. AG-003.
+    - [afaire] AG-005 Hasard — RNG par clé SHA-256, canonicalisation, quantification. U03. Dép. AG-003.
+  - J2 Enveloppe neutre — Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.
+    - [afaire] AG-006 Emprise et niveaux — Anneau CCW, repères, hauteurs, bandes de dalles. U04. Dép. AG-004, 005.
+    - [afaire] AG-007 Travées et percements — Centres, jitter, porte, distances. U05. Dép. AG-006.
+    - [afaire] AG-008 Murs et dalles — Grille Shell, onglets Structural, tableaux, 3 dalles. U06, U07. Dép. AG-007.
+    - [afaire] AG-009 Toitures — Plat, deux pans, croupe, mansarde. U08. Dép. AG-006.
+    - [afaire] AG-010 Plan et budgets — Engine, plan sérialisable, PlanValidator, projection, budgets. U09, U10. Dép. AG-008, 009.
+  - J3 Adaptateur et persistance — Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.
+    - [afaire] AG-011 Writer — Writer isolé, unités, matériaux, sonde native. H02. Dép. AG-002, 010.
+    - [afaire] AG-012 Créer et relire — Service, transaction, métadonnées, réouverture. H03, H04. Dép. AG-011.
+    - [afaire] AG-013 Régénérer — Cible par jeton, copie, remplacement de définition. H05. Dép. AG-012.
+    - [afaire] AG-014 Rejeter et restaurer — Garde de transaction, injection de fautes. H06, H07. Dép. AG-013.
+  - J4 Styles et panneau — Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.
+    - [afaire] AG-015 Détails et profils — Cadres, corniche, balcon, encadrements ; active les 3 profils. U11, H08. Dép. AG-014.
+    - [afaire] AG-016 Formulaire et aperçu — UI locale, protocole init/lecture/aperçu. H09. Dép. AG-015.
+    - [afaire] AG-017 Création et édition — Génération, transition, confirmation, requête unique. H10. Dép. AG-016.
+  - J5 Livraison — Matrice hôte, sécurité, budgets, export, RBZ installé. AG-018 à 020.
+    - [afaire] AG-018 Sécurité et charge — Cas adverses, budgets, mesures. U10, U12, H06, H07, H11. Dép. AG-017.
+    - [afaire] AG-019 Export et compatibilité — Matrice Windows/macOS, export Shell LOD 0. H01 à H10, H12. Dép. AG-017.
+    - [afaire] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. P01 à P09. Dép. AG-018, 019.
+  - J6+ Extensions — Après J5 seulement, EXT-01 à 09 ; voir branche Extensions.
+- Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
+  - Fonctions P01–P09 — Résultats observables de la V0.1
+    - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
+    - P02 Aperçu — Élévation et emprise par le même noyau ; avertissements, cotes, ouvertures ; aucune entité créée.
+    - P03 Générer Shell — Surfaces simples, ouvertures traversantes réelles, couverture, matériaux, détails selon LOD.
+    - P04 Générer Structural — Même silhouette et ouvertures ; murs épais, tableaux, planchers intermédiaires.
+    - P05 Modifier / rouvrir — Sélection d'une racine ; paramètres rechargés après sauvegarde ; style, mode, dimensions.
+    - P06 Régénérer / annuler — Racine et placement conservés ; copies isolées ; confirmation ; une entrée Undo et Redo vérifié.
+    - P07 Reproduire — Config effective, seed, versions identiques ⇒ même plan canonique.
+    - P08 Exploiter — Faces orientées, matériaux nommés, pièces organisées ; un aller-retour export documenté.
+    - P09 Gérer les erreurs — Champ et cause expliqués ; aucune modification sur rejet ; échec d'écriture restauré.
+  - Périmètre V0.1 — Une génération à la fois au niveau racine ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; 4 toits ; matériaux unis ; LOD 0 et 1 ; 3 profils jouables.
+  - Frontières — Structural ≠ calcul porteur ; Shell ≠ volume étanche. Pas de réglementaire, vitrage détaillé, intérieur, terrain, ville ni service distant. Pas de garantie moteur de jeu, UV, collisions.
+  - Signatures — Haussmann : pierre, mansarde, corniche, balcon filant. Toulousain : brique foraine, tuile canal, encadrements. Brutaliste : béton, toit plat, grille, baies en retrait au LOD 1 Structural.
+  - Recette de sortie — Fixture 12 × 9, 4 niveaux, 4 travées dans les deux modes ; déplacer, pivoter, copier, changer le style d'une seule instance ; Undo/Redo ; réouverture ; deux autres signatures.
+- Architecture — Noyau pur + adaptateur SketchUp (→ docs/ARCHITECTURE.md)
+  - Flux — HtmlDialog → DialogController → BuildingService → ConfigResolver/ConstraintValidator → StyleRegistry ; GeometryEngine → solveurs → GeometryPlan/PlanValidator ; GeometryWriter et ComponentRepository → modèle.
+  - Core — Noyau pur, Ruby standard
+    - StyleRegistry — fetch(profile_id, revision: nil) → StyleProfile ; héritage, capacités ; révision absente ⇒ erreur.
+    - ConfigResolver — resolve(request, registry:, base: nil) → Result<BuildingConfig>.
+    - BuildingConfig — to_h, geometry_input ; copie profonde gelée.
+    - ConstraintValidator — call(config, profile:) → Diagnostic[] ; paths JSON Pointer.
+    - DeterministicRandom — unit(seed, key) → Float.
+    - GeometryEngine — generate(config) → Result<GeometryPlan> ; valide avant retour.
+    - PlanValidator — call(plan) → Diagnostic[] ; topologie, indices, limites, matériaux.
+    - Result et Diagnostic — Result = value + diagnostics ; Diagnostic = {code, severity, path, params} ; error ou warning ; aucun objet SketchUp.
+  - Geometry — Solveurs purs
+    - Solveurs — FootprintSolver, FloorPlanner, FacadeSolver, OpeningSolver, WallBuilder, RoofSolver, DetailSolver.
+  - Adaptateur SketchUp — Seul à toucher au natif
+    - GeometryWriter — write(plan, entities:, resources:) ; ne crée ni transaction ni racine.
+    - ComponentRepository — read, insert, swap ; appartenance, révision, contexte.
+    - BuildingService — preview, create, regenerate ; propriétaire de la transaction.
+  - UI — DialogController.dispatch(envelope) → Response ; jetons de session et de confirmation ; l'UI ne reproduit aucune règle de faisabilité.
+  - Arborescence — archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.
+  - Décisions ADR — Choix révisables par décision écrite (→ docs/DECISIONS.md)
+    - ADR-01 — Génération hybride : plan indépendant + writer. Shell et Structural partagent les placements.
+    - ADR-02 — 3 profils actifs, 24 fiches, 7 familles techniques.
+    - ADR-03 — Config V1 fermée, valeurs effectives figées ; saisie séparée ; changer de style = transition explicite.
+    - ADR-04 — Une racine top-level par bâtiment, définition de remplacement fraîche ; pas d'édition imbriquée.
+    - ADR-05 — Subdivision explicite, onglets, 4 pièces murales fermées ; pas de booléens ; racine non solide.
+    - ADR-06 — m/rad au calcul, degrés en saisie ; une seule conversion par frontière.
+    - ADR-07 — Aperçu 2D en dialogue, sans écriture.
+    - ADR-08 — Cible Desktop 2024–2026, Ruby 3.2, Windows et macOS ; aucune compatibilité annoncée avant recette.
+    - ADR-09 — API minimale, géométrie locale, pas de purge globale.
+    - ADR-10 — Migrations de format distinctes des changements de règles.
+  - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
+- Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
+  - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
+  - Tolérances — Comparaisons 1e-6 m ; quantification 1e-6 (demi éloigné de zéro, −0 → 0) ; arête émise ≥ 0,002 m ; dégagements ≥ 0,10 m ; coupes distinctes < 0,002 m ⇒ erreur.
+  - Placement — Partagé par les deux modes
+    - Niveaux — base[i] = somme h[0…i) ; dalles Structural seulement aux limites intermédiaires, épaisseur vers le bas ; pas de dalle au RDC.
+    - Travées — P = (L−2M)/N ; centre u = M + (i+0,5)P ; N=0 ⇒ aucun candidat ; N>0 exige L>2M.
+    - Porte — Façade avant, RDC, entry_bay ; remplace la fenêtre ; z=0.
+    - Jitter — jitter_m × (2·unit−1), hors porte ; clé opening/<side>/<level>/<bay>/u ; aucun retentage.
+    - RNG — SHA-256 de "archgen-rng-v1:<seed>:<key>", 13 premiers hex en entier, /2^52.
+    - Dégagements — wall_m+0,10 aux extrémités ; ≥0,10 entre ouvertures ; haut ≤ top−slab−0,10 (intermédiaire) ou top−0,10 (dernier). Aucun réajustement implicite.
+    - Tri — façade/niveau/travée puis id ; ids stables type opening/front/0/1.
+  - Murs — Grille U = {0,L} + bords d'ouvertures ; Z = {0,H} + étages + limites d'ouvertures
+    - Shell — Quad extérieur par cellule pleine, normale N ; ni dalle ni retour.
+    - Structural — Grille extrudée à d=t ; intérieur u=0→t, u=L→L−t (onglets) ; quads ext/int opposés + latéral si voisin absent ou vide. Pas de seuil de porte.
+    - Dalles — [t,W−t]×[t,D−t]×[base−s,base], i=1…n−1 ; une pièce par dalle.
+  - Toitures — r = tan(pente), E = débord, H = tête de mur ; rive sous Z=0 rejetée
+    - Plat — Quad à H avec débord.
+    - Deux pans — Faîtage // X à y=D/2, z=H+rD/2, prolongé à −E et W+E ; rives H−rE ; 2 pignons triangulaires à x=0 et W.
+    - Croupe — z = H + r·distance signée au bord ; faîtage axe long à H+r·min(W,D)/2 ; carré : 4 triangles.
+    - Mansarde — Rive H−r_bas·E, anneau inset I à H+r_bas·I, couronné par une croupe à pente haute sans débord.
+  - Détails LOD 1 — Cadres 0,04×0,04 mutualisés, recul 0 Shell / min(0,16, wall−0,04) Structural. Corniche 0,15×0,08. Balcon 0,90×0,12 aux niveaux d'index 2 et 5. Encadrement 0,04, d∈[−0,03,0].
+  - GeometryPlan — {schema_version:1, engine_version, units:"m", nodes, definitions, openings, metrics}. Node = {id, category, children, primitive?}. Primitives surface, solid, instance.
+  - Matériaux par rôle — Murs, tableaux, dalles, pignons, balcons, corniches, encadrements → wall ; pans → roof ; cadres → frames.
+  - Ordre de validation — Configuration → faisabilité/compte estimé → plan → budget exact → écriture → contrôles natifs.
+- Configuration — JSON V1 fermé (→ docs/CONFIG_SCHEMA.md)
+  - Formats — Brouillon (overrides partiels) et effectif (complet, seul persisté) ; null et clés inconnues rejetés ; m et degrés. (→ schemas/README.md)
+  - Blocs — schema_version, name, profile, building_type, mode, lod, seed, fidelity, footprint, levels, facade, structure, roof, materials, features.
+  - Résolution — 1 contrôle taille/clés/types ; 2 profil exact ou courant ; 3 fusion feuille à feuille, tableaux remplacés, chances avant overrides ; 4 canonisation ; 5 vérification, gel.
+  - Transition de toit — Plat 0° ; deux pans/croupe 25° ; mansarde 25°/65°/0,9 m ; débord 0 ; puis champs explicites. Champ inactif explicite non nul ⇒ refus.
+  - Édition — Même profil : base + champs envoyés. Nouveau profil : garde name, mode, lod, seed, fidelity, footprint, levels, building_type ; reprend le reste.
+  - Diagnostics — E_SCHEMA, E_VERSION, E_PROFILE_UNAVAILABLE, E_HISTORICAL, W_HISTORICAL, E_OPENING_CLEARANCE, E_ROOF_GEOMETRY, E_BUDGET, E_TARGET_STALE, E_CONFIRMATION_STALE, E_WRITE.
+  - Empreintes — JSON canonique trié. Empreinte géométrie sans name, UUID, révision, transformation ; empreinte config complète avec name pour le contrôle de cible.
+  - Exemples — creation-draft → haussmann-12x9 ; rect-neutre-shell et structural ; toulousain ; brutalist. (→ examples/README.md)
+- Styles — Données, pas de code (→ docs/STYLE_SCHEMA.md)
+  - Hiérarchie — generic → 7 familles → feuilles ; base → family → profile seulement.
+  - Fusion — Feuille à feuille ; requires en union parent puis enfant ; règles par id ; règle hard jamais affaiblie.
+  - Fidélité — hard : toujours erreur. historical : strict erreur, plausible avertit, creative ignore. soft : avertit, creative ignore. decorative : choix déterministe.
+  - Règles V1 — window_ratio, level_count, roof_type, material_allowed, feature_chance.
+  - Matériaux — lime_plaster, concrete, painted_wood, limestone, zinc, brick_foraine, terracotta_canal, dark_metal. (→ examples/materials.v1.json)
+  - Catalogue 24 styles — Actifs V0.1 et planifiés par famille (→ docs/styles/CATALOGUE.md)
+    - Façade ordonnancée — Haussmannien (actif, 5–7 niveaux, 2,7–4,0 m, mansarde) ; Baroque, Néoclassique, Renaissance (planifiés).
+    - Vernaculaire maçonné — Toulousain (actif, 2–5, 2,7–3,8, 15–35°) ; Provençal, Méditerranéen, Breton (planifiés).
+    - Ossature bois — Basque, Colombages, Normand, Alsacien (planifiés, EXT-02).
+    - Monumental — Roman, Gothique (planifiés, EXT-03).
+    - Ornemental — Art déco, Art nouveau (planifiés, EXT-03).
+    - Moderne modulaire — Brutaliste (actif, 2–15, 2,7–4,0, plat) ; Bauhaus, Minimaliste, Mid-century, Moderniste (planifiés).
+    - Technique — High-tech, Bioclimatique, Industriel (planifiés, EXT-04).
+- Régénération — Identité, transaction, copies (→ docs/REGENERATION.md)
+  - Identité — ComponentInstance racine, dictionnaire archgen.building : metadata_version, building_uuid, revision, config_json, plan_digest, engine_version, material_revision.
+  - Jeton de cible — Opaque, lié à session et modèle ; PID, définition, révision, SHA-256 de la config complète. Relecture à chaque écriture.
+  - Copies — Adresse d'édition = instance physique. UUID partagé ⇒ nouvel UUID pour la cible à la première écriture.
+  - Transaction — Valider sans muter ; aperçu et confirmation ; start_operation ; définition fraîche ; instance.definition= ; commit, ou abort_operation une seule fois.
+  - Refus — Transformation non rigide, miroir, échelle ; cible verrouillée, imbriquée, supprimée ; version inconnue en lecture seule.
+- Interface — Panneau modeless, local, français (→ docs/UI_SPEC.md)
+  - Zones — Projet, Dimensions, Façade, Avancé, Aperçu, Actions.
+  - Pont — archgen_dispatch reçoit une chaîne JSON {v, request_id, action, payload} ; actions init, load_selection, preview, generate, regenerate.
+  - Confirmation — Jeton unique, 120 s, consommé avant écriture ; aperçu temporisé à 250 ms ; réponses anciennes ignorées.
+- Sécurité et performances — Limites bloquantes et cibles (→ docs/SECURITY_PERFORMANCE.md)
+  - JSON — ≤64 Kio, profondeur ≤12, doublons rejetés, nombres finis ; pas de YAML objet, Marshal, eval.
+  - Limites — 60×60 m, ≤15 niveaux, ≤60 m sous toit, ≤90 m au sommet, ≤720 ouvertures, ≤30 000 faces uniques, ≤60 000 après expansion, ≤100 000 cellules, ≤128 définitions.
+  - Cibles — Plan p95 ≤150 ms ; écriture LOD 1 p95 ≤2 s ; 24×18 Structural p95 ≤5 s ; 20 régénérations : SKP +10 Mo max.
+  - Dialogue — HTML local, CSP sans inline ni CDN, textContent, execute_script à JSON ré-encodé (U+2028/9 échappés).
+- Tests — Ruby pur, contrats, hôte (→ docs/TESTING.md)
+  - U01–U12 — Ruby et contrats
+    - U01 — Brouillon, effectif, doublons, non-finis, 1.0 accepté, types faux, UTF-8, version ; parité schémas.
+    - U02 — Parents, cycle, révision manquante, hard/historique, changement de style.
+    - U03 — Golden RNG seed 42 : opening/front/0/0 = cd855d0e3d78c ; opening/rear/3/3 = 3b73a509759c3 ; feature/cornice = 8ecd39cb81f48.
+    - U04 — Normales et bases 0 / 3,2 / 6,4 / 9,6, H = 12,8.
+    - U05 — P=2,7 ; centres 1,95 / 4,65 / 7,35 / 10,05 ; 32 ouvertures, porte front/0/1.
+    - U06 — Shell : front 119,00 m², rear 119,04 m² ; segment traversant.
+    - U07 — Structural : front 27,82272 m³ ; dalles 3 × 19,63008 m³.
+    - U08 — Altitudes et normales des 4 toits.
+    - U09 — Sérialisation stable ; refus de bord ouvert, éventail scindé, face non plane, orientation, référence absente.
+    - U10 — 259 cellules, 218 faces Shell, 709 Structural ; limites exactes et 100 configs pseudo-aléatoires.
+    - U11 — 3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.
+    - U12 — Pont adverse, faux writer, panne avant/après swap.
+  - H01–H12 — Recette dans SketchUp, seule preuve native
+    - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre.
+    - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags.
+    - H03 — Un seul Undo, ressources utilisateur intactes.
+    - H04 — Sauver, rouvrir ; version future refusée.
+    - H05 — Copie partagée, A modifié : B intact, PID et transfo conservés.
+    - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté.
+    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture.
+    - H08 — 3 profils en LOD 0/1 et Shell/Structural.
+    - H09 — Saisie rapide, invalide, clavier, hors ligne.
+    - H10 — Double clic, confirmation annulée puis refaite.
+    - H11 — Mesures et 20 régénérations.
+    - H12 — Export Shell LOD 0 : écart ≤1 %.
+  - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
+- Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
+  - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.
+  - EXT-02 Bois — TimberFrameSolver ; Basque, Colombages, Normand, Alsacien.
+  - EXT-03 Courbes et décor — Arcs, reliefs, ordres ; Art déco, Art nouveau, Baroque, Néoclassique, Renaissance.
+  - EXT-04 Volumes et technique — Retraits, trame, sheds, façade rideau ; modernes, Industriel, High-tech.
+  - EXT-05 Interior — Cloisons, escaliers, trémies.
+  - EXT-06 Décor de jeu — Exporteur, UV, PBR, collisions, LOD 2.
+  - EXT-07 Rue et parcelles — Graphe de rues, placement déterministe.
+  - EXT-08 Quartier — Densité, seeds par parcelle.
+  - EXT-09 Cartographie — Import géospatial, terrain, licences.

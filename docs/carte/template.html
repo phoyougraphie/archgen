@@ -1,0 +1,238 @@
+<title>Carte ARCHGEN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sometype+Mono:wght@400;600&family=Hanken+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* Plan : un tirage de calque d'architecte. Le bâtiment-racine au centre, les
+   branches partent des deux côtés comme des lignes de cote. */
+:root {
+  --paper: #e9eef0; --sheet: #f6f8f9; --ink: #16242c; --muted: #566a75; --line: #a9bac3;
+  --accent: #1d4fc4; --accent-soft: #d6e1f8;
+  --done: #15803d; --code: #b45309; --doing: #1d4fc4; --todo: #7c8d97; --block: #be123c;
+  --mono: "Sometype Mono", ui-monospace, Menlo, Consolas, monospace;
+  --body: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0d1820; --sheet: #14222b; --ink: #e3ecf1; --muted: #93a7b3; --line: #35495a;
+  --accent: #7ea6ff; --accent-soft: #1e3259;
+  --done: #4ade80; --code: #fbbf24; --doing: #7ea6ff; --todo: #8195a1; --block: #fb7185; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #0d1820; --sheet: #14222b; --ink: #e3ecf1; --muted: #93a7b3; --line: #35495a;
+  --accent: #7ea6ff; --accent-soft: #1e3259;
+  --done: #4ade80; --code: #fbbf24; --doing: #7ea6ff; --todo: #8195a1; --block: #fb7185; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.45 var(--body); display: flex; flex-direction: column; overflow: hidden; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--sheet); }
+h1 { font: 600 15px var(--mono); letter-spacing: .04em; margin: 0; }
+.progress { display: flex; align-items: center; gap: 8px; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { width: 140px; height: 7px; border: 1px solid var(--line); display: flex; }
+.bar i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 12px var(--mono); color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--c); }
+.tools { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+input, button { font: 13px var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); padding: 4px 9px; border-radius: 2px; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input { width: 160px; max-width: 100%; }
+main { flex: 1; min-height: 0; display: flex; }
+#stage { flex: 1; min-width: 0; position: relative; cursor: grab; touch-action: none; overflow: hidden;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px; background-position: -1px -1px; }
+#stage::after { content: ""; position: absolute; inset: 0; background: var(--paper); opacity: .78; pointer-events: none; }
+#stage.drag { cursor: grabbing; }
+svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.link { fill: none; stroke: var(--line); stroke-width: 1.4; }
+.node { cursor: pointer; }
+.node rect { fill: var(--sheet); stroke: var(--line); }
+.node text { fill: var(--ink); font: 13px var(--body); dominant-baseline: central; }
+.node.branch rect { stroke: var(--accent); stroke-width: 1.4; }
+.node.branch text { font-weight: 700; }
+.node.root rect { fill: var(--accent); stroke: var(--accent); }
+.node.root text { fill: var(--sheet); font: 600 15px var(--mono); }
+.node.sel rect { stroke: var(--accent); stroke-width: 2.4; }
+.node.hit rect { fill: var(--accent-soft); }
+.node .tick { stroke: none; }
+.node .more { fill: var(--muted); font: 11px var(--mono); }
+aside { width: 340px; flex: none; overflow: auto; border-left: 1px solid var(--line); background: var(--sheet); padding-block: 16px; padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+aside h2 { font: 700 17px/1.25 var(--body); margin: 0 0 4px; text-wrap: balance; }
+aside .crumbs { font: 11px var(--mono); color: var(--muted); margin-bottom: 10px; letter-spacing: .02em; }
+aside p { margin: 0 0 10px; max-width: 65ch; }
+aside .status { display: inline-block; font: 11px var(--mono); padding: 1px 7px; border: 1px solid var(--c); color: var(--c); margin-bottom: 10px; }
+aside .ref { font: 12px var(--mono); color: var(--accent); overflow-wrap: anywhere; }
+aside ul { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+aside li button { width: 100%; text-align: left; background: none; border-color: transparent; padding: 3px 6px; }
+aside li button:hover { border-color: var(--line); }
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  aside { width: auto; height: 38%; border-left: 0; border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .tools { margin-left: 0; }
+}
+</style>
+
+<header>
+  <h1>ARCHGEN / CARTE</h1>
+  <div class="progress"><div class="bar" id="bar" role="img"></div><span id="count"></span></div>
+  <div class="legend">
+    <span style="--c:var(--done)">fait</span><span style="--c:var(--code)">code, preuve hôte manquante</span><span style="--c:var(--doing)">en cours</span><span style="--c:var(--todo)">à faire</span><span style="--c:var(--block)">bloqué</span>
+  </div>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Chercher (U07, mansarde…)" aria-label="Chercher dans la carte">
+    <button id="open" type="button">Tout déplier</button>
+    <button id="close" type="button">Replier</button>
+    <button id="fit" type="button">Recadrer</button>
+  </div>
+</header>
+<main>
+  <div id="stage"><svg id="svg" aria-label="Carte mentale du projet ARCHGEN"><g id="view"><g id="links"></g><g id="nodes"></g></g></svg></div>
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+
+<script id="data" type="application/json">__CARTE_DATA__</script>
+<script>
+(function () {
+  var ROOT = JSON.parse(document.getElementById('data').textContent);
+  var STATUS = { fait: ['fait', '--done'], code: ['code écrit, preuve hôte manquante', '--code'], encours: ['en cours', '--doing'], afaire: ['à faire', '--todo'], bloque: ['bloqué', '--block'] };
+  var NS = 'http://www.w3.org/2000/svg';
+  var ROW = 34, GAP_X = 42, BOX_H = 26, PAD = 12;
+  var svg = document.getElementById('svg'), view = document.getElementById('view');
+  var gLinks = document.getElementById('links'), gNodes = document.getElementById('nodes');
+  var panel = document.getElementById('panel'), stage = document.getElementById('stage');
+  var measure = document.createElement('canvas').getContext('2d');
+  measure.font = '500 13px "Hanken Grotesk", "Segoe UI", sans-serif';
+  var t = { x: 0, y: 0, k: 1 }, selected = null, hits = new Set();
+
+  var all = [];
+  (function index(n, parent, depth) {
+    n.parent = parent; n.depth = depth; n.children = n.children || []; n.open = depth < 1; all.push(n);
+    n.children.forEach(function (c) { index(c, n, depth + 1); });
+  })(ROOT, null, 0);
+  // Les branches utiles au quotidien s'ouvrent d'emblée.
+  all.forEach(function (n) { if (n.parent === ROOT && (n.label === 'État courant' || n.label === 'Avancement')) n.open = true; });
+
+  function width(n) { return Math.ceil(measure.measureText(n.label).width) + PAD * 2 + (n.status ? 12 : 0) + (n.children.length ? 18 : 0); }
+  function visibleKids(n) { return n.open ? n.children : []; }
+  function span(n) { var k = visibleKids(n); return k.length ? k.reduce(function (s, c) { return s + span(c); }, 0) : ROW; }
+
+  function layout() {
+    var kids = ROOT.children, half = Math.ceil(kids.length / 2);
+    // Répartit les branches à droite puis à gauche pour équilibrer la hauteur.
+    var right = kids.slice(0, half), left = kids.slice(half);
+    ROOT.x = 0; ROOT.y = 0; ROOT.w = width(ROOT); ROOT.side = 0;
+    place(right, 1, ROOT.w / 2 + GAP_X); place(left, -1, ROOT.w / 2 + GAP_X);
+  }
+  function place(list, side, xStart) {
+    var total = list.reduce(function (s, c) { return s + span(c); }, 0), y = -total / 2;
+    list.forEach(function (c) { y = placeOne(c, side, xStart, y); });
+  }
+  function placeOne(n, side, x, y) {
+    var s = span(n); n.side = side; n.w = width(n); n.y = y + s / 2; n.x = side * (x + n.w / 2);
+    var cy = y;
+    visibleKids(n).forEach(function (c) { cy = placeOne(c, side, x + n.w + GAP_X, cy); });
+    return y + s;
+  }
+
+  function el(name, attrs, parent) { var e = document.createElementNS(NS, name); for (var a in attrs) e.setAttribute(a, attrs[a]); if (parent) parent.appendChild(e); return e; }
+  function statusColor(s) { return 'var(' + STATUS[s][1] + ')'; }
+
+  function draw() {
+    layout(); gLinks.textContent = ''; gNodes.textContent = '';
+    (function walk(n) {
+      visibleKids(n).forEach(function (c) {
+        var x1 = n.x + (c.side * n.w) / 2, x2 = c.x - (c.side * c.w) / 2, mid = (x1 + x2) / 2;
+        el('path', { class: 'link', d: 'M' + x1 + ' ' + n.y + ' C' + mid + ' ' + n.y + ' ' + mid + ' ' + c.y + ' ' + x2 + ' ' + c.y }, gLinks);
+        walk(c);
+      });
+      var cls = 'node' + (n.depth === 0 ? ' root' : n.depth === 1 ? ' branch' : '') + (n === selected ? ' sel' : '') + (hits.has(n) ? ' hit' : '');
+      var g = el('g', { class: cls, transform: 'translate(' + n.x + ' ' + n.y + ')', tabindex: '0', role: 'button', 'aria-label': n.label }, gNodes);
+      el('rect', { x: -n.w / 2, y: -BOX_H / 2, width: n.w, height: BOX_H, rx: 2 }, g);
+      var tx = -n.w / 2 + PAD;
+      if (n.status) { var r = el('rect', { class: 'tick', x: tx - 4, y: -4.5, width: 9, height: 9 }, g); r.style.fill = statusColor(n.status); r.style.stroke = 'none'; tx += 12; }
+      var text = el('text', { x: tx, y: 0 }, g); text.textContent = n.label;
+      if (n.children.length) { var m = el('text', { class: 'more', x: n.w / 2 - 14, y: 0 }, g); m.textContent = n.open ? '−' : '+'; }
+      g.addEventListener('click', function (e) { e.stopPropagation(); pick(n, true); });
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(n, true); } });
+    })(ROOT);
+  }
+
+  function pick(n, toggle) {
+    if (toggle && n.children.length && n.depth > 0) n.open = !n.open;
+    selected = n; showPanel(n); draw();
+  }
+
+  function showPanel(n) {
+    panel.textContent = '';
+    var crumbs = []; for (var p = n.parent; p; p = p.parent) crumbs.unshift(p.label);
+    if (crumbs.length) add('div', 'crumbs', crumbs.join(' / '));
+    add('h2', '', n.label);
+    if (n.status) { var s = add('span', 'status', STATUS[n.status][0]); s.style.setProperty('--c', statusColor(n.status)); }
+    if (n.note) add('p', '', n.note);
+    if (n.ref) add('p', 'ref', n.ref);
+    if (n.children.length) {
+      var ul = add('ul', '', '');
+      n.children.forEach(function (c) {
+        var li = document.createElement('li'), b = document.createElement('button');
+        b.type = 'button'; b.textContent = c.label;
+        b.addEventListener('click', function () { reveal(c); pick(c, false); center(c); });
+        li.appendChild(b); ul.appendChild(li);
+      });
+    }
+    function add(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; panel.appendChild(e); return e; }
+  }
+
+  function reveal(n) { for (var p = n.parent; p; p = p.parent) p.open = true; }
+  function apply() { view.setAttribute('transform', 'translate(' + t.x + ' ' + t.y + ') scale(' + t.k + ')'); }
+  function center(n) { var r = stage.getBoundingClientRect(); layout(); t.x = r.width / 2 - n.x * t.k; t.y = r.height / 2 - n.y * t.k; apply(); }
+  function fit() {
+    layout();
+    var vis = []; (function w(n) { vis.push(n); visibleKids(n).forEach(w); })(ROOT);
+    var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    vis.forEach(function (n) { x0 = Math.min(x0, n.x - n.w / 2); x1 = Math.max(x1, n.x + n.w / 2); y0 = Math.min(y0, n.y - BOX_H); y1 = Math.max(y1, n.y + BOX_H); });
+    var r = stage.getBoundingClientRect();
+    t.k = Math.min(1.1, Math.max(0.2, Math.min((r.width - 32) / (x1 - x0), (r.height - 32) / (y1 - y0))));
+    t.x = r.width / 2 - ((x0 + x1) / 2) * t.k; t.y = r.height / 2 - ((y0 + y1) / 2) * t.k; apply();
+  }
+
+  // Déplacement et zoom : pointeur, molette, pincement.
+  var pts = new Map(), last = null, pinch = 0;
+  stage.addEventListener('pointerdown', function (e) { if (e.target.closest && e.target.closest('.node')) return; stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, e); last = e; stage.classList.add('drag'); });
+  stage.addEventListener('pointermove', function (e) {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, e);
+    if (pts.size === 2) {
+      var a = Array.from(pts.values()), d = Math.hypot(a[0].clientX - a[1].clientX, a[0].clientY - a[1].clientY);
+      if (pinch) zoom(d / pinch, (a[0].clientX + a[1].clientX) / 2, (a[0].clientY + a[1].clientY) / 2);
+      pinch = d; return;
+    }
+    t.x += e.clientX - last.clientX; t.y += e.clientY - last.clientY; last = e; apply();
+  });
+  function up(e) { pts.delete(e.pointerId); pinch = 0; if (!pts.size) stage.classList.remove('drag'); else last = Array.from(pts.values())[0]; }
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  function zoom(f, cx, cy) { var r = stage.getBoundingClientRect(), k = Math.min(2.5, Math.max(0.15, t.k * f)); f = k / t.k; t.x = cx - r.left - (cx - r.left - t.x) * f; t.y = cy - r.top - (cy - r.top - t.y) * f; t.k = k; apply(); }
+  stage.addEventListener('wheel', function (e) { e.preventDefault(); zoom(e.deltaY < 0 ? 1.12 : 0.89, e.clientX, e.clientY); }, { passive: false });
+
+  document.getElementById('open').addEventListener('click', function () { all.forEach(function (n) { n.open = true; }); draw(); fit(); });
+  document.getElementById('close').addEventListener('click', function () { all.forEach(function (n) { n.open = n.depth < 1; }); draw(); fit(); });
+  document.getElementById('fit').addEventListener('click', fit);
+  document.getElementById('q').addEventListener('input', function (e) {
+    var q = e.target.value.trim().toLowerCase(); hits = new Set();
+    if (q.length > 1) all.forEach(function (n) { if ((n.label + ' ' + (n.note || '')).toLowerCase().indexOf(q) >= 0) { hits.add(n); reveal(n); } });
+    draw(); if (hits.size) fit();
+  });
+  window.addEventListener('resize', fit);
+
+  // Avancement calculé depuis les tickets de la carte, jamais écrit à la main.
+  var tickets = all.filter(function (n) { return /^AG-\d+/.test(n.label); });
+  var counts = {}; tickets.forEach(function (n) { counts[n.status] = (counts[n.status] || 0) + 1; });
+  var bar = document.getElementById('bar');
+  ['fait', 'code', 'encours', 'bloque'].forEach(function (s) { if (!counts[s]) return; var i = document.createElement('i'); i.style.width = (100 * counts[s] / tickets.length) + '%'; i.style.background = statusColor(s); bar.appendChild(i); });
+  bar.setAttribute('aria-label', (counts.fait || 0) + ' tickets faits sur ' + tickets.length);
+  document.getElementById('count').textContent = (counts.fait || 0) + ' faits' + (counts.code ? ' + ' + counts.code + ' code' : '') + ' / ' + tickets.length + ' tickets';
+
+  function start() { var first = all.filter(function (n) { return n.label === 'Prochaine action'; })[0] || ROOT; selected = first; showPanel(first); draw(); fit(); }
+  start();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure.font = '500 13px "Hanken Grotesk", "Segoe UI", sans-serif'; draw(); fit(); });
+})();
+</script>

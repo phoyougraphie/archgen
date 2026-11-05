@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Carte ARCHGEN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sometype+Mono:wght@400;600&family=Hanken+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* Plan : un tirage de calque d'architecte. Le bâtiment-racine au centre, les
+   branches partent des deux côtés comme des lignes de cote. */
+:root {
+  --paper: #e9eef0; --sheet: #f6f8f9; --ink: #16242c; --muted: #566a75; --line: #a9bac3;
+  --accent: #1d4fc4; --accent-soft: #d6e1f8;
+  --done: #15803d; --code: #b45309; --doing: #1d4fc4; --todo: #7c8d97; --block: #be123c;
+  --mono: "Sometype Mono", ui-monospace, Menlo, Consolas, monospace;
+  --body: "Hanken Grotesk", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0d1820; --sheet: #14222b; --ink: #e3ecf1; --muted: #93a7b3; --line: #35495a;
+  --accent: #7ea6ff; --accent-soft: #1e3259;
+  --done: #4ade80; --code: #fbbf24; --doing: #7ea6ff; --todo: #8195a1; --block: #fb7185; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --paper: #0d1820; --sheet: #14222b; --ink: #e3ecf1; --muted: #93a7b3; --line: #35495a;
+  --accent: #7ea6ff; --accent-soft: #1e3259;
+  --done: #4ade80; --code: #fbbf24; --doing: #7ea6ff; --todo: #8195a1; --block: #fb7185; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.45 var(--body); display: flex; flex-direction: column; overflow: hidden; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 1px solid var(--line); background: var(--sheet); }
+h1 { font: 600 15px var(--mono); letter-spacing: .04em; margin: 0; }
+.progress { display: flex; align-items: center; gap: 8px; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar { width: 140px; height: 7px; border: 1px solid var(--line); display: flex; }
+.bar i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 12px var(--mono); color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; background: var(--c); }
+.tools { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+input, button { font: 13px var(--body); color: var(--ink); background: var(--paper); border: 1px solid var(--line); padding: 4px 9px; border-radius: 2px; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input { width: 160px; max-width: 100%; }
+main { flex: 1; min-height: 0; display: flex; }
+#stage { flex: 1; min-width: 0; position: relative; cursor: grab; touch-action: none; overflow: hidden;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px; background-position: -1px -1px; }
+#stage::after { content: ""; position: absolute; inset: 0; background: var(--paper); opacity: .78; pointer-events: none; }
+#stage.drag { cursor: grabbing; }
+svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+.link { fill: none; stroke: var(--line); stroke-width: 1.4; }
+.node { cursor: pointer; }
+.node rect { fill: var(--sheet); stroke: var(--line); }
+.node text { fill: var(--ink); font: 13px var(--body); dominant-baseline: central; }
+.node.branch rect { stroke: var(--accent); stroke-width: 1.4; }
+.node.branch text { font-weight: 700; }
+.node.root rect { fill: var(--accent); stroke: var(--accent); }
+.node.root text { fill: var(--sheet); font: 600 15px var(--mono); }
+.node.sel rect { stroke: var(--accent); stroke-width: 2.4; }
+.node.hit rect { fill: var(--accent-soft); }
+.node .tick { stroke: none; }
+.node .more { fill: var(--muted); font: 11px var(--mono); }
+aside { width: 340px; flex: none; overflow: auto; border-left: 1px solid var(--line); background: var(--sheet); padding-block: 16px; padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+aside h2 { font: 700 17px/1.25 var(--body); margin: 0 0 4px; text-wrap: balance; }
+aside .crumbs { font: 11px var(--mono); color: var(--muted); margin-bottom: 10px; letter-spacing: .02em; }
+aside p { margin: 0 0 10px; max-width: 65ch; }
+aside .status { display: inline-block; font: 11px var(--mono); padding: 1px 7px; border: 1px solid var(--c); color: var(--c); margin-bottom: 10px; }
+aside .ref { font: 12px var(--mono); color: var(--accent); overflow-wrap: anywhere; }
+aside ul { margin: 6px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; }
+aside li button { width: 100%; text-align: left; background: none; border-color: transparent; padding: 3px 6px; }
+aside li button:hover { border-color: var(--line); }
+@media (max-width: 760px) {
+  main { flex-direction: column; }
+  aside { width: auto; height: 38%; border-left: 0; border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); }
+  .tools { margin-left: 0; }
+}
+</style>
+
+<header>
+  <h1>ARCHGEN / CARTE</h1>
+  <div class="progress"><div class="bar" id="bar" role="img"></div><span id="count"></span></div>
+  <div class="legend">
+    <span style="--c:var(--done)">fait</span><span style="--c:var(--code)">code, preuve hôte manquante</span><span style="--c:var(--doing)">en cours</span><span style="--c:var(--todo)">à faire</span><span style="--c:var(--block)">bloqué</span>
+  </div>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Chercher (U07, mansarde…)" aria-label="Chercher dans la carte">
+    <button id="open" type="button">Tout déplier</button>
+    <button id="close" type="button">Replier</button>
+    <button id="fit" type="button">Recadrer</button>
+  </div>
+</header>
+<main>
+  <div id="stage"><svg id="svg" aria-label="Carte mentale du projet ARCHGEN"><g id="view"><g id="links"></g><g id="nodes"></g></g></svg></div>
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+
+<script id="data" type="application/json">{"label":"ARCHGEN","note":"Extension SketchUp de bâtiments paramétriques, V0.1.","children":[{"label":"État courant","note":"Où en est le développement, à lire en premier","children":[{"label":"Prochaine action","note":"Lancer la recette hôte H01 (AG-002) dans SketchUp 2026, puis AG-011. Sans hôte, la suite Ruby pure s'arrête à AG-010 ; AG-015 et au-delà dépendent de J3.","children":[]},{"ref":"docs/MATRICE_POSTE.md","label":"Environnement","note":"Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025.","children":[]},{"label":"Git","note":"Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.","children":[]},{"label":"Commande de test","note":"bundle exec rake test (Ruby pur, sans SketchUp). Le script hôte test/host/run.rb se charge à la main dans la console SketchUp.","children":[]},{"label":"Journal","note":"Écarts et décisions rencontrés en développement","children":[{"label":"2026-11-05","note":"Spec relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).","children":[]}]}]},{"ref":"AGENTS.md","label":"Règles de travail","note":"AGENTS.md résumé, gouverne tout le reste","children":[{"label":"Ordre","note":"Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.","children":[]},{"label":"Noyau pur","note":"Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.","children":[]},{"label":"Contraintes bloquantes","note":"Géométrie et limites de plateforme bloquent dans tous les modes de fidélité ; diagnostic localisé ; ni champ inventé, ni réglage silencieux.","children":[]},{"label":"Undo","note":"Action réussie = une opération Undo ; action rejetée = document intact ; géométrie partagée jamais modifiée sur place ; revalider la cible avant chaque écriture.","children":[]},{"label":"Styles","note":"Données versionnées ; capacité et tests avant profil ; règles = clés d'un registre fermé, jamais de code chargé.","children":[]},{"label":"Livraison","note":"Centrée sur le ticket ; décision documentée et test/migration pour tout changement de format ou comportement.","children":[]},{"label":"Rapport","note":"Commandes, résultats, versions, limites ; distinguer Ruby, writer et essai réel ; aucun contrôle hôte réussi sans preuve. Sans SketchUp la sortie V0.1 reste bloquée.","children":[]},{"label":"Priorité documentaire","note":"AGENTS > PRD (périmètre) > contrats (détail) > tickets (ordre). Divergence = résolue dans la même modification.","children":[]}]},{"ref":"planning/TASKS.md","label":"Avancement","note":"Jalons et tickets, statuts à jour","children":[{"ref":"planning/ROADMAP.md","label":"J0 Base","note":"Projet testable et panneau local installable sur un hôte de référence. AG-001, 002.","children":[{"status":"fait","label":"AG-001 Dépôt et CI","note":"Arborescence, version, Gemfile, Rakefile, smoke, matrice de poste. Preuve : rake test local ; CI à confirmer au premier push.","children":[]},{"status":"afaire","label":"AG-002 Extension","note":"Chargeur, menu, HtmlDialog de diagnostic, RBZ de dev. Recette H01. Dép. AG-001.","children":[]}]},{"label":"J1 Données","note":"Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.","children":[{"status":"afaire","label":"AG-003 Validation","note":"Parseur JSON borné, diagnostics, BuildingConfig immuable. U01. Dép. AG-001.","children":[]},{"status":"afaire","label":"AG-004 Profils","note":"Registre, héritage, fidélité, fusion, transition de style. U02. Dép. AG-003.","children":[]},{"status":"afaire","label":"AG-005 Hasard","note":"RNG par clé SHA-256, canonicalisation, quantification. U03. Dép. AG-003.","children":[]}]},{"label":"J2 Enveloppe neutre","note":"Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.","children":[{"status":"afaire","label":"AG-006 Emprise et niveaux","note":"Anneau CCW, repères, hauteurs, bandes de dalles. U04. Dép. AG-004, 005.","children":[]},{"status":"afaire","label":"AG-007 Travées et percements","note":"Centres, jitter, porte, distances. U05. Dép. AG-006.","children":[]},{"status":"afaire","label":"AG-008 Murs et dalles","note":"Grille Shell, onglets Structural, tableaux, 3 dalles. U06, U07. Dép. AG-007.","children":[]},{"status":"afaire","label":"AG-009 Toitures","note":"Plat, deux pans, croupe, mansarde. U08. Dép. AG-006.","children":[]},{"status":"afaire","label":"AG-010 Plan et budgets","note":"Engine, plan sérialisable, PlanValidator, projection, budgets. U09, U10. Dép. AG-008, 009.","children":[]}]},{"label":"J3 Adaptateur et persistance","note":"Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.","children":[{"status":"afaire","label":"AG-011 Writer","note":"Writer isolé, unités, matériaux, sonde native. H02. Dép. AG-002, 010.","children":[]},{"status":"afaire","label":"AG-012 Créer et relire","note":"Service, transaction, métadonnées, réouverture. H03, H04. Dép. AG-011.","children":[]},{"status":"afaire","label":"AG-013 Régénérer","note":"Cible par jeton, copie, remplacement de définition. H05. Dép. AG-012.","children":[]},{"status":"afaire","label":"AG-014 Rejeter et restaurer","note":"Garde de transaction, injection de fautes. H06, H07. Dép. AG-013.","children":[]}]},{"label":"J4 Styles et panneau","note":"Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.","children":[{"status":"afaire","label":"AG-015 Détails et profils","note":"Cadres, corniche, balcon, encadrements ; active les 3 profils. U11, H08. Dép. AG-014.","children":[]},{"status":"afaire","label":"AG-016 Formulaire et aperçu","note":"UI locale, protocole init/lecture/aperçu. H09. Dép. AG-015.","children":[]},{"status":"afaire","label":"AG-017 Création et édition","note":"Génération, transition, confirmation, requête unique. H10. Dép. AG-016.","children":[]}]},{"label":"J5 Livraison","note":"Matrice hôte, sécurité, budgets, export, RBZ installé. AG-018 à 020.","children":[{"status":"afaire","label":"AG-018 Sécurité et charge","note":"Cas adverses, budgets, mesures. U10, U12, H06, H07, H11. Dép. AG-017.","children":[]},{"status":"afaire","label":"AG-019 Export et compatibilité","note":"Matrice Windows/macOS, export Shell LOD 0. H01 à H10, H12. Dép. AG-017.","children":[]},{"status":"afaire","label":"AG-020 RBZ V0.1","note":"Paquet reproductible, journal, guide, rapport. P01 à P09. Dép. AG-018, 019.","children":[]}]},{"label":"J6+ Extensions","note":"Après J5 seulement, EXT-01 à 09 ; voir branche Extensions.","children":[]}]},{"ref":"docs/PRD.md","label":"Produit","note":"Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D","children":[{"label":"Fonctions P01–P09","note":"Résultats observables de la V0.1","children":[{"label":"P01 Nouveau bâtiment","note":"Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.","children":[]},{"label":"P02 Aperçu","note":"Élévation et emprise par le même noyau ; avertissements, cotes, ouvertures ; aucune entité créée.","children":[]},{"label":"P03 Générer Shell","note":"Surfaces simples, ouvertures traversantes réelles, couverture, matériaux, détails selon LOD.","children":[]},{"label":"P04 Générer Structural","note":"Même silhouette et ouvertures ; murs épais, tableaux, planchers intermédiaires.","children":[]},{"label":"P05 Modifier / rouvrir","note":"Sélection d'une racine ; paramètres rechargés après sauvegarde ; style, mode, dimensions.","children":[]},{"label":"P06 Régénérer / annuler","note":"Racine et placement conservés ; copies isolées ; confirmation ; une entrée Undo et Redo vérifié.","children":[]},{"label":"P07 Reproduire","note":"Config effective, seed, versions identiques ⇒ même plan canonique.","children":[]},{"label":"P08 Exploiter","note":"Faces orientées, matériaux nommés, pièces organisées ; un aller-retour export documenté.","children":[]},{"label":"P09 Gérer les erreurs","note":"Champ et cause expliqués ; aucune modification sur rejet ; échec d'écriture restauré.","children":[]}]},{"label":"Périmètre V0.1","note":"Une génération à la fois au niveau racine ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; 4 toits ; matériaux unis ; LOD 0 et 1 ; 3 profils jouables.","children":[]},{"label":"Frontières","note":"Structural ≠ calcul porteur ; Shell ≠ volume étanche. Pas de réglementaire, vitrage détaillé, intérieur, terrain, ville ni service distant. Pas de garantie moteur de jeu, UV, collisions.","children":[]},{"label":"Signatures","note":"Haussmann : pierre, mansarde, corniche, balcon filant. Toulousain : brique foraine, tuile canal, encadrements. Brutaliste : béton, toit plat, grille, baies en retrait au LOD 1 Structural.","children":[]},{"label":"Recette de sortie","note":"Fixture 12 × 9, 4 niveaux, 4 travées dans les deux modes ; déplacer, pivoter, copier, changer le style d'une seule instance ; Undo/Redo ; réouverture ; deux autres signatures.","children":[]}]},{"ref":"docs/ARCHITECTURE.md","label":"Architecture","note":"Noyau pur + adaptateur SketchUp","children":[{"label":"Flux","note":"HtmlDialog → DialogController → BuildingService → ConfigResolver/ConstraintValidator → StyleRegistry ; GeometryEngine → solveurs → GeometryPlan/PlanValidator ; GeometryWriter et ComponentRepository → modèle.","children":[]},{"label":"Core","note":"Noyau pur, Ruby standard","children":[{"label":"StyleRegistry","note":"fetch(profile_id, revision: nil) → StyleProfile ; héritage, capacités ; révision absente ⇒ erreur.","children":[]},{"label":"ConfigResolver","note":"resolve(request, registry:, base: nil) → Result\u003cBuildingConfig>.","children":[]},{"label":"BuildingConfig","note":"to_h, geometry_input ; copie profonde gelée.","children":[]},{"label":"ConstraintValidator","note":"call(config, profile:) → Diagnostic[] ; paths JSON Pointer.","children":[]},{"label":"DeterministicRandom","note":"unit(seed, key) → Float.","children":[]},{"label":"GeometryEngine","note":"generate(config) → Result\u003cGeometryPlan> ; valide avant retour.","children":[]},{"label":"PlanValidator","note":"call(plan) → Diagnostic[] ; topologie, indices, limites, matériaux.","children":[]},{"label":"Result et Diagnostic","note":"Result = value + diagnostics ; Diagnostic = {code, severity, path, params} ; error ou warning ; aucun objet SketchUp.","children":[]}]},{"label":"Geometry","note":"Solveurs purs","children":[{"label":"Solveurs","note":"FootprintSolver, FloorPlanner, FacadeSolver, OpeningSolver, WallBuilder, RoofSolver, DetailSolver.","children":[]}]},{"label":"Adaptateur SketchUp","note":"Seul à toucher au natif","children":[{"label":"GeometryWriter","note":"write(plan, entities:, resources:) ; ne crée ni transaction ni racine.","children":[]},{"label":"ComponentRepository","note":"read, insert, swap ; appartenance, révision, contexte.","children":[]},{"label":"BuildingService","note":"preview, create, regenerate ; propriétaire de la transaction.","children":[]}]},{"label":"UI","note":"DialogController.dispatch(envelope) → Response ; jetons de session et de confirmation ; l'UI ne reproduit aucune règle de faisabilité.","children":[]},{"label":"Arborescence","note":"archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.","children":[]},{"ref":"docs/DECISIONS.md","label":"Décisions ADR","note":"Choix révisables par décision écrite","children":[{"label":"ADR-01","note":"Génération hybride : plan indépendant + writer. Shell et Structural partagent les placements.","children":[]},{"label":"ADR-02","note":"3 profils actifs, 24 fiches, 7 familles techniques.","children":[]},{"label":"ADR-03","note":"Config V1 fermée, valeurs effectives figées ; saisie séparée ; changer de style = transition explicite.","children":[]},{"label":"ADR-04","note":"Une racine top-level par bâtiment, définition de remplacement fraîche ; pas d'édition imbriquée.","children":[]},{"label":"ADR-05","note":"Subdivision explicite, onglets, 4 pièces murales fermées ; pas de booléens ; racine non solide.","children":[]},{"label":"ADR-06","note":"m/rad au calcul, degrés en saisie ; une seule conversion par frontière.","children":[]},{"label":"ADR-07","note":"Aperçu 2D en dialogue, sans écriture.","children":[]},{"label":"ADR-08","note":"Cible Desktop 2024–2026, Ruby 3.2, Windows et macOS ; aucune compatibilité annoncée avant recette.","children":[]},{"label":"ADR-09","note":"API minimale, géométrie locale, pas de purge globale.","children":[]},{"label":"ADR-10","note":"Migrations de format distinctes des changements de règles.","children":[]}]},{"ref":"docs/RUBY_SKETCHUP.md","label":"Conventions Ruby/SketchUp","note":"Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2).","children":[]}]},{"ref":"docs/GEOMETRY_CONTRACT.md","label":"Géométrie","note":"Contrat V1, valeurs exactes","children":[{"label":"Repères","note":"P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.","children":[]},{"label":"Tolérances","note":"Comparaisons 1e-6 m ; quantification 1e-6 (demi éloigné de zéro, −0 → 0) ; arête émise ≥ 0,002 m ; dégagements ≥ 0,10 m ; coupes distinctes \u003c 0,002 m ⇒ erreur.","children":[]},{"label":"Placement","note":"Partagé par les deux modes","children":[{"label":"Niveaux","note":"base[i] = somme h[0…i) ; dalles Structural seulement aux limites intermédiaires, épaisseur vers le bas ; pas de dalle au RDC.","children":[]},{"label":"Travées","note":"P = (L−2M)/N ; centre u = M + (i+0,5)P ; N=0 ⇒ aucun candidat ; N>0 exige L>2M.","children":[]},{"label":"Porte","note":"Façade avant, RDC, entry_bay ; remplace la fenêtre ; z=0.","children":[]},{"label":"Jitter","note":"jitter_m × (2·unit−1), hors porte ; clé opening/\u003cside>/\u003clevel>/\u003cbay>/u ; aucun retentage.","children":[]},{"label":"RNG","note":"SHA-256 de \"archgen-rng-v1:\u003cseed>:\u003ckey>\", 13 premiers hex en entier, /2^52.","children":[]},{"label":"Dégagements","note":"wall_m+0,10 aux extrémités ; ≥0,10 entre ouvertures ; haut ≤ top−slab−0,10 (intermédiaire) ou top−0,10 (dernier). Aucun réajustement implicite.","children":[]},{"label":"Tri","note":"façade/niveau/travée puis id ; ids stables type opening/front/0/1.","children":[]}]},{"label":"Murs","note":"Grille U = {0,L} + bords d'ouvertures ; Z = {0,H} + étages + limites d'ouvertures","children":[{"label":"Shell","note":"Quad extérieur par cellule pleine, normale N ; ni dalle ni retour.","children":[]},{"label":"Structural","note":"Grille extrudée à d=t ; intérieur u=0→t, u=L→L−t (onglets) ; quads ext/int opposés + latéral si voisin absent ou vide. Pas de seuil de porte.","children":[]},{"label":"Dalles","note":"[t,W−t]×[t,D−t]×[base−s,base], i=1…n−1 ; une pièce par dalle.","children":[]}]},{"label":"Toitures","note":"r = tan(pente), E = débord, H = tête de mur ; rive sous Z=0 rejetée","children":[{"label":"Plat","note":"Quad à H avec débord.","children":[]},{"label":"Deux pans","note":"Faîtage // X à y=D/2, z=H+rD/2, prolongé à −E et W+E ; rives H−rE ; 2 pignons triangulaires à x=0 et W.","children":[]},{"label":"Croupe","note":"z = H + r·distance signée au bord ; faîtage axe long à H+r·min(W,D)/2 ; carré : 4 triangles.","children":[]},{"label":"Mansarde","note":"Rive H−r_bas·E, anneau inset I à H+r_bas·I, couronné par une croupe à pente haute sans débord.","children":[]}]},{"label":"Détails LOD 1","note":"Cadres 0,04×0,04 mutualisés, recul 0 Shell / min(0,16, wall−0,04) Structural. Corniche 0,15×0,08. Balcon 0,90×0,12 aux niveaux d'index 2 et 5. Encadrement 0,04, d∈[−0,03,0].","children":[]},{"label":"GeometryPlan","note":"{schema_version:1, engine_version, units:\"m\", nodes, definitions, openings, metrics}. Node = {id, category, children, primitive?}. Primitives surface, solid, instance.","children":[]},{"label":"Matériaux par rôle","note":"Murs, tableaux, dalles, pignons, balcons, corniches, encadrements → wall ; pans → roof ; cadres → frames.","children":[]},{"label":"Ordre de validation","note":"Configuration → faisabilité/compte estimé → plan → budget exact → écriture → contrôles natifs.","children":[]}]},{"ref":"docs/CONFIG_SCHEMA.md","label":"Configuration","note":"JSON V1 fermé","children":[{"ref":"schemas/README.md","label":"Formats","note":"Brouillon (overrides partiels) et effectif (complet, seul persisté) ; null et clés inconnues rejetés ; m et degrés.","children":[]},{"label":"Blocs","note":"schema_version, name, profile, building_type, mode, lod, seed, fidelity, footprint, levels, facade, structure, roof, materials, features.","children":[]},{"label":"Résolution","note":"1 contrôle taille/clés/types ; 2 profil exact ou courant ; 3 fusion feuille à feuille, tableaux remplacés, chances avant overrides ; 4 canonisation ; 5 vérification, gel.","children":[]},{"label":"Transition de toit","note":"Plat 0° ; deux pans/croupe 25° ; mansarde 25°/65°/0,9 m ; débord 0 ; puis champs explicites. Champ inactif explicite non nul ⇒ refus.","children":[]},{"label":"Édition","note":"Même profil : base + champs envoyés. Nouveau profil : garde name, mode, lod, seed, fidelity, footprint, levels, building_type ; reprend le reste.","children":[]},{"label":"Diagnostics","note":"E_SCHEMA, E_VERSION, E_PROFILE_UNAVAILABLE, E_HISTORICAL, W_HISTORICAL, E_OPENING_CLEARANCE, E_ROOF_GEOMETRY, E_BUDGET, E_TARGET_STALE, E_CONFIRMATION_STALE, E_WRITE.","children":[]},{"label":"Empreintes","note":"JSON canonique trié. Empreinte géométrie sans name, UUID, révision, transformation ; empreinte config complète avec name pour le contrôle de cible.","children":[]},{"ref":"examples/README.md","label":"Exemples","note":"creation-draft → haussmann-12x9 ; rect-neutre-shell et structural ; toulousain ; brutalist.","children":[]}]},{"ref":"docs/STYLE_SCHEMA.md","label":"Styles","note":"Données, pas de code","children":[{"label":"Hiérarchie","note":"generic → 7 familles → feuilles ; base → family → profile seulement.","children":[]},{"label":"Fusion","note":"Feuille à feuille ; requires en union parent puis enfant ; règles par id ; règle hard jamais affaiblie.","children":[]},{"label":"Fidélité","note":"hard : toujours erreur. historical : strict erreur, plausible avertit, creative ignore. soft : avertit, creative ignore. decorative : choix déterministe.","children":[]},{"label":"Règles V1","note":"window_ratio, level_count, roof_type, material_allowed, feature_chance.","children":[]},{"ref":"examples/materials.v1.json","label":"Matériaux","note":"lime_plaster, concrete, painted_wood, limestone, zinc, brick_foraine, terracotta_canal, dark_metal.","children":[]},{"ref":"docs/styles/CATALOGUE.md","label":"Catalogue 24 styles","note":"Actifs V0.1 et planifiés par famille","children":[{"label":"Façade ordonnancée","note":"Haussmannien (actif, 5–7 niveaux, 2,7–4,0 m, mansarde) ; Baroque, Néoclassique, Renaissance (planifiés).","children":[]},{"label":"Vernaculaire maçonné","note":"Toulousain (actif, 2–5, 2,7–3,8, 15–35°) ; Provençal, Méditerranéen, Breton (planifiés).","children":[]},{"label":"Ossature bois","note":"Basque, Colombages, Normand, Alsacien (planifiés, EXT-02).","children":[]},{"label":"Monumental","note":"Roman, Gothique (planifiés, EXT-03).","children":[]},{"label":"Ornemental","note":"Art déco, Art nouveau (planifiés, EXT-03).","children":[]},{"label":"Moderne modulaire","note":"Brutaliste (actif, 2–15, 2,7–4,0, plat) ; Bauhaus, Minimaliste, Mid-century, Moderniste (planifiés).","children":[]},{"label":"Technique","note":"High-tech, Bioclimatique, Industriel (planifiés, EXT-04).","children":[]}]}]},{"ref":"docs/REGENERATION.md","label":"Régénération","note":"Identité, transaction, copies","children":[{"label":"Identité","note":"ComponentInstance racine, dictionnaire archgen.building : metadata_version, building_uuid, revision, config_json, plan_digest, engine_version, material_revision.","children":[]},{"label":"Jeton de cible","note":"Opaque, lié à session et modèle ; PID, définition, révision, SHA-256 de la config complète. Relecture à chaque écriture.","children":[]},{"label":"Copies","note":"Adresse d'édition = instance physique. UUID partagé ⇒ nouvel UUID pour la cible à la première écriture.","children":[]},{"label":"Transaction","note":"Valider sans muter ; aperçu et confirmation ; start_operation ; définition fraîche ; instance.definition= ; commit, ou abort_operation une seule fois.","children":[]},{"label":"Refus","note":"Transformation non rigide, miroir, échelle ; cible verrouillée, imbriquée, supprimée ; version inconnue en lecture seule.","children":[]}]},{"ref":"docs/UI_SPEC.md","label":"Interface","note":"Panneau modeless, local, français","children":[{"label":"Zones","note":"Projet, Dimensions, Façade, Avancé, Aperçu, Actions.","children":[]},{"label":"Pont","note":"archgen_dispatch reçoit une chaîne JSON {v, request_id, action, payload} ; actions init, load_selection, preview, generate, regenerate.","children":[]},{"label":"Confirmation","note":"Jeton unique, 120 s, consommé avant écriture ; aperçu temporisé à 250 ms ; réponses anciennes ignorées.","children":[]}]},{"ref":"docs/SECURITY_PERFORMANCE.md","label":"Sécurité et performances","note":"Limites bloquantes et cibles","children":[{"label":"JSON","note":"≤64 Kio, profondeur ≤12, doublons rejetés, nombres finis ; pas de YAML objet, Marshal, eval.","children":[]},{"label":"Limites","note":"60×60 m, ≤15 niveaux, ≤60 m sous toit, ≤90 m au sommet, ≤720 ouvertures, ≤30 000 faces uniques, ≤60 000 après expansion, ≤100 000 cellules, ≤128 définitions.","children":[]},{"label":"Cibles","note":"Plan p95 ≤150 ms ; écriture LOD 1 p95 ≤2 s ; 24×18 Structural p95 ≤5 s ; 20 régénérations : SKP +10 Mo max.","children":[]},{"label":"Dialogue","note":"HTML local, CSP sans inline ni CDN, textContent, execute_script à JSON ré-encodé (U+2028/9 échappés).","children":[]}]},{"ref":"docs/TESTING.md","label":"Tests","note":"Ruby pur, contrats, hôte","children":[{"label":"U01–U12","note":"Ruby et contrats","children":[{"label":"U01","note":"Brouillon, effectif, doublons, non-finis, 1.0 accepté, types faux, UTF-8, version ; parité schémas.","children":[]},{"label":"U02","note":"Parents, cycle, révision manquante, hard/historique, changement de style.","children":[]},{"label":"U03","note":"Golden RNG seed 42 : opening/front/0/0 = cd855d0e3d78c ; opening/rear/3/3 = 3b73a509759c3 ; feature/cornice = 8ecd39cb81f48.","children":[]},{"label":"U04","note":"Normales et bases 0 / 3,2 / 6,4 / 9,6, H = 12,8.","children":[]},{"label":"U05","note":"P=2,7 ; centres 1,95 / 4,65 / 7,35 / 10,05 ; 32 ouvertures, porte front/0/1.","children":[]},{"label":"U06","note":"Shell : front 119,00 m², rear 119,04 m² ; segment traversant.","children":[]},{"label":"U07","note":"Structural : front 27,82272 m³ ; dalles 3 × 19,63008 m³.","children":[]},{"label":"U08","note":"Altitudes et normales des 4 toits.","children":[]},{"label":"U09","note":"Sérialisation stable ; refus de bord ouvert, éventail scindé, face non plane, orientation, référence absente.","children":[]},{"label":"U10","note":"259 cellules, 218 faces Shell, 709 Structural ; limites exactes et 100 configs pseudo-aléatoires.","children":[]},{"label":"U11","note":"3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.","children":[]},{"label":"U12","note":"Pont adverse, faux writer, panne avant/après swap.","children":[]}]},{"label":"H01–H12","note":"Recette dans SketchUp, seule preuve native","children":[{"label":"H01","note":"Installer, activer, rouvrir ; une entrée de menu, console propre.","children":[]},{"label":"H02","note":"Neutres en mètres et en pouces : cotes, normales, trous, tags.","children":[]},{"label":"H03","note":"Un seul Undo, ressources utilisateur intactes.","children":[]},{"label":"H04","note":"Sauver, rouvrir ; version future refusée.","children":[]},{"label":"H05","note":"Copie partagée, A modifié : B intact, PID et transfo conservés.","children":[]},{"label":"H06","note":"Pannes injectées : enregistrements identiques, aucun Undo ajouté.","children":[]},{"label":"H07","note":"Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture.","children":[]},{"label":"H08","note":"3 profils en LOD 0/1 et Shell/Structural.","children":[]},{"label":"H09","note":"Saisie rapide, invalide, clavier, hors ligne.","children":[]},{"label":"H10","note":"Double clic, confirmation annulée puis refaite.","children":[]},{"label":"H11","note":"Mesures et 20 régénérations.","children":[]},{"label":"H12","note":"Export Shell LOD 0 : écart ≤1 %.","children":[]}]},{"label":"Tolérances","note":"Ruby 1e-5 ; SketchUp ≤1 mm.","children":[]}]},{"ref":"docs/FUTURE.md","label":"Extensions","note":"Après J5, aucune dépendance inverse","children":[{"label":"EXT-01 Richesse régionale","note":"Volets, lucarnes, débords ; Provençal, Breton.","children":[]},{"label":"EXT-02 Bois","note":"TimberFrameSolver ; Basque, Colombages, Normand, Alsacien.","children":[]},{"label":"EXT-03 Courbes et décor","note":"Arcs, reliefs, ordres ; Art déco, Art nouveau, Baroque, Néoclassique, Renaissance.","children":[]},{"label":"EXT-04 Volumes et technique","note":"Retraits, trame, sheds, façade rideau ; modernes, Industriel, High-tech.","children":[]},{"label":"EXT-05 Interior","note":"Cloisons, escaliers, trémies.","children":[]},{"label":"EXT-06 Décor de jeu","note":"Exporteur, UV, PBR, collisions, LOD 2.","children":[]},{"label":"EXT-07 Rue et parcelles","note":"Graphe de rues, placement déterministe.","children":[]},{"label":"EXT-08 Quartier","note":"Densité, seeds par parcelle.","children":[]},{"label":"EXT-09 Cartographie","note":"Import géospatial, terrain, licences.","children":[]}]}]}</script>
+<script>
+(function () {
+  var ROOT = JSON.parse(document.getElementById('data').textContent);
+  var STATUS = { fait: ['fait', '--done'], code: ['code écrit, preuve hôte manquante', '--code'], encours: ['en cours', '--doing'], afaire: ['à faire', '--todo'], bloque: ['bloqué', '--block'] };
+  var NS = 'http://www.w3.org/2000/svg';
+  var ROW = 34, GAP_X = 42, BOX_H = 26, PAD = 12;
+  var svg = document.getElementById('svg'), view = document.getElementById('view');
+  var gLinks = document.getElementById('links'), gNodes = document.getElementById('nodes');
+  var panel = document.getElementById('panel'), stage = document.getElementById('stage');
+  var measure = document.createElement('canvas').getContext('2d');
+  measure.font = '500 13px "Hanken Grotesk", "Segoe UI", sans-serif';
+  var t = { x: 0, y: 0, k: 1 }, selected = null, hits = new Set();
+
+  var all = [];
+  (function index(n, parent, depth) {
+    n.parent = parent; n.depth = depth; n.children = n.children || []; n.open = depth < 1; all.push(n);
+    n.children.forEach(function (c) { index(c, n, depth + 1); });
+  })(ROOT, null, 0);
+  // Les branches utiles au quotidien s'ouvrent d'emblée.
+  all.forEach(function (n) { if (n.parent === ROOT && (n.label === 'État courant' || n.label === 'Avancement')) n.open = true; });
+
+  function width(n) { return Math.ceil(measure.measureText(n.label).width) + PAD * 2 + (n.status ? 12 : 0) + (n.children.length ? 18 : 0); }
+  function visibleKids(n) { return n.open ? n.children : []; }
+  function span(n) { var k = visibleKids(n); return k.length ? k.reduce(function (s, c) { return s + span(c); }, 0) : ROW; }
+
+  function layout() {
+    var kids = ROOT.children, half = Math.ceil(kids.length / 2);
+    // Répartit les branches à droite puis à gauche pour équilibrer la hauteur.
+    var right = kids.slice(0, half), left = kids.slice(half);
+    ROOT.x = 0; ROOT.y = 0; ROOT.w = width(ROOT); ROOT.side = 0;
+    place(right, 1, ROOT.w / 2 + GAP_X); place(left, -1, ROOT.w / 2 + GAP_X);
+  }
+  function place(list, side, xStart) {
+    var total = list.reduce(function (s, c) { return s + span(c); }, 0), y = -total / 2;
+    list.forEach(function (c) { y = placeOne(c, side, xStart, y); });
+  }
+  function placeOne(n, side, x, y) {
+    var s = span(n); n.side = side; n.w = width(n); n.y = y + s / 2; n.x = side * (x + n.w / 2);
+    var cy = y;
+    visibleKids(n).forEach(function (c) { cy = placeOne(c, side, x + n.w + GAP_X, cy); });
+    return y + s;
+  }
+
+  function el(name, attrs, parent) { var e = document.createElementNS(NS, name); for (var a in attrs) e.setAttribute(a, attrs[a]); if (parent) parent.appendChild(e); return e; }
+  function statusColor(s) { return 'var(' + STATUS[s][1] + ')'; }
+
+  function draw() {
+    layout(); gLinks.textContent = ''; gNodes.textContent = '';
+    (function walk(n) {
+      visibleKids(n).forEach(function (c) {
+        var x1 = n.x + (c.side * n.w) / 2, x2 = c.x - (c.side * c.w) / 2, mid = (x1 + x2) / 2;
+        el('path', { class: 'link', d: 'M' + x1 + ' ' + n.y + ' C' + mid + ' ' + n.y + ' ' + mid + ' ' + c.y + ' ' + x2 + ' ' + c.y }, gLinks);
+        walk(c);
+      });
+      var cls = 'node' + (n.depth === 0 ? ' root' : n.depth === 1 ? ' branch' : '') + (n === selected ? ' sel' : '') + (hits.has(n) ? ' hit' : '');
+      var g = el('g', { class: cls, transform: 'translate(' + n.x + ' ' + n.y + ')', tabindex: '0', role: 'button', 'aria-label': n.label }, gNodes);
+      el('rect', { x: -n.w / 2, y: -BOX_H / 2, width: n.w, height: BOX_H, rx: 2 }, g);
+      var tx = -n.w / 2 + PAD;
+      if (n.status) { var r = el('rect', { class: 'tick', x: tx - 4, y: -4.5, width: 9, height: 9 }, g); r.style.fill = statusColor(n.status); r.style.stroke = 'none'; tx += 12; }
+      var text = el('text', { x: tx, y: 0 }, g); text.textContent = n.label;
+      if (n.children.length) { var m = el('text', { class: 'more', x: n.w / 2 - 14, y: 0 }, g); m.textContent = n.open ? '−' : '+'; }
+      g.addEventListener('click', function (e) { e.stopPropagation(); pick(n, true); });
+      g.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(n, true); } });
+    })(ROOT);
+  }
+
+  function pick(n, toggle) {
+    if (toggle && n.children.length && n.depth > 0) n.open = !n.open;
+    selected = n; showPanel(n); draw();
+  }
+
+  function showPanel(n) {
+    panel.textContent = '';
+    var crumbs = []; for (var p = n.parent; p; p = p.parent) crumbs.unshift(p.label);
+    if (crumbs.length) add('div', 'crumbs', crumbs.join(' / '));
+    add('h2', '', n.label);
+    if (n.status) { var s = add('span', 'status', STATUS[n.status][0]); s.style.setProperty('--c', statusColor(n.status)); }
+    if (n.note) add('p', '', n.note);
+    if (n.ref) add('p', 'ref', n.ref);
+    if (n.children.length) {
+      var ul = add('ul', '', '');
+      n.children.forEach(function (c) {
+        var li = document.createElement('li'), b = document.createElement('button');
+        b.type = 'button'; b.textContent = c.label;
+        b.addEventListener('click', function () { reveal(c); pick(c, false); center(c); });
+        li.appendChild(b); ul.appendChild(li);
+      });
+    }
+    function add(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; panel.appendChild(e); return e; }
+  }
+
+  function reveal(n) { for (var p = n.parent; p; p = p.parent) p.open = true; }
+  function apply() { view.setAttribute('transform', 'translate(' + t.x + ' ' + t.y + ') scale(' + t.k + ')'); }
+  function center(n) { var r = stage.getBoundingClientRect(); layout(); t.x = r.width / 2 - n.x * t.k; t.y = r.height / 2 - n.y * t.k; apply(); }
+  function fit() {
+    layout();
+    var vis = []; (function w(n) { vis.push(n); visibleKids(n).forEach(w); })(ROOT);
+    var x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    vis.forEach(function (n) { x0 = Math.min(x0, n.x - n.w / 2); x1 = Math.max(x1, n.x + n.w / 2); y0 = Math.min(y0, n.y - BOX_H); y1 = Math.max(y1, n.y + BOX_H); });
+    var r = stage.getBoundingClientRect();
+    t.k = Math.min(1.1, Math.max(0.2, Math.min((r.width - 32) / (x1 - x0), (r.height - 32) / (y1 - y0))));
+    t.x = r.width / 2 - ((x0 + x1) / 2) * t.k; t.y = r.height / 2 - ((y0 + y1) / 2) * t.k; apply();
+  }
+
+  // Déplacement et zoom : pointeur, molette, pincement.
+  var pts = new Map(), last = null, pinch = 0;
+  stage.addEventListener('pointerdown', function (e) { if (e.target.closest && e.target.closest('.node')) return; stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, e); last = e; stage.classList.add('drag'); });
+  stage.addEventListener('pointermove', function (e) {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, e);
+    if (pts.size === 2) {
+      var a = Array.from(pts.values()), d = Math.hypot(a[0].clientX - a[1].clientX, a[0].clientY - a[1].clientY);
+      if (pinch) zoom(d / pinch, (a[0].clientX + a[1].clientX) / 2, (a[0].clientY + a[1].clientY) / 2);
+      pinch = d; return;
+    }
+    t.x += e.clientX - last.clientX; t.y += e.clientY - last.clientY; last = e; apply();
+  });
+  function up(e) { pts.delete(e.pointerId); pinch = 0; if (!pts.size) stage.classList.remove('drag'); else last = Array.from(pts.values())[0]; }
+  stage.addEventListener('pointerup', up); stage.addEventListener('pointercancel', up);
+  function zoom(f, cx, cy) { var r = stage.getBoundingClientRect(), k = Math.min(2.5, Math.max(0.15, t.k * f)); f = k / t.k; t.x = cx - r.left - (cx - r.left - t.x) * f; t.y = cy - r.top - (cy - r.top - t.y) * f; t.k = k; apply(); }
+  stage.addEventListener('wheel', function (e) { e.preventDefault(); zoom(e.deltaY < 0 ? 1.12 : 0.89, e.clientX, e.clientY); }, { passive: false });
+
+  document.getElementById('open').addEventListener('click', function () { all.forEach(function (n) { n.open = true; }); draw(); fit(); });
+  document.getElementById('close').addEventListener('click', function () { all.forEach(function (n) { n.open = n.depth < 1; }); draw(); fit(); });
+  document.getElementById('fit').addEventListener('click', fit);
+  document.getElementById('q').addEventListener('input', function (e) {
+    var q = e.target.value.trim().toLowerCase(); hits = new Set();
+    if (q.length > 1) all.forEach(function (n) { if ((n.label + ' ' + (n.note || '')).toLowerCase().indexOf(q) >= 0) { hits.add(n); reveal(n); } });
+    draw(); if (hits.size) fit();
+  });
+  window.addEventListener('resize', fit);
+
+  // Avancement calculé depuis les tickets de la carte, jamais écrit à la main.
+  var tickets = all.filter(function (n) { return /^AG-\d+/.test(n.label); });
+  var counts = {}; tickets.forEach(function (n) { counts[n.status] = (counts[n.status] || 0) + 1; });
+  var bar = document.getElementById('bar');
+  ['fait', 'code', 'encours', 'bloque'].forEach(function (s) { if (!counts[s]) return; var i = document.createElement('i'); i.style.width = (100 * counts[s] / tickets.length) + '%'; i.style.background = statusColor(s); bar.appendChild(i); });
+  bar.setAttribute('aria-label', (counts.fait || 0) + ' tickets faits sur ' + tickets.length);
+  document.getElementById('count').textContent = (counts.fait || 0) + ' faits' + (counts.code ? ' + ' + counts.code + ' code' : '') + ' / ' + tickets.length + ' tickets';
+
+  function start() { var first = all.filter(function (n) { return n.label === 'Prochaine action'; })[0] || ROOT; selected = first; showPanel(first); draw(); fit(); }
+  start();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure.font = '500 13px "Hanken Grotesk", "Segoe UI", sans-serif'; draw(); fit(); });
+})();
+</script>
+</body>
+</html>
