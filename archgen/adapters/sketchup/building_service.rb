@@ -38,9 +38,17 @@ module Archgen
           @guard = TransactionGuard.new
         end
 
-        # Aucune écriture, aucune trace dans l'Undo. La cible arrive avec AG-013.
+        # Aucune écriture, aucune trace dans l'Undo. Avec une cible, l'aperçu part de la
+        # configuration enregistrée, relue et revérifiée comme avant une écriture.
         def preview(draft:, model: nil, target: nil)
-          prepared = prepare(draft)
+          base = nil
+          if target
+            loaded = verify_target(model, target)
+            return loaded unless loaded.ok?
+
+            base = loaded.value.config
+          end
+          prepared = prepare(draft, base: base)
           return prepared unless prepared.ok?
 
           config, plan = prepared.value

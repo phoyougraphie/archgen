@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1 id="title">Nouveau bâtiment</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Prêt</p>
+</header>
+
+<div id="summary" class="summary" tabindex="-1" hidden>
+  <h2>À corriger</h2>
+  <ul id="summary-list"></ul>
+</div>
+
+<main class="layout">
+  <form id="form" class="form" novalidate autocomplete="off">
+    <fieldset>
+      <legend>Projet</legend>
+      <div class="field wide"><label for="f-name">Nom</label><input id="f-name" data-path="/name" data-kind="text" maxlength="80"><p class="error" id="e-name" hidden></p></div>
+      <div class="field wide"><label for="f-profile">Style</label><select id="f-profile"></select><p id="profile-signature" class="hint"></p></div>
+      <div class="field"><label for="f-mode">Mode</label><select id="f-mode" data-path="/mode" data-kind="select"><option value="shell">Shell (surfaces)</option><option value="structural">Structural (murs épais)</option></select></div>
+      <div class="field"><label for="f-lod">Niveau de détail</label><select id="f-lod" data-path="/lod" data-kind="select-int"><option value="0">LOD 0, volume</option><option value="1">LOD 1, détails</option></select></div>
+      <div class="field"><label for="f-type">Type de bâtiment</label><select id="f-type" data-path="/building_type" data-kind="select"><option value="residential">Résidentiel</option><option value="mixed_use">Mixte</option></select></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Dimensions</legend>
+      <div class="field"><label for="f-width">Largeur (m)</label><input id="f-width" data-path="/footprint/width_m" data-kind="number" inputmode="decimal"></div>
+      <div class="field"><label for="f-depth">Profondeur (m)</label><input id="f-depth" data-path="/footprint/depth_m" data-kind="number" inputmode="decimal"></div>
+      <div class="field"><label for="f-count">Niveaux, RDC inclus</label><input id="f-count" data-path="/levels/count" data-kind="int" inputmode="numeric"></div>
+      <div class="field"><label for="f-height">Hauteur courante (m)</label><input id="f-height" data-path="/levels/height_m" data-kind="number" inputmode="decimal"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Façade</legend>
+      <div class="field"><label for="f-front">Travées avant et arrière</label><input id="f-front" data-path="/facade/front_bays" data-kind="int" inputmode="numeric"></div>
+      <div class="field"><label for="f-side">Travées latérales</label><input id="f-side" data-path="/facade/side_bays" data-kind="int" inputmode="numeric"></div>
+    </fieldset>
+
+    <details id="advanced">
+      <summary>Avancé</summary>
+      <fieldset>
+        <legend>Baies et entrée</legend>
+        <div class="field"><label for="f-wwidth">Largeur de fenêtre (m)</label><input id="f-wwidth" data-path="/facade/window_width_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-wheight">Hauteur de fenêtre (m)</label><input id="f-wheight" data-path="/facade/window_height_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-sill">Allège (m)</label><input id="f-sill" data-path="/facade/sill_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-margin">Marge de trame (m)</label><input id="f-margin" data-path="/facade/margin_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-entry">Travée d’entrée, à partir de 0</label><input id="f-entry" data-path="/facade/entry_bay" data-kind="int" inputmode="numeric"></div>
+        <div class="field"><label for="f-dwidth">Largeur de porte (m)</label><input id="f-dwidth" data-path="/facade/door_width_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-dheight">Hauteur de porte (m)</label><input id="f-dheight" data-path="/facade/door_height_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-jitter">Variation des baies (m)</label><input id="f-jitter" data-path="/facade/jitter_m" data-kind="number" inputmode="decimal"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Niveaux et structure</legend>
+        <div class="field wide"><label for="f-heights">Hauteurs par niveau (m), séparées par des points-virgules</label><input id="f-heights" data-path="/levels/heights_m" data-kind="list" inputmode="decimal"></div>
+        <div class="field"><label for="f-wall">Épaisseur de mur (m)</label><input id="f-wall" data-path="/structure/wall_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-slab">Épaisseur de dalle (m)</label><input id="f-slab" data-path="/structure/slab_m" data-kind="number" inputmode="decimal"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Toiture</legend>
+        <div class="field"><label for="f-roof">Type de toit</label><select id="f-roof"><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="hip">Croupe</option><option value="mansard">Mansarde</option></select></div>
+        <div class="field" data-roof="overhang_m"><label for="f-overhang">Débord (m)</label><input id="f-overhang" data-path="/roof/overhang_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field" data-roof="pitch_deg"><label for="f-pitch">Pente (°)</label><input id="f-pitch" data-path="/roof/pitch_deg" data-kind="number" inputmode="decimal"></div>
+        <div class="field" data-roof="lower_pitch_deg"><label for="f-lower">Pente basse (°)</label><input id="f-lower" data-path="/roof/lower_pitch_deg" data-kind="number" inputmode="decimal"></div>
+        <div class="field" data-roof="inset_m"><label for="f-inset">Retrait du brisis (m)</label><input id="f-inset" data-path="/roof/inset_m" data-kind="number" inputmode="decimal"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Matériaux et détails</legend>
+        <div class="field"><label for="f-mwall">Murs</label><select id="f-mwall" data-path="/materials/wall" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field"><label for="f-mroof">Toit</label><select id="f-mroof" data-path="/materials/roof" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field"><label for="f-mframes">Cadres</label><select id="f-mframes" data-path="/materials/frames" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field check"><input type="checkbox" id="f-cornice" data-path="/features/cornice" data-kind="check"><label for="f-cornice">Corniche</label></div>
+        <div class="field check"><input type="checkbox" id="f-balcony" data-path="/features/balcony" data-kind="check"><label for="f-balcony">Balcon</label></div>
+        <div class="field check"><input type="checkbox" id="f-surrounds" data-path="/features/surrounds" data-kind="check"><label for="f-surrounds">Encadrements</label></div>
+      </fieldset>
+      <fieldset>
+        <legend>Génération</legend>
+        <div class="field"><label for="f-seed">Graine</label><input id="f-seed" data-path="/seed" data-kind="int" inputmode="numeric"></div>
+        <div class="field"><label for="f-fidelity">Fidélité</label><select id="f-fidelity" data-path="/fidelity" data-kind="select"><option value="strict">Stricte</option><option value="plausible">Plausible</option><option value="creative">Créative</option></select></div>
+      </fieldset>
+    </details>
+  </form>
+
+  <section class="preview" aria-labelledby="preview-title">
+    <h2 id="preview-title">Aperçu</h2>
+    <p class="hint">Estimation 2D calculée par le moteur, à échelle commune. Aucune géométrie n’est créée.</p>
+    <p id="preview-summary" class="preview-summary"></p>
+    <figure>
+      <figcaption>Élévation avant (X, Z)</figcaption>
+      <svg id="elevation" role="img" aria-label="Élévation de la façade avant"></svg>
+    </figure>
+    <figure>
+      <figcaption>Plan (X, Y)</figcaption>
+      <svg id="plan" role="img" aria-label="Plan de l’emprise et de la toiture"></svg>
+    </figure>
+    <ul id="warnings" class="warnings"></ul>
+    <div class="actions">
+      <button type="button" id="reload" hidden>Recharger la sélection</button>
+      <button type="button" id="reset">Revenir aux valeurs du style</button>
+      <button type="button" id="generate" disabled aria-describedby="generate-note">Générer</button>
+    </div>
+    <p id="generate-note" class="hint">La génération depuis ce panneau arrive avec la prochaine version de développement.</p>
+  </section>
+</main>
+<script src="panel_logic.js"></script>
+<script src="panel.js"></script>
+</body>
+</html>

@@ -45,6 +45,8 @@ module Archgen
       adapters/sketchup/transaction_guard
       adapters/sketchup/building_service
       ui/target_tokens
+      ui/messages
+      ui/dialog_controller
     ].freeze
 
     def self.load_core
