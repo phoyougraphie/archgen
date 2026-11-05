@@ -21,6 +21,13 @@ module Archgen
       core/style_registry
       core/fidelity_rules
       core/config_resolver
+      geometry/types
+      geometry/footprint_solver
+      geometry/floor_planner
+      geometry/facade_solver
+      geometry/opening_solver
+      geometry/wall_builder
+      geometry/roof_solver
       composition
     ].freeze
 

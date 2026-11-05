@@ -31,10 +31,10 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-004 Profils — core/style_registry, fidelity_rules, config_resolver ; composition.rb seul lecteur de fichiers ; copies embarquées dans archgen/{schemas,styles} vérifiées identiques. U02 vert.
     - [fait] AG-005 Hasard — core/deterministic_random, canonical, quant. Goldens U03 vérifiés. Dép. AG-003.
   - J2 Enveloppe neutre — Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.
-    - [afaire] AG-006 Emprise et niveaux — Anneau CCW, repères, hauteurs, bandes de dalles. U04. Dép. AG-004, 005.
-    - [afaire] AG-007 Travées et percements — Centres, jitter, porte, distances. U05. Dép. AG-006.
-    - [afaire] AG-008 Murs et dalles — Grille Shell, onglets Structural, tableaux, 3 dalles. U06, U07. Dép. AG-007.
-    - [afaire] AG-009 Toitures — Plat, deux pans, croupe, mansarde. U08. Dép. AG-006.
+    - [fait] AG-006 Emprise et niveaux — geometry/types, footprint_solver, floor_planner. U04 vert.
+    - [fait] AG-007 Travées et percements — geometry/facade_solver, opening_solver. U05 vert.
+    - [fait] AG-008 Murs et dalles — geometry/wall_builder (FacadeGrid, Shell, Structural, dalles). U06 et U07 verts.
+    - [fait] AG-009 Toitures — geometry/roof_solver. U08 vert. Capacités gable, hip, mansard déclarées dans composition.rb.
     - [afaire] AG-010 Plan et budgets — Engine, plan sérialisable, PlanValidator, projection, budgets. U09, U10. Dép. AG-008, 009.
   - J3 Adaptateur et persistance — Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.
     - [afaire] AG-011 Writer — Writer isolé, unités, matériaux, sonde native. H02. Dép. AG-002, 010.
