@@ -13,8 +13,10 @@
 
   var state = {
     mode: 'new', overrides: {}, profiles: [], profile: null, baseProfile: null, targetToken: null,
-    counter: 0, latestPreview: null, pending: {}, timer: null, localErrors: {}, lastConfig: null
+    counter: 0, latestPreview: null, pending: {}, timer: null, localErrors: {}, lastConfig: null,
+    previewReady: false, previewDraft: null, confirmation: null, busy: false, cooling: false, editStale: false, notice: null, keptDraft: null, pendingMessage: null
   };
+  var COOLDOWN_MS = 700;
 
   var fields = Array.prototype.slice.call(document.querySelectorAll('[data-path]'));
   var knownPaths = fields.map(function (el) { return el.dataset.path; }).concat(['/roof/type', '/profile']);
@@ -22,7 +24,10 @@
     title: byId('title'), status: byId('status'), summary: byId('summary'), summaryList: byId('summary-list'),
     profile: byId('f-profile'), signature: byId('profile-signature'), roof: byId('f-roof'),
     previewSummary: byId('preview-summary'), elevation: byId('elevation'), plan: byId('plan'), warnings: byId('warnings'),
-    reload: byId('reload'), reset: byId('reset'), previewBox: document.querySelector('.preview')
+    reload: byId('reload'), reset: byId('reset'), previewBox: document.querySelector('.preview'),
+    write: byId('generate'), newBuilding: byId('new-building'), confirm: byId('confirm'),
+    confirmMessage: byId('confirm-message'), confirmChanges: byId('confirm-changes'), confirmChangesTitle: byId('confirm-changes-title'),
+    confirmYes: byId('confirm-yes'), confirmNo: byId('confirm-no')
   };
 
   function byId(id) { return document.getElementById(id); }
@@ -50,9 +55,36 @@
     if (action === 'init') { onInit(response); }
     else if (action === 'load_selection') { onSelection(response); }
     else if (action === 'preview') { onPreview(response); }
+    else if (action === 'generate') { onWritten(response, 'Bâtiment créé.'); }
+    else if (action === 'regenerate') { onWritten(response, 'Bâtiment régénéré.'); }
   };
 
   window.archgenSetMode = function (mode) { startMode(mode); };
+
+  // Ruby prévient : annulation, rétablissement, sélection, document, enregistrement.
+  window.archgenNotify = function (json) {
+    var notice = JSON.parse(json);
+    closeConfirm();
+    state.confirmation = null;
+    if (state.mode !== 'edit') {
+      if (notice.reason === 'document') { requestPreview(); }
+      updateWrite();
+      return;
+    }
+    // Enregistrer change l'identité du document : la sélection se recharge sans perte.
+    if (notice.reason === 'saved') {
+      if (!state.busy) {
+        state.keptDraft = { overrides: state.overrides, profile: state.profile };
+        send('load_selection');
+      }
+      return;
+    }
+    state.editStale = true;
+    el.previewBox.classList.add('is-stale');
+    setStatus('Cible périmée', true);
+    showGeneralMessage(notice.message);
+    updateWrite();
+  };
 
   // --- Démarrage
 
@@ -82,11 +114,32 @@
     state.overrides = {};
     state.localErrors = {};
     state.targetToken = null;
-    el.reload.hidden = mode !== 'edit';
-    el.title.textContent = mode === 'edit' ? 'Modifier le bâtiment sélectionné' : 'Nouveau bâtiment';
+    state.confirmation = null;
+    state.editStale = false;
+    state.previewReady = false;
+    state.notice = null;
+    closeConfirm();
+    showMode();
     if (mode === 'edit') { send('load_selection'); return; }
     chooseProfile(state.profiles[0]);
     requestPreview();
+  }
+
+  function showMode() {
+    var edit = state.mode === 'edit';
+    el.reload.hidden = !edit;
+    el.newBuilding.hidden = !edit;
+    el.title.textContent = edit ? 'Modifier le bâtiment sélectionné' : 'Nouveau bâtiment';
+    el.write.textContent = edit ? 'Régénérer' : 'Générer';
+    el.reset.textContent = edit ? 'Annuler mes modifications' : 'Revenir aux valeurs du style';
+    updateWrite();
+  }
+
+  function updateWrite() {
+    el.write.disabled = !L.canWrite({
+      mode: state.mode, busy: state.busy, cooling: state.cooling, editStale: state.editStale, previewReady: state.previewReady,
+      localErrorCount: Object.keys(state.localErrors).length, confirmation: state.confirmation
+    });
   }
 
   function chooseProfile(profile) {
@@ -100,22 +153,49 @@
   }
 
   function onSelection(response) {
+    var kept = state.keptDraft;
+    state.keptDraft = null;
     if (!response.ok) {
+      state.targetToken = null;
+      state.previewReady = false;
+      state.editStale = true;
       showFailure(response.diagnostics);
       setStatus('Édition indisponible : rechargez la sélection.', true);
+      updateWrite();
       return;
     }
-    state.targetToken = response.result.target_token;
-    state.baseProfile = response.result.config.profile;
+    enterEdit(response.result.target_token, response.result.config);
+    // Un enregistrement ne doit pas effacer les réglages encore non appliqués.
+    if (kept) {
+      state.overrides = kept.overrides;
+      state.profile = kept.profile;
+      if (kept.profile) { el.profile.value = kept.profile.id; }
+      fields.forEach(function (field) {
+        var path = field.dataset.path;
+        if (Object.prototype.hasOwnProperty.call(kept.overrides, path)) { writeField(field, kept.overrides[path]); }
+      });
+    }
+    requestPreview();
+  }
+
+  // Une racine connue : création réussie, régénération réussie ou sélection rechargée.
+  function enterEdit(token, config) {
+    state.mode = 'edit';
+    state.targetToken = token;
+    state.baseProfile = config.profile;
     state.profile = null;
     state.overrides = {};
-    var known = findProfile(response.result.config.profile.id);
+    state.localErrors = {};
+    state.editStale = false;
+    state.confirmation = null;
+    showMode();
+    showLocalErrors();
+    var known = findProfile(config.profile.id);
     if (known) {
       el.profile.value = known.id;
       el.signature.textContent = known.signature;
     }
-    fillForm(response.result.config);
-    requestPreview();
+    fillForm(config);
   }
 
   // --- Saisie
@@ -143,6 +223,7 @@
       showLocalErrors();
       markStale('Saisie invalide : aperçu non mis à jour.');
       clearTimeout(state.timer);
+      updateWrite();
       return;
     }
     delete state.localErrors[path];
@@ -154,6 +235,8 @@
   function onProfileChange() {
     var profile = findProfile(el.profile.value);
     chooseProfile(profile);
+    // Revenir au style enregistré n'est pas un changement de style.
+    if (state.mode === 'edit' && state.baseProfile && profile.id === state.baseProfile.id) { state.profile = null; }
     state.overrides = L.clearStyleOverrides(state.overrides);
     state.localErrors = {};
     showLocalErrors();
@@ -183,30 +266,153 @@
     state.timer = setTimeout(requestPreview, DEBOUNCE_MS);
   }
 
+  // Toute nouvelle saisie ferme la confirmation : elle ne vaut que pour l'aperçu montré.
   function markStale(text) {
+    state.previewReady = false;
+    state.confirmation = null;
+    state.notice = null;
+    closeConfirm();
     el.previewBox.classList.add('is-stale');
     setStatus(text, Object.keys(state.localErrors).length > 0);
+    updateWrite();
   }
 
   function requestPreview() {
     if (Object.keys(state.localErrors).length > 0) { return; }
-    setStatus('Validation en cours');
-    var payload = { draft: L.buildDraft(state.overrides, state.profile) };
+    if (state.mode === 'edit' && !state.targetToken) { return; }
+    if (!state.notice) { setStatus('Validation en cours'); }
+    state.previewReady = false;
+    state.confirmation = null;
+    updateWrite();
+    state.previewDraft = L.buildDraft(state.overrides, state.profile);
+    var payload = { draft: state.previewDraft };
     if (state.targetToken) { payload.target_token = state.targetToken; }
     state.latestPreview = send('preview', payload);
+  }
+
+  // --- Écriture
+
+  function onWriteClick() {
+    if (el.write.disabled) { return; }
+    if (state.mode === 'edit') { openConfirm(); return; }
+    startWriting();
+    send('generate', { draft: state.previewDraft });
+  }
+
+  function startWriting() {
+    state.busy = true;
+    state.cooling = true;
+    closeConfirm();
+    setStatus('Écriture en cours');
+    updateWrite();
+  }
+
+  // Le second clic d'un double clic arrive après la réponse : il ne doit rien déclencher.
+  function endWriting() {
+    state.busy = false;
+    setTimeout(function () {
+      state.cooling = false;
+      updateWrite();
+    }, COOLDOWN_MS);
+  }
+
+  function openConfirm() {
+    var confirmation = state.confirmation;
+    el.confirmMessage.textContent = confirmation.message;
+    el.confirmChanges.textContent = '';
+    confirmation.changes.forEach(function (change) {
+      var item = document.createElement('li');
+      item.textContent = change.label + ' : ' + change.from + ' → ' + change.to;
+      el.confirmChanges.appendChild(item);
+    });
+    el.confirmChanges.hidden = confirmation.changes.length === 0;
+    el.confirmChangesTitle.textContent = confirmation.changes.length === 0 ? 'Aucun réglage ne change : la géométrie sera recréée à l’identique.' : 'Changements';
+    el.confirm.hidden = false;
+    el.write.disabled = true;
+    el.confirmChanges.scrollTop = 0;
+    el.confirmYes.focus();
+    el.confirmChanges.scrollTop = 0;
+  }
+
+  function closeConfirm() {
+    el.confirm.hidden = true;
+  }
+
+  function onConfirmYes() {
+    var confirmation = state.confirmation;
+    if (!confirmation || state.busy) { return; }
+    state.confirmation = null;
+    startWriting();
+    send('regenerate', { draft: state.previewDraft, target_token: state.targetToken, confirmation_token: confirmation.token });
+  }
+
+  // Annuler garde le brouillon et la sélection ; confirmer exigera un aperçu frais.
+  function onConfirmNo() {
+    closeConfirm();
+    requestPreview();
+    el.write.focus();
+  }
+
+  function onWritten(response, successText) {
+    endWriting();
+    if (response.ok) {
+      state.notice = successText + ' Révision ' + response.result.revision + '.';
+      clearDiagnostics();
+      enterEdit(response.result.target_token, response.result.config);
+      requestPreview();
+      return;
+    }
+    var recovery = L.recoveryFor(response.diagnostics);
+    showFailure(response.diagnostics);
+    if (recovery === 'preview') {
+      // Le brouillon est conservé : on redemande un aperçu frais, sans écrire.
+      state.pendingMessage = response.diagnostics.map(function (d) { return d.message; })[0];
+      requestPreview();
+      showGeneralMessage(state.pendingMessage);
+      return;
+    }
+    if (recovery === 'reload') { state.editStale = true; }
+    updateWrite();
+    el.summary.focus();
+  }
+
+  function showGeneralMessage(text) {
+    el.summaryList.textContent = '';
+    var item = document.createElement('li');
+    item.textContent = text;
+    el.summaryList.appendChild(item);
+    el.summary.hidden = false;
   }
 
   // --- Réponses
 
   function onPreview(response) {
     if (!L.isCurrent(response.request_id, state.latestPreview)) { return; }
+    var kept = L.messageToKeep(state.pendingMessage, state.editStale, el.summary.hidden ? null : generalMessageIfAny());
+    state.pendingMessage = null;
     clearDiagnostics();
-    if (!response.ok) { showFailure(response.diagnostics); return; }
+    if (!response.ok) {
+      state.previewReady = false;
+      state.confirmation = null;
+      showFailure(response.diagnostics);
+      if (L.recoveryFor(response.diagnostics) === 'reload') { state.editStale = true; }
+      updateWrite();
+      return;
+    }
     el.previewBox.classList.remove('is-stale');
+    state.previewReady = true;
+    state.confirmation = response.result.confirmation || null;
     fillForm(response.result.config);
     draw(response.result);
     showWarnings(response.diagnostics);
-    setStatus('Aperçu prêt');
+    setStatus(state.notice || 'Aperçu prêt');
+    if (kept) { showGeneralMessage(kept); }
+    updateWrite();
+  }
+
+  function generalMessageIfAny() {
+    var first = el.summaryList.firstChild;
+    return first && !first.querySelector('button') ? first.textContent : null;
   }
 
   function showFailure(diagnostics) {
@@ -424,9 +630,23 @@
   el.profile.addEventListener('change', onProfileChange);
   el.roof.addEventListener('change', onRoofChange);
   el.reload.addEventListener('click', function () { startMode('edit'); });
+  el.newBuilding.addEventListener('click', function () { startMode('new'); });
+  el.write.addEventListener('click', onWriteClick);
+  el.confirmYes.addEventListener('click', onConfirmYes);
+  el.confirmNo.addEventListener('click', onConfirmNo);
   el.reset.addEventListener('click', function () {
     state.overrides = {};
     state.localErrors = {};
+    state.notice = null;
+    closeConfirm();
+    if (state.mode === 'edit' && state.baseProfile) {
+      state.profile = null;
+      var saved = findProfile(state.baseProfile.id);
+      if (saved) {
+        el.profile.value = saved.id;
+        el.signature.textContent = saved.signature;
+      }
+    }
     showLocalErrors();
     requestPreview();
   });

@@ -86,7 +86,6 @@ class DialogControllerTest < Minitest::Test
 
   def test_unknown_action_refused
     assert_refused call('eval'), 'unknown_action'
-    assert_refused call('generate', 'draft' => draft), 'unknown_action'
     assert_refused call('__send__'), 'unknown_action'
     assert_nothing_written
   end
@@ -255,6 +254,235 @@ class DialogControllerTest < Minitest::Test
     response = call('preview', 'draft' => { 'schema_version' => 1 }, 'target_token' => token)
     assert_refused response, 'selection_changed'
     assert_equal 'Le bâtiment sélectionné a changé. Rechargez la sélection.', response['diagnostics'].first['message']
+  end
+
+  # --- Générer
+
+  def generated(fields = {})
+    response = call('generate', { 'draft' => draft(name: 'G', **fields) }, request_id: 'g1')
+    assert_equal true, response['ok'], response.inspect
+    response['result']
+  end
+
+  def edit_draft(**fields)
+    { 'schema_version' => 1 }.merge(fields.transform_keys(&:to_s))
+  end
+
+  def test_generate_creates_selects_and_gives_a_token
+    result = generated
+    assert_equal 1, model.instances.size
+    assert_equal [model.instances.first], model.selection.to_a
+    assert_equal 1, result['revision']
+    assert_equal 'G', result['name']
+    assert_match(/\A\h{32}\z/, result['target_token'])
+    assert_equal 'G', result['config']['name']
+  end
+
+  def test_same_request_runs_once
+    first = call('generate', { 'draft' => draft }, request_id: 'dbl')
+    second = call('generate', { 'draft' => draft }, request_id: 'dbl')
+    assert_equal first, second
+    assert_equal 1, model.instances.size
+    assert_equal 2, model.operations.size, 'une seule opération : start et commit'
+  end
+
+  def test_write_during_a_write_is_refused
+    bridge = nil
+    inner = nil
+    reentrant = Object.new
+    reentrant.define_singleton_method(:create) do |**|
+      inner = bridge.dispatch(JSON.generate('v' => 1, 'request_id' => 'in', 'action' => 'generate', 'payload' => { 'draft' => {} }))
+      Archgen::Core::Result.fail([Archgen::Core::Diagnostic.error('E_WRITE', '/model', reason: 'write_failed')])
+    end
+    bridge = Archgen::UI::DialogController.new(service: reentrant, registry: registry, materials: TestData.materials, model_provider: -> { model })
+    bridge.dispatch(JSON.generate('v' => 1, 'request_id' => 'out', 'action' => 'generate', 'payload' => { 'draft' => {} }))
+    assert_equal 'operation_in_progress', inner['diagnostics'].first['params']['reason']
+  end
+
+  def test_rejected_generate_writes_nothing
+    response = call('generate', 'draft' => draft(facade: { 'window_width_m' => 3.0 }))
+    assert_equal false, response['ok']
+    assert_nothing_written
+  end
+
+  def test_generate_draft_must_be_an_object
+    assert_refused call('generate', 'draft' => 'texte'), 'invalid_envelope'
+    assert_refused call('generate'), 'invalid_envelope'
+    assert_refused call('regenerate', 'draft' => 12), 'invalid_envelope'
+    assert_nothing_written
+  end
+
+  # --- Régénérer et confirmation
+
+  def edit_preview(token, draft_body)
+    response = call('preview', 'draft' => draft_body, 'target_token' => token)
+    assert_equal true, response['ok'], response.inspect
+    response['result']['confirmation']
+  end
+
+  def regenerate(token, draft_body, confirmation)
+    call('regenerate', { 'draft' => draft_body, 'target_token' => token, 'confirmation_token' => confirmation }, request_id: "m#{rand_id}")
+  end
+
+  def rand_id
+    @rand_id = (@rand_id || 0) + 1
+  end
+
+  def test_creation_preview_has_no_confirmation
+    assert_nil call('preview', 'draft' => draft)['result']['confirmation']
+  end
+
+  def test_edit_preview_gives_the_contract_warning_and_changes
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft(footprint: { 'width_m' => 14 }))
+    assert_equal 120, confirmation['expires_in_s']
+    assert_equal 'La géométrie générée de ce bâtiment sera remplacée. Placez les ajouts à conserver dans des groupes séparés.', confirmation['message']
+    assert_equal [{ 'path' => '/footprint/width_m', 'label' => 'Largeur', 'from' => '12', 'to' => '14' }], confirmation['changes']
+  end
+
+  def test_style_change_summary_names_style_and_materials
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft(profile: { 'id' => 'brutalist', 'revision' => 1 }))
+    labels = confirmation['changes'].to_h { |c| [c['label'], [c['from'], c['to']]] }
+    assert_equal %w[Haussmannien Brutaliste], labels['Style']
+    assert_equal ['Pierre calcaire', 'Béton brut'], labels['Matériau des murs']
+    assert_equal %w[Mansarde Plat], labels['Type de toit']
+    assert_equal 'Style', confirmation['changes'].first['label'], 'le style apparaît en premier'
+  end
+
+  def test_regenerate_writes_once_and_gives_a_new_token
+    token = generated['target_token']
+    body = edit_draft(footprint: { 'width_m' => 14 })
+    response = regenerate(token, body, edit_preview(token, body)['token'])
+    assert_equal true, response['ok'], response.inspect
+    assert_equal 2, response['result']['revision']
+    refute_equal token, response['result']['target_token']
+    assert_equal 14.0, response['result']['config']['footprint']['width_m']
+  end
+
+  def test_confirmation_is_single_use
+    token = generated['target_token']
+    body = edit_draft(footprint: { 'width_m' => 14 })
+    confirmation = edit_preview(token, body)['token']
+    assert_equal true, regenerate(token, body, confirmation)['ok']
+    before = model.operations.size
+    replay = regenerate(token, body, confirmation)
+    assert_refused replay, 'confirmation_unknown'
+    assert_equal 'E_CONFIRMATION_STALE', replay['diagnostics'].first['code']
+    assert_equal before, model.operations.size
+  end
+
+  def test_confirmation_is_refused_for_another_draft_and_burned
+    token = generated['target_token']
+    body = edit_draft(footprint: { 'width_m' => 14 })
+    confirmation = edit_preview(token, body)['token']
+    before = model.operations.size
+    assert_refused regenerate(token, edit_draft(footprint: { 'width_m' => 15 }), confirmation), 'confirmation_mismatch'
+    assert_refused regenerate(token, body, confirmation), 'confirmation_unknown'
+    assert_equal before, model.operations.size
+  end
+
+  def test_name_is_part_of_the_confirmed_draft
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft(name: 'A'))['token']
+    assert_refused regenerate(token, edit_draft(name: 'B'), confirmation), 'confirmation_mismatch'
+  end
+
+  def test_expired_confirmation_refused_without_writing
+    now = 1000.0
+    controller.confirmations.clock = -> { now }
+    token = generated['target_token']
+    body = edit_draft
+    confirmation = edit_preview(token, body)['token']
+    now += 121
+    before = model.operations.size
+    assert_refused regenerate(token, body, confirmation), 'confirmation_expired'
+    assert_equal before, model.operations.size
+  end
+
+  def test_confirmation_valid_until_the_limit
+    now = 1000.0
+    controller.confirmations.clock = -> { now }
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    now += 119
+    assert_equal true, regenerate(token, edit_draft, confirmation)['ok']
+  end
+
+  def test_new_preview_replaces_the_previous_confirmation
+    token = generated['target_token']
+    old = edit_preview(token, edit_draft)['token']
+    fresh = edit_preview(token, edit_draft)['token']
+    assert_refused regenerate(token, edit_draft, old), 'confirmation_unknown'
+    assert_equal true, regenerate(token, edit_draft, fresh)['ok'], 'un faux jeton ne brûle pas la confirmation active'
+  end
+
+  def test_forged_confirmation_refused
+    token = generated['target_token']
+    edit_preview(token, edit_draft)
+    assert_refused regenerate(token, edit_draft, 'forgé'), 'confirmation_unknown'
+    assert_refused regenerate(token, edit_draft, nil), 'confirmation_unknown'
+  end
+
+  def test_other_document_refused_before_consuming
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    model.guid = 'autre-document'
+    before = model.operations.size
+    assert_refused regenerate(token, edit_draft, confirmation), 'other_model'
+    assert_equal before, model.operations.size
+  end
+
+  def test_selection_changed_invalidates_confirmation
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    model.selection.clear
+    assert_equal true, controller.selection_changed(model)
+    assert_refused regenerate(token, edit_draft, confirmation), 'confirmation_unknown'
+  end
+
+  def test_selection_back_on_target_changes_nothing
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    assert_equal false, controller.selection_changed(model)
+    assert_equal true, regenerate(token, edit_draft, confirmation)['ok']
+  end
+
+  def test_selection_ignored_without_edit_target
+    model.selection.clear
+    assert_equal false, controller.selection_changed(model)
+  end
+
+  def test_undo_redo_invalidate_confirmation
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    controller.invalidate
+    assert_refused regenerate(token, edit_draft, confirmation), 'confirmation_unknown'
+  end
+
+  def test_document_change_clears_tokens
+    token = generated['target_token']
+    controller.invalidate(document_changed: true)
+    assert_refused call('preview', 'draft' => edit_draft, 'target_token' => token), 'unknown_token'
+  end
+
+  def test_closing_the_session_forgets_everything
+    token = generated['target_token']
+    confirmation = edit_preview(token, edit_draft)['token']
+    controller.close_session
+    assert_refused regenerate(token, edit_draft, confirmation), 'unknown_token'
+    assert_equal false, controller.selection_changed(model)
+  end
+
+  def test_failed_write_consumes_the_confirmation
+    token = generated['target_token']
+    body = edit_draft(footprint: { 'width_m' => 14 })
+    confirmation = edit_preview(token, body)['token']
+    model.writer_behaviour = { reject_faces: true }
+    response = regenerate(token, body, confirmation)
+    assert_equal 'write_failed', response['diagnostics'].first['params']['reason']
+    model.writer_behaviour = {}
+    assert_refused regenerate(token, body, confirmation), 'confirmation_unknown'
   end
 
   def test_edit_style_change_requires_exact_revision

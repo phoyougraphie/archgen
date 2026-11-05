@@ -280,6 +280,10 @@ module FakeSketchUp
     def length
       size
     end
+
+    def add(entity)
+      push(entity)
+    end
   end
 
   # Document complet pour le service : journalise les appels de transaction.

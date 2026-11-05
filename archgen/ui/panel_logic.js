@@ -105,6 +105,26 @@
     return typeof requestId === 'string' && requestId === latestId;
   }
 
+  // Le bouton d'écriture n'est actif que sur un aperçu frais et sans action en cours.
+  function canWrite(s) {
+    if (s.busy || s.cooling || s.editStale || !s.previewReady || s.localErrorCount > 0) { return false; }
+    return s.mode === 'new' || Boolean(s.confirmation);
+  }
+
+  // Tout diagnostic de cible ou de confirmation dit quoi faire ensuite, sans perdre le brouillon.
+  // Un message survit à l'aperçu qu'il a demandé, ou tant que la cible reste périmée ; pas au-delà.
+  function messageToKeep(pending, editStale, current) {
+    if (pending) { return pending; }
+    return editStale ? current : null;
+  }
+
+  function recoveryFor(diagnostics) {
+    var codes = (diagnostics || []).map(function (d) { return d.code; });
+    if (codes.indexOf('E_TARGET_STALE') >= 0) { return 'reload'; }
+    if (codes.indexOf('E_CONFIRMATION_STALE') >= 0) { return 'preview'; }
+    return 'none';
+  }
+
   function nextRequestId(counter) {
     return 'r' + counter;
   }
@@ -177,6 +197,7 @@
     activeRoofFields: activeRoofFields, inactiveRoofFields: inactiveRoofFields,
     isCurrent: isCurrent, nextRequestId: nextRequestId, groupDiagnostics: groupDiagnostics,
     uniqueDiagnostics: uniqueDiagnostics, messageText: messageText,
+    canWrite: canWrite, recoveryFor: recoveryFor, messageToKeep: messageToKeep,
     commonScale: commonScale, extentOf: extentOf, summaryText: summaryText
   };
 }));

@@ -78,6 +78,24 @@
   same(L.messageText(unique[1]), 'N', 'message simple');
   same(L.uniqueDiagnostics(null), [], 'aucun diagnostic');
 
+  // Bouton d'écriture
+  var ready = { mode: 'new', previewReady: true, busy: false, cooling: false, editStale: false, localErrorCount: 0, confirmation: null };
+  function withState(change) { return Object.assign({}, ready, change); }
+  same(L.canWrite(ready), true, 'création prête');
+  same(L.canWrite(withState({ busy: true })), false, 'écriture en cours');
+  same(L.canWrite(withState({ cooling: true })), false, 'second clic d’un double clic');
+  same(L.canWrite(withState({ previewReady: false })), false, 'aperçu périmé');
+  same(L.canWrite(withState({ localErrorCount: 1 })), false, 'saisie invalide');
+  same(L.canWrite(withState({ mode: 'edit' })), false, 'édition sans confirmation');
+  same(L.canWrite(withState({ mode: 'edit', confirmation: { token: 'x' } })), true, 'édition prête');
+  same(L.canWrite(withState({ mode: 'edit', confirmation: { token: 'x' }, editStale: true })), false, 'cible périmée');
+  same(L.recoveryFor([{ code: 'E_TARGET_STALE' }]), 'reload', 'cible périmée : recharger');
+  same(L.recoveryFor([{ code: 'E_CONFIRMATION_STALE' }]), 'preview', 'confirmation périmée : nouvel aperçu');
+  same(L.recoveryFor([{ code: 'E_WRITE' }]), 'none', 'autre erreur');
+  same(L.messageToKeep('expirée', false, 'ancien'), 'expirée', 'message de l’aperçu demandé');
+  same(L.messageToKeep(null, true, 'Rechargez'), 'Rechargez', 'cible toujours périmée : notice gardée');
+  same(L.messageToKeep(null, false, 'Rechargez'), null, 'cible rechargée : notice retirée');
+
   // Échelle commune
   same(L.commonScale([{ width: 12, height: 20 }, { width: 12, height: 9 }], 240, 200), 10, 'une seule échelle');
   same(L.commonScale([{ width: 0, height: 0 }], 100, 100), 1, 'étendue nulle');

@@ -12,7 +12,7 @@ module Archgen
       }.freeze
 
       FIELDS = {
-        '/name' => 'Nom', '/profile' => 'Style', '/building_type' => 'Type de bâtiment', '/mode' => 'Mode', '/lod' => 'Niveau de détail',
+        '/name' => 'Nom', '/profile' => 'Style', '/profile/id' => 'Style', '/building_type' => 'Type de bâtiment', '/mode' => 'Mode', '/lod' => 'Niveau de détail',
         '/seed' => 'Graine', '/fidelity' => 'Fidélité',
         '/footprint/width_m' => 'Largeur', '/footprint/depth_m' => 'Profondeur',
         '/levels' => 'Hauteur totale', '/levels/count' => 'Niveaux', '/levels/height_m' => 'Hauteur courante', '/levels/heights_m' => 'Hauteurs par niveau',
@@ -127,6 +127,10 @@ module Archgen
         'abort_failed' => 'L’écriture a échoué et SketchUp n’a pas pu la défaire. Vérifiez le modèle avant de continuer.',
         'restore_incomplete' => 'L’écriture a échoué et le modèle n’a pas été entièrement restauré. Vérifiez le modèle avant de continuer.',
         'internal_error' => 'Une erreur inattendue est survenue. Le modèle n’a pas été modifié.',
+        # Confirmation
+        'confirmation_unknown' => 'Cette confirmation n’est plus valable. Un nouvel aperçu a été demandé.',
+        'confirmation_expired' => 'La confirmation a expiré. Un nouvel aperçu a été demandé.',
+        'confirmation_mismatch' => 'Les réglages ont changé depuis l’aperçu. Un nouvel aperçu a été demandé.',
         # Protocole
         'invalid_envelope' => 'Le panneau a envoyé une demande invalide. Rouvrez-le.',
         'unknown_action' => 'Le panneau a envoyé une demande inconnue. Rouvrez-le.',
@@ -141,6 +145,24 @@ module Archgen
       }.freeze
 
       DEFAULT = 'Cette valeur n’est pas acceptée.'
+
+      ENUM_LABELS = {
+        '/roof/type' => { 'flat' => 'Plat', 'gable' => 'Deux pans', 'hip' => 'Croupe', 'mansard' => 'Mansarde' },
+        '/mode' => { 'shell' => 'Shell', 'structural' => 'Structural' },
+        '/building_type' => { 'residential' => 'Résidentiel', 'mixed_use' => 'Mixte' },
+        '/fidelity' => { 'strict' => 'Stricte', 'plausible' => 'Plausible', 'creative' => 'Créative' },
+        '/lod' => { 0 => 'LOD 0', 1 => 'LOD 1' }
+      }.freeze
+
+      # Texte imposé par le contrat de régénération, affiché à chaque remplacement.
+      REPLACE_WARNING = 'La géométrie générée de ce bâtiment sera remplacée. Placez les ajouts à conserver dans des groupes séparés.'
+
+      NOTICES = {
+        'undo' => 'Une annulation a eu lieu. Rechargez la sélection.',
+        'redo' => 'Un rétablissement a eu lieu. Rechargez la sélection.',
+        'selection' => 'La sélection a changé. Rechargez-la pour continuer l’édition.',
+        'document' => 'Le document a changé. Rechargez la sélection.'
+      }.freeze
 
       module_function
 
@@ -161,6 +183,21 @@ module Archgen
         rounded = value.is_a?(Float) ? value.round(2) : value
         rounded = rounded.to_i if rounded.is_a?(Float) && rounded == rounded.floor
         rounded.to_s.tr('.', ',')
+      end
+
+      # Une valeur lisible pour le résumé des changements.
+      def value_text(value, path = nil)
+        label = ENUM_LABELS.dig(path, value)
+        return label if label
+
+        case value
+        when true then 'oui'
+        when false then 'non'
+        when nil then '—'
+        when Array then value.empty? ? '—' : value.map { |v| decimal(v) }.join(' ; ')
+        when Numeric then decimal(value)
+        else value.to_s
+        end
       end
 
       def to_h(diagnostic)

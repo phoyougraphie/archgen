@@ -7,7 +7,7 @@ module Archgen
     module SketchUp
       BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, :target, keyword_init: true)
       LoadedBuilding = Struct.new(:record, :config, :target, keyword_init: true)
-      Preview = Struct.new(:config, :plan, :projection, :plan_digest, keyword_init: true)
+      Preview = Struct.new(:config, :plan, :projection, :plan_digest, :base, keyword_init: true)
 
       # Résout, calcule, vérifie le contexte et tient la transaction. Seul propriétaire
       # de l'opération : writer, ressources et dépôt n'en démarrent jamais.
@@ -54,7 +54,7 @@ module Archgen
           config, plan = prepared.value
           Core::Result.ok(
             Preview.new(config: config, plan: plan, projection: Core::PlanProjection.call(plan),
-                        plan_digest: Core::GeometryEngine.plan_digest(plan)),
+                        plan_digest: Core::GeometryEngine.plan_digest(plan), base: base),
             prepared.diagnostics
           )
         end

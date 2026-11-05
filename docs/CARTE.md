@@ -7,8 +7,10 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-017 (génération et régénération depuis le panneau : confirmation à usage unique de 120 s, requête unique, observateurs de sélection et de document, rechargement après enregistrement ; H10 et reste de H07). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Prochaine action — AG-018 (cas adverses, budgets, mesures, rejeu LOD 1 d'Annuler/Rétablir/pannes : U10, U12, H06, H07, H11) ; AG-019 peut suivre en parallèle. Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 à D-06. L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/h10.rb, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
+  - Décisions ouvertes D-03 à D-06 — Après J5. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé), terrain intact ou remodelé (intact d'abord recommandé), ordre : terrain puis rue recommandé. (→ docs/DECISIONS.md)
   - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
   - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
@@ -25,6 +27,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 H06 et H07 — 10 pannes natives, aucun résidu ni ligne d'historique. H07 a trouvé un vrai défaut : jeton lié à l'objet Model, sans valeur sous Windows ; corrigé par le guid (ADR-18). H03 à H07 rejoués sur le code final. À faire en AG-017 : recharger la sélection après un enregistrement.
     - 2026-11-05 H08 — Réussi : 12 variantes, 248 cadres pour 4 définitions. Le recouvrement balcon/baie est inatteignable d'après les dégagements du contrat ; garde conservée et testée sur le solveur. À rejouer en AG-018 : Annuler, Rétablir et pannes en LOD 1.
     - 2026-11-05 H09 — Réussi après trois défauts corrigés (cote avec débord, message répété par baie, champs de toit visibles). Node absent du poste : JS testé dans le moteur du panneau via ArchgenPanelProbe.run_js_tests. Panneau et menu Édition se recouvrent en recette.
+    - 2026-11-05 H10 — Réussi après six défauts corrigés, dont deux vus seulement par la recette scriptée (champ à 12 pour un brouillon à 13 après enregistrement, notices jamais retirées). dialog.close est asynchrone sous Windows : rouvrir à l'étape suivante. Après un démarrage, attendre avant de coller dans la console : le presse-papiers peut être repris par SketchUp.
+    - 2026-11-05 Besoin ajouté — Générateur de rue et d'îlots au tracé (geste du Mur connecté YSKE, 1 à 3 accès de cour sur forme fermée) et terrassement sur terrain accidenté. Hors V0.1. (→ docs/RUE_ILOT_TERRAIN.md)
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
@@ -57,12 +61,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - J4 Styles et panneau — Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.
     - [fait] AG-015 Détails et profils — geometry/detail_solver, definitions partagées du writer, Resources#shared_definition ; trois profils publiés. U11 vert, H08 réussi sur Windows / 26.2.243, rendus dans docs/recette/img. (→ docs/recette/H08.md)
     - [fait] AG-016 Formulaire et aperçu — ui/{dialog_controller, messages, panel.rb, panel.html, panel.css, panel.js, panel_logic.js}. Générer reste désactivé. H09 réussi sur Windows / 26.2.243, 150 % émulé. (→ docs/recette/H09.md)
-    - [afaire] AG-017 Création et édition — Génération, transition, confirmation, requête unique. H10. Dép. AG-016.
+    - [fait] AG-017 Création et édition — ui/{confirmation_tokens, panel_observers}, actions generate et regenerate, confirmation, requête unique, sonde test/host/h10.rb. H10 réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
   - J5 Livraison — Matrice hôte, sécurité, budgets, export, RBZ installé. AG-018 à 020.
     - [afaire] AG-018 Sécurité et charge — Cas adverses, budgets, mesures. U10, U12, H06, H07, H11. Dép. AG-017.
     - [afaire] AG-019 Export et compatibilité — Matrice Windows/macOS, export Shell LOD 0. H01 à H10, H12. Dép. AG-017.
     - [afaire] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. P01 à P09. Dép. AG-018, 019.
-  - J6+ Extensions — Après J5 seulement, EXT-01 à 09 ; voir branche Extensions.
+  - J6+ Extensions — Après J5 seulement, EXT-01 à 10 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
@@ -75,7 +79,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - P08 Exploiter — Faces orientées, matériaux nommés, pièces organisées ; un aller-retour export documenté.
     - P09 Gérer les erreurs — Champ et cause expliqués ; aucune modification sur rejet ; échec d'écriture restauré.
   - Périmètre V0.1 — Une génération à la fois au niveau racine ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; 4 toits ; matériaux unis ; LOD 0 et 1 ; 3 profils jouables.
-  - Frontières — Structural ≠ calcul porteur ; Shell ≠ volume étanche. Pas de réglementaire, vitrage détaillé, intérieur, terrain, ville ni service distant. Pas de garantie moteur de jeu, UV, collisions.
+  - Frontières — Structural ≠ calcul porteur ; Shell ≠ volume étanche. Pas de réglementaire, vitrage détaillé, intérieur, terrain, ville ni service distant en V0.1 (rue, îlots et terrain prévus après J5). Pas de garantie moteur de jeu, UV, collisions.
   - Signatures — Haussmann : pierre, mansarde, corniche, balcon filant. Toulousain : brique foraine, tuile canal, encadrements. Brutaliste : béton, toit plat, grille, baies en retrait au LOD 1 Structural.
   - Recette de sortie — Fixture 12 × 9, 4 niveaux, 4 travées dans les deux modes ; déplacer, pivoter, copier, changer le style d'une seule instance ; Undo/Redo ; réouverture ; deux autres signatures.
 - Architecture — Noyau pur + adaptateur SketchUp (→ docs/ARCHITECTURE.md)
@@ -96,7 +100,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ComponentRepository — read, insert, swap ; appartenance, révision, contexte.
     - BuildingService — preview, create, load_building, load_selection, regenerate ; propriétaire de la transaction. Testé avec doubles et en natif.
     - TransactionGuard — run(model, name, instance:) ; une opération, abandon unique, relevé d'intégrité.
-  - UI — DialogController.dispatch(chaîne JSON) → réponse ; actions init, load_selection, preview ; jetons de cible ; confirmation en AG-017 ; l'UI ne reproduit aucune règle de faisabilité.
+  - UI — DialogController.dispatch(chaîne JSON) → réponse ; actions init, load_selection, preview, generate, regenerate ; jetons de cible et de confirmation ; observateurs natifs ; l'UI ne reproduit aucune règle de faisabilité.
   - Arborescence — archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.
   - Décisions ADR — Choix révisables par décision écrite (→ docs/DECISIONS.md)
     - ADR-01 — Génération hybride : plan indépendant + writer. Shell et Structural partagent les placements.
@@ -120,6 +124,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-19 — TransactionGuard : jamais imbriquée, abandon unique, relevé après abandon, restore_incomplete bloquant ; moteur plus récent non régénérable.
     - ADR-20 — W_DETAIL pour un détail sans emplacement ; corniche sur toit plat débordant refusée ; LOD 1 ouvert.
     - ADR-21 — Messages par raison dans UI::Messages, couverture testée ; logique JS isolée ; Diagnostic retiré du menu en AG-020.
+    - ADR-22 — Confirmation unique de 120 s ; Annuler redemande un aperçu ; enregistrer recharge sans perdre le brouillon ; autres événements = rechargement explicite.
+    - ADR-23 — Recettes de panneau scriptées quand c'est possible ; pilotage écran réservé aux contrôles qui l'exigent.
   - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
@@ -204,10 +210,10 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H04 — Sauver, rouvrir ; version future refusée. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
     - H05 — Copie partagée, A modifié : B intact, PID et transfo conservés. Réussi sur Windows / 26.2.243. (→ docs/recette/H05.md)
     - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté. Réussi sur Windows / 26.2.243. (→ docs/recette/H06-H07.md)
-    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture. Réussi sur Windows / 26.2.243, sauf confirmation (AG-017). (→ docs/recette/H06-H07.md)
+    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture. Réussi sur Windows / 26.2.243 ; partie panneau en H10. (→ docs/recette/H06-H07.md)
     - H08 — 3 profils en LOD 0/1 et Shell/Structural. Réussi sur Windows / 26.2.243. (→ docs/recette/H08.md)
     - H09 — Saisie rapide, invalide, clavier, hors ligne. Réussi sur Windows / 26.2.243, 150 % émulé, hors ligne non provoqué. (→ docs/recette/H09.md)
-    - H10 — Double clic, confirmation annulée puis refaite.
+    - H10 — Double clic, confirmation annulée puis refaite, observateurs, expiration, document. Réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
     - H11 — Mesures et 20 régénérations.
     - H12 — Export Shell LOD 0 : écart ≤1 %.
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
@@ -218,6 +224,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-04 Volumes et technique — Retraits, trame, sheds, façade rideau ; modernes, Industriel, High-tech.
   - EXT-05 Interior — Cloisons, escaliers, trémies.
   - EXT-06 Décor de jeu — Exporteur, UV, PBR, collisions, LOD 2.
-  - EXT-07 Rue et parcelles — Graphe de rues, placement déterministe.
+  - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. (→ docs/RUE_ILOT_TERRAIN.md)
   - EXT-08 Quartier — Densité, seeds par parcelle.
-  - EXT-09 Cartographie — Import géospatial, terrain, licences.
+  - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
+  - EXT-10 Terrain et terrassement — Terrain incliné ou accidenté : relevé d'altitudes, plateforme, déblai/remblai, soubassement, talus ; étagement par parcelle avec EXT-07. (→ docs/RUE_ILOT_TERRAIN.md)

@@ -54,8 +54,16 @@ class PanelAssetsTest < Minitest::Test
     assert_match(/id="status"[^>]*aria-live="polite"/, read_utf8(*UI_DIR, 'panel.html'))
   end
 
-  def test_write_button_stays_disabled_until_the_next_ticket
-    assert_match(/id="generate" disabled/, read_utf8(*UI_DIR, 'panel.html'))
+  def test_write_button_starts_disabled_until_a_preview_is_ready
+    assert_match(/id="generate"[^>]* disabled/, read_utf8(*UI_DIR, 'panel.html'))
+  end
+
+  def test_replacement_warning_is_the_contract_text
+    assert_includes read_utf8('docs', 'REGENERATION.md'), Archgen::UI::Messages::REPLACE_WARNING
+  end
+
+  def test_every_notice_reason_is_written
+    %w[undo redo selection document].each { |reason| assert Archgen::UI::Messages::NOTICES.key?(reason), reason }
   end
 
   def test_bridge_literal_escapes_line_separators

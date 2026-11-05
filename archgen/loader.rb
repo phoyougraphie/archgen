@@ -45,6 +45,7 @@ module Archgen
       adapters/sketchup/transaction_guard
       adapters/sketchup/building_service
       ui/target_tokens
+      ui/confirmation_tokens
       ui/messages
       ui/dialog_controller
     ].freeze

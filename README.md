@@ -15,7 +15,7 @@ ARCHGEN est une extension SketchUp Desktop qui génère des bâtiments paramétr
 | Modification ciblée, copies, annulation | [Régénération](docs/REGENERATION.md) |
 | Livraison et validation | [Roadmap](planning/ROADMAP.md), [tickets](planning/TASKS.md), [tests](docs/TESTING.md) |
 | Ruby, SketchUp, garde-fous et budgets | [Conventions](docs/RUBY_SKETCHUP.md), [sécurité et performances](docs/SECURITY_PERFORMANCE.md) |
-| Capacités après V0.1 | [Extensions](docs/FUTURE.md) |
+| Capacités après V0.1 | [Extensions](docs/FUTURE.md), [rue, îlots et terrain](docs/RUE_ILOT_TERRAIN.md) |
 
 **V0.1 :** une emprise rectangulaire, deux modes géométriques (Shell et Structural), deux niveaux de détail indépendants, quatre types de toit, trois profils jouables. Les 24 styles sont spécifiés ; seuls les trois profils V0.1 sont sélectionnables à la livraison.
 

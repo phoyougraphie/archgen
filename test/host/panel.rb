@@ -27,6 +27,37 @@ module ArchgenPanelProbe
     }
   end
 
+  # Relevé lisible de la recette H10 : racines ARCHGEN, révisions, définitions de bâtiment.
+  def roots(label)
+    model = Sketchup.active_model
+    list = model.entities.grep(Sketchup::ComponentInstance).select { |i| i.get_attribute('archgen.building', 'revision') }
+    detail = list.map do |i|
+      config = JSON.parse(i.get_attribute('archgen.building', 'config_json'))
+      "#{i.name} rev#{i.get_attribute('archgen.building', 'revision')} #{config['profile']['id']} #{config['footprint']['width_m']}x#{config['footprint']['depth_m']} pid#{i.persistent_id}"
+    end
+    selected = model.selection.map { |e| e.respond_to?(:persistent_id) ? e.persistent_id : e.class }
+    line = "#{label} : #{list.size} racine(s) [#{detail.join(' | ')}] selection #{selected} modifie #{model.modified?}"
+    @lines << line
+    File.binwrite(File.join(REPO, 'tmp', 'h10.txt'), "#{@lines.join("\n")}\n")
+    puts line
+  end
+
+  def place
+    Archgen::UI::Panel.instance_variable_get(:@dialog).set_position(300, 20)
+  end
+
+  # La prochaine confirmation consommée sera vue comme expirée ; `clock_back` rétablit l'heure.
+  def expire_confirmations
+    real = -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) }
+    Archgen::UI::Panel.controller.confirmations.clock = -> { real.call + 121 }
+    puts 'horloge avancee de 121 s'
+  end
+
+  def clock_back
+    Archgen::UI::Panel.controller.confirmations.clock = -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) }
+    puts 'horloge retablie'
+  end
+
   # Fenêtre étroite ; le zoom CSS émule une mise à l'échelle de 150 %, sans changer Windows.
   def narrow
     Archgen::UI::Panel.instance_variable_get(:@dialog).set_size(420, 640)

@@ -100,12 +100,22 @@
       <svg id="plan" role="img" aria-label="Plan de l’emprise et de la toiture"></svg>
     </figure>
     <ul id="warnings" class="warnings"></ul>
+    <section id="confirm" class="confirm" role="alertdialog" aria-labelledby="confirm-title" aria-describedby="confirm-message" tabindex="-1" hidden>
+      <h3 id="confirm-title">Confirmer le remplacement</h3>
+      <p id="confirm-message"></p>
+      <p id="confirm-changes-title" class="hint">Changements</p>
+      <ul id="confirm-changes" class="changes"></ul>
+      <div class="actions">
+        <button type="button" id="confirm-yes" class="primary">Remplacer</button>
+        <button type="button" id="confirm-no">Annuler</button>
+      </div>
+    </section>
     <div class="actions">
-      <button type="button" id="reload" hidden>Recharger la sélection</button>
+      <button type="button" id="generate" class="primary" disabled>Générer</button>
       <button type="button" id="reset">Revenir aux valeurs du style</button>
-      <button type="button" id="generate" disabled aria-describedby="generate-note">Générer</button>
+      <button type="button" id="reload" hidden>Recharger la sélection</button>
+      <button type="button" id="new-building" hidden>Nouveau bâtiment</button>
     </div>
-    <p id="generate-note" class="hint">La génération depuis ce panneau arrive avec la prochaine version de développement.</p>
   </section>
 </main>
 <script src="panel_logic.js"></script>

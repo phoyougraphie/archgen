@@ -5,6 +5,7 @@ Sketchup.require(File.join(__dir__, 'loader'))
 Archgen::Loader.load_core
 Archgen::Loader.load_adapter
 Archgen::Loader.load_internal('ui/diagnostic_dialog')
+Archgen::Loader.load_internal('ui/panel_observers')
 Archgen::Loader.load_internal('ui/panel')
 
 module Archgen
