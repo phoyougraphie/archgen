@@ -130,6 +130,7 @@ module ArchgenHostProbe
     check_bounds(definition, plan, data, report)
     check_organisation(model, definition, data, report)
     check_walls(definition, data, report)
+    check_edges(definition, stats, report)
     check_roof(definition, report)
     check_openings(model, plan, data, offset_m, report)
   end
@@ -185,6 +186,24 @@ module ArchgenHostProbe
       report.check("#{slab.name} manifold", slab.manifold?)
       report.near("#{slab.name} volume m3", 19.63008, slab.volume * (INCH**3), 0.001)
     end
+  end
+
+  # ADR-15 : seules les arêtes entre deux faces coplanaires de même matériau sont masquées.
+  def check_edges(definition, stats, report)
+    edges = all_edges(definition.entities)
+    wrong = edges.count { |edge| edge.hidden? != grid_edge?(edge) }
+    hidden = edges.count(&:hidden?)
+    report.check('Arêtes de grille masquées, contours visibles', wrong.zero?, "#{hidden} masquées sur #{edges.size}, #{wrong} erronées")
+    report.check('Compte des arêtes masquées', hidden == stats.hidden_edge_count, "#{hidden} / #{stats.hidden_edge_count}")
+  end
+
+  def all_edges(entities)
+    entities.grep(Sketchup::Edge) + entities.grep(Sketchup::Group).flat_map { |g| all_edges(g.entities) }
+  end
+
+  def grid_edge?(edge)
+    faces = edge.faces
+    faces.size == 2 && faces[0].material == faces[1].material && faces[0].normal.samedirection?(faces[1].normal)
   end
 
   def check_surface(group, id, normal, report)

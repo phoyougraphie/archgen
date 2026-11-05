@@ -16,6 +16,10 @@ module Archgen
           entity.is_a?(::Sketchup::Face)
         end
 
+        def edge?(entity)
+          entity.is_a?(::Sketchup::Edge)
+        end
+
         def color(red, green, blue)
           ::Sketchup::Color.new(red, green, blue)
         end

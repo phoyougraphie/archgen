@@ -7,8 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-012 (service de création, transaction, métadonnées, réouverture ; recettes H03, H04). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter) et D-02 (arêtes de façade). L'extension de dev reste installée et active dans son SketchUp 2026.
-  - Décision ouverte D-02 — Les arêtes de la grille de découpe traversent les façades. Option recommandée : les masquer dans le writer, comptes de faces inchangés. (→ docs/DECISIONS.md)
+  - Prochaine action — AG-012 (service de création, transaction, métadonnées, réouverture ; recettes H03, H04). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 (jitter). L'extension de dev reste installée et active dans son SketchUp 2026.
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Mesures de plan — Ruby 3.2.11 Windows, p95 calcul : Haussmann 12×9 Shell 7 ms, Structural 35 ms (cible 150 ms) ; 24×18 Structural 197 ms. Mesure indicative, la recette reste AG-018. (→ scripts/bench_plan.rb)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
@@ -20,6 +19,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 Ajouts — E_PLAN (ADR-11), refus de LOD 1 avant AG-015 (ADR-12), données embarquées (ADR-13).
     - 2026-11-05 H01 — Réussi sur SketchUp 26.2.243. Le noyau dans le Ruby embarqué 3.2.2 redonne les empreintes de plan exactes. L'ordre du menu Extensions varie d'un démarrage à l'autre : ne pas viser une position fixe en recette.
     - 2026-11-05 H02 — Réussi. Rapport de sonde écrit dans tmp/h02-<label>.txt (ignoré par Git) : plus fiable qu'une capture. Installer le RBZ puis redémarrer SketchUp pour charger un nouveau fichier du manifeste.
+    - 2026-11-05 D-02 tranchée — Arêtes de grille masquées (ADR-15), H02 rejoué et réussi.
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
@@ -107,6 +107,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-12 — LOD 1 refusé par le moteur jusqu'à AG-015.
     - ADR-13 — Copie embarquée des schémas, profils et matériaux, identité vérifiée par test.
     - ADR-14 — Ressources marquées archgen.resource ; tags sur les conteneurs de premier niveau ; homonyme utilisateur intact.
+    - ADR-15 — Le writer masque les arêtes entre faces coplanaires de même matériau ; plan et comptes inchangés.
   - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.

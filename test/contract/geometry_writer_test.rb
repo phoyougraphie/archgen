@@ -89,6 +89,63 @@ class GeometryWriterTest < Minitest::Test
     assert_equal 'ARCHGEN Béton brut', pan.material.name
   end
 
+  # --- Arêtes de grille (ADR-15)
+
+  def edges_of(entities, id)
+    wall(entities, id).entities.edges
+  end
+
+  def test_shell_hides_only_edges_between_two_cells
+    _, entities = write(plan('rect-neutre-shell'))
+    edges = edges_of(entities, 'front')
+    hidden, visible = edges.partition(&:hidden)
+    assert(hidden.all? { |e| e.faces.size == 2 })
+    assert(visible.all? { |e| e.faces.size == 1 }, 'contour et baies restent dessinés')
+    refute_empty hidden
+    refute_empty visible
+  end
+
+  def test_shell_hidden_edge_count_matches_cell_adjacencies
+    built = plan('rect-neutre-shell')
+    stats, entities = write(built)
+    # Murs latéraux : 4 cellules empilées, donc 3 arêtes internes.
+    assert_equal 3, edges_of(entities, 'right').count(&:hidden)
+    total = %w[front right rear left].sum { |id| edges_of(entities, id).count(&:hidden) }
+    assert_equal total, stats.hidden_edge_count
+  end
+
+  def test_structural_keeps_mitres_and_reveals_drawn
+    _, entities = write(plan('rect-neutre-structural'))
+    edges_of(entities, 'front').each do |edge|
+      assert_equal 2, edge.faces.size, 'pièce fermée'
+      normals = edge.faces.map { |f| Geo.unit_normal(f.points) }
+      coplanar = Geo.dot(normals[0], normals[1]) > 0.999999
+      assert_equal coplanar, edge.hidden
+    end
+    # Une arête de contour de baie reste visible : la baie se lit.
+    assert(edges_of(entities, 'front').any? { |e| !e.hidden })
+  end
+
+  def test_coplanar_faces_of_different_materials_keep_their_edge
+    surface = { 'type' => 'surface',
+                'vertices' => [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 1.0, 0.0], [0.0, 1.0, 0.0], [2.0, 0.0, 0.0], [2.0, 1.0, 0.0]],
+                'faces' => [{ 'indices' => [0, 1, 2, 3], 'material' => 'concrete' }, { 'indices' => [1, 4, 5, 2], 'material' => 'zinc' }] }
+    custom = { 'units' => 'm', 'definitions' => {}, 'metrics' => { 'expanded_face_count' => 2 },
+               'nodes' => [{ 'id' => 'building', 'category' => 'building', 'children' => [
+                 { 'id' => 'p', 'category' => 'slab', 'children' => [], 'primitive' => surface }
+               ] }] }
+    stats, = write(custom)
+    assert_equal 0, stats.hidden_edge_count
+  end
+
+  def test_hiding_edges_changes_neither_faces_nor_plan
+    built = plan('rect-neutre-structural')
+    before = GeometryEngine.plan_digest(built)
+    stats, = write(built)
+    assert_equal 709, stats.face_count
+    assert_equal before, GeometryEngine.plan_digest(built)
+  end
+
   # --- Échecs : levés, jamais masqués, pour l'abandon par le service
 
   def test_refused_face_raises

@@ -6,13 +6,15 @@ module Archgen
       # Toute anomalie remonte au service, qui abandonne l'opération.
       WriteError = Class.new(StandardError)
 
-      WriteStats = Struct.new(:face_count, :group_count, keyword_init: true)
+      WriteStats = Struct.new(:face_count, :group_count, :hidden_edge_count, keyword_init: true)
 
       # Traduit un plan validé en géométrie native dans une collection vide. Ne crée ni
       # transaction ni racine. Les mètres ne sont convertis qu'ici, une seule fois.
       class GeometryWriter
         METERS_PER_INCH = 0.0254
         NORMAL_MIN_DOT = 0.0
+        # Cosinus minimal entre normales pour traiter deux faces voisines comme coplanaires.
+        COPLANAR_MIN_COS = 1.0 - 1e-9
 
         def initialize(host: NativeHost)
           @host = host
@@ -20,7 +22,7 @@ module Archgen
 
         def write(plan, entities:, resources:)
           check_preconditions(plan, entities)
-          stats = WriteStats.new(face_count: 0, group_count: 0)
+          stats = WriteStats.new(face_count: 0, group_count: 0, hidden_edge_count: 0)
           plan['nodes'].first['children'].each { |node| write_node(node, entities, resources, stats) }
           expected = plan['metrics']['expanded_face_count']
           raise WriteError, "Faces écrites #{stats.face_count}, attendues #{expected}" unless stats.face_count == expected
@@ -48,6 +50,7 @@ module Archgen
           group.layer = tag if tag
           if node['primitive']
             stats.face_count += write_primitive(node, group.entities, resources)
+            stats.hidden_edge_count += hide_grid_edges(group.entities)
           else
             node['children'].each { |child| write_node(child, group.entities, resources, stats) }
           end
@@ -96,6 +99,27 @@ module Archgen
         def agrees?(face, expected)
           normal = face.normal
           (normal.x * expected[0]) + (normal.y * expected[1]) + (normal.z * expected[2]) > NORMAL_MIN_DOT
+        end
+
+        # La grille de découpe reste dans la topologie mais ne se dessine pas (ADR-15) :
+        # seules les arêtes entre deux faces coplanaires de même matériau sont masquées.
+        def hide_grid_edges(entities)
+          edges = entities.select { |entity| @host.edge?(entity) && grid_edge?(entity) }
+          edges.each { |edge| edge.hidden = true }
+          edges.size
+        end
+
+        def grid_edge?(edge)
+          faces = edge.faces
+          return false unless faces.size == 2
+
+          faces[0].material == faces[1].material && same_direction?(faces[0].normal, faces[1].normal)
+        end
+
+        def same_direction?(a, b)
+          dot = (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
+          lengths = Math.sqrt(((a.x * a.x) + (a.y * a.y) + (a.z * a.z)) * ((b.x * b.x) + (b.y * b.y) + (b.z * b.z)))
+          dot / lengths >= COPLANAR_MIN_COS
         end
 
         def check_count(node, entities, expected)

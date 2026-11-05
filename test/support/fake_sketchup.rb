@@ -16,12 +16,27 @@ module FakeSketchUp
       entity.is_a?(Face)
     end
 
+    def edge?(entity)
+      entity.is_a?(Edge)
+    end
+
     def color(red, green, blue)
       Color.new(red, green, blue)
     end
   end
 
   Color = Struct.new(:red, :green, :blue)
+
+  class Edge
+    attr_accessor :hidden
+    attr_reader :faces, :ends
+
+    def initialize(ends)
+      @ends = ends
+      @faces = []
+      @hidden = false
+    end
+  end
 
   class Face
     attr_accessor :material
@@ -62,6 +77,7 @@ module FakeSketchUp
 
       face = Face.new(points, flipped: @behaviour[:flip_all])
       @entities.items << face
+      points.each_with_index { |p, i| @entities.edge_between(p, points[(i + 1) % points.size]).faces << face }
       face
     end
   end
@@ -79,8 +95,17 @@ module FakeSketchUp
       @items.length
     end
 
+    # Comme le natif : arêtes et faces sont parcourues ensemble.
     def each(&block)
-      @items.each(&block)
+      (@items + edges).each(&block)
+    end
+
+    def edges
+      (@edges ||= {}).values
+    end
+
+    def edge_between(a, b)
+      (@edges ||= {})[[a, b].sort] ||= Edge.new([a, b])
     end
 
     def add_group
