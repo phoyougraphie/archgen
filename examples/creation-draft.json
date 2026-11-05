@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "name": "Mon immeuble",
+  "profile": {
+    "id": "haussmann"
+  },
+  "footprint": {
+    "width_m": 12,
+    "depth_m": 9
+  },
+  "levels": {
+    "count": 4
+  },
+  "mode": "shell",
+  "lod": 1
+}

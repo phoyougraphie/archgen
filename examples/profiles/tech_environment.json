@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "tech_environment",
+  "revision": 1,
+  "kind": "family",
+  "status": "internal",
+  "parent": {
+    "id": "generic",
+    "revision": 1
+  },
+  "family_id": "tech_environment",
+  "label": "Technique et environnemental",
+  "context": {
+    "period": "",
+    "regions": [],
+    "typologies": []
+  },
+  "requires": [],
+  "defaults": {},
+  "rules": []
+}

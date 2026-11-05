@@ -1,0 +1,28 @@
+# Tickets de développement
+
+Chaque bloc est un ticket importable. Dépendances = prérequis à valider. Les identifiants de recette renvoient à [TESTING](../docs/TESTING.md).
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-001 — Initialiser dépôt et CI Ruby** | — | Arborescence, version, Gemfile de dev, Rakefile, test smoke et matrice de poste. | `bundle exec rake test` fonctionne sans SketchUp ; CI Ruby 3.2 ; renseigner OS, versions hôtes accessibles et conventions. |
+| **AG-002 — Enregistrer l'extension** | AG-001 | Chargeur minimal, menu et HtmlDialog local de diagnostic, packaging de développement. | Installer le RBZ de développement ; activation/réouverture ne dédoublent pas le menu ; pas d'appel réseau ni erreur console. H01. |
+| **AG-003 — Validation des entrées** | AG-001 | Parseur JSON borné, diagnostic, BuildingConfig immuable, brouillon vs effectif. | Fixtures conformes ; clé inconnue, doublon, version future et type faux rejetés avec chemin ; empreinte indépendante du nom. U01. |
+| **AG-004 — Résoudre les profils** | AG-003 | Registre, héritage, choix actif/exact, règles de fidélité, fusion et transition de style ; tester avec capacités injectées. | Révision exacte, union capacités et fusion feuilles ; révision absente/cycle refusés ; les modes changent la sévérité, jamais une contrainte hard. U02. |
+| **AG-005 — Quantifier et dériver le hasard** | AG-003 | RNG par clé SHA-256, canonicalisation, valeurs sémantiques, tests de compatibilité. | Golden indépendant du parcours ; même hash pour clés réordonnées ; changement de clé/seed produit un autre tirage ; NaN/−0 traités. U03. |
+| **AG-006 — Emprise et niveaux** | AG-004, AG-005 | Rectangle CCW, repères, hauteurs uniformes/variables, bandes de dalles. | Fixture 12 × 9 : normales correctes, sommet 12,80 m, trois bandes ; rejeter dépassements. U04. |
+| **AG-007 — Travées et percements** | AG-006 | Centres, jitter borné, porte de substitution, distances et diagnostics. | Quatre centres attendus, 31 fenêtres + 1 porte ; dimensions trop grandes et collisions refusées avant plan. U05. |
+| **AG-008 — Murs et dalles** | AG-007 | Grille Shell, onglets Structural, tableaux et trois dalles. | Aires, volumes et bords orientés conformes ; aucune face dans l'axe d'un percement ; pas de seuil de mur. U06–U07. |
+| **AG-009 — Toitures** | AG-006 | Plat → deux pans → croupe → mansarde, pignons, débords et erreurs. | Tester carré et rectangle, plans et raccords ; rejeter inset invalide et rive sous Z=0. U08. |
+| **AG-010 — Contrat du plan et budgets** | AG-008, AG-009 | Engine, plan sérialisable, PlanValidator, projection aperçu et budgets. | Fixtures neutres déterministes ; solid invalide et budget rejetés ; modes partagent baies et silhouette. U09–U10. |
+| **AG-011 — Écrire le plan dans SketchUp** | AG-002, AG-010 | Writer isolé, unités, regroupements et matériaux ; sonde native dédiée. | Fixture neutre en pouces et en mètres UI donne mêmes cotes ; normales, trous et tags conformes. H02. |
+| **AG-012 — Créer et relire une racine** | AG-011 | Service de création, transaction, métadonnées, réouverture. | Une action Undo ; SKP rouvert retrouve effectif exact et métadonnées ; ressource utilisateur homonyme intacte. H03–H04. |
+| **AG-013 — Régénérer une instance** | AG-012 | Cible par jeton, sélection, copie, remplacement de définition, révision. | Cible pivotée et déplacée conserve PID/transfo lors d'une modification de dimensions ; copie intacte ; Undo/Redo restaure géométrie et config. H05. |
+| **AG-014 — Rejeter et restaurer** | AG-013 | Garde de transaction, vérifications de contexte, injection de fautes et version incompatible. | Faute au milieu d'écriture et après swap restaurée sans nouvelle opération ; cible supprimée, verrouillée, imbriquée ou autre document sans effet. H06–H07. |
+| **AG-015 — Détails et profils V0.1** | AG-014 | Cadres, corniche, balcon et encadrements ; activer les trois profils versionnés et fixtures LOD 1. | Signatures distinctes, vides traversants, cadre répété mutualisé, silhouette de base stable. U11, H08. |
+| **AG-016 — Relier formulaire et aperçu** | AG-015 | UI locale, validation, messages et protocoles init/lecture/aperçu. | Cotes et nombre de baies issus du plan ; réponse ancienne ignorée ; aperçu n'ajoute ni entité ni Undo. H09. |
+| **AG-017 — Relier création et édition** | AG-016 | Génération, transition, confirmation, requête unique et état périmé. | Double clic ne crée qu'une racine ; annulation sans effet ; confirmation expirée ou autre document refusé ; profil change selon la politique documentée. H10. |
+| **AG-018 — Recette de sécurité et charge** | AG-017 | Cas adverses, budgets, profils de charge, mesure de croissance. | U10/U12, H06–H07, H11 et seuils du contrat ; fournir mesures et corriger les écarts ou amender la cible par ADR justifiée avant sortie. |
+| **AG-019 — Recette export et compatibilité** | AG-017 | Matrice Windows/macOS, versions réellement testées ; export d'un Shell LOD 0 vers un outil choisi. | H01–H10 et H12 ; rapport cotes, orientations, matériaux, format/édition ; ne pas annoncer une plateforme non vérifiée. |
+| **AG-020 — Produire le RBZ V0.1** | AG-018, AG-019 | Paquet reproductible, journal de version, guide utilisateur, rapport de recette. | RBZ installé depuis un profil propre, fonctionnalités P01–P09 démontrées, limitations documentées ; contrôle final J5. |
+
+**Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

@@ -1,0 +1,17 @@
+# Roadmap à dépendances — V0.1 puis extensions
+
+Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer sur le profil interne neutre ; les données de style ne masquent jamais un défaut du noyau.
+
+| Jalon | Entrée | Tickets | Porte de sortie |
+|---|---|---|---|
+| J0 — Base | Dépôt prêt | AG-001–002 | Projet Ruby testable et panneau local installable sur un hôte de référence. |
+| J1 — Données | J0 | AG-003–005 | Brouillons et effectifs vérifiés, héritage générique, seed stable ; fixtures sans SketchUp. |
+| J2 — Enveloppe neutre | J1 | AG-006–010 | Shell et Structural ; découpes, dalles et quatre toits éprouvés en Ruby ; plans quantifiés et bornés. |
+| J3 — Adaptateur et persistance | J2 | AG-011–014 | Une racine native, aller-retour SKP, Undo/Redo, copie isolée et échecs restaurés. |
+| J4 — Styles et panneau | J3 | AG-015–017 | Trois signatures, réglages et aperçu réels, confirmation et diagnostics lisibles. |
+| J5 — Livraison | J4 | AG-018–020 | Matrice hôte, sécurité, budgets, export repère et RBZ installé. |
+| J6+ — Bibliothèque, intérieur, ville | J5 + contrats par capacité | EXT-01–09 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
+
+Les branches AG-004/005, AG-007/009 et AG-018/019 sont indépendantes une fois leurs prérequis satisfaits. Les dépendances dans [TASKS](TASKS.md) priment sur les numéros et permettent de commencer du Ruby pur avant de fermer J0 ; la table fixe l'ordre de validation des jalons. Attacher les éléments de preuve au ticket et garder une démo neutre de référence. Sans hôte disponible, continuer sur les tests purs ; ne pas franchir un jalon qui requiert la recette native.
+
+**Chemin critique produit :** charger et valider → plan neutre → géométrie SketchUp → sauvegarder et régénérer une cible → styles et UI → recette. Une idée nouvelle entre dans la liste des extensions ; modifier la V0.1 seulement avec une décision écrite, un test et les impacts sur les tickets.

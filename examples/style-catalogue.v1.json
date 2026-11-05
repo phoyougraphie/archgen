@@ -1,0 +1,409 @@
+{
+  "schema_version": 1,
+  "families": {
+    "ordered_facade": "Façade ordonnancée",
+    "masonry_vernacular": "Vernaculaire maçonné",
+    "timber_vernacular": "Ossature bois traditionnelle",
+    "historic_monumental": "Historique monumental",
+    "ornamental": "Décoratif géométrique ou organique",
+    "modern_modular": "Moderne modulaire",
+    "tech_environment": "Technique et environnemental"
+  },
+  "styles": [
+    {
+      "id": "haussmann",
+      "label": "Haussmannien",
+      "family_id": "ordered_facade",
+      "status": "active",
+      "context": "Paris, second XIXe siècle et prolongements",
+      "calibration": "5–7 ; 2,7–4,0 ; mansarde",
+      "geometry": "Baies verticales, trame régulière, hiérarchie RDC/étages, corniche et balcon filant selon niveau. V0.1 : mansarde simple et balcons 2/5 si présents.",
+      "materials": "Pierre claire, zinc ou ardoise, ferronnerie, bois peint.",
+      "history": "Ne pas traiter les baies panoramiques comme d'origine ; variantes immeuble courant, angle (ultérieur), post-haussmannien.",
+      "requires": [
+        "mansard",
+        "cornice",
+        "balcony"
+      ],
+      "acceptance": "À 5 niveaux : balcon au niveau 2 ; mansarde, pierre claire, pas de balcon 5."
+    },
+    {
+      "id": "toulousain",
+      "label": "Toulousain (brique)",
+      "family_id": "masonry_vernacular",
+      "status": "active",
+      "context": "Toulouse et Midi toulousain ; XVIIe–début XXe selon variante",
+      "calibration": "2–5 ; 2,7–3,8 ; 15–35°",
+      "geometry": "Façade plane, fenêtres verticales, deux pans ou croupe ; encadrement en V0.1, génoise ultérieure.",
+      "materials": "Brique foraine, terre cuite canal, pierre ponctuelle, enduit à la chaux.",
+      "history": "Maison populaire, immeuble urbain XIXe (défaut), hôtel particulier distincts ; génoise facultative.",
+      "requires": [
+        "gable",
+        "hip",
+        "surrounds"
+      ],
+      "acceptance": "Couverture deux pans en tuiles canal et mur brique ; variante croupe testable."
+    },
+    {
+      "id": "art_deco",
+      "label": "Art déco",
+      "family_id": "ornamental",
+      "status": "planned",
+      "context": "Europe et international, vers 1920–1940",
+      "calibration": "2–8 ; 2,8–4,0 ; 0–30°",
+      "geometry": "Retraits en gradins ; trame axiale ou angle courbe ; motifs de chevrons, éventails, reliefs.",
+      "materials": "Béton enduit, pierre, brique décorative, céramique, métal.",
+      "history": "Séparer immeuble géométrique et variante paquebot ; exclure les motifs végétaux fluides du profil strict.",
+      "requires": [
+        "setbacks",
+        "geometric_relief"
+      ],
+      "acceptance": "Le retrait reste derrière la façade de l'étage inférieur ; décor géométrique sans collision."
+    },
+    {
+      "id": "basque",
+      "label": "Basque",
+      "family_id": "timber_vernacular",
+      "status": "planned",
+      "context": "Pays basque ; distinguer ferme labourdine et néobasque",
+      "calibration": "2–3 ; 2,4–3,2 ; 25–45°",
+      "geometry": "Volume compact, pignon avant, grand débord ; pan de bois dépendant du sous-profil.",
+      "materials": "Enduit blanc, bois peint rouge ou vert, tuiles terre cuite, pierre.",
+      "history": "Éviter d'imposer le colombage à toutes les maisons ; usage et orientation du pignon varient.",
+      "requires": [
+        "gable_axis",
+        "timber_frame"
+      ],
+      "acceptance": "La variante sans bois ne contient aucune pièce de colombage."
+    },
+    {
+      "id": "provencal",
+      "label": "Provençal",
+      "family_id": "masonry_vernacular",
+      "status": "planned",
+      "context": "Provence, vernaculaire rural et villageois",
+      "calibration": "1–3 ; 2,4–3,2 ; 15–30°",
+      "geometry": "Volume simple, toit bas, débords modérés, baies petites à moyennes, volets.",
+      "materials": "Calcaire, enduit ocre ou clair, tuiles canal, bois peint.",
+      "history": "Séparer mas, bastide et maison de village ; débords alpins hors profil traditionnel.",
+      "requires": [
+        "shutters"
+      ],
+      "acceptance": "Un mas de deux niveaux garde toit bas et débord calibré ; volets hors du vide."
+    },
+    {
+      "id": "mediterranean",
+      "label": "Méditerranéen",
+      "family_id": "masonry_vernacular",
+      "status": "planned",
+      "context": "Méditerranée ; région obligatoire, périodes par sous-profil",
+      "calibration": "1–4 ; 2,5–3,5 ; 0–35° selon variante",
+      "geometry": "Cycladique : volumes compacts et terrasse ; andalou : patio/arcades ; variantes maghrébines distinctes.",
+      "materials": "Chaux claire, pierre, terre cuite, bois, selon région.",
+      "history": "Le parent ne se génère pas. Ne pas fusionner les traditions ni faire de Provençal son synonyme.",
+      "requires": [
+        "regional_variant",
+        "patio",
+        "round_arch"
+      ],
+      "acceptance": "Sans sous-profil, refuser. Le cycladique ne reçoit pas automatiquement un patio andalou."
+    },
+    {
+      "id": "breton",
+      "label": "Breton",
+      "family_id": "masonry_vernacular",
+      "status": "planned",
+      "context": "Bretagne ; variantes rurales, côtières et urbaines",
+      "calibration": "1–3 ; 2,3–3,0 ; 35–55°",
+      "geometry": "Longère allongée ou maison compacte ; murs épais, percements anciens modestes, toit pentu.",
+      "materials": "Granite ou schiste, ardoise, enduits locaux et bois.",
+      "history": "Éviter matériau et proportions uniformes entre territoires ; distinguer longère et maison de pêcheur.",
+      "requires": [
+        "regional_variant"
+      ],
+      "acceptance": "Une longère a une largeur supérieure à sa profondeur, un matériau local et un toit incliné."
+    },
+    {
+      "id": "half_timbered",
+      "label": "Maison à colombages",
+      "family_id": "timber_vernacular",
+      "status": "planned",
+      "context": "Technique transrégionale ; du bâti ancien aux réemplois modernes",
+      "calibration": "2–4 ; 2,3–3,2 ; 35–60° selon variante",
+      "geometry": "Poteaux, traverses, diagonales entre nœuds ; encorbellement facultatif ; trame coordonnée aux baies.",
+      "materials": "Ossature bois, torchis/brique/enduit de remplissage ; couverture régionale.",
+      "history": "Associer région et technique ; aucune diagonale flottante en historique strict.",
+      "requires": [
+        "timber_frame",
+        "jetties"
+      ],
+      "acceptance": "Chaque extrémité de diagonale aboutit à un nœud et ne traverse aucune baie."
+    },
+    {
+      "id": "baroque",
+      "label": "Baroque",
+      "family_id": "ordered_facade",
+      "status": "planned",
+      "context": "Europe, XVIIe–XVIIIe siècles selon région",
+      "calibration": "2–5 ; 3,2–5,5 ; selon variante",
+      "geometry": "Axe principal, avant-corps, ordres superposés ; frontons courbes ou brisés facultatifs.",
+      "materials": "Pierre, stuc, marbre de prestige, ardoise ou tuile.",
+      "history": "Adapter aux variantes française, italienne et germanique ; courbure non obligatoire.",
+      "requires": [
+        "avant_corps",
+        "classical_orders",
+        "curved_pediment"
+      ],
+      "acceptance": "Le fronton est rattaché à l'axe de son avant-corps ; pas d'ornements flottants."
+    },
+    {
+      "id": "neoclassical",
+      "label": "Néoclassique",
+      "family_id": "ordered_facade",
+      "status": "planned",
+      "context": "Europe et international, XVIIIe–XIXe siècles",
+      "calibration": "2–5 ; 3,0–4,5 ; 15–45°",
+      "geometry": "Façade symétrique et régulière ; fronton triangulaire, portique ou pilastres selon typologie.",
+      "materials": "Pierre claire, enduit minéral, bois peint, couverture régionale.",
+      "history": "Ordre cohérent par portique ; colonnes optionnelles pour la maison ordinaire.",
+      "requires": [
+        "classical_orders",
+        "portico"
+      ],
+      "acceptance": "Centres des travées symétriques ; un portique ne bloque ni la porte ni ses dégagements."
+    },
+    {
+      "id": "renaissance",
+      "label": "Renaissance",
+      "family_id": "ordered_facade",
+      "status": "planned",
+      "context": "Europe, XVe–XVIIe siècles selon région",
+      "calibration": "2–5 ; 2,8–4,5 ; 25–60° pour variantes pentues",
+      "geometry": "Travées, meneaux, corniches ; château français à forte pente/lucarnes ; palais italien à composition distincte.",
+      "materials": "Pierre taillée, brique régionale, ardoise, bois.",
+      "history": "Séparer sous-profils avant de fixer pente et vocabulaire ; pas de lucarnes françaises par défaut sur palais italien.",
+      "requires": [
+        "mullions",
+        "dormers",
+        "regional_variant"
+      ],
+      "acceptance": "Le meneau divise la baie ; une lucarne ne sort pas de son pan support."
+    },
+    {
+      "id": "art_nouveau",
+      "label": "Art nouveau",
+      "family_id": "ornamental",
+      "status": "planned",
+      "context": "Europe, vers 1890–1914",
+      "calibration": "2–6 ; 2,8–4,0 ; selon variante",
+      "geometry": "Composition éventuellement asymétrique, baies courbes, bow-window, motifs organiques.",
+      "materials": "Pierre, brique, fer travaillé, verre coloré, céramique.",
+      "history": "Limiter le motif répétitif uniforme ; variantes selon centres régionaux.",
+      "requires": [
+        "curved_opening",
+        "bow_window",
+        "organic_relief"
+      ],
+      "acceptance": "Un motif organique est relié à son support ; contrôler la continuité des contours."
+    },
+    {
+      "id": "romanesque",
+      "label": "Roman",
+      "family_id": "historic_monumental",
+      "status": "planned",
+      "context": "Europe ; env. Xe–XIIe siècles, avec prolongements régionaux",
+      "calibration": "1–3 volumes ; 3–8 ; 25–50° (repères)",
+      "geometry": "Murs massifs, arcs plein cintre, fenêtres étroites ; abside, berceau en variante d'église.",
+      "materials": "Pierre locale, chaux ; pierre, tuile ou métal pour couverture selon région.",
+      "history": "Faible part de vides en maçonnerie porteuse ; distinguer église, abbaye et bâti civil.",
+      "requires": [
+        "round_arch",
+        "apse",
+        "barrel_vault"
+      ],
+      "acceptance": "L'arc plein cintre a un rayon égal à la demi-portée ; abside jointive à la nef."
+    },
+    {
+      "id": "gothic",
+      "label": "Gothique",
+      "family_id": "historic_monumental",
+      "status": "planned",
+      "context": "Europe, XIIe–XVIe siècles selon région",
+      "calibration": "1–4 volumes ; 4–12 ; 40–65° (repères)",
+      "geometry": "Verticalité, arcs brisés, remplages, ogives, contreforts, rosace selon variante.",
+      "materials": "Pierre, vitrail, bois de charpente, ardoise ou tuile.",
+      "history": "Séparer primitif, rayonnant, flamboyant ; relier les grandes baies à la reprise de charge figurée.",
+      "requires": [
+        "pointed_arch",
+        "rib_vault",
+        "buttress",
+        "tracery"
+      ],
+      "acceptance": "Les retombées d'ogive et contreforts sont alignés avec la trame."
+    },
+    {
+      "id": "norman",
+      "label": "Normand",
+      "family_id": "timber_vernacular",
+      "status": "planned",
+      "context": "Normandie ; variantes pays d'Auge, pays de Caux, bâti urbain",
+      "calibration": "1–3 ; 2,3–3,2 ; 35–55°",
+      "geometry": "Volumes souvent allongés ; croupes et lucarnes ; trame bois selon sous-profil.",
+      "materials": "Bois/torchis, brique/silex, pierre, chaume ou ardoise.",
+      "history": "Colombage non systématique ; cohérence couverture/territoire et datation.",
+      "requires": [
+        "regional_variant",
+        "timber_frame",
+        "dormers"
+      ],
+      "acceptance": "Une variante maçonnée n'instancie pas l'ossature bois."
+    },
+    {
+      "id": "alsatian",
+      "label": "Alsacien",
+      "family_id": "timber_vernacular",
+      "status": "planned",
+      "context": "Alsace, vernaculaire ancien et moderne",
+      "calibration": "2–4 ; 2,3–3,2 ; 40–60°",
+      "geometry": "Pans de bois serrés, toits pentus, lucarnes ; encorbellements selon sous-profil.",
+      "materials": "Bois, remplissage enduit/brique, tuiles plates, soubassement pierre.",
+      "history": "Contreventement plausible ; couleurs vives facultatives, non universelles.",
+      "requires": [
+        "timber_frame",
+        "jetties",
+        "dormers"
+      ],
+      "acceptance": "Les pièces bois restent raccordées sur les paliers en encorbellement."
+    },
+    {
+      "id": "bauhaus",
+      "label": "Bauhaus",
+      "family_id": "modern_modular",
+      "status": "planned",
+      "context": "Allemagne, école 1919–1933 ; héritages internationaux",
+      "calibration": "1–5 ; 2,7–4,0 ; plat dominant",
+      "geometry": "Volumes orthogonaux articulés, composition fonctionnelle, verrière et asymétrie possibles.",
+      "materials": "Enduit clair, brique, béton, acier et verre.",
+      "history": "Séparer la période de l'école et ses héritages ; écarter les ordres classiques appliqués.",
+      "requires": [
+        "joined_volumes",
+        "curtain_wall"
+      ],
+      "acceptance": "La verrière suit la grille de l'aile, sans motif historiciste."
+    },
+    {
+      "id": "brutalist",
+      "label": "Brutaliste",
+      "family_id": "modern_modular",
+      "status": "active",
+      "context": "International, surtout vers 1950–1980",
+      "calibration": "2–15 ; 2,7–4,0 ; plat en V0.1",
+      "geometry": "Masse, répétition, ouvertures profondes ; retraits, joints et porte-à-faux ultérieurs.",
+      "materials": "Béton brut ou préfabriqué, métal et verre.",
+      "history": "Ne pas appliquer de décor classique ; joints et structure exprimés quand pris en charge.",
+      "requires": [
+        "flat"
+      ],
+      "acceptance": "En Structural LOD 1, les cadres reculent dans le tableau ; mêmes baies qu'en Shell."
+    },
+    {
+      "id": "minimalist",
+      "label": "Contemporain minimaliste",
+      "family_id": "modern_modular",
+      "status": "planned",
+      "context": "International, fin XXe siècle et période contemporaine",
+      "calibration": "1–4 ; 2,6–3,5 ; 0–20°",
+      "geometry": "Volumes simples, toiture discrète, baies larges alignées, ornement minimal.",
+      "materials": "Béton, bois, verre, métal, enduit lisse.",
+      "history": "Éviter de présumer une portée ou une protection solaire vérifiée.",
+      "requires": [
+        "wide_glazing",
+        "joined_volumes"
+      ],
+      "acceptance": "Les grandes baies gardent des rives cohérentes avec la trame et le volume."
+    },
+    {
+      "id": "high_tech",
+      "label": "High-tech",
+      "family_id": "tech_environment",
+      "status": "planned",
+      "context": "International, à partir des années 1970",
+      "calibration": "2–15 ; 3–5 ; selon variante",
+      "geometry": "Poteaux-poutres visibles, contreventement, façade rideau ; circulation extériorisée en option.",
+      "materials": "Acier, aluminium, verre, composites.",
+      "history": "Équipements apparents optionnels ; ossature lisible et raccordée, sans affirmation de résistance.",
+      "requires": [
+        "structural_grid",
+        "curtain_wall"
+      ],
+      "acceptance": "Panneaux de façade indexés par travée ; diagonales connectées aux nœuds."
+    },
+    {
+      "id": "bioclimatic",
+      "label": "Écologique / bioclimatique",
+      "family_id": "tech_environment",
+      "status": "planned",
+      "context": "Approche contemporaine transversale ; climat et nord requis",
+      "calibration": "1–5 ; 2,5–3,5 ; selon climat",
+      "geometry": "Compacité, orientation, protections passives et ventilation traversante selon cas ; toiture végétalisée en option.",
+      "materials": "Bois, terre, isolants biosourcés et verre selon contexte.",
+      "history": "Appliquer une stratégie climatique à un profil compatible ; aucune certification ni performance prédite sans simulation.",
+      "requires": [
+        "climate_context",
+        "solar_shading"
+      ],
+      "acceptance": "Sans nord et scénario climatique, bloquer la stratégie ; vérifier le changement d'orientation des protections."
+    },
+    {
+      "id": "industrial",
+      "label": "Industriel",
+      "family_id": "tech_environment",
+      "status": "planned",
+      "context": "XIXe–XXIe siècles ; halle, usine et entrepôt distincts",
+      "calibration": "1–4 ; 4–10 ; 0–35° hors sheds spécifiques",
+      "geometry": "Grandes travées, portes utilitaires, sheds orientés selon variante, trame poteaux-poutres.",
+      "materials": "Brique et acier pour variantes anciennes ; béton ou bardage métallique selon époque.",
+      "history": "Empêcher le bardage contemporain dans une usine brique 1880 en strict, sauf transformation documentée.",
+      "requires": [
+        "sawtooth_roof",
+        "structural_grid",
+        "large_door"
+      ],
+      "acceptance": "Sheds répétitifs sans recouvrement, pan vitré orienté et distinct."
+    },
+    {
+      "id": "mid_century",
+      "label": "Mid-century",
+      "family_id": "modern_modular",
+      "status": "planned",
+      "context": "International, vers 1945–1970 ; régions distinctes",
+      "calibration": "1–3 ; 2,4–3,4 ; 0–25°",
+      "geometry": "Horizontalité, toit bas ou plat, grands débords, grandes baies et continuité vers l'extérieur.",
+      "materials": "Bois, pierre, brique, verre, acier.",
+      "history": "Différencier américain, scandinave, européen ; plans ouverts réservés à Interior.",
+      "requires": [
+        "wide_glazing",
+        "deep_eaves",
+        "regional_variant"
+      ],
+      "acceptance": "La variante à débord prononcé garde une rive au-dessus du sol et des baies."
+    },
+    {
+      "id": "modernist",
+      "label": "Moderniste",
+      "family_id": "modern_modular",
+      "status": "planned",
+      "context": "International, principalement XXe siècle",
+      "calibration": "1–8 ; 2,6–4,0 ; 0–20°",
+      "geometry": "Toiture-terrasse et fenêtres en bandeau ; pilotis et plan libre selon sous-profil.",
+      "materials": "Béton, acier, verre, enduit.",
+      "history": "Distinguer courant international, rationalisme et branches régionales ; ne pas imposer les pilotis.",
+      "requires": [
+        "ribbon_windows",
+        "pilotis",
+        "regional_variant"
+      ],
+      "acceptance": "Les ouvertures en bandeau sont continues ; aucun pilotis dans un passage ou une baie."
+    }
+  ]
+}

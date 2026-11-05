@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "name": "Bloc brutaliste",
+  "profile": {
+    "id": "brutalist",
+    "revision": 1
+  },
+  "building_type": "residential",
+  "mode": "structural",
+  "lod": 1,
+  "seed": 42,
+  "fidelity": "plausible",
+  "footprint": {
+    "width_m": 12,
+    "depth_m": 9
+  },
+  "levels": {
+    "count": 6,
+    "height_m": 3.1,
+    "heights_m": []
+  },
+  "facade": {
+    "front_bays": 5,
+    "side_bays": 0,
+    "margin_m": 0.6,
+    "window_width_m": 1.6,
+    "window_height_m": 1.2,
+    "sill_m": 0.95,
+    "entry_bay": 1,
+    "door_width_m": 1,
+    "door_height_m": 2.2,
+    "jitter_m": 0
+  },
+  "structure": {
+    "wall_m": 0.32,
+    "slab_m": 0.2
+  },
+  "roof": {
+    "type": "flat",
+    "overhang_m": 0,
+    "pitch_deg": 0,
+    "lower_pitch_deg": 0,
+    "inset_m": 0
+  },
+  "materials": {
+    "wall": "concrete",
+    "roof": "concrete",
+    "frames": "dark_metal"
+  },
+  "features": {
+    "cornice": false,
+    "balcony": false,
+    "surrounds": false
+  }
+}

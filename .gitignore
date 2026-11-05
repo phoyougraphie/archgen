@@ -1,0 +1,7 @@
+/pkg/
+/tmp/
+/coverage/
+/.bundle/
+/vendor/
+*.rbz
+*.skb

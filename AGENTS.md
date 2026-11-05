@@ -1,0 +1,11 @@
+# Instructions de développement — ARCHGEN
+
+1. Lire [README](README.md), [décisions](docs/DECISIONS.md), puis le ticket et les contrats qu'il cite. Exécuter le premier ticket dont toutes les dépendances sont validées. Si le dépôt contient déjà du code, comparer d'abord les contrats à l'existant ; intégrer progressivement.
+2. Garder le noyau Ruby exécutable sans SketchUp. Les solveurs produisent un plan déterministe en mètres ; le writer le traduit dans SketchUp. Aucun objet natif, mutation de modèle, accès réseau ni aléatoire global dans le noyau.
+3. Traiter les contraintes géométriques et limites de plateforme comme bloquantes dans tous les modes de fidélité. Rejeter une entrée incompatible avec un diagnostic localisé. N'inventer ni champ, ni réglage silencieux, ni profil supposé pris en charge.
+4. Une action utilisateur réussie correspond à une opération Undo ; une action rejetée laisse le document intact. La géométrie partagée n'est jamais modifiée sur place pour régénérer une instance. Revalider la cible avant chaque écriture.
+5. Les styles sont des données versionnées. Ajouter une capacité géométrique et ses tests avant de publier un profil qui la requiert. Les règles sont des clés d'un registre fermé, jamais du code chargé depuis un profil.
+6. Livrer une modification centrée sur le ticket : code, contrats et vérifications nécessaires. Suivre [Conventions](docs/RUBY_SKETCHUP.md). Pour toute modification de format ou de comportement, documenter la décision et joindre le test ou la migration correspondante.
+7. Rapporter les commandes exécutées, résultats, versions et limites. Distinguer tests Ruby, tests du writer et essai réel dans SketchUp. Ne pas marquer un contrôle hôte réussi sans preuve. Sans accès à SketchUp, les tâches Ruby indépendantes restent possibles ; la sortie V0.1 reste bloquée.
+
+Priorité documentaire : ce fichier gouverne le travail ; le PRD définit le périmètre ; les contrats spécialisés fixent le détail ; les tickets ordonnent l'exécution. Les schémas et exemples matérialisent les contrats. Signaler et résoudre une divergence dans la même modification plutôt que de la propager. Pour une évolution hors périmètre, ouvrir une décision et un ticket dépendant.

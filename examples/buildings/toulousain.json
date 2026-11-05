@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "name": "Immeuble toulousain",
+  "profile": {
+    "id": "toulousain",
+    "revision": 1
+  },
+  "building_type": "residential",
+  "mode": "shell",
+  "lod": 1,
+  "seed": 42,
+  "fidelity": "plausible",
+  "footprint": {
+    "width_m": 12,
+    "depth_m": 9
+  },
+  "levels": {
+    "count": 3,
+    "height_m": 3.1,
+    "heights_m": []
+  },
+  "facade": {
+    "front_bays": 4,
+    "side_bays": 0,
+    "margin_m": 0.6,
+    "window_width_m": 1.2,
+    "window_height_m": 1.8,
+    "sill_m": 0.85,
+    "entry_bay": 1,
+    "door_width_m": 1,
+    "door_height_m": 2.2,
+    "jitter_m": 0
+  },
+  "structure": {
+    "wall_m": 0.24,
+    "slab_m": 0.2
+  },
+  "roof": {
+    "type": "gable",
+    "overhang_m": 0.2,
+    "pitch_deg": 24,
+    "lower_pitch_deg": 0,
+    "inset_m": 0
+  },
+  "materials": {
+    "wall": "brick_foraine",
+    "roof": "terracotta_canal",
+    "frames": "painted_wood"
+  },
+  "features": {
+    "cornice": false,
+    "balcony": false,
+    "surrounds": true
+  }
+}
