@@ -71,14 +71,15 @@ module Archgen
           width: 1000, height: 760, min_width: 380, min_height: 480,
           style: ::UI::HtmlDialog::STYLE_DIALOG
         )
-        dialog.set_on_closed { close_session }
         dialog
       end
       private_class_method :build
 
-      # Les rappels sont rattachés avant chaque affichage ; le panneau refait `init`.
+      # Les rappels sont rattachés avant chaque affichage, celui de fermeture compris :
+      # SketchUp l'oublie à la fermeture (H14). Le panneau refait `init`.
       def self.attach_and_show
         @dialog.set_file(HTML)
+        @dialog.set_on_closed { close_session }
         @dialog.add_action_callback('archgen_dispatch') do |_context, raw|
           response = controller.dispatch(raw)
           send_script("archgenReceive(#{literal(JSON.generate(response))})")

@@ -23,7 +23,8 @@ module ArchgenFinalProbe
   METERS = 4
   INCHES = 0
   REPORTS = %w[h02-metres h02-pouces h03-creation h03-annuler h03-retablir h04-sauvegarde h04-reouverture h05 h08 h09 h10
-               v01-reprise h11 h06-preparation h06-pannes h06-sentinelle h06-saine h06-annuler h07-cibles h07-document h12/sketchup].freeze
+               v01-reprise h11 h06-preparation h06-pannes h06-sentinelle h06-saine h06-annuler h07-cibles h07-document h12/sketchup
+               h13-releve h13-ecriture h14].freeze
 
   module_function
 
@@ -173,7 +174,19 @@ module ArchgenFinalProbe
       ['H12', lambda {
         fresh
         ArchgenH12Probe.run
-      }, -> { finished?('h12/sketchup.txt') }, LONG_TIMEOUT_S]
+      }, -> { finished?('h12/sketchup.txt') }, LONG_TIMEOUT_S],
+      ['H13 relevé', lambda {
+        fresh
+        ArchgenSurveyProbe.run
+      }, -> { finished?('h13-releve.txt') }, LONG_TIMEOUT_S],
+      ['H13 écriture', lambda {
+        fresh
+        ArchgenSiteWriteProbe.run
+      }, -> { finished?('h13-ecriture.txt') }, LONG_TIMEOUT_S],
+      ['H14', lambda {
+        fresh
+        ArchgenH14Probe.run
+      }, -> { finished?('h14.txt') }, 1800]
     ]
   end
 
@@ -246,12 +259,18 @@ module ArchgenFinalProbe
     end
   end
 
+  # Rejeu de H14 seule, sur le même RBZ. La charge bloque SketchUp plusieurs minutes :
+  # Windows peut l'annoncer « ne répond pas », ne pas fermer la fenêtre.
+  def run_h14
+    start(%w[h14]) { [rest.find { |stage| stage.first == 'H14' }] }
+  end
+
   def start(reports)
     @lines = []
     @failures = 0
     @started = Time.now - 2
     @reports = reports
-    %w[run creation regeneration styles panel h09 h10 faults h11 h12].each { |file| load File.join(HOST, "#{file}.rb") }
+    %w[run creation regeneration styles panel h09 h10 faults h11 h12 survey site_write h14].each { |file| load File.join(HOST, "#{file}.rb") }
     log("V0.1 départ #{Time.now}, ARCHGEN #{Archgen::VERSION}, code #{installed_from}")
     @queue = yield
     advance

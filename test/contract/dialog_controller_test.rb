@@ -474,6 +474,31 @@ class DialogControllerTest < Minitest::Test
     assert_equal false, controller.selection_changed(model)
   end
 
+  # Défaut trouvé par H14 : la page recompte depuis r1 après une réouverture ou un rechargement.
+  def test_new_page_never_receives_an_old_answer
+    first = call('generate', 'draft' => draft, request_id: 'r3')
+    assert_equal true, first['ok'], first.inspect
+    written = model.operations.size
+
+    assert_equal first, call('generate', 'draft' => draft, request_id: 'r3'), 'même page : réponse rejouée'
+    assert_equal written, model.operations.size, 'même page : pas de seconde écriture'
+
+    call('init', request_id: 'r1')
+    second = call('generate', 'draft' => draft, request_id: 'r3')
+    assert_equal true, second['ok'], second.inspect
+    assert_operator model.operations.size, :>, written, 'page neuve : écriture réelle'
+    refute_equal first['result']['target_token'], second['result']['target_token']
+  end
+
+  def test_closing_the_panel_forgets_remembered_answers
+    first = call('generate', 'draft' => draft, request_id: 'r3')
+    written = model.operations.size
+    controller.close_session
+    second = call('generate', 'draft' => draft, request_id: 'r3')
+    assert_operator model.operations.size, :>, written
+    refute_equal first['result']['target_token'], second['result']['target_token']
+  end
+
   def test_failed_write_consumes_the_confirmation
     token = generated['target_token']
     body = edit_draft(footprint: { 'width_m' => 14 })

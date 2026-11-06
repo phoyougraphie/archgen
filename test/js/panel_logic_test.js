@@ -106,6 +106,21 @@
   same(L.summaryText({ window_count: 31, door_count: 1, roof_top_z_m: 19.608764 }, { width_m: 12, depth_m: 9 }),
     '31 fenêtres, 1 porte ; 12 × 9 m ; sommet 19,61 m', 'résumé');
 
+  // Terrain
+  same(L.siteStateText({ hasSite: false, terrain: false }), 'Aucun terrain retenu.', 'terrain absent');
+  same(L.siteStateText({ hasSite: false, terrain: true }), 'Terrain retenu. Ce bâtiment n’a pas encore d’assise.', 'terrain retenu');
+  same(L.siteStateText({ hasSite: true, moved: false, terrain: false }), 'Ce bâtiment est adapté au terrain.', 'assise à jour');
+  same(L.siteStateText({ hasSite: true, moved: true, terrain: false }), 'Assise périmée : le bâtiment a été déplacé. Relevez de nouveau.', 'assise périmée');
+  same(L.siteStateText({ stale: true, hasSite: true, terrain: false }), 'Rechargez la sélection pour voir l’état de l’assise.', 'cible périmée, rien d’affirmé sur l’assise');
+  same(L.siteStateText({ stale: true, hasSite: false, terrain: true }), 'Terrain retenu. Rechargez la sélection pour continuer.', 'cible périmée, terrain retenu');
+  same(L.canSurvey({ target: 'x', stale: false, busy: false, valid: true, terrain: true, hasSite: false }), true, 'relever avec un terrain retenu');
+  same(L.canSurvey({ target: 'x', stale: false, busy: false, valid: true, terrain: false, hasSite: true }), true, 'relever avec le terrain enregistré');
+  same(L.canSurvey({ target: 'x', stale: false, busy: false, valid: true, terrain: false, hasSite: false }), false, 'relever sans terrain');
+  same(L.canSurvey({ target: null, stale: false, busy: false, valid: true, terrain: true, hasSite: false }), false, 'relever sans cible');
+  same(L.canSurvey({ target: 'x', stale: true, busy: false, valid: true, terrain: true, hasSite: false }), false, 'relever sur cible périmée');
+  same(L.canSurvey({ target: 'x', stale: false, busy: false, valid: false, terrain: true, hasSite: false }), false, 'relever avec une saisie invalide');
+  same(L.setPath({}, '/platform/offset_m', 1), { platform: { offset_m: 1 } }, 'chemin imbriqué');
+
   var report = { count: count, failures: failures };
   if (typeof module === 'object' && module.exports) {
     console.log(count + ' contrôles, ' + failures.length + ' échec(s)');

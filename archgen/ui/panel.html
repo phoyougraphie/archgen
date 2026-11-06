@@ -85,6 +85,29 @@
         <div class="field"><label for="f-fidelity">Fidélité</label><select id="f-fidelity" data-path="/fidelity" data-kind="select"><option value="strict">Stricte</option><option value="plausible">Plausible</option><option value="creative">Créative</option></select></div>
       </fieldset>
     </details>
+
+    <details id="terrain" hidden>
+      <summary>Terrain</summary>
+      <fieldset>
+        <legend>Adapter au terrain</legend>
+        <p id="site-state" class="hint wide" role="status"></p>
+        <p class="hint wide">Sélectionnez le terrain et retenez-le, puis sélectionnez de nouveau le bâtiment et rechargez la sélection.</p>
+        <div class="actions wide"><button type="button" id="site-retain">Retenir ce terrain</button></div>
+        <div class="field"><label for="f-policy">Altitude de plateforme</label><select id="f-policy" data-site-path="/platform/policy" data-kind="select"><option value="high">Au point haut</option><option value="mean">À la moyenne</option></select></div>
+        <div class="field"><label for="f-offset">Décalage (m)</label><input id="f-offset" data-site-path="/platform/offset_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-earthwork">Terrassement</label><select id="f-earthwork" data-site-path="/earthwork" data-kind="select"><option value="plinth">Soubassement</option><option value="embankment">Talus</option></select></div>
+        <div class="field" id="site-ratio"><label for="f-ratio">Pente du talus (horizontal pour 1 vertical)</label><input id="f-ratio" data-site-path="/embankment_ratio" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-plinth">Matériau du soubassement et du plancher</label><select id="f-plinth" data-site-path="/plinth_material" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field"><label for="f-step">Pas du relevé (m)</label><input id="f-step" data-site-path="/survey/step_m" data-kind="number" inputmode="decimal"></div>
+        <div class="actions wide">
+          <button type="button" id="site-survey">Relever</button>
+          <button type="button" id="site-adapt" class="primary">Adapter au terrain</button>
+          <button type="button" id="site-remove">Retirer l’assise</button>
+        </div>
+        <ul id="site-summary" class="changes wide"></ul>
+        <ul id="site-warnings" class="warnings wide"></ul>
+      </fieldset>
+    </details>
   </form>
 
   <section class="preview" aria-labelledby="preview-title">

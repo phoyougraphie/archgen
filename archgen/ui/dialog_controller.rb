@@ -7,26 +7,35 @@ module Archgen
     # Possède les jetons de cible et de confirmation ; le service relit toujours la cible.
     class DialogController
       PROTOCOL = 1
-      ACTIONS = %w[init load_selection preview generate regenerate].freeze
-      MUTATIONS = %w[generate regenerate].freeze
+      ACTIONS = %w[init load_selection preview generate regenerate retain_terrain site_status site_preview adapt_site site_remove_preview remove_site].freeze
+      MUTATIONS = %w[generate regenerate adapt_site remove_site].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'load_selection' => [], 'preview' => %w[draft target_token],
-        'generate' => %w[draft], 'regenerate' => %w[draft target_token confirmation_token]
+        'generate' => %w[draft], 'regenerate' => %w[draft target_token confirmation_token],
+        'retain_terrain' => [], 'site_status' => %w[target_token], 'site_preview' => %w[site target_token terrain_token],
+        'adapt_site' => %w[site target_token terrain_token confirmation_token],
+        'site_remove_preview' => %w[target_token], 'remove_site' => %w[target_token confirmation_token]
       }.freeze
       NEEDS_DRAFT = %w[preview generate regenerate].freeze
+      NEEDS_SITE = %w[site_preview adapt_site].freeze
+      REMOVE_DIGEST = 'retirer-assise'
       MAX_REQUEST_ID = 64
       MAX_REMEMBERED_MUTATIONS = 32
 
       attr_accessor :mode
-      attr_reader :confirmations
+      attr_reader :confirmations, :site_confirmations
 
-      def initialize(service:, registry:, materials:, model_provider:, tokens: TargetTokens.new, confirmations: ConfirmationTokens.new, mode: 'new')
+      def initialize(service:, registry:, materials:, model_provider:, tokens: TargetTokens.new, confirmations: ConfirmationTokens.new,
+                     terrain_tokens: TargetTokens.new, site_confirmations: ConfirmationTokens.new, mode: 'new')
         @service = service
         @registry = registry
         @materials = materials
         @model_provider = model_provider
         @tokens = tokens
         @confirmations = confirmations
+        @terrain_tokens = terrain_tokens
+        @site_confirmations = site_confirmations
+        @site_survey_digest = nil
         @mode = mode
         @mutations = {}
         @busy = false
@@ -57,27 +66,35 @@ module Archgen
         selection = current.selection
         return false if selection.length == 1 && selection.first.respond_to?(:persistent_id) && selection.first.persistent_id == @edit_persistent_id
 
-        @confirmations.clear
+        clear_confirmations
         true
       end
 
       # Annuler, Rétablir, enregistrer, autre document : la confirmation ne survit pas.
       def invalidate(document_changed: false)
-        @confirmations.clear
+        clear_confirmations
         return unless document_changed
 
         @tokens.clear
+        @terrain_tokens.clear
         @edit_persistent_id = nil
       end
 
       def close_session
         @tokens.clear
-        @confirmations.clear
+        @terrain_tokens.clear
+        clear_confirmations
         @mutations.clear
         @edit_persistent_id = nil
       end
 
       private
+
+      def clear_confirmations
+        @confirmations.clear
+        @site_confirmations.clear
+        @site_survey_digest = nil
+      end
 
       def safe_request_id(envelope)
         return nil unless envelope.is_a?(Hash)
@@ -99,6 +116,7 @@ module Archgen
         return 'invalid_envelope' unless payload.is_a?(Hash)
         return 'invalid_envelope' unless (payload.keys - PAYLOAD_KEYS.fetch(action)).empty?
         return 'invalid_envelope' if NEEDS_DRAFT.include?(action) && !payload['draft'].is_a?(Hash)
+        return 'invalid_envelope' if NEEDS_SITE.include?(action) && !payload['site'].is_a?(Hash)
 
         nil
       end
@@ -133,6 +151,12 @@ module Archgen
         when 'preview' then preview(payload)
         when 'generate' then generate(payload)
         when 'regenerate' then regenerate(payload)
+        when 'retain_terrain' then retain_terrain
+        when 'site_status' then site_status(payload)
+        when 'site_preview' then site_preview(payload)
+        when 'adapt_site' then adapt_site(payload)
+        when 'site_remove_preview' then site_remove_preview(payload)
+        when 'remove_site' then remove_site(payload)
         end
       end
 
@@ -140,7 +164,10 @@ module Archgen
         @model_provider.call
       end
 
+      # Une page neuve recompte ses identifiants depuis r1 : elle ne doit jamais recevoir
+      # la réponse mémorisée d'une page précédente, qui annoncerait une écriture non faite.
       def init
+        @mutations.clear
         Core::Result.ok(
           'mode' => @mode,
           'version' => VERSION,
@@ -149,7 +176,8 @@ module Archgen
           'limits' => {
             'max_width_m' => Core::Limits::MAX_FOOTPRINT_M, 'max_levels' => Core::Limits::MAX_LEVELS,
             'max_wall_top_m' => Core::Limits::MAX_WALL_TOP_M, 'max_roof_top_m' => Core::Limits::MAX_ROOF_TOP_M
-          }
+          },
+          'site' => Core::SiteIntake::DEFAULTS
         )
       end
 
@@ -193,7 +221,7 @@ module Archgen
         {
           'token' => @confirmations.issue(target_token: payload['target_token'], draft_digest: Core::Canonical.digest(payload['draft'])),
           'expires_in_s' => ConfirmationTokens::TTL_S,
-          'message' => Messages::REPLACE_WARNING,
+          'message' => building_warning(payload),
           'changes' => changes(value.base.to_h, value.config.to_h)
         }
       end
@@ -279,6 +307,133 @@ module Archgen
       def load_config_hash(summary)
         loaded = @service.load_building(model: model, persistent_id: summary.persistent_id)
         loaded.ok? ? loaded.value.config.to_h : nil
+      end
+
+      # Un bâtiment avec assise la garde : l'avertir fait partie de ce que l'on confirme.
+      def building_warning(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        status = target.ok? ? @service.site_status(model: current, target: target.value) : nil
+        status&.ok? && status.value ? "#{Messages::REPLACE_WARNING} #{Messages::SITE_KEPT_WARNING}" : Messages::REPLACE_WARNING
+      end
+
+      # --- Terrain : mêmes principes que la régénération, Ruby ne croit rien du panneau
+
+      def retain_terrain
+        current = model
+        retained = @service.retain_terrain(model: current)
+        return retained unless retained.ok?
+
+        Core::Result.ok('terrain_token' => @terrain_tokens.issue(retained.value, model: current))
+      end
+
+      def site_status(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        return target unless target.ok?
+
+        status = @service.site_status(model: current, target: target.value)
+        return status unless status.ok?
+        return Core::Result.ok('has_site' => false) unless status.value
+
+        Core::Result.ok('has_site' => true, 'moved' => status.value['moved'], 'settings' => status.value['settings'])
+      end
+
+      # Le jeton du panneau d'abord ; sinon le terrain que la racine a déjà enregistré.
+      def terrain_for(payload, current, target)
+        token = payload['terrain_token']
+        if token
+          resolved = @terrain_tokens.resolve(token, model: current)
+          return resolved.ok? ? resolved : terrain_not_retained
+        end
+        status = @service.site_status(model: current, target: target)
+        return status unless status.ok?
+        return terrain_not_retained unless status.value
+
+        Core::Result.ok(Adapters::SketchUp::TerrainRef.new(document_key: current.guid, persistent_id: status.value['terrain_pid']))
+      end
+
+      def terrain_not_retained
+        failure('E_SITE_TERRAIN', '/site/terrain', 'terrain_not_retained')
+      end
+
+      def site_digest(payload)
+        Core::Canonical.digest('site' => payload['site'], 'terrain_token' => payload['terrain_token'])
+      end
+
+      def site_preview(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        return target unless target.ok?
+
+        terrain = terrain_for(payload, current, target.value)
+        return terrain unless terrain.ok?
+
+        preview = @service.preview_site(model: current, target: target.value, terrain: terrain.value, site: payload['site'])
+        return preview unless preview.ok?
+
+        metrics = preview.value.site_plan['metrics']
+        @site_survey_digest = preview.value.survey.survey_digest
+        Core::Result.ok(
+          { 'metrics' => metrics, 'lines' => Messages.site_lines(metrics),
+            'confirmation' => site_confirmation(payload['target_token'], site_digest(payload), Messages::SITE_ADAPT_WARNING) },
+          preview.diagnostics
+        )
+      end
+
+      def site_confirmation(target_token, digest, message)
+        { 'token' => @site_confirmations.issue(target_token: target_token, draft_digest: digest),
+          'expires_in_s' => ConfirmationTokens::TTL_S, 'message' => message }
+      end
+
+      def adapt_site(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        return target unless target.ok?
+
+        terrain = terrain_for(payload, current, target.value)
+        return terrain unless terrain.ok?
+
+        survey_digest = @site_survey_digest
+        consumed = @site_confirmations.consume(payload['confirmation_token'], target_token: payload['target_token'], draft_digest: site_digest(payload))
+        return consumed unless consumed.ok?
+
+        written = @service.adapt_to_site(model: current, target: target.value, terrain: terrain.value, site: payload['site'], survey_digest: survey_digest)
+        written_body(written, current)
+      end
+
+      def site_remove_preview(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        return target unless target.ok?
+
+        status = @service.site_status(model: current, target: target.value)
+        return status unless status.ok?
+        return failure('E_TARGET_STALE', '/target', 'site_absent') unless status.value
+
+        Core::Result.ok('confirmation' => site_confirmation(payload['target_token'], REMOVE_DIGEST, Messages::SITE_REMOVE_WARNING))
+      end
+
+      def remove_site(payload)
+        current = model
+        target = @tokens.resolve(payload['target_token'], model: current)
+        return target unless target.ok?
+
+        consumed = @site_confirmations.consume(payload['confirmation_token'], target_token: payload['target_token'], draft_digest: REMOVE_DIGEST)
+        return consumed unless consumed.ok?
+
+        written_body(@service.remove_site(model: current, target: target.value), current)
+      end
+
+      def written_body(written, current)
+        return written unless written.ok?
+
+        summary = written.value
+        @edit_persistent_id = summary.persistent_id
+        Core::Result.ok(
+          summary_body(summary).merge('target_token' => @tokens.issue(summary.target, model: current), 'site_metrics' => summary.site_metrics),
+          written.diagnostics
+        )
       end
 
       def resolve_target(token, current)

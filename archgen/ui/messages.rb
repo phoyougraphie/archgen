@@ -116,6 +116,7 @@ module Archgen
         'too_many_obstacles' => 'Trop d’objets au-dessus du terrain en %{count} points. Masquez-les ou déplacez le bâtiment.',
         'terrain_changed' => 'Le terrain a changé depuis l’aperçu. Relevez de nouveau.',
         'site_absent' => 'Ce bâtiment n’a pas d’assise à retirer.',
+        'terrain_not_retained' => 'Sélectionnez d’abord le terrain, puis cliquez sur Retenir ce terrain.',
         'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
         'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
@@ -183,6 +184,10 @@ module Archgen
       # Texte imposé par le contrat de régénération, affiché à chaque remplacement.
       REPLACE_WARNING = 'La géométrie générée de ce bâtiment sera remplacée. Placez les ajouts à conserver dans des groupes séparés.'
 
+      SITE_KEPT_WARNING = 'Son assise est conservée : le terrain sera relevé de nouveau et son altitude suivra la plateforme.'
+      SITE_ADAPT_WARNING = 'La géométrie générée de ce bâtiment sera remplacée. Son altitude suivra la plateforme. Le terrain n’est pas modifié.'
+      SITE_REMOVE_WARNING = 'L’assise de ce bâtiment sera retirée. Son altitude ne change pas et le terrain n’est pas modifié.'
+
       NOTICES = {
         'undo' => 'Une annulation a eu lieu. Rechargez la sélection.',
         'redo' => 'Un rétablissement a eu lieu. Rechargez la sélection.',
@@ -196,6 +201,15 @@ module Archgen
         params = diagnostic.params
         template = (params['rule'] && RULES[params['rule']]) || REASONS[params['reason']] || DEFAULT
         template.gsub(/%\{(\w+)\}/) { decimal(params[Regexp.last_match(1)]) }
+      end
+
+      # Les valeurs d'une assise, telles que le panneau les montre avant de confirmer.
+      def site_lines(metrics)
+        lines = ["Altitude de la plateforme : #{decimal(metrics['platform_z_m'])} m",
+                 "Remblai maximal : #{decimal(metrics['fill_max_m'])} m, soit #{decimal(metrics['fill_volume_m3'])} m³",
+                 "Déblai maximal, non représenté : #{decimal(metrics['cut_max_m'])} m, soit #{decimal(metrics['cut_volume_m3'])} m³"]
+        lines << "Emprise du talus : #{decimal(metrics['embankment_reach_m'])} m" if metrics['embankment_reach_m'].positive?
+        lines
       end
 
       def field_label(path)

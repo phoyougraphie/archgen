@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-026 : section Terrain du panneau, aperçu, confirmation, charge sur 100 000 faces, guide et RBZ 0.2.0, H01 à H14. Calcul, relevé et écriture sont faits (AG-021 à 025). Version 0.2.0-dev installée dans son SketchUp 2026, le terrain n'étant pas encore au panneau ; pkg/archgen-0.1.0.rbz reste la version livrable ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
+  - Prochaine action — EXT-07, générateur de rue au tracé, une fois D-03 et D-04 tranchées ; AG-027 ensuite. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, D-03 et D-04, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/recette/V0.2.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Décisions ouvertes D-03 et D-04 — Avant EXT-07. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé). D-05 et D-06 tranchées : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -37,6 +37,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 EXT-10 préparé — D-05 et D-06 tranchées. Sonde raytest : altitude exacte, relance sous obstacle sans blocage, trou et masqué = nil, 0,84 ms par rayon, d'où un relevé sur demande au pas de 2 m. Terrain intact : plateforme au point haut par défaut, déblai annoncé mais non montré. Assise appliquée à une racine déjà placée. (→ docs/TERRAIN_CONTRACT.md)
     - 2026-11-06 H13 relevé — 26 contrôles, écart 0,0005 mm. open_application lance une seconde instance si SketchUp tourne déjà : vérifier les processus d'abord, et regarder l'écran avant de cliquer. La session Windows se verrouille après inactivité : LogonUI actif = écran inaccessible, demander au propriétaire. (→ docs/recette/H13.md)
     - 2026-11-06 H13 écriture — Vrai défaut trouvé : un rayon le long d'une arête verticale du soubassement ne renvoie rien ; rayons décalés de 0,2 mm. Les scripts patch en heredoc cassent les accents sous Git Bash (CP850) : les écrire dans un fichier. Le second clic sur Édition n'ouvre le menu qu'après un survol et 3 s.
+    - 2026-11-06 AG-026 — Vrai défaut présent depuis la 0.1.0 : set_on_closed est perdu à la fermeture, la page rouverte recevait une ancienne réponse et annonçait une création non écrite. Rattaché à chaque affichage, init vide la mémoire. Rejeu : dernier cas de charge figé, SketchUp disparu sans trace de plantage, cause non établie ; run_h14 rejoue H14 seule. Le relevé coûte 30 à 50 ms par point sur 100 000 faces. Une réponse témoin posée juste après show est effacée par init : attendre la page. (→ docs/recette/H14.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -79,7 +80,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-023 Talus — geometry/embankment_builder, catalogue site_materials, plus de refus earthwork_unavailable. U15 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
     - [fait] AG-024 Relevé dans SketchUp — adapters/sketchup/terrain_surveyor, BuildingService#survey_site. Altitudes à 0,0005 mm sur un terrain imbriqué et pivoté, aucune écriture ni ligne d'Annuler. H13, partie relevé. (→ docs/recette/H13.md)
     - [fait] AG-025 Écrire et persister l'assise — BuildingService : preview_site, adapt_to_site, remove_site, site_status ; régénérer garde l'assise (ADR-29). H13 : 68 contrôles, terrain intact, H02 à H12 rejouées. (→ docs/recette/H13.md)
-    - [afaire] AG-026 Panneau terrain et RBZ 0.2.0 — Aperçu, confirmation, guide, H01 à H14. Dép. AG-025.
+    - [fait] AG-026 Panneau terrain et RBZ 0.2.0 — Section Terrain, confirmation, guide, charge mesurée. H02 à H14 sans échec sur le RBZ. Réserves : profil non vierge, H14 rejouée après un arrêt, SketchUp figé sur très gros terrain. (→ docs/recette/V0.2.md)
     - [afaire] AG-027 Étagement par parcelle — Après EXT-07. Dép. AG-026.
   - J7+ Extensions — Après J5 seulement, EXT-01 à 09 ; EXT-07 en premier (ADR-27) ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
@@ -238,7 +239,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H11 — Mesures et 20 régénérations. Réussi sur Windows / 26.2.243. (→ docs/recette/H11.md)
     - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
     - H13 — Terrain : relevé et écriture réussis, une entrée d'Annuler, terrain intact. Réussi sur Windows / 26.2.243. (→ docs/recette/H13.md)
-    - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. À faire en AG-026.
+    - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. Réussi sur Windows / 26.2.243 ; plus grand bâtiment : 1 min 30 par relevé. (→ docs/recette/H14.md)
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
   - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.

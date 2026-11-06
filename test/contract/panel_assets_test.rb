@@ -14,6 +14,14 @@ class PanelAssetsTest < Minitest::Test
     Dir.glob(repo_path(*UI_DIR, '*.html'))
   end
 
+  # SketchUp oublie ce rappel à la fermeture : il doit être rattaché à chaque affichage (H14).
+  def test_closing_callback_is_attached_before_each_display
+    source = File.read(repo_path(*UI_DIR, 'panel.rb'), encoding: 'UTF-8')
+    body = source[/def self\.attach_and_show.*?\n      end/m]
+    assert_includes body, 'set_on_closed'
+    refute_includes source[/def self\.build.*?\n      end/m], 'set_on_closed'
+  end
+
   def test_every_dialog_is_local_with_a_restrictive_policy
     html_files.each do |path|
       html = File.read(path, encoding: 'UTF-8')
@@ -47,6 +55,17 @@ class PanelAssetsTest < Minitest::Test
       node = path.split('/').drop(1).reduce(schema) { |s, key| s.fetch('properties').fetch(key) }
       refute_nil node, path
       assert Archgen::UI::Messages.field_label(path), "libellé de message pour #{path}"
+    end
+  end
+
+  def test_every_terrain_field_has_a_known_path_and_message
+    html = read_utf8(*UI_DIR, 'panel.html')
+    paths = html.scan(/data-site-path="([^"]+)"/).flatten
+    assert_equal 6, paths.size
+    schema = JSON.parse(read_utf8('schemas', 'site-settings.v1.schema.json'))
+    paths.each do |path|
+      refute_nil path.split('/').drop(1).reduce(schema) { |s, key| s.fetch('properties').fetch(key) }, path
+      assert Archgen::UI::Messages.field_label("/site#{path}"), "libellé de message pour #{path}"
     end
   end
 

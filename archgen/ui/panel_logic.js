@@ -159,6 +159,22 @@
   }
 
   // Une seule échelle pour l'élévation et le plan : pixels par mètre.
+  // Ce que dit la section Terrain, d'après ce que Ruby a répondu.
+  function siteStateText(s) {
+    if (s.stale) {
+      return s.terrain ? 'Terrain retenu. Rechargez la sélection pour continuer.' : 'Rechargez la sélection pour voir l’état de l’assise.';
+    }
+    if (s.hasSite) {
+      return s.moved ? 'Assise périmée : le bâtiment a été déplacé. Relevez de nouveau.' : 'Ce bâtiment est adapté au terrain.';
+    }
+    return s.terrain ? 'Terrain retenu. Ce bâtiment n’a pas encore d’assise.' : 'Aucun terrain retenu.';
+  }
+
+  function canSurvey(s) {
+    return Boolean(s.target && !s.stale && !s.busy && s.valid && (s.terrain || s.hasSite));
+  }
+
+
   function commonScale(extents, widthPx, heightPx) {
     var scale = Infinity;
     extents.forEach(function (extent) {
@@ -198,6 +214,7 @@
     isCurrent: isCurrent, nextRequestId: nextRequestId, groupDiagnostics: groupDiagnostics,
     uniqueDiagnostics: uniqueDiagnostics, messageText: messageText,
     canWrite: canWrite, recoveryFor: recoveryFor, messageToKeep: messageToKeep,
-    commonScale: commonScale, extentOf: extentOf, summaryText: summaryText
+    commonScale: commonScale, extentOf: extentOf, summaryText: summaryText,
+    setPath: setPath, siteStateText: siteStateText, canSurvey: canSurvey
   };
 }));

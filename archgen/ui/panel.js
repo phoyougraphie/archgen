@@ -14,12 +14,15 @@
   var state = {
     mode: 'new', overrides: {}, profiles: [], profile: null, baseProfile: null, targetToken: null,
     counter: 0, latestPreview: null, pending: {}, timer: null, localErrors: {}, lastConfig: null,
-    previewReady: false, previewDraft: null, confirmation: null, busy: false, cooling: false, editStale: false, notice: null, keptDraft: null, pendingMessage: null
+    previewReady: false, previewDraft: null, confirmation: null, busy: false, cooling: false, editStale: false, notice: null, keptDraft: null, pendingMessage: null,
+    site: { terrainToken: null, status: null, preview: null, confirmation: null, confirmMode: null, errors: {} }
   };
   var COOLDOWN_MS = 700;
 
   var fields = Array.prototype.slice.call(document.querySelectorAll('[data-path]'));
-  var knownPaths = fields.map(function (el) { return el.dataset.path; }).concat(['/roof/type', '/profile']);
+  var siteFields = Array.prototype.slice.call(document.querySelectorAll('[data-site-path]'));
+  var knownPaths = fields.map(function (el) { return el.dataset.path; }).concat(['/roof/type', '/profile'])
+    .concat(siteFields.map(function (el) { return '/site' + el.dataset.sitePath; }));
   var el = {
     title: byId('title'), status: byId('status'), summary: byId('summary'), summaryList: byId('summary-list'),
     profile: byId('f-profile'), signature: byId('profile-signature'), roof: byId('f-roof'),
@@ -27,7 +30,10 @@
     reload: byId('reload'), reset: byId('reset'), previewBox: document.querySelector('.preview'),
     write: byId('generate'), newBuilding: byId('new-building'), confirm: byId('confirm'),
     confirmMessage: byId('confirm-message'), confirmChanges: byId('confirm-changes'), confirmChangesTitle: byId('confirm-changes-title'),
-    confirmYes: byId('confirm-yes'), confirmNo: byId('confirm-no')
+    confirmYes: byId('confirm-yes'), confirmNo: byId('confirm-no'),
+    terrain: byId('terrain'), siteState: byId('site-state'), siteSummary: byId('site-summary'), siteWarnings: byId('site-warnings'),
+    siteRetain: byId('site-retain'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'),
+    siteRatio: byId('site-ratio'), earthwork: byId('f-earthwork')
   };
 
   function byId(id) { return document.getElementById(id); }
@@ -57,6 +63,12 @@
     else if (action === 'preview') { onPreview(response); }
     else if (action === 'generate') { onWritten(response, 'Bâtiment créé.'); }
     else if (action === 'regenerate') { onWritten(response, 'Bâtiment régénéré.'); }
+    else if (action === 'retain_terrain') { onRetained(response); }
+    else if (action === 'site_status') { onSiteStatus(response); }
+    else if (action === 'site_preview') { onSitePreview(response); }
+    else if (action === 'site_remove_preview') { onSiteRemovePreview(response); }
+    else if (action === 'adapt_site') { onSiteWritten(response, 'Bâtiment adapté au terrain.'); }
+    else if (action === 'remove_site') { onSiteWritten(response, 'Assise retirée.'); }
   };
 
   window.archgenSetMode = function (mode) { startMode(mode); };
@@ -66,6 +78,9 @@
     var notice = JSON.parse(json);
     closeConfirm();
     state.confirmation = null;
+    forgetSitePreview();
+    // Le jeton de terrain est lié au document : enregistrer ou en changer le périme.
+    if (notice.reason === 'document' || notice.reason === 'saved') { state.site.terrainToken = null; }
     if (state.mode !== 'edit') {
       if (notice.reason === 'document') { requestPreview(); }
       updateWrite();
@@ -84,6 +99,7 @@
     setStatus('Cible périmée', true);
     showGeneralMessage(notice.message);
     updateWrite();
+    showSite();
   };
 
   // --- Démarrage
@@ -96,6 +112,7 @@
     document.querySelectorAll('[data-catalogue="materials"]').forEach(function (select) {
       fillSelect(select, result.materials.map(function (m) { return { value: m.id, label: m.label }; }));
     });
+    fillSite(result.site);
     startMode(result.mode);
   }
 
@@ -132,7 +149,9 @@
     el.title.textContent = edit ? 'Modifier le bâtiment sélectionné' : 'Nouveau bâtiment';
     el.write.textContent = edit ? 'Régénérer' : 'Générer';
     el.reset.textContent = edit ? 'Annuler mes modifications' : 'Revenir aux valeurs du style';
+    el.terrain.hidden = !edit;
     updateWrite();
+    showSite();
   }
 
   function updateWrite() {
@@ -188,6 +207,9 @@
     state.localErrors = {};
     state.editStale = false;
     state.confirmation = null;
+    forgetSitePreview();
+    state.site.status = null;
+    send('site_status', { target_token: token });
     showMode();
     showLocalErrors();
     var known = findProfile(config.profile.id);
@@ -272,6 +294,7 @@
     state.confirmation = null;
     state.notice = null;
     closeConfirm();
+    state.site.confirmMode = null;
     el.previewBox.classList.add('is-stale');
     setStatus(text, Object.keys(state.localErrors).length > 0);
     updateWrite();
@@ -305,6 +328,7 @@
     closeConfirm();
     setStatus('Écriture en cours');
     updateWrite();
+    showSite();
   }
 
   // Le second clic d'un double clic arrive après la réponse : il ne doit rien déclencher.
@@ -313,6 +337,7 @@
     setTimeout(function () {
       state.cooling = false;
       updateWrite();
+      showSite();
     }, COOLDOWN_MS);
   }
 
@@ -339,6 +364,7 @@
   }
 
   function onConfirmYes() {
+    if (state.site.confirmMode) { return onSiteConfirmYes(); }
     var confirmation = state.confirmation;
     if (!confirmation || state.busy) { return; }
     state.confirmation = null;
@@ -348,6 +374,14 @@
 
   // Annuler garde le brouillon et la sélection ; confirmer exigera un aperçu frais.
   function onConfirmNo() {
+    if (state.site.confirmMode) {
+      closeConfirm();
+      forgetSitePreview();
+      setStatus('Assise non modifiée : relevez de nouveau pour confirmer.');
+      showSite();
+      el.siteSurvey.focus();
+      return;
+    }
     closeConfirm();
     requestPreview();
     el.write.focus();
@@ -449,6 +483,8 @@
   }
 
   function fieldFor(path) {
+    var site = siteFields.filter(function (f) { return '/site' + f.dataset.sitePath === path; })[0];
+    if (site) { return site; }
     if (path === '/roof/type') { return el.roof; }
     if (path === '/profile') { return el.profile; }
     return fields.filter(function (f) { return f.dataset.path === path; })[0];
@@ -516,6 +552,193 @@
       el.warnings.appendChild(item);
       showFieldWarning(d.path, L.messageText(d));
     });
+  }
+
+  // --- Terrain : le panneau affiche et transmet, Ruby relève, calcule et décide
+
+  function fillSite(settings) {
+    siteFields.forEach(function (field) { writeField(field, L.getPath(settings, field.dataset.sitePath)); });
+    state.site.errors = {};
+    showSiteErrors();
+  }
+
+  // Un aperçu d'assise ne vaut que pour ce qui a été relevé, et une seule fois.
+  function forgetSitePreview() {
+    state.site.preview = null;
+    state.site.confirmation = null;
+    state.site.confirmMode = null;
+    el.siteSummary.textContent = '';
+    el.siteWarnings.textContent = '';
+  }
+
+  function readSite() {
+    var settings = {};
+    state.site.errors = {};
+    siteFields.forEach(function (field) {
+      var value = readField(field);
+      if (value === null) { state.site.errors[field.dataset.sitePath] = LOCAL_ERROR; return; }
+      L.setPath(settings, field.dataset.sitePath, value);
+    });
+    showSiteErrors();
+    return settings;
+  }
+
+  function showSiteErrors() {
+    document.querySelectorAll('.site-local').forEach(function (n) { n.parentNode.removeChild(n); });
+    siteFields.forEach(function (field) {
+      var text = state.site.errors[field.dataset.sitePath];
+      field.classList.toggle('is-invalid', Boolean(text));
+      if (!text) { return; }
+      var node = document.createElement('p');
+      node.className = 'error site-local';
+      node.textContent = text;
+      field.closest('.field').appendChild(node);
+    });
+  }
+
+  function showSite() {
+    var site = state.site;
+    var hasSite = Boolean(site.status && site.status.has_site);
+    var valid = Object.keys(site.errors).length === 0;
+    el.siteState.textContent = L.siteStateText({ stale: state.editStale, hasSite: hasSite, moved: Boolean(site.status && site.status.moved), terrain: Boolean(site.terrainToken) });
+    el.siteRatio.hidden = el.earthwork.value !== 'embankment';
+    el.siteRetain.disabled = state.busy;
+    el.siteSurvey.disabled = !L.canSurvey({ target: state.targetToken, stale: state.editStale, busy: state.busy, valid: valid, terrain: Boolean(site.terrainToken), hasSite: hasSite });
+    el.siteAdapt.disabled = !site.preview || state.editStale || state.busy || state.cooling;
+    el.siteRemove.disabled = !hasSite || !state.targetToken || state.editStale || state.busy || state.cooling;
+  }
+
+  function onSiteInput() {
+    forgetSitePreview();
+    closeConfirm();
+    readSite();
+    showSite();
+  }
+
+  function sitePayload() {
+    var payload = { site: readSite(), target_token: state.targetToken };
+    if (state.site.terrainToken) { payload.terrain_token = state.site.terrainToken; }
+    return payload;
+  }
+
+  function onSiteSurveyClick() {
+    var payload = sitePayload();
+    showSite();
+    if (el.siteSurvey.disabled) { return; }
+    forgetSitePreview();
+    setStatus('Relevé en cours');
+    send('site_preview', payload);
+  }
+
+  function onSiteAdaptClick() {
+    var preview = state.site.preview;
+    if (el.siteAdapt.disabled || !preview) { return; }
+    state.site.confirmation = preview.confirmation;
+    state.site.confirmMode = 'adapt';
+    openSiteConfirm(preview.confirmation.message, preview.lines);
+  }
+
+  function onSiteRemoveClick() {
+    if (el.siteRemove.disabled) { return; }
+    send('site_remove_preview', { target_token: state.targetToken });
+  }
+
+  function openSiteConfirm(message, lines) {
+    el.confirmMessage.textContent = message;
+    el.confirmChanges.textContent = '';
+    lines.forEach(function (line) {
+      var item = document.createElement('li');
+      item.textContent = line;
+      el.confirmChanges.appendChild(item);
+    });
+    el.confirmChanges.hidden = lines.length === 0;
+    el.confirmChangesTitle.textContent = lines.length === 0 ? '' : 'Valeurs relevées';
+    el.confirm.hidden = false;
+    el.write.disabled = true;
+    el.confirmYes.focus();
+  }
+
+  function onSiteConfirmYes() {
+    var site = state.site;
+    var confirmation = site.confirmation;
+    if (!confirmation || state.busy) { return; }
+    var mode = site.confirmMode;
+    site.confirmation = null;
+    site.confirmMode = null;
+    startWriting();
+    if (mode === 'remove') {
+      send('remove_site', { target_token: state.targetToken, confirmation_token: confirmation.token });
+      return;
+    }
+    var payload = sitePayload();
+    payload.confirmation_token = confirmation.token;
+    send('adapt_site', payload);
+  }
+
+  function onRetained(response) {
+    if (!response.ok) { return showSiteFailure(response); }
+    state.site.terrainToken = response.result.terrain_token;
+    forgetSitePreview();
+    clearDiagnostics();
+    setStatus('Terrain retenu');
+    if (state.editStale) { showGeneralMessage('Terrain retenu. Sélectionnez de nouveau le bâtiment, puis rechargez la sélection.'); }
+    showSite();
+  }
+
+  function onSiteStatus(response) {
+    if (!response.ok) {
+      state.site.status = null;
+      showSite();
+      return;
+    }
+    state.site.status = response.result;
+    if (response.result.settings) { fillSite(response.result.settings); }
+    showSite();
+  }
+
+  function onSitePreview(response) {
+    if (!response.ok) { return showSiteFailure(response); }
+    state.site.preview = response.result;
+    clearDiagnostics();
+    el.siteSummary.textContent = '';
+    response.result.lines.forEach(function (line) {
+      var item = document.createElement('li');
+      item.textContent = line;
+      el.siteSummary.appendChild(item);
+    });
+    el.siteWarnings.textContent = '';
+    L.uniqueDiagnostics(response.diagnostics).forEach(function (d) {
+      var item = document.createElement('li');
+      item.textContent = L.messageText(d);
+      el.siteWarnings.appendChild(item);
+    });
+    setStatus('Relevé prêt');
+    showSite();
+  }
+
+  function onSiteRemovePreview(response) {
+    if (!response.ok) { return showSiteFailure(response); }
+    state.site.confirmation = response.result.confirmation;
+    state.site.confirmMode = 'remove';
+    openSiteConfirm(response.result.confirmation.message, []);
+  }
+
+  function onSiteWritten(response, successText) {
+    forgetSitePreview();
+    onWritten(response, successText);
+    showSite();
+  }
+
+  // L'aperçu du bâtiment reste valable : seule l'assise est refusée.
+  function showSiteFailure(response) {
+    forgetSitePreview();
+    showFailure(response.diagnostics);
+    if (L.recoveryFor(response.diagnostics) === 'reload') { state.editStale = true; }
+    if (!state.editStale) { el.previewBox.classList.remove('is-stale'); }
+    updateWrite();
+    showSite();
+    var details = el.terrain;
+    details.open = true;
   }
 
   // --- Remplissage : les valeurs saisies ne sont pas écrasées
@@ -629,6 +852,13 @@
   });
   el.profile.addEventListener('change', onProfileChange);
   el.roof.addEventListener('change', onRoofChange);
+  siteFields.forEach(function (field) {
+    field.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', onSiteInput);
+  });
+  el.siteRetain.addEventListener('click', function () { send('retain_terrain'); });
+  el.siteSurvey.addEventListener('click', onSiteSurveyClick);
+  el.siteAdapt.addEventListener('click', onSiteAdaptClick);
+  el.siteRemove.addEventListener('click', onSiteRemoveClick);
   el.reload.addEventListener('click', function () { startMode('edit'); });
   el.newBuilding.addEventListener('click', function () { startMode('new'); });
   el.write.addEventListener('click', onWriteClick);

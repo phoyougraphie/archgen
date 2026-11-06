@@ -77,7 +77,7 @@ Faits mesurés par `test/host/terrain_spike.rb` sur 26.2.243 :
 | Un trou renvoie `nil` | `null` dans la grille |
 | Terrain ou tag masqué : `nil` avec `wysiwyg` vrai | `wysiwyg` reste vrai ; terrain invisible = refus, jamais de géométrie masquée |
 | Une face inversée reste touchée | L'orientation du terrain est sans effet |
-| Un rayon qui file le long d'une arête verticale ne renvoie plus rien (H13 : soubassement déjà écrit, nœud sur une arête de bande) | Chaque rayon est décalé de 0,2 mm en X et en Y dans le repère de la racine ; l'altitude lue reste juste à moins de 1 mm tant que le terrain ne dépasse pas une pente de 100 % |
+| Sur un soubassement déjà écrit, un nœud situé sur une arête verticale de bande ne renvoyait plus d'altitude (H13). Le décalage fait disparaître le défaut ; l'explication, un rayon filant le long de l'arête, est déduite et n'a pas été isolée | Chaque rayon est décalé de 0,2 mm en X et en Y dans le repère de la racine ; l'altitude lue reste juste à moins de 1 mm tant que le terrain ne dépasse pas une pente de 100 % |
 | 0,84 ms par rayon sur 7 200 faces | Relevé sur demande seulement, jamais à chaque frappe |
 
 **Le terrain est désigné par l'utilisateur :** un seul `Group` ou `ComponentInstance` de niveau racine, sélectionné puis retenu dans le panneau. Pas de déduction : avec des arbres ou un autre bâtiment, deviner reviendrait à inventer une altitude. Des faces libres sont refusées, avec le conseil de les grouper. Un bâtiment ARCHGEN, une entité imbriquée ou masquée sont refusés aussi. Terrain absent ou d'un autre document : `E_SITE_TERRAIN` sur `/site/terrain`. Terrain trop petit : ses nœuds sont à `null`, donc `E_SITE_SURVEY`. Rien n'est écrit sur le terrain : la référence retenue vit dans la session, et sa persistance relève de l'écriture de l'assise.
@@ -97,7 +97,7 @@ Un bâtiment écrit par un moteur antérieur reste valable sans `archgen.site`. 
 
 ## Panneau
 
-Section « Terrain » en mode édition seulement. Elle contient : « Retenir ce terrain », politique de plateforme, décalage, type de terrassement, pente, matériau, pas, puis « Relever ». L'aperçu s'ajoute à celui du bâtiment : altitude de plateforme, déblai et remblai maximaux, volumes, avertissements. La confirmation liste ces valeurs avant Remplacer. Un relevé ne laisse aucune trace dans le modèle ni dans l'Annuler.
+Section « Terrain » en mode édition seulement. Elle contient : « Retenir ce terrain », politique de plateforme, décalage, type de terrassement, pente, matériau, pas, puis « Relever », « Adapter au terrain » et « Retirer l'assise ». Sélectionner le terrain périme la cible : il faut ensuite resélectionner le bâtiment et recharger, le jeton de terrain restant valable. Enregistrer périme ce jeton, mais une racine déjà adaptée garde son terrain. L'adaptation part de la configuration enregistrée : un brouillon non régénéré ne s'y applique pas. L'aperçu s'ajoute à celui du bâtiment : altitude de plateforme, déblai et remblai maximaux, volumes, avertissements. La confirmation liste ces valeurs avant Remplacer. Un relevé ne laisse aucune trace dans le modèle ni dans l'Annuler.
 
 ## Hors périmètre
 
