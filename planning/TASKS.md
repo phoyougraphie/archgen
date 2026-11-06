@@ -37,7 +37,7 @@ Contrat : [TERRAIN_CONTRACT](../docs/TERRAIN_CONTRACT.md). Ordre fixé par ADR-2
 | **AG-024 — Relevé dans SketchUp** | AG-021 | Port de relevé, terrain retenu, obstacles, trous, repère de la racine ; aucune écriture. | Fait mesuré par le contrat rejoué sur le produit ; temps publié ; aucune trace d'Annuler. H13, partie relevé. |
 | **AG-025 — Écrire et persister l'assise** | AG-023, AG-024 | Définition avec assise, Z de la racine, `archgen.site`, garde de transaction, retrait, version future. | Une entrée d'Annuler, terrain intact, pannes sans résidu, terrain changé refusé, aller-retour SKP, bâtiment V0.1 inchangé. H13. |
 | **AG-026 — Panneau terrain et RBZ 0.2.0** | AG-025 | Section Terrain, aperçu, confirmation, assise périmée, guide, journal, RBZ. | Valeurs issues du plan, parcours complet, charge sur 100 000 faces ; H01 à H14 rejouées sur le RBZ. H14. |
-| **AG-027 — Étagement par parcelle** | AG-026, AG-036 | Une assise par parcelle le long d'une rue en pente, raccord par soubassement. | À détailler à l'ouverture, après le contrat d'EXT-07. |
+| **AG-027 — Étagement par parcelle** | AG-026, AG-036 | Une plateforme par parcelle le long d'une rue en pente, raccord par soubassement, section Terrain du panneau d'ensemble, guide, journal, RBZ 0.4.0 ([contrat](../docs/TERRAIN_CONTRACT.md)). | Rue en pente et îlot sur un vrai terrain, une entrée d'Annuler, terrain intact, bâtiments toujours partagés, pannes sans résidu, aller-retour SKP ; H01 à H18 rejouées sur le RBZ. H18. |
 
 ## J7 — Rue et îlots au tracé (EXT-07)
 

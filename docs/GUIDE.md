@@ -109,6 +109,23 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 - **Après coup :** on déplace ou on copie l'ensemble entier. Pour agir sur un bâtiment, il faudrait éclater l'ensemble : ses bâtiments restent, mais ne sont plus modifiables par ARCHGEN.
 - **Hors de portée :** pas de chaussée, de trottoir ni de carrefour. Le tracé est horizontal, sans adaptation au terrain, et rien ne vérifie qu'il ne traverse pas d'autres objets du modèle.
 
+## Étager une rue ou un îlot sur un terrain
+
+Le terrain doit déjà être dans le modèle, en un seul groupe ou composant, visible, au niveau du modèle. Le tracé reste horizontal : on trace d'abord l'ensemble, on le place au-dessus du terrain, puis on l'adapte.
+
+1. Sélectionnez le terrain, ouvrez **Modifier l'ensemble sélectionné** s'il ne l'est pas, et cliquez sur **Retenir ce terrain**.
+2. Sélectionnez l'ensemble, puis cliquez sur **Recharger la sélection**.
+3. Choisissez l'altitude de plateforme, le décalage, le matériau et le pas, puis cliquez sur **Relever**. Rien n'est écrit : le panneau annonce plateformes, ressaut, remblai et déblai.
+4. Cliquez sur **Adapter au terrain**. Le relevé est refait d'abord. Un Annuler retire tout en une fois.
+
+Chaque parcelle a sa plateforme, et le soubassement ferme la marche entre deux voisins. **Le terrain n'est pas modifié.** Si le terrain dépasse une plateforme, il traverse le bâtiment. Un refus sur une seule parcelle refuse tout l'ensemble, et le message la désigne.
+
+Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain, ce qui prend le temps d'un relevé. **Retirer l'assise** ramène tous les bâtiments au niveau de l'ensemble.
+
+**Durée.** Le relevé traverse tout ce qui est au-dessus du terrain, et SketchUp ne répond plus pendant ce temps : ne fermez pas la fenêtre. Sur une longue rue, augmentez le pas.
+
+**Limites.** Soubassement seulement, pas de talus entre voisins. Pas d'escalier ni de rampe : un seuil haut est signalé, pas résolu. Un terrain modifié n'est vu qu'au relevé suivant.
+
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.

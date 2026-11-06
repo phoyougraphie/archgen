@@ -20,6 +20,7 @@
 
 <main class="form street">
   <p id="guide" class="hint">Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.</p>
+  <p id="replace-warning" class="hint" hidden>La géométrie de cet ensemble sera remplacée, tous ses bâtiments compris. Le tracé ne change pas. Annuler la rétablit en une fois.</p>
   <fieldset>
     <legend>Bâtiments</legend>
     <div class="field wide"><label for="s-profile">Style</label><select id="s-profile"></select></div>
@@ -42,12 +43,26 @@
     <div class="field"><label for="s-access-width">Largeur (m)</label><input id="s-access-width" inputmode="decimal"></div>
     <div class="field"><label for="s-access-height">Hauteur d'un porche (m)</label><input id="s-access-height" inputmode="decimal"></div>
   </fieldset>
+<fieldset id="s-terrain" hidden>
+  <legend>Terrain</legend>
+  <p id="site-hint" class="hint wide">Une plateforme par parcelle, à partir de l'ensemble enregistré. Sélectionnez le terrain, retenez-le, puis resélectionnez l'ensemble et rechargez. Le terrain n'est pas modifié.</p>
+  <div class="actions wide"><button type="button" id="site-retain">Retenir ce terrain</button></div>
+  <div class="field"><label for="s-site-policy">Altitude de plateforme</label><select id="s-site-policy" data-site="1"><option value="high">Point haut de la parcelle</option><option value="mean">Altitude moyenne de la parcelle</option></select></div>
+  <div class="field"><label for="s-site-offset">Décalage (m)</label><input id="s-site-offset" inputmode="decimal" data-site="1"></div>
+  <div class="field"><label for="s-site-material">Soubassement</label><select id="s-site-material" data-site="1"></select></div>
+  <div class="field"><label for="s-site-step">Pas du relevé (m)</label><input id="s-site-step" inputmode="decimal" data-site="1"></div>
+  <div class="actions wide">
+    <button type="button" id="site-survey">Relever</button>
+    <button type="button" id="site-adapt" disabled>Adapter au terrain</button>
+    <button type="button" id="site-remove" disabled>Retirer l'assise</button>
+  </div>
+  <ul id="site-lines" class="wide" hidden></ul>
+</fieldset>
   <div class="street-footer">
   <section aria-labelledby="result-title">
     <h2 id="result-title">Résultat</h2>
     <p id="result" class="hint">Aucun tracé.</p>
     <ul id="warnings" hidden></ul>
-    <p id="replace-warning" class="hint" hidden>La géométrie de cet ensemble sera remplacée, tous ses bâtiments compris. Le tracé ne change pas. Annuler la rétablit en une fois.</p>
   </section>
   <div class="actions">
     <button type="button" id="create" class="primary" disabled>Créer</button>

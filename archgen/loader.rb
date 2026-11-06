@@ -47,6 +47,7 @@ module Archgen
       core/geometry_engine
       core/parcel_building
       core/ensemble_engine
+      core/ensemble_site
       geometry/embankment_builder
       geometry/site_planner
       composition

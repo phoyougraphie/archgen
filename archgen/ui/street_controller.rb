@@ -6,11 +6,12 @@ module Archgen
     # vient que de l'outil : le panneau n'envoie que des réglages, jamais de géométrie.
     class StreetController
       PROTOCOL = 1
-      ACTIONS = %w[init preview create clear load_selection edit_preview regenerate].freeze
-      MUTATIONS = %w[create regenerate].freeze
+      ACTIONS = %w[init preview create clear load_selection edit_preview regenerate retain_terrain site_preview adapt_site remove_site].freeze
+      MUTATIONS = %w[create regenerate adapt_site remove_site].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'preview' => %w[settings], 'create' => %w[settings ensemble_digest], 'clear' => [],
-        'load_selection' => [], 'edit_preview' => %w[settings], 'regenerate' => %w[settings ensemble_digest]
+        'load_selection' => [], 'edit_preview' => %w[settings], 'regenerate' => %w[settings ensemble_digest],
+        'retain_terrain' => [], 'site_preview' => %w[site], 'adapt_site' => %w[site site_digest], 'remove_site' => []
       }.freeze
       MAX_REQUEST_ID = 64
       MAX_REMEMBERED = 32
@@ -63,11 +64,13 @@ module Archgen
 
       def close_session
         forget
+        @terrain = nil
         @mutations.clear
       end
 
       def document_changed
         forget
+        @terrain = nil
       end
 
       private
@@ -95,6 +98,7 @@ module Archgen
         payload = envelope['payload']
         return 'invalid_envelope' unless payload.is_a?(Hash) && (payload.keys - PAYLOAD_KEYS.fetch(envelope['action'])).empty?
         return 'invalid_envelope' if PAYLOAD_KEYS.fetch(envelope['action']).include?('settings') && !payload['settings'].is_a?(Hash)
+        return 'invalid_envelope' if PAYLOAD_KEYS.fetch(envelope['action']).include?('site') && !payload['site'].is_a?(Hash)
 
         nil
       end
@@ -110,6 +114,8 @@ module Archgen
         when 'clear' then clear
         when 'load_selection' then load_selection
         when 'edit_preview' then edit_preview(payload)
+        when 'retain_terrain' then retain_terrain
+        when 'site_preview' then site_preview(payload)
         end
       end
 
@@ -122,6 +128,8 @@ module Archgen
           'defaults' => DEFAULT_SETTINGS,
           'side' => @session.side,
           'tool_active' => @tool_active == true,
+          'site_defaults' => Core::SiteIntake::DEFAULTS,
+          'site_materials' => Composition.materials.fetch('materials').map { |id, entry| { 'id' => id, 'label' => entry['label'] } },
           'mode' => @mode
         )
       end
@@ -211,12 +219,21 @@ module Archgen
 
         @busy = true
         begin
-          response = respond(request_id, action == 'create' ? create(payload) : regenerate(payload))
+          response = respond(request_id, mutate(action, payload))
         ensure
           @busy = false
         end
         @mutations.shift while @mutations.size >= MAX_REMEMBERED
         @mutations[request_id] = response
+      end
+
+      def mutate(action, payload)
+        case action
+        when 'create' then create(payload)
+        when 'regenerate' then regenerate(payload)
+        when 'adapt_site' then adapt_site(payload)
+        when 'remove_site' then remove_site
+        end
       end
 
       def create(payload)
@@ -250,7 +267,11 @@ module Archgen
         computed = @service.preview(tree: @edit_settings)
         return computed unless computed.ok?
 
-        Core::Result.ok(edit_body(computed.value, 'settings' => @edit_settings, 'revision' => @edit_target.revision))
+        status = @service.site_status(model: @model_provider.call, target: @edit_target)
+        return status unless status.ok?
+
+        @terrain = Adapters::SketchUp::TerrainRef.new(document_key: @model_provider.call.guid, persistent_id: status.value['terrain_pid']) if status.value && !@terrain
+        Core::Result.ok(edit_body(computed.value, 'settings' => @edit_settings, 'revision' => @edit_target.revision, 'site' => site_state(status.value)))
       end
 
       def edit_preview(payload)
@@ -275,7 +296,68 @@ module Archgen
 
         @edit_target = written.value.target
         @edit_settings = computed.value.settings
-        Core::Result.ok(edit_body(computed.value, 'revision' => written.value.revision, 'written' => true), written.diagnostics)
+        Core::Result.ok(edit_body(computed.value, 'revision' => written.value.revision, 'written' => true), merged_warnings(written.diagnostics))
+      end
+
+      # --- Terrain : le jeton survit au rechargement, car il faut resélectionner l'ensemble.
+
+      def retain_terrain
+        retained = @service.retain_terrain(model: @model_provider.call)
+        return retained unless retained.ok?
+
+        @terrain = retained.value
+        Core::Result.ok('retained' => true)
+      end
+
+      def site_preview(payload)
+        return not_loaded unless @edit_target
+        return failure('E_SITE_TERRAIN', '/site/terrain', 'terrain_not_retained') unless @terrain
+
+        computed = @service.preview_site(model: @model_provider.call, target: @edit_target, terrain: @terrain, site: payload['site'])
+        return computed unless computed.ok?
+
+        metrics = computed.value.site_plan['metrics']
+        Core::Result.ok({ 'site_digest' => computed.value.site_digest, 'metrics' => metrics, 'lines' => Messages.ensemble_site_lines(metrics) }, merged_warnings(computed.diagnostics))
+      end
+
+      def adapt_site(payload)
+        return not_loaded unless @edit_target
+        return failure('E_SITE_TERRAIN', '/site/terrain', 'terrain_not_retained') unless @terrain
+
+        written = @service.adapt_to_site(model: @model_provider.call, target: @edit_target, terrain: @terrain, site: payload['site'], site_digest: payload['site_digest'])
+        written.ok? ? site_written(written) : written
+      end
+
+      def remove_site
+        return not_loaded unless @edit_target
+
+        written = @service.remove_site(model: @model_provider.call, target: @edit_target)
+        written.ok? ? site_written(written) : written
+      end
+
+      def site_written(written)
+        @edit_target = written.value.target
+        status = @service.site_status(model: @model_provider.call, target: @edit_target)
+        Core::Result.ok({ 'revision' => written.value.revision, 'site' => site_state(status.ok? ? status.value : nil) }, merged_warnings(written.diagnostics))
+      end
+
+      def site_state(status)
+        return { 'has_site' => false } unless status
+
+        { 'has_site' => true, 'settings' => status['settings'], 'moved' => status['moved'] }
+      end
+
+      # 200 parcelles donneraient 200 lignes : les avertissements de terrain se résument par code.
+      MERGED = { 'W_SITE_DOOR_GAP' => 'door_gap_many', 'W_SITE_BURIED' => 'terrain_above_many' }.freeze
+
+      def merged_warnings(diagnostics)
+        merged, others = diagnostics.partition { |d| MERGED.key?(d.code) }
+        summaries = merged.group_by(&:code).map do |code, group|
+          next group.first if group.size == 1
+
+          Core::Diagnostic.warning(code, '/site/platform', reason: MERGED.fetch(code), count: group.size, value: group.map { |d| d.params['value'] }.max)
+        end
+        others + summaries
       end
 
       def edit_body(computed, extra = {})

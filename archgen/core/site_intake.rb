@@ -47,6 +47,16 @@ module Archgen
         problem ? Result.fail([problem]) : Result.ok(SurveyGrid.new(normalized))
       end
 
+      # Grille d'une parcelle, relue contre les axes attendus pour sa boîte.
+      def parcel_grid(tree, axes)
+        problems = rebase(@survey.validate(tree), SURVEY)
+        return Result.fail(problems) unless problems.empty?
+
+        normalized = quantized(tree)
+        problem = shape_problem(normalized, axes)
+        problem ? Result.fail([problem]) : Result.ok(SurveyGrid.new(normalized))
+      end
+
       private
 
       def read_settings(input)

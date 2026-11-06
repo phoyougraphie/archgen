@@ -14,7 +14,9 @@
     side: byId('s-side'), streetField: byId('s-street-field'), street: byId('s-street'), target: byId('s-target'), depth: byId('s-depth'), bay: byId('s-bay'),
     accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'), accessHeight: byId('s-access-height'),
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
-    create: byId('create'), clear: byId('clear'), resume: byId('resume')
+    create: byId('create'), clear: byId('clear'), resume: byId('resume'),
+    terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
+    siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
   };
 
   function send(action, payload) {
@@ -80,7 +82,10 @@
 
   function updateButtons() {
     el.create.disabled = !state.ready || state.busy || state.cooling;
-    el.clear.disabled = state.busy || !state.hasTrace;
+el.clear.disabled = state.busy || !state.hasTrace;
+el.siteSurvey.disabled = state.busy || !state.loaded;
+el.siteAdapt.disabled = state.busy || state.cooling || !state.siteDigest;
+el.siteRemove.disabled = state.busy || state.cooling || !state.hasSite;
   }
 
   // Un tracé refusé garde son état : ses refus arrivent dans le résultat.
@@ -165,7 +170,10 @@
     if (action === 'create') { onCreated(response); return; }
     if (action === 'load_selection') { onLoaded(response); return; }
     if (action === 'edit_preview') { showDiagnostics(allDiagnostics(response)); showEdit(response.result, response.ok); return; }
-    if (action === 'regenerate') { onRegenerated(response); return; }
+if (action === 'regenerate') { onRegenerated(response); return; }
+if (action === 'retain_terrain') { onRetained(response); return; }
+if (action === 'site_preview') { onSitePreview(response); return; }
+if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(response, action); return; }
     showDiagnostics(allDiagnostics(response));
     showResult(response.result, response.ok);
   };
@@ -204,7 +212,16 @@
     el.bay.value = decimal(defaults.parcel.bay_width_m);
     el.street.value = decimal(defaults.layout.street_width_m);
     el.accessWidth.value = decimal(defaults.access.width_m);
-    el.accessHeight.value = decimal(defaults.access.height_m);
+el.accessHeight.value = decimal(defaults.access.height_m);
+el.siteMaterial.textContent = '';
+result.site_materials.forEach(function (material) {
+  var option = document.createElement('option');
+  option.value = material.id;
+  option.textContent = material.label;
+  el.siteMaterial.appendChild(option);
+});
+state.siteDefaults = result.site_defaults;
+fillSite(result.site_defaults);
     el.side.value = result.side;
     el.streetField.hidden = result.side !== 'both';
     state.mode = result.mode;
@@ -220,6 +237,7 @@
 
   function applyMode() {
     var edit = state.mode === 'edit';
+    el.terrain.hidden = !edit;
     el.title.textContent = edit ? 'Modifier un ensemble' : 'Tracer une rue';
     el.guide.textContent = edit ? 'Le tracé reste celui de l’ensemble : seuls ses réglages changent.'
       : 'Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.';
@@ -232,6 +250,74 @@
     state.digest = null;
     updateButtons();
   }
+
+function fillSite(values) {
+  el.sitePolicy.value = values.platform.policy;
+  el.siteOffset.value = decimal(values.platform.offset_m);
+  el.siteMaterial.value = values.plinth_material;
+  el.siteStep.value = decimal(values.survey.step_m);
+}
+
+function siteValues() {
+  var offset = number(el.siteOffset);
+  var step = number(el.siteStep);
+  if (offset === null || isNaN(offset) || step === null || isNaN(step)) { return null; }
+  return { platform: { policy: el.sitePolicy.value, offset_m: offset }, plinth_material: el.siteMaterial.value, survey: { step_m: step } };
+}
+
+function showSiteState(site) {
+  state.hasSite = Boolean(site && site.has_site);
+  if (state.hasSite) { fillSite(site.settings); }
+  if (site && site.moved) { fillList(el.siteLines, ['L’ensemble a bougé depuis son adaptation : relevez de nouveau.']); el.siteLines.hidden = false; }
+}
+
+function resetSitePreview() {
+  state.siteDigest = null;
+  el.siteLines.textContent = '';
+  el.siteLines.hidden = true;
+  updateButtons();
+}
+
+function onRetained(response) {
+  showDiagnostics(response.diagnostics);
+  el.status.textContent = response.ok ? 'Terrain retenu. Resélectionnez l’ensemble, puis rechargez.' : 'Terrain refusé';
+  if (response.ok) { state.loaded = false; state.ready = false; resetSitePreview(); }
+}
+
+function onSitePreview(response) {
+  state.busy = false;
+  showDiagnostics(response.diagnostics);
+  state.siteDigest = response.ok ? response.result.site_digest : null;
+  fillList(el.siteLines, response.ok ? response.result.lines : []);
+  el.siteLines.hidden = !response.ok;
+    // Le pied collant ne doit pas cacher les valeurs à vérifier.
+    if (response.ok) { el.siteLines.scrollIntoView({ block: 'center' }); }
+  el.status.textContent = response.ok ? 'Relevé terminé. Vérifiez les valeurs avant d’adapter.' : 'Relevé refusé';
+  updateButtons();
+}
+
+function onSiteWritten(response, action) {
+  state.busy = false;
+  state.cooling = true;
+  setTimeout(function () { state.cooling = false; updateButtons(); }, COOLDOWN_MS);
+  showDiagnostics(response.diagnostics);
+  resetSitePreview();
+  if (response.ok) {
+    showSiteState(response.result.site);
+    el.status.textContent = (action === 'adapt_site' ? 'Ensemble adapté au terrain. Révision ' : 'Assise retirée. Révision ') + response.result.revision;
+  } else {
+    el.status.textContent = action === 'adapt_site' ? 'Adaptation refusée' : 'Retrait refusé';
+  }
+  updateButtons();
+}
+
+// Le relevé bloque SketchUp : le message doit s'afficher avant.
+function runSite(message, action, payload) {
+  state.busy = true;
+  el.status.textContent = message;
+  updateButtons();
+  setTimeout(function () { send(action, payload); }, 30);
+}
 
   function setOptional(input, value) {
     input.value = value === undefined || value === null ? '' : decimal(value);
@@ -277,6 +363,8 @@
       return;
     }
     state.loaded = true;
+    resetSitePreview();
+    showSiteState(response.result.site);
     fill(response.result.settings);
     el.status.textContent = 'Révision ' + response.result.revision;
     showEdit(response.result, true);
@@ -329,11 +417,18 @@
 
   // Un champ de texte n'écoute que la frappe : `change` part quand il perd le focus, donc au
   // moment du clic sur Créer, et l'aperçu relancé désactiverait le bouton sous la souris.
-  Array.prototype.slice.call(document.querySelectorAll('input')).forEach(function (input) {
+  Array.prototype.slice.call(document.querySelectorAll('input:not([data-site])')).forEach(function (input) {
     input.addEventListener('input', requestPreview);
   });
-  Array.prototype.slice.call(document.querySelectorAll('select')).forEach(function (select) {
+  Array.prototype.slice.call(document.querySelectorAll('select:not([data-site])')).forEach(function (select) {
     select.addEventListener('change', requestPreview);
+  });
+  // Un réglage de terrain changé rend l'aperçu de l'assise caduc, sans toucher à celui de l'ensemble.
+  Array.prototype.slice.call(document.querySelectorAll('input[data-site]')).forEach(function (input) {
+    input.addEventListener('input', resetSitePreview);
+  });
+  Array.prototype.slice.call(document.querySelectorAll('select[data-site]')).forEach(function (select) {
+    select.addEventListener('change', resetSitePreview);
   });
 
   el.create.addEventListener('click', function () {
@@ -348,7 +443,19 @@
 
   el.clear.addEventListener('click', function () { send('clear'); });
   el.resume.addEventListener('click', function () { window.sketchup.archgen_street('activate_tool'); });
-  el.reload.addEventListener('click', function () { send('load_selection'); });
+el.reload.addEventListener('click', function () { send('load_selection'); });
+el.siteRetain.addEventListener('click', function () { send('retain_terrain'); });
+el.siteSurvey.addEventListener('click', function () {
+  var site = siteValues();
+  if (!site) { el.status.textContent = 'Saisissez un décalage et un pas valides.'; return; }
+  runSite('Relevé du terrain en cours…', 'site_preview', { site: site });
+});
+el.siteAdapt.addEventListener('click', function () {
+  var site = siteValues();
+  if (!site || !state.siteDigest) { return; }
+  runSite('Adaptation en cours : relevé, puis écriture…', 'adapt_site', { site: site, site_digest: state.siteDigest });
+});
+el.siteRemove.addEventListener('click', function () { runSite('Retrait en cours…', 'remove_site', {}); });
 
   send('init');
 }());

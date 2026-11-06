@@ -15,17 +15,19 @@ module Archgen
 
       # plan : GeometryPlan validé ; config : configuration effective du bâtiment.
       # materials : le catalogue complet, terre comprise ; nil ne contrôle pas les identifiants.
-      def call(plan:, config:, grid:, settings:, assise:, materials: nil)
-        footprint = FootprintSolver.call(width_m: plan['metrics']['width_m'], depth_m: plan['metrics']['depth_m'])
+      # footprint : le trapèze d'une parcelle, rectangle du bâtiment seul sinon. passage : le porche d'une parcelle.
+      def call(plan:, config:, grid:, settings:, assise:, materials: nil, footprint: nil, passage: nil)
+        footprint ||= FootprintSolver.call(width_m: plan['metrics']['width_m'], depth_m: plan['metrics']['depth_m'])
         platform = assise['platform_z_m']
         height = ->(facade, u) { terrain_height(grid, facade, u, platform) }
-        door = door_diagnostic(plan, footprint, height)
+        door = passage ? passage_diagnostic(passage, footprint, grid, platform) : door_diagnostic(plan, footprint, height)
         return Core::Result.fail([door]) if door&.error?
 
         earthwork = earthwork_nodes(footprint, grid, settings, platform)
         return earthwork unless earthwork.ok?
 
-        built = build(footprint, settings, config, assise, earthwork.value, door_gap(plan, footprint, height), buried_openings(plan, footprint, height))
+        gap = passage ? passage_gap(passage, footprint, grid, platform) : door_gap(plan, footprint, height)
+        built = build(footprint, settings, config, assise, earthwork.value, gap, buried_openings(plan, footprint, height), passage)
         problems = budget_problems(built['metrics'], plan['metrics'])
         problems = Core::SitePlanValidator.call(built, materials: materials) if problems.empty?
         return Core::Result.fail(problems) unless problems.empty?
@@ -126,6 +128,31 @@ module Archgen
       end
       private_class_method :door_gap
 
+      def passage_span(passage, footprint)
+        low = (footprint.width_m - passage['width_m']) / 2.0
+        [low, footprint.width_m / 2.0, low + passage['width_m']]
+      end
+      private_class_method :passage_span
+
+      # Un passage s'emprunte par ses deux bouts : la règle de la porte vaut en façade et à l'arrière.
+      def passage_diagnostic(passage, footprint, grid, platform)
+        span = passage_span(passage, footprint)
+        highest = [0.0, footprint.depth_m].product(span).map { |y, x| grid.altitude_at(x, y) - platform }.max
+        if highest > DOOR_BURIED_M + Core::Quant::EPSILON
+          return Core::Diagnostic.error('E_SITE_DOOR_BURIED', '/site/platform', reason: 'passage_buried', value: Core::Quant.q(highest))
+        end
+
+        middle = span[1]
+        gap = Core::Quant.q([0.0, footprint.depth_m].map { |y| platform - grid.altitude_at(middle, y) }.max)
+        gap > DOOR_GAP_M + Core::Quant::EPSILON ? Core::Diagnostic.warning('W_SITE_DOOR_GAP', '/site/platform', reason: 'passage_gap', value: gap) : nil
+      end
+      private_class_method :passage_diagnostic
+
+      def passage_gap(passage, footprint, grid, platform)
+        Core::Quant.q(platform - grid.altitude_at(passage_span(passage, footprint)[1], 0.0))
+      end
+      private_class_method :passage_gap
+
       def buried_openings(plan, footprint, height)
         plan['openings'].count do |opening|
           facade = footprint.facade(opening['facade_id'])
@@ -152,7 +179,8 @@ module Archgen
 
           return Core::Result.ok(nodes: wrap('site/embankment', 'embankment', built.value[:nodes]), reach_m: built.value[:reach_m])
         end
-        strips = FACADE_ORDER.filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, settings['plinth_material']) }
+        even = footprint.trapezoid? ? settings.dig('survey', 'step_m') : nil
+        strips = FACADE_ORDER.filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, settings['plinth_material'], even) }
         Core::Result.ok(nodes: wrap('site/plinth', 'plinth', strips), reach_m: 0.0)
       end
       private_class_method :earthwork_nodes
@@ -162,9 +190,9 @@ module Archgen
       end
       private_class_method :wrap
 
-      def build(footprint, settings, config, assise, earthwork, gap, buried)
+      def build(footprint, settings, config, assise, earthwork, gap, buried, passage = nil)
         material = settings['plinth_material']
-        children = [Node.leaf('site/platform', 'platform', platform_primitive(footprint, config, material))] + earthwork[:nodes]
+        children = [Node.leaf('site/platform', 'platform', platform_primitive(footprint, config, material, passage))] + earthwork[:nodes]
         nodes = [Node.group('site', 'site', children)]
         {
           'schema_version' => SCHEMA_VERSION, 'units' => 'm', 'nodes' => nodes,
@@ -173,8 +201,10 @@ module Archgen
       end
       private_class_method :build
 
-      def platform_primitive(footprint, config, material)
+      def platform_primitive(footprint, config, material, passage = nil)
         inset = config['mode'] == 'structural' ? config['structure']['wall_m'] : 0.0
+        return trapezoid_platform(footprint, inset, material, passage) if footprint.trapezoid?
+
         low_x = inset
         low_y = inset
         high_x = footprint.width_m - inset
@@ -183,10 +213,25 @@ module Archgen
       end
       private_class_method :platform_primitive
 
-      def plinth_strip(facade, grid, platform, material)
+      # Plancher sur le trapèze intérieur. Les murs d'un passage de porche s'arrêtent à ses bords :
+      # leur épaisseur, en façade et à l'arrière, reçoit aussi un plancher.
+      def trapezoid_platform(footprint, inset, material, passage)
+        ring = footprint.facades.map { |facade| facade.point(facade.inner_start(inset), 0.0, inset) }
+        mesh = MeshBuilder.new('surface').add_face(ring, material)
+        return mesh.to_primitive unless passage && inset.positive?
+
+        low, _, high = passage_span(passage, footprint)
+        [[0.0, inset], [footprint.depth_m - inset, footprint.depth_m]].each do |y0, y1|
+          mesh.add_face([[low, y0, 0.0], [high, y0, 0.0], [high, y1, 0.0], [low, y1, 0.0]].map { |p| p.map { |c| Core::Quant.q(c) } }, material)
+        end
+        mesh.to_primitive
+      end
+      private_class_method :trapezoid_platform
+
+      def plinth_strip(facade, grid, platform, material, even = nil)
         mesh = MeshBuilder.new('surface')
         cells = 0
-        stations(facade, grid).each_cons(2) do |u0, u1|
+        (even ? Core::SurveyGrid.even_stations(facade.length_m, even) : stations(facade, grid)).each_cons(2) do |u0, u1|
           cell = strip_cell(u0, bottom(grid, facade, u0, platform), u1, bottom(grid, facade, u1, platform))
           next unless cell
 

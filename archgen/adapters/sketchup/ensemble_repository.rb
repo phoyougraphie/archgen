@@ -37,7 +37,7 @@ module Archgen
         end
 
         def read_instance(model, entity)
-          return stale('not_a_component_instance') unless @host.component_instance?(entity)
+          return stale('not_an_ensemble_root') unless @host.component_instance?(entity)
           return stale('deleted_target') unless entity.valid?
           return stale('not_at_model_root') unless entity.parent == model
 

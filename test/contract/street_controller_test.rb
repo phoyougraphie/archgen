@@ -47,6 +47,127 @@ class StreetControllerTest < Minitest::Test
     @model.operations.count { |op| op.first == :start }
   end
 
+  # --- Terrain d'un ensemble
+
+  class SiteService
+    attr_reader :adapted, :removed
+
+    def initialize(inner)
+      @inner = inner
+      @removed = 0
+    end
+
+    def respond_to_missing?(*) = true
+
+    def method_missing(name, ...)
+      @inner.public_send(name, ...)
+    end
+
+    def retain_terrain(model:)
+      model.selection.length == 1 ? Archgen::Core::Result.ok(:terrain) : Archgen::Core::Result.fail([Archgen::Core::Diagnostic.error('E_SITE_TERRAIN', '/site/terrain', reason: 'terrain_selection')])
+    end
+
+    def site_status(**) = Archgen::Core::Result.ok(@status)
+    attr_writer :status
+
+    def preview_site(**)
+      warnings = (1..5).map { |i| Archgen::Core::Diagnostic.warning('W_SITE_DOOR_GAP', "/parcels/left/0/#{i}/site/platform", reason: 'door_gap', value: i * 0.3, id: 'door') }
+      metrics = { 'platform_min_z_m' => 1.0, 'platform_max_z_m' => 2.0, 'max_step_m' => 0.5, 'fill_max_m' => 1.0, 'fill_volume_m3' => 3.0, 'cut_max_m' => 0.0, 'cut_volume_m3' => 0.0, 'survey_point_count' => 40, 'expanded_site_face_count' => 80 }
+      Archgen::Core::Result.ok(Struct.new(:site_digest, :site_plan).new('d' * 64, { 'metrics' => metrics }), warnings)
+    end
+
+    def adapt_to_site(**options)
+      @adapted = options
+      Archgen::Core::Result.ok(Struct.new(:target, :revision).new(options[:target], 2))
+    end
+
+    def remove_site(target:, **)
+      @removed += 1
+      Archgen::Core::Result.ok(Struct.new(:target, :revision).new(target, 3))
+    end
+  end
+
+  def site_controller
+    inner = EnsembleService.new(registry: registry, intake: Archgen::Composition.intake, ensemble_intake: Archgen::Composition.ensemble_intake,
+                                materials: Archgen::Composition.materials.fetch('materials'), material_revision: 1, host: FakeSketchUp::Host)
+    created = inner.create(model: @model, tree: { 'trace' => { 'points_m' => [[0, 0], [48, 0]], 'closed' => false }, 'building' => { 'profile' => { 'id' => 'brutalist' } } }, origin_m: [0.0, 0.0, 0.0])
+    raise created.errors.inspect unless created.ok?
+
+    @root = @model.instances.last
+    @site_service = SiteService.new(inner)
+    @controller = Archgen::UI::StreetController.new(service: @site_service, session: @session, registry: registry, model_provider: -> { @model })
+    @model.selection.replace([@root])
+  end
+
+  def test_init_gives_site_defaults_and_materials
+    result = call('init')['result']
+    assert_equal 'plinth', result['site_defaults']['earthwork']
+    assert(result['site_materials'].any? { |m| m['id'] == 'concrete' })
+  end
+
+  def test_site_actions_need_a_loaded_ensemble
+    assert_equal 'edit_not_loaded', call('site_preview', 'site' => {})['diagnostics'].first['params']['reason']
+    assert_equal false, call('adapt_site', 'site' => {}, 'site_digest' => 'x')['ok']
+    assert_equal false, call('remove_site')['ok']
+  end
+
+  def test_site_needs_a_retained_terrain
+    site_controller
+    call('load_selection')
+    assert_equal 'terrain_not_retained', call('site_preview', 'site' => {})['diagnostics'].first['params']['reason']
+  end
+
+  def test_a_retained_terrain_survives_reloading_the_ensemble
+    site_controller
+    assert_equal true, call('retain_terrain')['result']['retained']
+    assert_equal true, call('load_selection')['ok']
+    assert_equal true, call('site_preview', 'site' => {})['ok']
+  end
+
+  def test_site_preview_shows_lines_and_merges_warnings
+    site_controller
+    call('retain_terrain')
+    call('load_selection')
+    response = call('site_preview', 'site' => {})
+    assert_equal 'd' * 64, response['result']['site_digest']
+    assert_includes response['result']['lines'].first, 'Plateformes'
+    gaps = response['diagnostics'].select { |d| d['code'] == 'W_SITE_DOOR_GAP' }
+    assert_equal 1, gaps.size
+    assert_equal 5, gaps.first['params']['count']
+    assert_includes gaps.first['message'], '5 parcelles'
+  end
+
+  def test_adapt_is_replayed_once_and_sends_the_digest
+    site_controller
+    call('retain_terrain')
+    call('load_selection')
+    call('adapt_site', { 'site' => {}, 'site_digest' => 'abc' }, 'same')
+    first = @site_service.adapted
+    call('adapt_site', { 'site' => {}, 'site_digest' => 'other' }, 'same')
+    assert_equal 'abc', first[:site_digest]
+    assert_same first, @site_service.adapted
+  end
+
+  def test_loaded_site_gives_its_terrain_without_retaining_again
+    site_controller
+    @site_service.status = { 'settings' => { 'x' => 1 }, 'terrain_pid' => 77, 'moved' => false }
+    loaded = call('load_selection')
+    assert_equal true, loaded['result']['site']['has_site']
+    assert_equal true, call('site_preview', 'site' => {})['ok']
+  end
+
+  def test_remove_site_goes_through_mutations
+    site_controller
+    call('load_selection')
+    call('remove_site', {}, 'r')
+    call('remove_site', {}, 'r')
+    assert_equal 1, @site_service.removed
+  end
+
+  def test_bad_site_payload_is_refused
+    assert_equal 'invalid_envelope', call('site_preview', 'site' => 'x')['diagnostics'].first['params']['reason']
+  end
+
   def test_init_gives_styles_and_defaults_only
     response = call('init')
     assert response['ok'], response.inspect

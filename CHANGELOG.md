@@ -1,5 +1,25 @@
 # Journal des versions
 
+## 0.4.0
+
+Étagement d'une rue ou d'un îlot sur un terrain déjà présent dans le modèle. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments et des ensembles restent identiques. Le rapport de recette est dans [docs/recette/V0.4.md](docs/recette/V0.4.md).
+
+**Ajouts**
+
+- Section Terrain dans **Modifier l'ensemble sélectionné** : retenir un terrain, relever, adapter, retirer l'assise.
+- Une plateforme par parcelle, au point haut ou à la moyenne de la parcelle, avec décalage. Les bâtiments s'étagent, et le soubassement ferme la marche entre deux voisins.
+- Altitudes, ressaut, remblai et déblai annoncés avant d'écrire ; porte ou passage enterrés refusés, seuils hauts signalés.
+- Les bâtiments identiques restent partagés dans le fichier : la pente ne multiplie que les assises.
+- Une action = une entrée d'Annuler ; le terrain n'est jamais modifié. Remplacer un ensemble adapté garde son assise et relit le terrain.
+
+**Limites connues**
+
+- Soubassement seulement : un talus déborderait chez le voisin, il est refusé.
+- Pas d'escalier ni de rampe : sur une pente, un seuil ou un passage peut rester au-dessus du sol, et c'est signalé.
+- Le relevé traverse tout ce qui est au-dessus du terrain : compter le temps mesuré dans le rapport sur une grande rue.
+- Une modification du terrain n'est vue qu'au relevé suivant, et seulement si elle touche un point du relevé.
+- Autres versions de SketchUp et macOS non testés ; extension non signée.
+
 ## 0.3.0
 
 Rues et îlots au tracé. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments seuls restent identiques. Le rapport de recette est dans [docs/recette/V0.3.md](docs/recette/V0.3.md).
@@ -17,7 +37,7 @@ Rues et îlots au tracé. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) s
 
 - Pas de chaussée, de trottoir, de carrefour ni de réseau de rues ; pas de collision testée avec le reste du modèle.
 - Tous les bâtiments d'un ensemble ont le même gabarit. Une parcelle seule ne se modifie pas, et le tracé ne se modifie pas : on en trace un autre.
-- Pas d'assise sur terrain pour un ensemble : le tracé est horizontal.
+- Pas d'assise sur terrain pour un ensemble : le tracé est horizontal. Levé en 0.4.0.
 - Murs mitoyens doublés en Structural. Pas de fenêtre sur les murs de fin de rangée.
 - Porche de 2,7 m de haut par défaut : c'est ce que permet le rez-de-chaussée des styles livrés.
 - Un tracé dont tous les segments ont des longueurs différentes partage peu : 14 à 17 s pour 76 bâtiments en Structural LOD 1.

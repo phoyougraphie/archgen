@@ -144,10 +144,15 @@ module Archgen
         'not_horizontal' => 'Ce bâtiment est incliné. Rétablissez son axe vertical pour l’adapter au terrain.',
         'too_many_obstacles' => 'Trop d’objets au-dessus du terrain en %{count} points. Masquez-les ou déplacez le bâtiment.',
         'terrain_changed' => 'Le terrain a changé depuis l’aperçu. Relevez de nouveau.',
-        'site_absent' => 'Ce bâtiment n’a pas d’assise à retirer.',
+        'site_absent' => 'Il n’y a pas d’assise à retirer.',
         'terrain_not_retained' => 'Sélectionnez d’abord le terrain, puis cliquez sur Retenir ce terrain.',
         'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
+        'embankment_in_row' => 'Un talus déborderait chez le voisin : dans un ensemble, seul le soubassement est possible.',
+        'passage_buried' => 'Le terrain dépasse le sol de ce passage de %{value} m. Remontez la plateforme.',
+        'passage_gap' => 'Le sol de ce passage est à %{value} m au-dessus du terrain : aucune rampe n’est générée.',
+        'door_gap_many' => '%{count} parcelles ont un seuil au-dessus du terrain, jusqu’à %{value} m : aucun escalier n’est généré.',
+        'terrain_above_many' => 'Le terrain traverse %{count} bâtiments, jusqu’à %{value} m au-dessus de leur plateforme.',
         'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
         'terrain_above_platform' => 'Le terrain dépasse la plateforme de %{value} m et traverse le bâtiment. Baies touchées : %{count}.',
         'site_faces' => 'Le terrassement est trop détaillé. Augmentez le pas du relevé.',
@@ -239,6 +244,14 @@ module Archgen
                  "Déblai maximal, non représenté : #{decimal(metrics['cut_max_m'])} m, soit #{decimal(metrics['cut_volume_m3'])} m³"]
         lines << "Emprise du talus : #{decimal(metrics['embankment_reach_m'])} m" if metrics['embankment_reach_m'].positive?
         lines
+      end
+
+      # Les valeurs d'un étagement, telles que le panneau les montre avant de confirmer.
+      def ensemble_site_lines(metrics)
+        ["Plateformes : de #{decimal(metrics['platform_min_z_m'])} à #{decimal(metrics['platform_max_z_m'])} m ; ressaut maximal : #{decimal(metrics['max_step_m'])} m",
+         "Remblai maximal : #{decimal(metrics['fill_max_m'])} m, soit #{decimal(metrics['fill_volume_m3'])} m³",
+         "Déblai maximal, non représenté : #{decimal(metrics['cut_max_m'])} m, soit #{decimal(metrics['cut_volume_m3'])} m³",
+         "Relevé : #{metrics['survey_point_count']} points ; assises : #{metrics['expanded_site_face_count']} faces"]
       end
 
       def field_label(path)

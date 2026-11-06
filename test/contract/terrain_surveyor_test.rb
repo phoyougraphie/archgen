@@ -63,6 +63,40 @@ class TerrainSurveyorTest < Minitest::Test
     found
   end
 
+  # --- Une face à l'altitude exacte du terrain (trouvé en H18)
+
+  def obstacle_then(&after)
+    other = Solid.new(888, @model)
+    lambda do |origin|
+      x, y, z = origin.to_a
+      next [Point.new(x, y, 150.0 / INCH), [other]] if z > 150.0 / INCH
+
+      after.call(x * INCH, y, x, y)
+    end
+  end
+
+  def test_a_ray_lost_after_an_obstacle_is_cast_again_beside_the_node
+    @model.ray_answer = obstacle_then do |x_m, y, x, _|
+      (x_m - x_m.floor) < 0.0005 ? nil : [Point.new(x, y, 100.0 / INCH), [@terrain]]
+    end
+    result = survey
+    assert result.ok?, result.errors.map(&:to_h).inspect
+    assert(result.value.grid.to_h['z_m'].flatten.all? { |z| (z - 100.0).abs < 1e-6 })
+  end
+
+  def test_a_real_hole_under_an_obstacle_stays_a_hole_after_two_more_rays
+    @model.ray_answer = obstacle_then { nil }
+    assert_refused survey, 'E_SITE_SURVEY', '/site/survey', 'missing_points'
+    nodes = 7 * 6
+    assert_equal nodes * 3 * 2, @model.ray_count
+  end
+
+  def test_a_hole_without_any_obstacle_is_not_cast_again
+    @model.ray_answer = ->(_origin) { nil }
+    assert_refused survey, 'E_SITE_SURVEY', '/site/survey', 'missing_points'
+    assert_equal 7 * 6, @model.ray_count
+  end
+
   # --- Retenir le terrain
 
   def test_retained_terrain_names_document_and_entity

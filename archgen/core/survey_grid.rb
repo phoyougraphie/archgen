@@ -23,6 +23,24 @@ module Archgen
                                                                               limit: Limits::SITE_MAX_SURVEY_POINTS, value: points, hint: HINT)])
       end
 
+      # Boîte d'une parcelle : x peut commencer sous 0 sur un angle rentrant. Sans marge : pas de talus en rangée.
+      def self.plan_box(x_min_m:, x_max_m:, depth_m:, settings:)
+        step = settings.dig('survey', 'step_m')
+        xs = axis(x_max_m - x_min_m, step, 0.0).map { |x| Quant.q(x + x_min_m) }
+        ys = axis(depth_m, step, 0.0)
+        points = xs.size * ys.size
+        return Result.ok('xs_m' => xs, 'ys_m' => ys) if points <= Limits::SITE_MAX_SURVEY_POINTS
+
+        Result.fail([Diagnostic.error('E_SITE_BUDGET', '/site/survey/step_m', reason: 'survey_points',
+                                                                              limit: Limits::SITE_MAX_SURVEY_POINTS, value: points, hint: HINT)])
+      end
+
+      # Abscisses d'un bord, à intervalles égaux au plus égaux au pas, extrémités comprises.
+      def self.even_stations(length, step)
+        count = [((length / step) - NOISE).ceil, 1].max
+        (0..count).map { |i| length * i / count }
+      end
+
       # Le talus doit pouvoir descendre du remblai le plus haut que les réglages permettent.
       def self.margin_m(settings)
         return 0.0 unless settings['earthwork'] == 'embankment'
@@ -71,6 +89,16 @@ module Archgen
         rows.each_cons(2).flat_map do |j, up|
           columns.each_cons(2).map do |i, right|
             [@xs[right] - @xs[i], @ys[up] - @ys[j], [z(i, j), z(right, j), z(right, up), z(i, up)]]
+          end
+        end
+      end
+
+      # Toutes les cellules : bornes [x0, x1, y0, y1] et angles [x, y, z ou nil].
+      def cells
+        @ys.each_index.each_cons(2).flat_map do |j, up|
+          @xs.each_index.each_cons(2).map do |i, right|
+            { bounds: [@xs[i], @xs[right], @ys[j], @ys[up]],
+              corners: [[i, j], [right, j], [right, up], [i, up]].map { |c, r| [@xs[c], @ys[r], z(c, r)] } }
           end
         end
       end

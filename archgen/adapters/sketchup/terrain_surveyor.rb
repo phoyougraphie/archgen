@@ -16,6 +16,9 @@ module Archgen
         # le plan des murs et sur les arêtes verticales du soubassement : mesuré en H13, un rayon qui
         # file le long d'une arête ne renvoie plus rien. Assez grand pour la tolérance de SketchUp.
         RAY_OFFSET_M = 0.0002
+        # Une face posée à l'altitude exacte du terrain arrête le rayon, qui repart alors sous le terrain
+        # et ne le voit plus (H18). Un autre point, à quelques millimètres, n'a pas cette coïncidence.
+        RETRY_OFFSETS_M = [0.001, 0.005].freeze
         HORIZONTAL_TOLERANCE = 1e-6
         BUILDING_DICTIONARY = 'archgen.building'
         REASONS = %w[terrain_selection terrain_kind terrain_nested terrain_is_building terrain_hidden terrain_missing terrain_other_document].freeze
@@ -38,10 +41,14 @@ module Archgen
 
         # axes : { 'xs_m', 'ys_m' } dans le repère de la racine. Retourne un Result<arbre de grille>.
         def survey(model, reference, instance, axes)
+          survey_matrix(model, reference, instance.transformation.to_a, axes)
+        end
+
+        # matrix : du repère relevé vers le modèle, translation en pouces : la racine, ou une parcelle dans sa racine.
+        def survey_matrix(model, reference, matrix, axes)
           terrain = read_terrain(model, reference)
           return terrain unless terrain.ok?
 
-          matrix = instance.transformation.to_a
           return Core::Result.fail([Core::Diagnostic.error('E_SITE_TRANSFORM', '/site/placement', reason: 'not_horizontal')]) unless horizontal?(matrix)
 
           top = terrain.value.bounds.max.z.to_f + (ABOVE_M / METERS_PER_INCH)
@@ -86,22 +93,37 @@ module Archgen
         # Altitude du terrain à ce nœud, en mètres. Un obstacle est traversé en relançant
         # le rayon depuis son point d'impact ; nil si le rayon sort sans toucher le terrain.
         def altitude(model, terrain, matrix, x_m, y_m, top, overflow)
-          origin_x, origin_y = world_xy(matrix, x_m, y_m)
-          ray = [@host.point(origin_x, origin_y, top), @host.vector(0.0, 0.0, -1.0)]
-          MAX_PASSES.times do
-            hit = model.raytest(ray, true)
-            return nil unless hit
-            return hit[0].z.to_f * METERS_PER_INCH if hit[1].first == terrain
+          value, crossed = cast(model, terrain, matrix, x_m, y_m, RAY_OFFSET_M, top, overflow)
+          # Sans obstacle traversé, un rayon sans terrain est un vrai trou.
+          return value if value || !crossed || overflow.last == [x_m, y_m]
 
-            ray = [hit[0], ray[1]]
+          RETRY_OFFSETS_M.each do |offset|
+            value, = cast(model, terrain, matrix, x_m, y_m, offset, top, overflow)
+            return value if value
           end
-          overflow << [x_m, y_m]
           nil
         end
 
-        def world_xy(matrix, x_m, y_m)
-          x = (x_m + RAY_OFFSET_M) / METERS_PER_INCH
-          y = (y_m + RAY_OFFSET_M) / METERS_PER_INCH
+        # [altitude ou nil, obstacle traversé ?]
+        def cast(model, terrain, matrix, x_m, y_m, offset, top, overflow)
+          origin_x, origin_y = world_xy(matrix, x_m, y_m, offset)
+          ray = [@host.point(origin_x, origin_y, top), @host.vector(0.0, 0.0, -1.0)]
+          crossed = false
+          MAX_PASSES.times do
+            hit = model.raytest(ray, true)
+            return [nil, crossed] unless hit
+            return [hit[0].z.to_f * METERS_PER_INCH, crossed] if hit[1].first == terrain
+
+            crossed = true
+            ray = [hit[0], ray[1]]
+          end
+          overflow << [x_m, y_m]
+          [nil, crossed]
+        end
+
+        def world_xy(matrix, x_m, y_m, offset = RAY_OFFSET_M)
+          x = (x_m + offset) / METERS_PER_INCH
+          y = (y_m + offset) / METERS_PER_INCH
           [(matrix[0] * x) + (matrix[4] * y) + matrix[12], (matrix[1] * x) + (matrix[5] * y) + matrix[13]]
         end
 

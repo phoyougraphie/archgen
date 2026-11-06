@@ -73,7 +73,7 @@ class PanelAssetsTest < Minitest::Test
     html = read_utf8(*UI_DIR, 'street_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal 13, ids.size
+    assert_equal 17, ids.size
     assert_empty ids - labels
   end
 
@@ -81,7 +81,16 @@ class PanelAssetsTest < Minitest::Test
   def test_leaving_a_street_field_does_not_disable_the_button
     source = read_utf8(*UI_DIR, 'street_panel.js')
     refute_match(/querySelectorAll\('input, select'\)/, source)
-    assert_match(/querySelectorAll\('input'\)\)\.forEach\(function \(input\) \{\n\s+input\.addEventListener\('input', requestPreview\);\n\s+\}\);/, source)
+    assert_match(/querySelectorAll\('input:not\(\[data-site\]\)'\)\)\.forEach\(function \(input\) \{\n\s+input\.addEventListener\('input', requestPreview\);\n\s+\}\);/, source)
+  end
+
+  # Défauts vus au vrai geste : la section Terrain en colonnes, et un pied qui mangeait la place.
+  def test_terrain_section_uses_the_full_width_and_the_footer_stays_short
+    html = read_utf8(*UI_DIR, 'street_panel.html')
+    assert_match(/id="site-hint" class="hint wide"/, html)
+    assert_equal 2, html.scan('class="actions wide"').size
+    footer = html[/<div class="street-footer">.*?<\/main>/m]
+    refute_includes footer, 'replace-warning'
   end
 
   def test_street_panel_starts_without_anything_to_create

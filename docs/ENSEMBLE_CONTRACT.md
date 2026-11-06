@@ -126,7 +126,7 @@ Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS` su
 - **Modifier :** « Modifier l'ensemble sélectionné » relit la racine dans le panneau, sans outil. Les réglages changent, jamais le tracé ni la seed : pour changer le tracé, on en trace un autre. Le bouton « Remplacer cet ensemble » n'est actif que si le résultat change, et renvoie l'empreinte montrée. L'ensemble se régénère en entier depuis ses réglages et son tracé, dans une définition fraîche. Une copie garde sa définition. La géométrie partagée n'est jamais modifiée sur place.
 - **Refus :** sélection d'une parcelle à l'intérieur de l'ensemble, racine éclatée, mise à l'échelle ou en miroir, version future (`E_VERSION`). Une racine éclatée laisse des bâtiments ordinaires, sans lien avec l'ensemble.
 - **Barre d'état :** elle suit les bâtiments écrits ; c'est le panneau qui annonce le nombre avant de commencer (AG-033).
-- **Terrain :** pas d'assise en V1 : une racine d'ensemble n'est pas une cible de la section Terrain. AG-027 traitera l'étagement.
+- **Terrain :** une racine d'ensemble n'est pas une cible de la section Terrain d'un bâtiment. L'étagement, une plateforme par parcelle, a sa propre section dans ce panneau : voir [le contrat terrain](TERRAIN_CONTRACT.md).
 
 ## Outil de tracé
 
@@ -146,4 +146,4 @@ Le terrain a montré qu'une fenêtre figée se fait fermer : la recette a perdu 
 
 ## Hors périmètre V1
 
-Chaussées, trottoirs, carrefours et graphe de plusieurs rues ; collision avec un autre ensemble ou avec le modèle existant ; hauteurs, styles ou largeurs différents par parcelle ; modification d'une seule parcelle ; segments courbes ; baies sur les murs de fin de rangée ; suppression des faces mitoyennes cachées ; escaliers de cour ; étagement sur terrain (AG-027) ; quartier (EXT-08).
+Chaussées, trottoirs, carrefours et graphe de plusieurs rues ; collision avec un autre ensemble ou avec le modèle existant ; hauteurs, styles ou largeurs différents par parcelle ; modification d'une seule parcelle ; segments courbes ; baies sur les murs de fin de rangée ; suppression des faces mitoyennes cachées ; escaliers de cour ; quartier (EXT-08).

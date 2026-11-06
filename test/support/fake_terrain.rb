@@ -42,6 +42,7 @@ module FakeTerrain
     def identity = FakeSketchUp::Host.identity
     def transformation(matrix) = FakeSketchUp::Host.transformation(matrix)
     def color(red, green, blue) = FakeSketchUp::Host.color(red, green, blue)
+    def status(_text) = nil
   end
 
   # Le modèle répond aux rayons par le bloc fourni et les compte.

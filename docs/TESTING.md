@@ -25,6 +25,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U19 | Plan d'ensemble : même entrée, même `ensemble_digest`, quel que soit l'ordre de parcours ; seed de parcelle stable ; définitions partagées et comptes étendus exacts ; plafonds et premier dépassement. |
 | U20 | Interruption : carré de référence avec 3 accès sur 3 côtés, jamais en angle, même placement à seed égale ; vide de la largeur exacte, voisines complètes ; nombre impossible, profil sans entrée au catalogue : refus. Aucune forme fermée sans accès. |
 | U21 | Porche : passage de part en part, parois et plafond fermés, étages au-dessus intacts, baies recouvertes retirées, en Shell et Structural ; hauteur limite acceptée, premier dépassement refusé. |
+| U22 | Étagement : un rectangle donne l'assise d'un bâtiment seul ; niveaux, partage, trapèzes et angles rentrants ; trou hors et dans les cellules ; talus, relief, porte et passage refusés sur la parcelle ; plafonds. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 
@@ -47,5 +48,6 @@ Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; Sketc
 | H15 | Écrire une rue de 9 parcelles, puis 12, 50 et 200, et un tracé sans partage ; Annuler, Rétablir ; pannes ; régénérer ; copier ; enregistrer et rouvrir ; sélection d'une parcelle et racine éclatée. | Une entrée d'Annuler, sans résidu ; copie isolée ; `ensemble_digest` relu identique ; bâtiment seul inchangé ; temps et taille publiés. |
 | H16 | Tracer à la souris et au clavier : clics, `longueur;angle`, axes, Ctrl, Alt, fermeture au premier point, Échap. | Géométrie à 1 mm du tracé saisi ; aperçu sans écriture ni ligne d'Annuler ; aucune erreur à la console. |
 | H17 | Parcours complet sur le RBZ : rue d'un côté, rue des deux côtés, îlot avec interruption, îlot avec porche, modifier, Annuler. | Valeurs du panneau identiques au plan ; une entrée d'Annuler par validation ; vue contrôlée à l'écran. |
+| H18 | Étager rue, angles et îlots sur un vrai terrain : relevé, adapter, Annuler, Rétablir, refus, pannes, panneau, remplacer, retirer, rouvrir, copie ; charge jusqu'à 200 parcelles. | Racine immobile, terrain intact, bâtiments partagés, aucun vide entre assise et terrain, une entrée d'Annuler ; temps publiés ; vrai geste à l'écran. |
 
 Gabarit de rapport : commit et moteur ; OS, édition hôte, Ruby et matériel ; identifiant fixture ; mode/LOD ; attendu, observé, résultat, trace minimale ; motif des cas non exécutés. Cible V0.1 : Windows et SketchUp 2026 (ADR-26). Les versions non testées sont annoncées comme telles. Faire la recette dans des copies de modèles et noter les opérations reproductibles.

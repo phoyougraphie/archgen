@@ -78,6 +78,7 @@ Faits mesurés par `test/host/terrain_spike.rb` sur 26.2.243 :
 | Terrain ou tag masqué : `nil` avec `wysiwyg` vrai | `wysiwyg` reste vrai ; terrain invisible = refus, jamais de géométrie masquée |
 | Une face inversée reste touchée | L'orientation du terrain est sans effet |
 | Sur un soubassement déjà écrit, un nœud situé sur une arête verticale de bande ne renvoyait plus d'altitude (H13). Le décalage fait disparaître le défaut ; l'explication, un rayon filant le long de l'arête, est déduite et n'a pas été isolée | Chaque rayon est décalé de 0,2 mm en X et en Y dans le repère de la racine ; l'altitude lue reste juste à moins de 1 mm tant que le terrain ne dépasse pas une pente de 100 % |
+| Une face du bâtiment à l'altitude exacte du terrain arrête le rayon, qui repart sous le terrain et ne le voit plus (H18 : une dalle sur une pente, en un seul nœud). À 1 mm de là, le terrain est retrouvé | Un rayon sans terrain, après un obstacle traversé, est relancé à 1 mm puis à 5 mm du nœud. Sans obstacle, c'est un vrai trou et il n'y a pas de relance. L'altitude lue reste juste à moins de 5 mm tant que le terrain ne dépasse pas une pente de 100 % |
 | 0,84 ms par rayon sur 7 200 faces | Relevé sur demande seulement, jamais à chaque frappe |
 
 **Le terrain est désigné par l'utilisateur :** un seul `Group` ou `ComponentInstance` de niveau racine, sélectionné puis retenu dans le panneau. Pas de déduction : avec des arbres ou un autre bâtiment, deviner reviendrait à inventer une altitude. Des faces libres sont refusées, avec le conseil de les grouper. Un bâtiment ARCHGEN, une entité imbriquée ou masquée sont refusés aussi. Terrain absent ou d'un autre document : `E_SITE_TERRAIN` sur `/site/terrain`. Terrain trop petit : ses nœuds sont à `null`, donc `E_SITE_SURVEY`. Rien n'est écrit sur le terrain : la référence retenue vit dans la session, et sa persistance relève de l'écriture de l'assise.
@@ -99,6 +100,51 @@ Un bâtiment écrit par un moteur antérieur reste valable sans `archgen.site`. 
 
 Section « Terrain » en mode édition seulement. Elle contient : « Retenir ce terrain », politique de plateforme, décalage, type de terrassement, pente, matériau, pas, puis « Relever », « Adapter au terrain » et « Retirer l'assise ». Sélectionner le terrain périme la cible : il faut ensuite resélectionner le bâtiment et recharger, le jeton de terrain restant valable. Enregistrer périme ce jeton, mais une racine déjà adaptée garde son terrain. L'adaptation part de la configuration enregistrée : un brouillon non régénéré ne s'y applique pas. L'aperçu s'ajoute à celui du bâtiment : altitude de plateforme, déblai et remblai maximaux, volumes, avertissements. La confirmation liste ces valeurs avant Remplacer. Un relevé ne laisse aucune trace dans le modèle ni dans l'Annuler.
 
+## Étagement d'un ensemble (AG-027)
+
+Chaque parcelle d'un ensemble a sa propre plateforme : le long d'une rue en pente, les bâtiments s'étagent, et le soubassement traite le raccord. Décision : ADR-33. **Le plan d'ensemble et `ensemble_digest` ne changent pas :** l'étagement est calculé à part, comme l'assise d'un bâtiment.
+
+**Geste.** En deux temps, comme pour un bâtiment : l'ensemble est créé, puis adapté. Dans le panneau « Modifier l'ensemble sélectionné », une section Terrain donne « Retenir ce terrain », politique, décalage, matériau et pas, puis « Relever », « Adapter au terrain » et « Retirer l'assise ». Retenir un terrain ne perd pas ce jeton quand on resélectionne l'ensemble.
+
+**Réglages.** Le format `site` V1, inchangé. `earthwork: "embankment"` est refusé, `E_STREET_SITE` sur `/site/earthwork` : un talus déborderait chez le voisin, et aucun autre terrassement ne lui est substitué.
+
+**Relevé.** Une grille par parcelle, dans le repère de la parcelle, sur la boîte `x ∈ [min(0, δg), max(W, W − δd)]`, `y ∈ [0, D]`, avec les axes de `SurveyGrid`. Plafond de 12 000 points pour tout l'ensemble (départ) : `E_SITE_BUDGET` sur `/site/survey/step_m`, avant tout rayon. Le trapèze ne remplit pas toujours sa boîte : E vaut alors les nœuds dans le trapèze, plus l'altitude interpolée aux stations de ses quatre bords, au pas au plus égal à `step_m`.
+
+- Un nœud manquant sur une cellule qui touche le trapèze : `E_SITE_SURVEY`. Un nœud manquant hors de ces cellules ne sert pas et n'est pas refusé.
+- Les volumes prennent l'aire de la cellule à l'intérieur du trapèze.
+- **Rectangle et trapèze suivent la même règle.** Sur un rectangle, le résultat est celui d'un bâtiment seul de mêmes dimensions.
+
+**Plateforme et limites.** Assise, relief, porte et baies enterrées : mêmes règles et mêmes codes qu'un bâtiment seul, par parcelle, sur `/parcels/<id>/site/…`. Un refus sur une parcelle refuse tout l'ensemble, sans rien écrire.
+
+| Situation | Code | Effet |
+|---|---|---|
+| Terrain au-dessus du sol du passage de plus de 0,02 m, relevé aux deux bords et au milieu, en façade et à l'arrière | `E_SITE_DOOR_BURIED`, raison `passage_buried` | Refus : le porche serait inutilisable |
+| Sol du passage à plus de 0,20 m au-dessus du terrain, en façade ou à l'arrière | `W_SITE_DOOR_GAP` | Avertissement avec la hauteur : aucune rampe n'est générée |
+| Écart de plateforme entre deux voisines | Aucun | Métrique `max_step_m` : le mur mitoyen, toujours émis (ADR-32), ferme le ressaut |
+
+**Raccord.** Les bandes de soubassement des quatre côtés de chaque parcelle suivent le terrain. Le côté de la parcelle haute descend donc jusqu'au terrain le long de sa voisine, ce qui ferme la marche. Deux bandes mitoyennes se touchent dans le même plan, comme deux murs mitoyens. Un bord en biais a ses stations à intervalles égaux, au plus `step_m`. En Structural, le plancher suit le trapèze intérieur des murs ; un passage de porche reçoit en plus un plancher entre le trapèze intérieur et ses deux bords.
+
+**Plan.** `EnsembleSitePlan = {schema_version:1, units:"m", definitions:{id:{schema_version, units, nodes, metrics:{site_face_count}}}, parcels:[{id, site_definition_id, level_m, platform_z_m, terrain_min_z_m, terrain_max_z_m, cut_max_m, fill_max_m, door_gap_m, buried_opening_count}], metrics}`, d'empreinte `ensemble_site_digest`.
+
+- `level_m = platform_z_m − Z de la racine`, quantifié. Le Z de la racine appartient à l'entrée du calcul.
+- **Partage :** deux parcelles de mêmes nœuds partagent leur définition d'assise, sinon non. Les bâtiments gardent leur partage : **la pente ne multiplie pas la géométrie des bâtiments.**
+- **Métriques :** `parcel_count`, `site_definition_count`, `unique_site_face_count`, `expanded_site_face_count`, `survey_point_count`, `platform_min_z_m`, `platform_max_z_m`, `max_step_m` (entre voisines d'une même rangée), `cut_max_m`, `fill_max_m`, `cut_volume_m3`, `fill_volume_m3`, `buried_opening_count`.
+- **Plafonds :** plus de 20 000 faces pour une parcelle, ou faces uniques et étendues au-delà des plafonds d'ensemble, bâtiments compris : `E_SITE_BUDGET` sur `/site/survey/step_m`.
+
+**Écriture.** Une opération « ARCHGEN : adapter au terrain », dans une définition d'ensemble fraîche, relevé refait avant d'écrire : si `ensemble_site_digest` diffère de celui de l'aperçu, `E_TARGET_STALE` avec `terrain_changed`.
+
+- **Racine :** elle ne bouge pas, en Z non plus. Les parcelles portent l'étagement : chaque instance reçoit `level_m` dans sa translation.
+- **Assise :** une seconde instance par parcelle, nommée `<id>/assise`, de même matrice, tag « ARCHGEN Terrassement ». Un bâtiment partagé reste donc partagé.
+- **Attributs :** `archgen.site` sur la racine, mêmes clés. `site_digest` y porte `ensemble_site_digest` et `survey_digest` l'empreinte des grilles ; `placement_json` ajoute le Z de la racine, qui décide de l'étagement.
+- **Remplacer :** une racine avec assise la garde (ADR-29) ; son terrain est relevé de nouveau dans la même opération, ou refus localisé.
+- **Retirer l'assise :** action explicite, parcelles ramenées à z = 0, dictionnaire retiré, racine immobile.
+- **Copie :** elle garde sa définition jusqu'à sa propre écriture, puis est relevée à son emplacement.
+- **Périmée :** le panneau compare le placement enregistré à l'actuel et propose de relever. Pas d'observateur de terrain.
+
+**Charge.** Un rayon traverse tout ce qui est au-dessus du terrain. Le panneau annonce le nombre de points relevés et la barre d'état suit les parcelles. Les temps sont mesurés en H18.
+
+**Hors périmètre.** Talus et murs de soutènement entre parcelles, escaliers et rampes d'accès, plateforme commune à plusieurs parcelles, marches de hauteur imposée, suivi de la pente par le faîtage d'un même bâtiment.
+
 ## Hors périmètre
 
-Découpe ou remodelage du terrain (option B de D-05), escaliers et rampes, murs de soutènement, plateforme débordant de l'emprise, étagement par parcelle (AG-027, avec EXT-07), import de terrain (EXT-09), calcul géotechnique.
+Découpe ou remodelage du terrain (option B de D-05), escaliers et rampes, murs de soutènement, plateforme débordant de l'emprise, import de terrain (EXT-09), calcul géotechnique.
