@@ -6,7 +6,7 @@ module Archgen
     # déterministe : une cour sans accès n'est jamais produite, et un nombre qui ne tient pas
     # est refusé sans être réduit.
     module AccessPlanner
-      FORMS = %w[gap].freeze
+      FORMS = %w[gap porch].freeze
       PERIMETER_ONE_M = 80.0
       PERIMETER_TWO_M = 160.0
       NOISE = 1e-6
@@ -83,7 +83,7 @@ module Archgen
       def apply(layout, chosen, settings, form)
         width = settings.dig('access', 'width_m')
         parcels = layout['parcels']
-        chosen.each { |access| parcels = open_gap(parcels, access, width) }
+        chosen.each { |access| parcels = form == 'gap' ? open_gap(parcels, access, width) : mark_porch(parcels, access, settings['access']) }
         accesses = chosen.map { |access| access_entry(access, width, form) }.sort_by { |a| a['id'] }
         Core::Result.ok(Core::Canonical.deep_freeze(
                           'parcels' => parcels,
@@ -92,6 +92,16 @@ module Archgen
                         ))
       end
       private_class_method :apply
+
+      # Le porche garde sa parcelle : le bâtiment reçoit le passage, ses voisines ne changent pas.
+      def mark_porch(parcels, access, settings)
+        parcels.map do |parcel|
+          next parcel unless parcel['id'] == access['id']
+
+          parcel.merge('porch' => { 'width_m' => settings['width_m'], 'height_m' => settings['height_m'] })
+        end
+      end
+      private_class_method :mark_porch
 
       # La parcelle disparaît ; ses deux voisines s'étendent à parts égales jusqu'au vide.
       def open_gap(parcels, access, width)

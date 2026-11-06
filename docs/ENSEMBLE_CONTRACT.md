@@ -26,7 +26,7 @@ Format séparé de la configuration du bâtiment, qui reste en V1 fermée. Clés
 | `parcel.depth_m` | [4, 60] | 9 | Profondeur, commune à tout l'ensemble |
 | `parcel.bay_width_m` | [1,5 ; 12] | 3 | Pas des travées : le nombre de travées est calculé par parcelle |
 | `access.count` | `auto`, 1, 2, 3 | `auto` | Forme fermée seulement : `auto` donne 1 sous 80 m de périmètre, 2 sous 160 m, 3 au-delà |
-| `access.width_m`, `access.height_m` | [2,5 ; 6] | 3,5 et 3,5 | Valeurs de conception, pas une règle d'accès pompiers ou d'urbanisme |
+| `access.width_m`, `access.height_m` | [2,5 ; 6] | 3,5 et 2,7 | Valeurs de conception, pas une règle d'accès pompiers ou d'urbanisme. La hauteur ne vaut que pour un porche : 2,7 m tient sous le RDC des styles livrés, qui ne laissent que 2,8 et 2,9 m |
 | `building` | Brouillon de bâtiment V1 | Profil | Style, mode, LOD, niveaux, matériaux. Refusés ici car calculés : `footprint`, `facade.front_bays`, `facade.side_bays`, `facade.entry_bay`, `seed` |
 
 **Même gabarit partout :** tous les bâtiments d'un ensemble ont les mêmes niveaux et la même profondeur.
@@ -94,7 +94,7 @@ Une forme fermée en reçoit toujours : une cour sans accès n'est jamais produi
 
 **Placement.** Les candidates sont les parcelles rectangulaires dont les deux voisines sont sur le même segment, jamais une parcelle d'angle. Les segments sont classés par `unit(seed, "access/<i>")`, puis un accès est donné à chaque segment dans cet ordre, en reprenant au début s'il en manque. Dans un segment, l'accès prend la parcelle candidate la plus proche du milieu ; à égalité, celle de plus petit rang. Une candidate doit être plus large que `access.width_m`. Deux accès ne sont jamais voisins. Faute de candidate : `E_STREET_ACCESS` sur `/access/count`.
 
-**Forme : selon le style (ADR-31).** Un catalogue séparé `ensemble_rules.v1.json` associe chaque couple profil/révision à une forme. Les profils et leur révision ne changent pas. Valeurs proposées :
+**Forme : selon le style (ADR-31).** Un catalogue séparé `ensemble_rules.v1.json` associe chaque couple profil/révision à une forme. Les profils et leur révision ne changent pas. Valeurs publiées :
 
 | Profil | Forme |
 |---|---|
@@ -102,10 +102,10 @@ Une forme fermée en reçoit toujours : une cour sans accès n'est jamais produi
 | Toulousain | `porch` |
 | Brutaliste | `gap` |
 
-Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS` sur `/building/profile`. Le panneau montre alors les parcelles, en rouge, sans permettre de créer. Une entrée n'est publiée qu'avec sa capacité et ses tests : Brutaliste à la livraison de l'interruption, les deux autres à celle du porche.
+Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS` sur `/building/profile`. Le panneau montre alors les parcelles, en rouge, sans permettre de créer. Une entrée n'est publiée qu'avec sa capacité et ses tests.
 
 - **`gap` (interruption) :** la parcelle est retirée, et ses voisines s'étendent pour laisser un vide de `access.width_m`, à parts égales. Elles restent des bâtiments complets, à murs latéraux aveugles.
-- **`porch` (porche) :** passage de `access.width_m`, centré sur la parcelle, au RDC, de la façade à l'arrière, de z = 0 à `access.height_m`. Il remplace la porte et les baies de RDC qu'il recouvre. Deux parois et un plafond ferment le passage ; les étages passent au-dessus. Baies et dégagements du contrat géométrique s'appliquent aux étages et au RDC restant. Le haut doit rester sous `top − slab_m − 0,10`, sinon `E_STREET_ACCESS` sur `/access/height_m`.
+- **`porch` (porche) :** passage de `access.width_m`, centré sur la parcelle, au RDC, de la façade à l'arrière, de z = 0 à `access.height_m`. La parcelle reste, mais n'a pas de porte : le passage tient lieu d'entrée, et la travée d'entrée redevient une fenêtre. Les baies de RDC à moins de 0,10 m du passage sont retirées. Deux parois et un plafond ferment le passage ; les étages passent au-dessus. Baies et dégagements du contrat géométrique s'appliquent aux étages et au RDC restant. Le haut doit rester sous `top − slab_m − 0,10` au RDC, sinon `E_STREET_ACCESS` sur `/parcels/<id>/access/height_m`. Il reste au moins `wall_m + 0,10` de mur de chaque côté, sinon le même code sur `…/access/width_m`. Les parois et le plafond sont des surfaces, en Shell de la façade à l'arrière, en Structural entre les faces intérieures des murs, où les jambages et le linteau ferment déjà l'épaisseur.
 
 ## Plan d'ensemble
 

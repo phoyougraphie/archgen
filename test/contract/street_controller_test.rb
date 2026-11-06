@@ -130,15 +130,15 @@ class StreetControllerTest < Minitest::Test
     assert_equal 5, result['metrics']['parcel_count']
   end
 
-  def test_closed_trace_of_a_style_without_a_form_is_explained_and_not_creatable
+  def test_refused_porch_is_explained_and_not_creatable
     draw([0.0, 0.0], [40.0, 0.0], [40.0, 40.0], finish: false)
     @session.add([0.0, 40.0])
     @session.close
-    result = call('preview', 'settings' => SETTINGS.merge('building' => { 'profile' => { 'id' => 'haussmann' } }))['result']
-    assert_equal 'access_form_unavailable', result['problems'].first['params']['reason']
+    result = call('preview', 'settings' => SETTINGS.merge('building' => { 'profile' => { 'id' => 'haussmann' } }, 'access' => { 'height_m' => 6 }))['result']
+    assert_equal 'porch_too_high', result['problems'].first['params']['reason']
     assert result['trace']['closed']
     assert @controller.overlay[:refused]
-    assert_equal 12, @controller.overlay[:rings].size, 'les parcelles restent visibles'
+    assert_operator @controller.overlay[:rings].size, :>=, 12, 'les parcelles et les passages restent visibles'
   end
 
   def test_bad_settings_are_refused_with_their_path

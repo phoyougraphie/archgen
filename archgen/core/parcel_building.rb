@@ -27,6 +27,7 @@ module Archgen
 
         row = { rear_bays: bays(parcel['rear_m'], settings.dig('parcel', 'bay_width_m'), 0),
                 delta_left_m: parcel['delta_left_m'], delta_right_m: parcel['delta_right_m'] }
+        row[:porch] = parcel['porch'] if parcel['porch']
         Result.ok(Prepared.new(config: config.value, row: row, warnings: config.warnings))
       end
 

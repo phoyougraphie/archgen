@@ -206,7 +206,8 @@ class EnsembleEngineTest < Minitest::Test
 
   def test_closed_trace_waits_for_a_form_of_access
     square = [[0, 0], [40, 0], [40, 40], [0, 40]]
-    found = engine(settings(square, closed: true, profile: 'haussmann')).errors.first
+    rules = { 'schema_version' => 1, 'access_forms' => {} }
+    found = engine(settings(square, closed: true, profile: 'haussmann'), rules: rules).errors.first
     assert_equal 'E_STREET_ACCESS', found.code
     assert_equal '/building/profile', found.path
     assert_equal 'access_form_unavailable', found.params['reason']

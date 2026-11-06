@@ -22,11 +22,29 @@ module Archgen
         candidates = Geometry::FacadeSolver.call(footprint, levels, facade, wall_m: input['structure']['wall_m'])
         return candidates unless candidates.ok?
 
-        openings = Geometry::OpeningSolver.call(candidates.value, input, footprint: footprint, levels: levels)
+        openings = Geometry::OpeningSolver.call(candidates.value, porch_input(input, row), footprint: footprint, levels: levels)
+        return openings unless openings.ok?
+
+        openings = with_porch(openings, input, footprint, levels, row)
         return openings unless openings.ok?
 
         assemble(input, footprint, levels, openings.value, materials, row)
       end
+
+      # Le passage tient lieu d'entrée : la travée d'entrée redevient une fenêtre.
+      def porch_input(input, row)
+        return input unless row&.dig(:porch)
+
+        input.merge('facade' => input['facade'].merge('entry_bay' => nil))
+      end
+      private_class_method :porch_input
+
+      def with_porch(openings, input, footprint, levels, row)
+        return openings unless row&.dig(:porch)
+
+        Geometry::PorchSolver.call(openings.value, footprint: footprint, levels: levels, config: input, porch: row[:porch])
+      end
+      private_class_method :with_porch
 
       def footprint_for(input, row)
         width = input['footprint']['width_m']
@@ -61,7 +79,7 @@ module Archgen
         details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input)
         return details unless details.ok?
 
-        plan = build_plan(footprint, levels, openings, grids.value, roof.value, details.value, input)
+        plan = build_plan(footprint, levels, openings, grids.value, roof.value, details.value, input, row)
         problems = PlanValidator.call(plan, materials: materials)
         return Result.fail(problems) unless problems.empty?
 
@@ -81,8 +99,10 @@ module Archgen
       end
       private_class_method :estimate_budget
 
-      def build_plan(footprint, levels, openings, grids, roof, details, input)
-        children = Geometry::WallBuilder.call(footprint, levels, grids, input) + roof.nodes
+      def build_plan(footprint, levels, openings, grids, roof, details, input, row)
+        walls = Geometry::WallBuilder.call(footprint, levels, grids, input)
+        walls.first['children'] << Geometry::PorchSolver.passage_node(footprint, row[:porch], input) if row&.dig(:porch)
+        children = walls + roof.nodes
         children << Geometry::Node.group('details', 'details', details.nodes) unless details.nodes.empty?
         nodes = [Geometry::Node.group('building', 'building', children)]
         definition_faces = details.definitions.transform_values { |list| count_faces(list) }

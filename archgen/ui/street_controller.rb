@@ -14,7 +14,7 @@ module Archgen
         'building' => { 'profile' => { 'id' => 'haussmann' }, 'mode' => 'shell', 'lod' => 0 },
         'parcel' => { 'target_width_m' => 12.0, 'depth_m' => 9.0, 'bay_width_m' => 3.0 },
         'layout' => { 'street_width_m' => 12.0 },
-        'access' => { 'count' => 'auto', 'width_m' => 3.5 }
+        'access' => { 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 2.7 }
       }.freeze
 
       attr_reader :session
@@ -176,7 +176,19 @@ module Archgen
         return {} unless layout.ok?
 
         first = @session.points.first
-        { rings: layout.value['parcels'].map { |p| p['ring_m'].map { |x, y| [x + first[0], y + first[1]] } } }
+        { rings: (layout.value['parcels'].map { |p| p['ring_m'] } + porch_rings(layout.value['parcels'])).map { |ring| ring.map { |x, y| [x + first[0], y + first[1]] } } }
+      end
+
+      # Le passage se voit dans l'aperçu : son emprise, de la façade à l'arrière.
+      def porch_rings(parcels)
+        parcels.select { |p| p['porch'] }.map do |parcel|
+          t = parcel['tangent']
+          low = (parcel['width_m'] - parcel['porch']['width_m']) / 2.0
+          high = low + parcel['porch']['width_m']
+          [[low, 0.0], [high, 0.0], [high, parcel['depth_m']], [low, parcel['depth_m']]].map do |x, y|
+            [parcel['origin_m'][0] + (x * t[0]) - (y * t[1]), parcel['origin_m'][1] + (x * t[1]) + (y * t[0])]
+          end
+        end
       end
 
       def perform_create(request_id, payload)

@@ -14,7 +14,7 @@ module Archgen
       }.freeze
       LAYOUT_DEFAULTS = { 'side' => 'left' }.freeze
       STREET_WIDTH_DEFAULT_M = 12.0
-      ACCESS_DEFAULTS = { 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 3.5 }.freeze
+      ACCESS_DEFAULTS = { 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 2.7 }.freeze
       # Ces champs sont calculés par parcelle : les saisir reviendrait à les ignorer.
       COMPUTED_BUILDING_FIELDS = %w[/footprint /seed /facade/front_bays /facade/side_bays /facade/entry_bay].freeze
 

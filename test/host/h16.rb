@@ -164,15 +164,19 @@ module ArchgenH16Probe
         tool.onCancel(0, view)
       }, ->(p) { session.state == 'ready' && !p['create_enabled'] && p['summary_shown'] && p['summary'].include?('minimum') && p['result'].include?('ne peut pas') }],
       ['Effacer le tracé', -> { click_dom('clear') }, ->(p) { session.empty? && p['result'] == 'Aucun tracé.' && !p['summary_shown'] }],
-      ['Forme fermée : parcelles visibles, refus expliqué', lambda {
+      ['Forme fermée, porche trop haut : parcelles visibles, refus expliqué', lambda {
+        set_input('s-access-height', '6')
         click_at(0.0, -80.0)
         type('40;0')
         type('40;90')
         type('40;180')
         first = session.points.first
         click_at(first[0], first[1])
-      }, ->(p) { session.closed? && !p['create_enabled'] && p['summary_shown'] && p['summary'].include?('îlots') && PANEL.controller.overlay[:refused] && PANEL.controller.overlay[:rings].size == 12 }],
-      ['Échap efface un tracé terminé', -> { tool.onCancel(0, view) }, ->(p) { session.empty? && !p['summary_shown'] }],
+      }, ->(p) { session.closed? && !p['create_enabled'] && p['summary_shown'] && p['summary'].include?('passage') && PANEL.controller.overlay[:refused] && PANEL.controller.overlay[:rings].size >= 12 }],
+      ['Échap efface un tracé terminé', lambda {
+        set_input('s-access-height', '2,7')
+        tool.onCancel(0, view)
+      }, ->(p) { session.empty? && !p['summary_shown'] }],
       ['Quitter l’outil : le panneau le dit', -> { model.select_tool(nil) }, ->(p) { p['status'] == 'Outil inactif' && p['resume_shown'] }],
       ['Reprendre le tracé', -> { click_dom('resume') }, ->(p) { p['status'] == 'Tracé actif' && !p['resume_shown'] && !tool.nil? }],
       ['Changer de document oublie le tracé', lambda {

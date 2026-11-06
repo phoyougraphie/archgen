@@ -61,7 +61,7 @@ class ParcelLayoutTest < Minitest::Test
 
   def test_defaults_of_a_closed_trace
     value = settings(fixture('carre-40m'))
-    assert_equal({ 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 3.5 }, value['access'])
+    assert_equal({ 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 2.7 }, value['access'])
     refute value.key?('layout')
   end
 

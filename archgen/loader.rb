@@ -36,6 +36,7 @@ module Archgen
       geometry/facade_solver
       geometry/opening_solver
       geometry/wall_builder
+      geometry/porch_solver
       geometry/roof_solver
       geometry/row_roof_solver
       geometry/detail_solver

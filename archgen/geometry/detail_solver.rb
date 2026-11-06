@@ -128,7 +128,7 @@ module Archgen
         material = config['materials']['frames']
         wall = config['structure']['wall_m']
         recess = config['mode'] == 'structural' ? [FRAME_MAX_RECESS_M, wall - FRAME_BAR_M].min : 0.0
-        openings.map do |opening|
+        openings.reject { |opening| opening.kind == 'porch' }.map do |opening|
           definition_id = frame_definition(opening, material, definitions)
           facade = footprint.facade(opening.facade_id)
           Node.leaf("frame/#{opening.facade_id}/#{opening.level_index}/#{opening.bay_index}", 'frame',

@@ -12,7 +12,7 @@
     status: byId('status'), summary: byId('summary'), summaryList: byId('summary-list'), result: byId('result'), warnings: byId('warnings'),
     profile: byId('s-profile'), mode: byId('s-mode'), lod: byId('s-lod'), count: byId('s-count'), height: byId('s-height'),
     side: byId('s-side'), streetField: byId('s-street-field'), street: byId('s-street'), target: byId('s-target'), depth: byId('s-depth'), bay: byId('s-bay'),
-    accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'),
+    accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'), accessHeight: byId('s-access-height'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume')
   };
 
@@ -36,7 +36,7 @@
     var levels = {};
     var count = number(el.count);
     var height = number(el.height);
-    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth)];
+    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth), number(el.accessHeight)];
     state.localError = values.some(function (v) { return v !== null && isNaN(v); }) ? 'Saisissez un nombre valide.' : null;
     if (state.localError) { return null; }
     if (count !== null) { levels.count = count; }
@@ -50,6 +50,7 @@
     if (el.side.value === 'both' && number(el.street) !== null) { layout.street_width_m = number(el.street); }
     var access = { count: el.accessCount.value === 'auto' ? 'auto' : Number(el.accessCount.value) };
     if (number(el.accessWidth) !== null) { access.width_m = number(el.accessWidth); }
+    if (number(el.accessHeight) !== null) { access.height_m = number(el.accessHeight); }
     return { building: building, parcel: parcel, layout: layout, access: access };
   }
 
@@ -186,6 +187,7 @@
     el.bay.value = decimal(defaults.parcel.bay_width_m);
     el.street.value = decimal(defaults.layout.street_width_m);
     el.accessWidth.value = decimal(defaults.access.width_m);
+    el.accessHeight.value = decimal(defaults.access.height_m);
     el.side.value = result.side;
     el.streetField.hidden = result.side !== 'both';
     window.archgenStreetTool(result.tool_active);

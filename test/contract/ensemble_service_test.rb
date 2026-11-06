@@ -164,9 +164,9 @@ class EnsembleServiceTest < Minitest::Test
     assert_equal 0, starts
   end
 
-  def test_closed_trace_without_a_form_is_refused
-    square = { 'trace' => { 'points_m' => [[0, 0], [40, 0], [40, 40], [0, 40]], 'closed' => true }, 'building' => { 'profile' => { 'id' => 'haussmann' } } }
-    assert_refused @service.create(model: @model, tree: square, origin_m: ORIGIN), 'E_STREET_ACCESS', 'access_form_unavailable'
+  def test_closed_trace_with_a_porch_too_high_writes_nothing
+    square = { 'trace' => { 'points_m' => [[0, 0], [40, 0], [40, 40], [0, 40]], 'closed' => true }, 'building' => { 'profile' => { 'id' => 'haussmann' } }, 'access' => { 'height_m' => 6 } }
+    assert_refused @service.create(model: @model, tree: square, origin_m: ORIGIN), 'E_STREET_ACCESS', 'porch_too_high'
     assert_equal 0, starts
   end
 

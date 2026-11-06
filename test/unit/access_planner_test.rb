@@ -159,7 +159,8 @@ class AccessPlannerTest < Minitest::Test
   end
 
   def test_profile_without_a_form_cannot_close
-    result = engine(settings(profile: 'haussmann'))
+    rules = { 'schema_version' => 1, 'access_forms' => { 'brutalist' => { '1' => 'gap' } } }
+    result = EnsembleEngine.layout_for(settings(profile: 'haussmann'), registry: registry, rules: rules)
     refute result.ok?
     found = result.errors.first
     assert_equal 'E_STREET_ACCESS', found.code

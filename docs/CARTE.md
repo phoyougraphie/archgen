@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-035 : accès par porche, îlots fermés pour Haussmannien et Toulousain ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — AG-036 : modifier un ensemble, guide, journal, RBZ 0.3.0, H01 à H17 ; puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -45,6 +45,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 AG-032 — Le coût d'écriture suit les faces uniques : 200 parcelles droites 2,4 s, 76 parcelles sans partage 14 à 17 s. Plafond étendu porté à 600 000. view.write_image évite de piloter l'écran pour regarder un rendu. Copie de développement dans Plugins, l'ancienne dans tmp/plugins-avant-ag032/. (→ docs/recette/H15.md)
     - 2026-11-06 AG-033 — Une page se charge après l'activation de l'outil : init lui redonne l'état, sinon le statut reste faux. Un Result en erreur perd sa valeur : le tracé refusé transporte ses refus dans le résultat. Le panneau ouvert au coin cachait le menu Édition. En sonde, viser un point visible : une vue de dessus évite un clic hors de l'écran. (→ docs/recette/H16.md)
     - 2026-11-06 AG-034 — Premier îlot fermé, Brutaliste, tracé à la vraie souris : carré de 52 m, 13 bâtiments, 3 accès, fermeture au premier point à quelques pixels, Annuler et Rétablir au vrai clavier et au vrai menu, vues de la rue et de la cour regardées. Preuve à l'écran seulement, la sonde scriptée de l'îlot viendra en H17. Une candidate doit avoir ses deux voisines sur son segment : sinon un sommet plat ouvrirait un vide contre un autre segment. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-035 — La hauteur de porche prévue, 3,5 m, ne tient sous aucun style livré : leur RDC ne laisse que 2,8 et 2,9 m. Départ ramené à 2,7 m, réglable ; un premier niveau plus haut le permet. Porche regardé à hauteur d'œil, écrit par le service dans deux styles ; le geste souris et la vraie copie restent pour H17. En sonde, la première instance du gabarit est le personnage : chercher la racine par son attribut. (→ docs/ENSEMBLE_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -97,7 +98,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-032 Écrire et persister l'ensemble — adapters/sketchup/{ensemble_service, ensemble_repository}, version 0.3.0-dev. H15 : 77 contrôles sans échec, rendu regardé, rues ouvertes seulement. (→ docs/recette/H15.md)
     - [fait] AG-033 Outil de tracé — core/trace_session, adapters/sketchup/street_tool, ui/street_{controller,panel}, menu Tracer une rue. H16 et vrai geste souris et clavier. Rue ouverte utilisable en copie de développement. (→ docs/recette/H16.md)
     - [fait] AG-034 Accès par interruption — geometry/access_planner, catalogue ensemble_rules.v1 ; îlot fermé pour Brutaliste, écrit et tracé à la souris. U20 vert. (→ docs/ENSEMBLE_CONTRACT.md)
-    - [afaire] AG-035 Accès par porche — Passage sous le bâtiment ; îlot fermé pour Haussmannien et Toulousain. U21. Dép. AG-034.
+    - [fait] AG-035 Accès par porche — geometry/porch_solver, entrées du catalogue pour Haussmannien et Toulousain, hauteur de départ 2,7 m. U21 vert, vues regardées. (→ docs/ENSEMBLE_CONTRACT.md)
     - [afaire] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier, guide, journal, H01 à H17. H17. Dép. AG-035.
   - J8+ Extensions — EXT-01 à 06, 08 et 09 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
@@ -250,7 +251,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U18 — Parcelle d'angle, angles saillants et rentrants, carré de référence. Vert.
     - U19 — Plan d'ensemble, définitions partagées, budgets. Vert.
     - U20 — Accès par interruption, carré de référence, 100 contours pseudo-aléatoires. Vert.
-    - U21 — Accès par porche. À faire en AG-035.
+    - U21 — Accès par porche, Shell et Structural, limites. Vert.
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
