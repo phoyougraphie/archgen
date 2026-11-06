@@ -9,7 +9,7 @@ module Archgen
       def call(footprint, levels, facade)
         problems = []
         candidates = footprint.facades.flat_map do |side|
-          bays = %w[front rear].include?(side.id) ? facade['front_bays'] : facade['side_bays']
+          bays = bay_count(side.id, facade)
           next [] if bays.zero?
 
           margin = facade['margin_m']
@@ -28,6 +28,14 @@ module Archgen
         end
         problems.empty? ? Core::Result.ok(candidates) : Core::Result.fail(problems)
       end
+
+      # `rear_bays` n'existe que pour un bâtiment de rangée, dont l'arrière a sa propre longueur.
+      def bay_count(side_id, facade)
+        return facade.fetch('rear_bays', facade['front_bays']) if side_id == 'rear'
+
+        side_id == 'front' ? facade['front_bays'] : facade['side_bays']
+      end
+      private_class_method :bay_count
     end
   end
 end

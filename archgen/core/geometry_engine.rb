@@ -9,17 +9,20 @@ module Archgen
 
       module_function
 
-      def generate(config, materials: nil)
+      # `row` : bâtiment de rangée d'un ensemble, voie à part. Sans lui, le plan d'un bâtiment
+      # seul reste identique (docs/ENSEMBLE_CONTRACT.md).
+      def generate(config, materials: nil, row: nil)
         input = config.geometry_input
         footprint = Geometry::FootprintSolver.call(width_m: input['footprint']['width_m'], depth_m: input['footprint']['depth_m'])
         levels = Geometry::FloorPlanner.call(input['levels'], slab_m: input['structure']['slab_m'])
-        candidates = Geometry::FacadeSolver.call(footprint, levels, input['facade'])
+        facade = row ? input['facade'].merge('rear_bays' => row.fetch(:rear_bays)) : input['facade']
+        candidates = Geometry::FacadeSolver.call(footprint, levels, facade)
         return candidates unless candidates.ok?
 
         openings = Geometry::OpeningSolver.call(candidates.value, input, footprint: footprint, levels: levels)
         return openings unless openings.ok?
 
-        assemble(input, footprint, levels, openings.value, materials)
+        assemble(input, footprint, levels, openings.value, materials, row)
       end
 
       def plan_digest(plan)
@@ -30,14 +33,15 @@ module Archgen
         Canonical.dump(plan)
       end
 
-      def assemble(input, footprint, levels, openings, materials)
+      def assemble(input, footprint, levels, openings, materials, row)
         grids = Geometry::WallBuilder.grids(footprint, levels, openings, input)
         return grids unless grids.ok?
 
         estimate = estimate_budget(input, footprint, levels, openings, grids.value)
         return Result.fail(estimate) unless estimate.empty?
 
-        roof = Geometry::RoofSolver.call(footprint, levels.last.top_z_m, input['roof'], materials: input['materials'])
+        roof_solver = row ? Geometry::RowRoofSolver : Geometry::RoofSolver
+        roof = roof_solver.call(footprint, levels.last.top_z_m, input['roof'], materials: input['materials'])
         return roof unless roof.ok?
 
         details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input)

@@ -114,6 +114,8 @@ module Archgen
         'layout_on_closed_trace' => 'Une forme fermée construit toujours à l’intérieur du tracé : le côté ne se règle pas.',
         'access_on_open_trace' => 'Une rue ouverte n’a pas de cour : les accès ne s’y règlent pas.',
         'street_width_without_both' => 'La largeur de rue ne s’applique que si l’on construit des deux côtés.',
+        'hip_in_row' => 'Un toit en croupe n’a pas de sens dans une rangée : choisissez un toit plat, à deux pans ou une mansarde.',
+        'corner_parcel_unavailable' => 'Les parcelles d’angle ne sont pas encore prises en charge : tracez une rue droite.',
         'relief_exceeded' => 'Le terrain varie de %{value} m sous le bâtiment, au-delà de la limite de %{limit} m.',
         'survey_points' => 'Ce relevé demanderait %{value} points, pour une limite de %{limit}. Augmentez le pas du relevé.',
         'grid_axes' => 'Le relevé ne correspond pas à ce bâtiment. Relevez de nouveau.',

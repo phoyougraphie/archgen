@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-029 : bâtiment de rangée, noyau pur ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — AG-030 : parcelle d'angle, noyau pur ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -86,7 +86,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [afaire] AG-027 Étagement par parcelle — Après EXT-07. Dép. AG-026, AG-036.
   - J7 Rue et îlots au tracé — Forme ouverte = rue, forme fermée = îlot ; une validation = un Annuler ; RBZ 0.3.0. AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-028 Tracé et parcelles — core/ensemble_intake, geometry/{planar, trace_rows, parcel_layout}, schéma ensemble-settings, fixtures examples/ensembles. U16 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
-    - [afaire] AG-029 Bâtiment de rangée — Murs latéraux aveugles, toits en section, plan de bâtiment seul inchangé. U17. Dép. AG-028.
+    - [fait] AG-029 Bâtiment de rangée — core/parcel_building, geometry/row_roof_solver ; murs latéraux aveugles, toits en section, plan d'un bâtiment seul inchangé. U17 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
     - [afaire] AG-030 Parcelle d'angle — Trapèze, joints, toits et détails coupés à l'onglet. U18. Dép. AG-029.
     - [afaire] AG-031 Plan d'ensemble — EnsemblePlan, seeds dérivées, définitions partagées, budgets. U19. Dép. AG-030.
     - [afaire] AG-032 Écrire et persister l'ensemble — Racine d'ensemble, une opération, régénération, copies, charge. H15. Dép. AG-031.
@@ -241,7 +241,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U14 — Soubassement et plancher, plan_digest inchangé. Vert.
     - U15 — Talus, 100 terrains pseudo-aléatoires. Vert.
     - U16 — Tracé et parcelles, carré de référence, 100 tracés pseudo-aléatoires. Vert.
-    - U17 — Rangée rectangulaire, plan de bâtiment seul inchangé. À faire en AG-029.
+    - U17 — Rangée rectangulaire, toits raccordés, plan de bâtiment seul inchangé. Vert.
     - U18 — Parcelle d'angle, angles saillants et rentrants. À faire en AG-030.
     - U19 — Plan d'ensemble, budgets. À faire en AG-031.
     - U20 — Accès par interruption. À faire en AG-034.
