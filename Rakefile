@@ -13,7 +13,7 @@ task :carte do
   ruby 'scripts/build_carte.rb'
 end
 
-desc 'Construit le RBZ de développement dans pkg/'
+desc 'Construit le RBZ reproductible dans pkg/'
 task :package do
   ruby 'scripts/package_rbz.rb'
 end

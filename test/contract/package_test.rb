@@ -28,10 +28,29 @@ class PackageTest < Minitest::Test
   end
 
   def test_dialog_has_no_inline_script_or_remote_resource
-    html = read_utf8('archgen', 'ui', 'diagnostic.html')
+    html = read_utf8('archgen', 'ui', 'panel.html')
     refute_match(%r{https?://}, html)
     refute_match(/<script(?![^>]*\bsrc=)/, html)
     assert_match(/Content-Security-Policy/, html)
+  end
+
+  def test_release_version_and_menu
+    assert_match(/\A\d+\.\d+\.\d+\z/, Archgen::VERSION, 'pas de suffixe de développement dans une livraison')
+    main = read_utf8('archgen', 'main.rb')
+    assert_equal ['Nouveau bâtiment', 'Modifier le bâtiment sélectionné'], main.scan(/add_item\('([^']+)'\)/).flatten
+    refute_includes central_names(RbzPackager.build).join(' '), 'diagnostic'
+  end
+
+  def test_release_is_documented
+    assert_includes read_utf8('CHANGELOG.md'), "## #{Archgen::VERSION}"
+    guide = read_utf8('docs', 'GUIDE.md')
+    ['Windows', 'SketchUp 2026', 'Extensions', 'mètres'].each { |word| assert_includes guide, word }
+  end
+
+  def test_every_shipped_file_is_listed_and_no_host_probe_ships
+    names = central_names(RbzPackager.build)
+    assert_equal RbzPackager.entries, names
+    assert(names.none? { |n| n.include?('test/') || n.end_with?('.py', '.md') }, names.inspect)
   end
 
   def test_core_manifest_never_touches_load_path

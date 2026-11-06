@@ -2,6 +2,7 @@
 
 # Construit un RBZ reproductible : archgen.rb et archgen/ à la racine, sans tests
 # ni documentation. ZIP écrit à la main avec zlib pour éviter toute dépendance.
+require 'digest'
 require 'zlib'
 require 'fileutils'
 
@@ -45,4 +46,5 @@ if __FILE__ == $PROGRAM_NAME
   FileUtils.mkdir_p(File.dirname(out))
   File.binwrite(out, RbzPackager.build)
   puts "Écrit #{out} (#{RbzPackager.entries.size} fichiers)"
+  puts "SHA-256 #{Digest::SHA256.file(out).hexdigest}"
 end

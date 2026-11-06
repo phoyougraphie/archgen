@@ -43,7 +43,8 @@ module ArchgenStylesProbe
     group && material_id(group.entities)
   end
 
-  def run
+  # images: false ne réécrit pas les vues de docs/recette/img (rejeu sur le RBZ final).
+  def run(images: true)
     model = Sketchup.active_model
     service = Archgen::Adapters::SketchUp::BuildingService.default
     plans = {}
@@ -71,7 +72,7 @@ module ArchgenStylesProbe
     end
     check_sharing(model, plans)
     check_regeneration(model, service, plans)
-    export_images(model, plans)
+    export_images(model, plans) if images
     finish
   rescue StandardError => e
     check('Exception dans la sonde', false, "#{e.class}: #{e.message} #{e.backtrace.first}")
