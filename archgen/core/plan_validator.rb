@@ -35,6 +35,10 @@ module Archgen
 
       private
 
+      def categories
+        CATEGORIES
+      end
+
       def problem(id, reason, **params)
         @out << Diagnostic.error('E_PLAN', '/plan', reason: reason, id: id.to_s, **params)
       end
@@ -53,7 +57,7 @@ module Archgen
         id = node['id']
         problem(id, 'duplicate_node_id') if @ids.key?(id)
         @ids[id] = true
-        problem(id, 'unknown_category', category: node['category']) unless CATEGORIES.include?(node['category'])
+        problem(id, 'unknown_category', category: node['category']) unless categories.include?(node['category'])
         primitive = node['primitive']
         if primitive
           problem(id, 'primitive_with_children') unless node['children'].empty?

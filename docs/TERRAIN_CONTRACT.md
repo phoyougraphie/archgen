@@ -49,18 +49,18 @@ Soit E l'ensemble des points de la grille dans l'emprise, angles compris.
 
 | Situation | Code | Effet |
 |---|---|---|
-| Terrain au-dessus du seuil de la porte de plus de 0,02 m | `E_SITE_DOOR_BURIED` sur `/site/platform` | Refus : la porte serait inutilisable |
-| Seuil de la porte à plus de 0,20 m au-dessus du terrain (départ) | `W_SITE_DOOR_GAP` | Avertissement avec la hauteur : aucun escalier n'est généré |
-| `cut_max_m` > 0 | `W_SITE_BURIED` | Avertissement avec la hauteur et le nombre de baies touchées |
+| Terrain au-dessus du seuil de la porte de plus de 0,02 m, relevé aux deux bords et au milieu de la porte | `E_SITE_DOOR_BURIED` sur `/site/platform` | Refus : la porte serait inutilisable |
+| Seuil de la porte à plus de 0,20 m au-dessus du terrain, au milieu de la porte (départ) | `W_SITE_DOOR_GAP` | Avertissement avec la hauteur : aucun escalier n'est généré |
+| `cut_max_m` > 0 | `W_SITE_BURIED` | Avertissement avec la hauteur et le nombre de baies dont le bas est sous le terrain, relevé aux deux bords et au milieu de chaque baie, dans le plan de sa façade |
 | Pied de talus introuvable dans la marge | `E_SITE_TOE` sur `/site/embankment_ratio` | Refus localisé par façade |
 | Plus de 20 000 faces d'assise, ou total hors plafonds | `E_SITE_BUDGET` | Refus avant écriture |
 
 ## Plan d'assise
 
-`SitePlan = {schema_version:1, units:"m", nodes:[Node], metrics:{...}}`, calculé à part du `GeometryPlan` et sans y toucher, avec sa propre empreinte `site_digest`. Primitives `surface` uniquement. Catégories ajoutées : `site`, `plinth`, `platform`, `embankment`. Coordonnées locales au bâtiment, z=0 à la plateforme. Mêmes tolérances et mêmes refus de plan que le contrat géométrique.
+`SitePlan = {schema_version:1, units:"m", nodes:[Node], metrics:{...}}`, calculé à part du `GeometryPlan` et sans y toucher, avec sa propre empreinte `site_digest`. Primitives `surface` uniquement. Catégories ajoutées : `site`, `plinth`, `platform`, `embankment`. Les métriques reprennent les indicateurs d'assise et ajoutent `site_face_count`, `door_gap_m` (null sans porte) et `buried_opening_count`. Coordonnées locales au bâtiment, z=0 à la plateforme. Mêmes tolérances et mêmes refus de plan que le contrat géométrique.
 
 - **`platform` :** quad à z=0, normale vers le haut. Emprise pleine en Shell, retrait de `wall_m` en Structural, pour ne pas superposer des faces au bas des murs.
-- **`plinth` :** une bande par façade, dans le plan extérieur du mur, normale N, de z=0 jusqu'à `terrain − 0,05 m`. Le bord bas suit les abscisses de la grille. Aucune bande là où le terrain dépasse z=0. Les bandes de deux façades partagent les sommets de l'angle.
+- **`plinth` :** une bande par façade, dans le plan extérieur du mur, normale N, de z=0 jusqu'à `terrain − 0,05 m`. Le bord bas suit les abscisses de la grille. Aucune bande là où `terrain − 0,05 m` atteint z=0 : la bande s'arrête par un triangle au point de passage. Un bord bas à moins de 2 mm de z=0 compte pour z=0, et un triangle réduit à moins de 2 mm est omis, car ces arêtes seraient refusées par le validateur. Les bandes de deux façades partagent les sommets de l'angle.
 - **`embankment` :** là où il y a remblai, le talus part du bas du mur à z=0 avec la pente `1 / embankment_ratio` et descend jusqu'à son premier point sous le terrain, puis 0,05 m au-delà. Rayons perpendiculaires à la façade aux abscisses de la grille ; à chaque angle, trois rayons en éventail. Normales vers le haut et vers l'extérieur.
 
 Le chevauchement de 0,05 m évite une fente visible au raccord. Le terrain restant visible aux raccords est la limite connue de ce choix.

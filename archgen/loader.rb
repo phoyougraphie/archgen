@@ -34,8 +34,10 @@ module Archgen
       geometry/detail_solver
       core/budget
       core/plan_validator
+      core/site_plan_validator
       core/plan_projection
       core/geometry_engine
+      geometry/site_planner
       composition
     ].freeze
 

@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-022 : soubassement et plancher, en noyau pur. AG-021 est fait. V0.1 livrable : RBZ 0.1.0 installé et actif dans son SketchUp 2026 ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
+  - Prochaine action — AG-023 : talus, en noyau pur. AG-021 et AG-022 sont faits. V0.1 livrable : RBZ 0.1.0 installé et actif dans son SketchUp 2026 ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Décisions ouvertes D-03 et D-04 — Avant EXT-07. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé). D-05 et D-06 tranchées : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -73,7 +73,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. Installé par le Gestionnaire, H01 à H12 rejoués sur ce RBZ, P01 à P09 démontrées. Réserves : profil non vierge, état du Gestionnaire non conservé. (→ docs/recette/V0.1.md)
   - J6 Terrain d'un bâtiment — Assise sur terrain réel, terrain intact, RBZ 0.2.0. AG-021 à 026. (→ docs/TERRAIN_CONTRACT.md)
     - [fait] AG-021 Réglages, grille et assise — core/site_intake, survey_grid, site_assise ; schémas site et grille, fixtures examples/terrain. U13 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
-    - [afaire] AG-022 Soubassement et plancher — SitePlan, validateur, porte enterrée ou haute. U14. Dép. AG-021.
+    - [fait] AG-022 Soubassement et plancher — geometry/site_planner, core/site_plan_validator ; plan du bâtiment inchangé. Le talus reste refusé par earthwork_unavailable jusqu'à AG-023. U14 vert. (→ docs/TERRAIN_CONTRACT.md)
     - [afaire] AG-023 Talus — Pied de talus, angles, catalogue séparé. U15. Dép. AG-022.
     - [afaire] AG-024 Relevé dans SketchUp — Terrain retenu, obstacles, trous, sans écriture. H13. Dép. AG-021.
     - [afaire] AG-025 Écrire et persister l'assise — Z de la racine, archgen.site, une entrée d'Annuler. H13. Dép. AG-023, 024.
@@ -220,7 +220,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U11 — 3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.
     - U12 — Pont adverse, faux writer, panne avant/après swap.
     - U13 — Terrain : réglages, grille, plateforme, relief limite. Vert.
-    - U14 — Soubassement et plancher, plan_digest inchangé. À faire en AG-022.
+    - U14 — Soubassement et plancher, plan_digest inchangé. Vert.
     - U15 — Talus, 100 terrains pseudo-aléatoires. À faire en AG-023.
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)

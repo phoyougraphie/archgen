@@ -105,6 +105,12 @@ module Archgen
         'survey_points' => 'Ce relevé demanderait %{value} points, pour une limite de %{limit}. Augmentez le pas du relevé.',
         'grid_axes' => 'Le relevé ne correspond pas à ce bâtiment. Relevez de nouveau.',
         'grid_shape' => 'Le relevé du terrain est incomplet. Relevez de nouveau.',
+        'earthwork_unavailable' => 'Ce type de terrassement n’est pas encore disponible.',
+        'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
+        'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
+        'terrain_above_platform' => 'Le terrain dépasse la plateforme de %{value} m et traverse le bâtiment. Baies touchées : %{count}.',
+        'site_faces' => 'Le terrassement est trop détaillé. Augmentez le pas du relevé.',
+        'total_faces' => 'Le bâtiment et son terrassement dépassent la limite de %{limit} faces. Augmentez le pas du relevé ou réduisez le niveau de détail.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',
         'deleted_target' => 'Le bâtiment sélectionné a été supprimé. Rechargez la sélection.',

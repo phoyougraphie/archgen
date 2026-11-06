@@ -18,6 +18,7 @@ module Archgen
       # Assise : valeurs de départ du contrat terrain, à calibrer à la recette.
       SITE_RELIEF_MAX_M = 6.0
       SITE_MAX_SURVEY_POINTS = 3000
+      SITE_MAX_FACES = 20_000
     end
   end
 end

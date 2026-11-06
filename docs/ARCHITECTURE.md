@@ -29,6 +29,8 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::SiteIntake | settings(input), stored_settings(input), grid(tree, ...) → Result | Réglages d'assise et grille de relevé, chemins sous /site. |
 | Core::SurveyGrid | plan(...) → Result<axes> ; altitude_at(x, y) | Axes attendus, altitudes, interpolation bilinéaire. |
 | Core::SiteAssise | call(grid, settings, width_m:, depth_m:) → Result<Hash> | Plateforme, relief et indicateurs. |
+| Geometry::SitePlanner | call(plan:, config:, grid:, settings:, assise:) → Result<SitePlan> | Plancher et soubassement, porte et baies enterrées, budgets ; plan du bâtiment non modifié. |
+| Core::SitePlanValidator | call(site_plan, materials:) → Diagnostic[] | Mêmes refus de maillage que le plan du bâtiment. |
 | Geometry::FootprintSolver | call(width_m:, depth_m:) → Footprint | Anneau CCW et repères de façades. |
 | Geometry::FloorPlanner | call(footprint, levels) → Level[] | Altitudes, plages de dalle. |
 | Geometry::FacadeSolver | call(footprint, levels, facade) → Candidate[] | Positions candidates à pas constant. |
