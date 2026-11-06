@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-019 : l'export Shell LOD 0 (H12) est faisable sur ce poste ; la matrice demande le plancher SketchUp 2024 et macOS, non accessibles ici. Sans cet accès, la sortie V0.1 reste bloquée. Restent à faire par le propriétaire : fournir l'accès aux versions manquantes, pousser sur GitHub, trancher D-01 à D-06. L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Prochaine action — AG-019 bloqué sur sa matrice : H12 est réussi, il manque le plancher SketchUp 2024 et macOS, non accessibles ici, pour y rejouer H01 à H10 et H12. AG-020 en dépend, donc la sortie V0.1 reste bloquée sans cet accès. Restent à faire par le propriétaire : fournir l'accès aux versions manquantes, pousser sur GitHub, trancher D-01 à D-06. L'extension de dev reste installée et active dans son SketchUp 2026.
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/h10.rb et h11.rb, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Décisions ouvertes D-03 à D-06 — Après J5. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé), terrain intact ou remodelé (intact d'abord recommandé), ordre : terrain puis rue recommandé. (→ docs/DECISIONS.md)
@@ -31,6 +31,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 Besoin ajouté — Générateur de rue et d'îlots au tracé (geste du Mur connecté YSKE, 1 à 3 accès de cour sur forme fermée) et terrassement sur terrain accidenté. Hors V0.1. (→ docs/RUE_ILOT_TERRAIN.md)
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
     - 2026-11-06 H11 — Réussi, aucun code livré modifié. Trois écarts de la sonde corrigés : brouillon qui n'était pas la fixture, model.definitions compte aussi les groupes, l'objet Ruby d'une définition change après un Rétablir (comparer le contenu ou le persistent_id). H06 et H07 rejoués en LOD 1, 12 pannes sans résidu. Avec type via presse-papiers, valider la console par une touche Entrée séparée.
+    - 2026-11-06 H12 — Réussi vers Blender 5.2 sans interface : écart nul sur W, D, H-toit, 148 baies traversantes. L'OBJ n'a pas d'unité : units 'model' donne un facteur 1 000 dans le gabarit Architecture en millimètres, exporter en 'm'. Accents remplacés par _ dans les noms de matériaux. (→ docs/recette/H12.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -65,7 +66,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-017 Création et édition — ui/{confirmation_tokens, panel_observers}, actions generate et regenerate, confirmation, requête unique, sonde test/host/h10.rb. H10 réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
   - J5 Livraison — Matrice hôte, sécurité, budgets, export, RBZ installé. AG-018 à 020.
     - [fait] AG-018 Sécurité et charge — test/contract/security_test.rb, configurations jusqu'aux bornes, sonde test/host/h11.rb. U10, U12, H06, H07 en LOD 1 et H11 réussis, toutes cibles tenues. (→ docs/recette/H11.md)
-    - [afaire] AG-019 Export et compatibilité — Matrice Windows/macOS, export Shell LOD 0. H01 à H10, H12. Dép. AG-017.
+    - [bloque] AG-019 Export et compatibilité — H12 réussi vers Blender, OBJ en mètres. H01 à H10 et H12 prouvés sur Windows / 26.2.243 seulement ; manquent SketchUp 2024 et macOS. (→ docs/recette/H12.md)
     - [afaire] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. P01 à P09. Dép. AG-018, 019.
   - J6+ Extensions — Après J5 seulement, EXT-01 à 10 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
@@ -216,7 +217,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H09 — Saisie rapide, invalide, clavier, hors ligne. Réussi sur Windows / 26.2.243, 150 % émulé, hors ligne non provoqué. (→ docs/recette/H09.md)
     - H10 — Double clic, confirmation annulée puis refaite, observateurs, expiration, document. Réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
     - H11 — Mesures et 20 régénérations. Réussi sur Windows / 26.2.243. (→ docs/recette/H11.md)
-    - H12 — Export Shell LOD 0 : écart ≤1 %.
+    - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
   - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.
