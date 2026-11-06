@@ -6,8 +6,12 @@ module Archgen
     # vient que de l'outil : le panneau n'envoie que des réglages, jamais de géométrie.
     class StreetController
       PROTOCOL = 1
-      ACTIONS = %w[init preview create clear].freeze
-      PAYLOAD_KEYS = { 'init' => [], 'preview' => %w[settings], 'create' => %w[settings ensemble_digest], 'clear' => [] }.freeze
+      ACTIONS = %w[init preview create clear load_selection edit_preview regenerate].freeze
+      MUTATIONS = %w[create regenerate].freeze
+      PAYLOAD_KEYS = {
+        'init' => [], 'preview' => %w[settings], 'create' => %w[settings ensemble_digest], 'clear' => [],
+        'load_selection' => [], 'edit_preview' => %w[settings], 'regenerate' => %w[settings ensemble_digest]
+      }.freeze
       MAX_REQUEST_ID = 64
       MAX_REMEMBERED = 32
       DEFAULT_SETTINGS = {
@@ -20,6 +24,7 @@ module Archgen
       attr_reader :session
       # La page peut se charger après l'activation de l'outil : `init` lui redonne cet état.
       attr_writer :tool_active
+      attr_accessor :mode
 
       def initialize(service:, session:, registry:, model_provider:)
         @service = service
@@ -30,6 +35,7 @@ module Archgen
         @mutations = {}
         @busy = false
         @overlay = {}
+        @mode = 'new'
       end
 
       # Contours à dessiner dans la vue, en mètres dans le repère du modèle.
@@ -43,7 +49,7 @@ module Archgen
         request_id = safe_request_id(envelope)
         problem = envelope_problem(envelope)
         return respond(request_id, failure('E_SCHEMA', '/request', problem)) if problem
-        return perform_create(request_id, envelope['payload']) if envelope['action'] == 'create'
+        return perform_mutation(request_id, envelope['action'], envelope['payload']) if MUTATIONS.include?(envelope['action'])
 
         respond(request_id, perform(envelope['action'], envelope['payload']))
       rescue StandardError => e
@@ -56,17 +62,22 @@ module Archgen
       end
 
       def close_session
-        @session.clear
-        @overlay = {}
+        forget
         @mutations.clear
       end
 
       def document_changed
-        @session.clear
-        @overlay = {}
+        forget
       end
 
       private
+
+      def forget
+        @session.clear
+        @overlay = {}
+        @edit_target = nil
+        @edit_settings = nil
+      end
 
       def safe_request_id(envelope)
         return nil unless envelope.is_a?(Hash)
@@ -97,6 +108,8 @@ module Archgen
         when 'init' then init
         when 'preview' then preview(payload)
         when 'clear' then clear
+        when 'load_selection' then load_selection
+        when 'edit_preview' then edit_preview(payload)
         end
       end
 
@@ -108,7 +121,8 @@ module Archgen
           'profiles' => @registry.active_profiles.map { |p| { 'id' => p.id, 'label' => p.label } },
           'defaults' => DEFAULT_SETTINGS,
           'side' => @session.side,
-          'tool_active' => @tool_active == true
+          'tool_active' => @tool_active == true,
+          'mode' => @mode
         )
       end
 
@@ -191,13 +205,13 @@ module Archgen
         end
       end
 
-      def perform_create(request_id, payload)
+      def perform_mutation(request_id, action, payload)
         return @mutations[request_id] if @mutations.key?(request_id)
         return respond(request_id, failure('E_WRITE', '/model', 'operation_in_progress')) if @busy
 
         @busy = true
         begin
-          response = respond(request_id, create(payload))
+          response = respond(request_id, action == 'create' ? create(payload) : regenerate(payload))
         ensure
           @busy = false
         end
@@ -222,6 +236,74 @@ module Archgen
         @session.clear
         @overlay = {}
         Core::Result.ok(body('created' => { 'persistent_id' => created.value.persistent_id, 'metrics' => created.value.metrics }), created.diagnostics)
+      end
+
+      # --- Modifier : la racine sélectionnée donne les réglages ; le tracé ne change pas.
+
+      def load_selection
+        forget
+        loaded = @service.load_selection(model: @model_provider.call)
+        return loaded unless loaded.ok?
+
+        @edit_target = loaded.value.target
+        @edit_settings = loaded.value.settings
+        computed = @service.preview(tree: @edit_settings)
+        return computed unless computed.ok?
+
+        Core::Result.ok(edit_body(computed.value, 'settings' => @edit_settings, 'revision' => @edit_target.revision))
+      end
+
+      def edit_preview(payload)
+        return not_loaded unless @edit_settings
+
+        computed = @service.preview(tree: edit_tree(payload['settings']))
+        return Core::Result.ok('refused' => true, 'problems' => computed.errors.map { |d| Messages.to_h(d) }) unless computed.ok?
+
+        Core::Result.ok(edit_body(computed.value), computed.diagnostics)
+      end
+
+      def regenerate(payload)
+        return not_loaded unless @edit_settings
+
+        tree = edit_tree(payload['settings'])
+        computed = @service.preview(tree: tree)
+        return computed unless computed.ok?
+        return failure('E_CONFIRMATION_STALE', '/ensemble_digest', 'preview_changed') unless computed.value.ensemble_digest == payload['ensemble_digest']
+
+        written = @service.regenerate(model: @model_provider.call, target: @edit_target, replace: tree)
+        return written unless written.ok?
+
+        @edit_target = written.value.target
+        @edit_settings = computed.value.settings
+        Core::Result.ok(edit_body(computed.value, 'revision' => written.value.revision, 'written' => true), written.diagnostics)
+      end
+
+      def edit_body(computed, extra = {})
+        { 'metrics' => computed.plan['metrics'], 'ensemble_digest' => computed.ensemble_digest,
+          'changed' => computed.ensemble_digest != @edit_target.ensemble_digest }.merge(extra)
+      end
+
+      # Les réglages du panneau sur les réglages enregistrés. Le tracé et la seed ne changent pas.
+      def edit_tree(settings)
+        stored = @edit_settings
+        tree = stored.reject { |key, _| %w[layout access].include?(key) }.merge(
+          'building' => Core::Merge.leaves(stored['building'], settings.fetch('building', {})),
+          'parcel' => Core::Merge.leaves(stored['parcel'], settings.fetch('parcel', {}))
+        )
+        return tree.merge('access' => Core::Merge.leaves(stored['access'], settings.fetch('access', {}))) if stored.dig('trace', 'closed')
+
+        tree.merge('layout' => edit_layout(stored['layout'], settings.fetch('layout', {})))
+      end
+
+      def edit_layout(stored, changes)
+        side = changes['side'] || stored['side']
+        return { 'side' => side } unless side == 'both'
+
+        { 'side' => 'both', 'street_width_m' => changes['street_width_m'] || stored.fetch('street_width_m', DEFAULT_SETTINGS.dig('layout', 'street_width_m')) }
+      end
+
+      def not_loaded
+        failure('E_TARGET_STALE', '/target', 'edit_not_loaded')
       end
 
       def select_root(model, persistent_id)

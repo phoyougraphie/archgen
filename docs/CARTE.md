@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-036 : modifier un ensemble, guide, journal, RBZ 0.3.0, H01 à H17 ; puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — AG-027 : étagement par parcelle sur terrain, à détailler à l'ouverture, ou le prochain besoin du propriétaire. RBZ 0.3.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.3.0.rbz, H02 à H17 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, essayer le tracé, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suites possibles : accélérer le relevé sur très gros terrains, chaussées et carrefours. (→ docs/recette/V0.3.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -46,6 +46,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 AG-033 — Une page se charge après l'activation de l'outil : init lui redonne l'état, sinon le statut reste faux. Un Result en erreur perd sa valeur : le tracé refusé transporte ses refus dans le résultat. Le panneau ouvert au coin cachait le menu Édition. En sonde, viser un point visible : une vue de dessus évite un clic hors de l'écran. (→ docs/recette/H16.md)
     - 2026-11-06 AG-034 — Premier îlot fermé, Brutaliste, tracé à la vraie souris : carré de 52 m, 13 bâtiments, 3 accès, fermeture au premier point à quelques pixels, Annuler et Rétablir au vrai clavier et au vrai menu, vues de la rue et de la cour regardées. Preuve à l'écran seulement, la sonde scriptée de l'îlot viendra en H17. Une candidate doit avoir ses deux voisines sur son segment : sinon un sommet plat ouvrirait un vide contre un autre segment. (→ docs/ENSEMBLE_CONTRACT.md)
     - 2026-11-06 AG-035 — La hauteur de porche prévue, 3,5 m, ne tient sous aucun style livré : leur RDC ne laisse que 2,8 et 2,9 m. Départ ramené à 2,7 m, réglable ; un premier niveau plus haut le permet. Porche regardé à hauteur d'œil, écrit par le service dans deux styles ; le geste souris et la vraie copie restent pour H17. En sonde, la première instance du gabarit est le personnage : chercher la racine par son attribut. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-036 — La recette complète passait alors que le vrai clic sur Remplacer ne faisait rien : le change d'un champ à la perte de focus désactivait le bouton sous la souris. Un clic DOM ne perd pas le focus : toujours faire le vrai geste sur une étape importante. Trois RBZ successifs, recette complète rejouée sur le dernier. (→ docs/recette/H17.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -99,7 +100,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-033 Outil de tracé — core/trace_session, adapters/sketchup/street_tool, ui/street_{controller,panel}, menu Tracer une rue. H16 et vrai geste souris et clavier. Rue ouverte utilisable en copie de développement. (→ docs/recette/H16.md)
     - [fait] AG-034 Accès par interruption — geometry/access_planner, catalogue ensemble_rules.v1 ; îlot fermé pour Brutaliste, écrit et tracé à la souris. U20 vert. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-035 Accès par porche — geometry/porch_solver, entrées du catalogue pour Haussmannien et Toulousain, hauteur de départ 2,7 m. U21 vert, vues regardées. (→ docs/ENSEMBLE_CONTRACT.md)
-    - [afaire] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier, guide, journal, H01 à H17. H17. Dép. AG-035.
+    - [fait] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier l'ensemble sélectionné, guide, journal, RBZ. H02 à H17 sans échec, vrai tracé et vraie modification à la souris. Réserves : profil non vierge, cycle H01 sur le paquet précédent. (→ docs/recette/V0.3.md)
   - J8+ Extensions — EXT-01 à 06, 08 et 09 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
@@ -269,7 +270,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. Réussi sur Windows / 26.2.243 ; plus grand bâtiment : 1 min 30 par relevé. (→ docs/recette/H14.md)
     - H15 — Écriture d'un ensemble, Annuler, pannes, copies, charge. Réussi sur Windows / 26.2.243, rues ouvertes ; 200 parcelles en 2,4 s. (→ docs/recette/H15.md)
     - H16 — Outil de tracé à la souris et au clavier. Réussi sur Windows / 26.2.243. (→ docs/recette/H16.md)
-    - H17 — Parcours rue et îlot sur le RBZ. À faire en AG-036.
+    - H17 — Parcours rue et îlot, modifier, rouvrir, vraie copie. Réussi sur Windows / 26.2.243. (→ docs/recette/H17.md)
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
   - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.

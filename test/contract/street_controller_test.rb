@@ -249,6 +249,131 @@ class StreetControllerTest < Minitest::Test
     assert @session.empty?
   end
 
+  # --- Modifier
+
+  def created_root(*points, **options)
+    draw(*points, **options)
+    digest = preview['result']['ensemble_digest']
+    assert create(digest)['ok']
+    @model.instances.first
+  end
+
+  def edit_settings(extra = {})
+    SETTINGS.merge(extra)
+  end
+
+  def test_load_selection_gives_settings_and_nothing_to_replace
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    result = call('load_selection')['result']
+    assert_equal 9.0, result['settings']['parcel']['depth_m']
+    assert_equal 1, result['revision']
+    assert_equal 5, result['metrics']['parcel_count']
+    assert_equal false, result['changed']
+  end
+
+  def test_load_selection_refuses_anything_else
+    @model.selection.replace([])
+    assert_equal 'ensemble_selection_not_single', call('load_selection')['diagnostics'].first['params']['reason']
+    assert_equal 'edit_not_loaded', call('edit_preview', 'settings' => SETTINGS)['diagnostics'].first['params']['reason']
+  end
+
+  def test_edit_preview_says_what_changed_without_writing
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    before = starts
+    same = call('edit_preview', 'settings' => {})['result']
+    assert_equal false, same['changed']
+    changed = call('edit_preview', 'settings' => edit_settings('parcel' => { 'depth_m' => 12 }))['result']
+    assert_equal true, changed['changed']
+    assert_equal before, starts
+  end
+
+  def test_edit_preview_explains_a_refusal
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    result = call('edit_preview', 'settings' => edit_settings('parcel' => { 'depth_m' => 2 }))['result']
+    assert result['refused']
+    assert_equal '/parcel/depth_m', result['problems'].first['path']
+  end
+
+  def test_regenerate_replaces_and_keeps_the_trace
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    settings = edit_settings('parcel' => { 'depth_m' => 12 })
+    digest = call('edit_preview', 'settings' => settings)['result']['ensemble_digest']
+    old = root.definition
+    response = call('regenerate', 'settings' => settings, 'ensemble_digest' => digest)
+    assert response['ok'], response.inspect
+    assert_equal 2, response['result']['revision']
+    assert_equal false, response['result']['changed'], 'ce qui est écrit devient la référence'
+    refute_same old, root.definition
+    stored = JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json'))
+    assert_equal 12.0, stored['parcel']['depth_m']
+    assert_equal [[0.0, 0.0], [60.0, 0.0]], stored['trace']['points_m']
+  end
+
+  def test_regenerate_refuses_what_was_not_shown
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    response = call('regenerate', 'settings' => edit_settings('parcel' => { 'depth_m' => 12 }), 'ensemble_digest' => 'a' * 64)
+    assert_equal 'preview_changed', response['diagnostics'].first['params']['reason']
+    assert_equal 1, root.get_attribute('archgen.ensemble', 'revision')
+  end
+
+  def test_regenerate_rechecks_the_selection
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    settings = edit_settings('parcel' => { 'depth_m' => 12 })
+    digest = call('edit_preview', 'settings' => settings)['result']['ensemble_digest']
+    @model.selection.replace([])
+    response = call('regenerate', 'settings' => settings, 'ensemble_digest' => digest)
+    assert_equal 'selection_changed', response['diagnostics'].first['params']['reason']
+  end
+
+  def test_street_width_is_only_kept_on_both_sides
+    draw([0.0, 0.0], [60.0, 0.0])
+    both = SETTINGS.merge('layout' => { 'side' => 'both', 'street_width_m' => 14 })
+    digest = call('preview', 'settings' => both)['result']['ensemble_digest']
+    assert create(digest, both)['ok']
+    @model.selection.replace([@model.instances.first])
+    call('load_selection')
+    result = call('edit_preview', 'settings' => { 'layout' => { 'side' => 'left' } })['result']
+    assert_equal 5, result['metrics']['parcel_count'], 'la largeur de rue enregistrée ne fait pas refuser'
+  end
+
+  def test_closed_settings_keep_their_access
+    draw([0.0, 0.0], [40.0, 0.0], [40.0, 40.0], finish: false)
+    @session.add([0.0, 40.0])
+    @session.close
+    settings = SETTINGS.merge('access' => { 'count' => 2 })
+    digest = call('preview', 'settings' => settings)['result']['ensemble_digest']
+    assert create(digest, settings)['ok']
+    @model.selection.replace([@model.instances.first])
+    loaded = call('load_selection')['result']
+    assert_equal 2, loaded['settings']['access']['count']
+    assert_equal 1, call('edit_preview', 'settings' => { 'access' => { 'count' => 1 } })['result']['metrics']['access_count']
+  end
+
+  def test_changing_document_forgets_the_edit
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    @model.selection.replace([root])
+    call('load_selection')
+    @controller.document_changed
+    assert_equal 'edit_not_loaded', call('edit_preview', 'settings' => {})['diagnostics'].first['params']['reason']
+  end
+
+  def test_mode_reaches_the_page
+    assert_equal 'new', call('init')['result']['mode']
+    @controller.mode = 'edit'
+    assert_equal 'edit', call('init')['result']['mode']
+  end
+
   # --- Enveloppe
 
   def test_the_panel_cannot_send_geometry

@@ -24,7 +24,7 @@ module ArchgenFinalProbe
   INCHES = 0
   REPORTS = %w[h02-metres h02-pouces h03-creation h03-annuler h03-retablir h04-sauvegarde h04-reouverture h05 h08 h09 h10
                v01-reprise h11 h06-preparation h06-pannes h06-sentinelle h06-saine h06-annuler h07-cibles h07-document h12/sketchup
-               h13-releve h13-ecriture h14].freeze
+               h13-releve h13-ecriture h15 h16 h17 h17-copie h14].freeze
 
   module_function
 
@@ -183,6 +183,24 @@ module ArchgenFinalProbe
         fresh
         ArchgenSiteWriteProbe.run
       }, -> { finished?('h13-ecriture.txt') }, LONG_TIMEOUT_S],
+      ['H15', lambda {
+        fresh
+        ArchgenH15Probe.run
+      }, -> { finished?('h15.txt') }, LONG_TIMEOUT_S],
+      ['H16', lambda {
+        fresh
+        ArchgenH16Probe.run
+      }, -> { finished?('h16.txt') }, LONG_TIMEOUT_S],
+      ['H17', lambda {
+        fresh
+        ArchgenH17Probe.run
+      }, -> { finished?('h17.txt') }, LONG_TIMEOUT_S],
+      ['H17 préparation de la copie', lambda {
+        fresh
+        ArchgenH17Probe.prepare_copy
+        log('ATTENTE copier-coller H17')
+      }, -> { ArchgenH17Probe.copy_done? }, COPY_TIMEOUT_S],
+      ['H17 copie', -> { ArchgenH17Probe.after_copy }],
       ['H14', lambda {
         fresh
         ArchgenH14Probe.run
@@ -259,6 +277,11 @@ module ArchgenFinalProbe
     end
   end
 
+  # Rejeu de H15 à H17 seules, sans la charge de H14, sur le même RBZ.
+  def run_ensembles
+    start(%w[h15 h16 h17 h17-copie]) { rest.select { |stage| stage.first.start_with?('H15', 'H16', 'H17') } }
+  end
+
   # Rejeu de H14 seule, sur le même RBZ. La charge bloque SketchUp plusieurs minutes :
   # Windows peut l'annoncer « ne répond pas », ne pas fermer la fenêtre.
   def run_h14
@@ -270,7 +293,7 @@ module ArchgenFinalProbe
     @failures = 0
     @started = Time.now - 2
     @reports = reports
-    %w[run creation regeneration styles panel h09 h10 faults h11 h12 survey site_write h14].each { |file| load File.join(HOST, "#{file}.rb") }
+    %w[run creation regeneration styles panel h09 h10 faults h11 h12 survey site_write h15 h16 h17 h14].each { |file| load File.join(HOST, "#{file}.rb") }
     log("V0.1 départ #{Time.now}, ARCHGEN #{Archgen::VERSION}, code #{installed_from}")
     @queue = yield
     advance

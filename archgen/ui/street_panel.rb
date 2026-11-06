@@ -9,14 +9,24 @@ module Archgen
     module StreetPanel
       HTML = File.join(__dir__, 'street_panel.html')
 
-      def self.show
+      # mode : 'new' active l'outil de tracé ; 'edit' relit l'ensemble sélectionné, sans outil.
+      def self.show(mode = 'new')
+        controller.mode = mode
         @dialog ||= ::UI::HtmlDialog.new(
           dialog_title: 'ARCHGEN : rue', preferences_key: 'archgen_street_panel', scrollable: true, resizable: true,
           # Ouverture sous les menus : au coin de l'écran, le panneau cacherait Édition.
           left: 60, top: 130, width: 420, height: 640, min_width: 340, min_height: 420, style: ::UI::HtmlDialog::STYLE_DIALOG
         )
-        @dialog.visible? ? @dialog.bring_to_front : attach_and_show
-        activate_tool
+        visible = @dialog.visible?
+        visible ? @dialog.bring_to_front : attach_and_show
+        mode == 'new' ? activate_tool : leave_tool
+        send_script('archgenStreetRestart()') if visible
+      end
+
+      def self.leave_tool
+        ::Sketchup.active_model.select_tool(nil) if @tool
+        @tool = nil
+        controller.tool_active = false
       end
 
       def self.controller
@@ -83,8 +93,12 @@ module Archgen
 
         @app_watcher = PanelObservers::AppWatcher.new do |_model|
           controller.document_changed
-          push_state
-          activate_tool
+          if controller.mode == 'new'
+            push_state
+            activate_tool
+          else
+            send_script('archgenStreetRestart()')
+          end
         end
         ::Sketchup.add_observer(@app_watcher)
       end
@@ -94,8 +108,7 @@ module Archgen
         controller.close_session
         ::Sketchup.remove_observer(@app_watcher) if @app_watcher
         @app_watcher = nil
-        ::Sketchup.active_model.select_tool(nil) if @tool
-        @tool = nil
+        leave_tool
       end
       private_class_method :close_session
     end

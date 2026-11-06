@@ -1,8 +1,27 @@
 # Journal des versions
 
-## 0.3.0-dev
+## 0.3.0
 
-En cours : rue et îlots au tracé ([contrat](docs/ENSEMBLE_CONTRACT.md)). Rien n'est encore livré aux utilisateurs.
+Rues et îlots au tracé. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments seuls restent identiques. Le rapport de recette est dans [docs/recette/V0.3.md](docs/recette/V0.3.md).
+
+**Ajouts**
+
+- Menu **Tracer une rue** : une ligne tracée dans la vue au geste du Mur connecté de YSKE, à la souris ou au clavier, parcelles visibles pendant le tracé.
+- Forme ouverte : une rue, d'un côté ou des deux. Forme fermée : un îlot, avec 1 à 3 accès à la cour.
+- Angles libres : parcelles d'angle en onglet, toits et corniches raccordés.
+- Accès à la cour selon le style : porche pour Haussmannien et Toulousain, interruption pour Brutaliste.
+- Une validation = une entrée d'Annuler, quel que soit le nombre de bâtiments. Bâtiments identiques partagés dans le fichier.
+- Menu **Modifier l'ensemble sélectionné** : changer les réglages et remplacer tout l'ensemble.
+
+**Limites connues**
+
+- Pas de chaussée, de trottoir, de carrefour ni de réseau de rues ; pas de collision testée avec le reste du modèle.
+- Tous les bâtiments d'un ensemble ont le même gabarit. Une parcelle seule ne se modifie pas, et le tracé ne se modifie pas : on en trace un autre.
+- Pas d'assise sur terrain pour un ensemble : le tracé est horizontal.
+- Murs mitoyens doublés en Structural. Pas de fenêtre sur les murs de fin de rangée.
+- Porche de 2,7 m de haut par défaut : c'est ce que permet le rez-de-chaussée des styles livrés.
+- Un tracé dont tous les segments ont des longueurs différentes partage peu : 14 à 17 s pour 76 bâtiments en Structural LOD 1.
+- Autres versions de SketchUp et macOS non testés ; extension non signée.
 
 ## 0.2.0
 

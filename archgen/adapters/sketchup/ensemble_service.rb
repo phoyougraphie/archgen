@@ -63,22 +63,22 @@ module Archgen
 
         def load_selection(model:)
           selection = model.selection
-          return stale('selection_not_single') unless selection.length == 1
+          return stale('ensemble_selection_not_single') unless selection.length == 1
 
           record = @repository.read_instance(model, selection.first)
           record.ok? ? load_record(model, record.value) : record
         end
 
         # Régénère tout l'ensemble dans une définition fraîche ; une copie garde la sienne.
-        # `changes` : champs à modifier, fusionnés sur les réglages enregistrés.
-        def regenerate(model:, target:, changes: {})
+        # `changes` : champs à modifier, fusionnés sur les réglages enregistrés ; `replace` : réglages complets.
+        def regenerate(model:, target:, changes: {}, replace: nil)
           loaded = verify_target(model, target)
           return loaded unless loaded.ok?
 
           version = version_problem(loaded.value.record.metadata)
           return Core::Result.fail([version]) if version
 
-          computed = preview(tree: Core::Merge.leaves(loaded.value.settings, changes))
+          computed = preview(tree: replace || Core::Merge.leaves(loaded.value.settings, changes))
           return computed unless computed.ok?
 
           record = loaded.value.record
@@ -158,6 +158,7 @@ module Archgen
           raise WriteError, 'Création de la définition refusée' unless definition
 
           plan['parcels'].each { |parcel| place_parcel(definition, parcel, parcels.fetch(parcel['definition_id'])) }
+          @host.status('')
           definition
         end
 

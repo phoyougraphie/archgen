@@ -124,6 +124,8 @@ module Archgen
         'preview_changed' => 'Le résultat a changé depuis l’affichage. Vérifiez-le, puis cliquez de nouveau sur Créer.',
         'porch_too_high' => 'Ce passage de %{value} m ne tient pas sous le plafond du rez-de-chaussée : %{limit} m au plus. Réduisez sa hauteur ou augmentez celle du premier niveau.',
         'porch_no_room' => 'Ce passage ne laisse pas assez de mur de chaque côté : réduisez sa largeur ou élargissez les parcelles.',
+        'ensemble_selection_not_single' => 'Sélectionnez un seul ensemble ARCHGEN.',
+        'edit_not_loaded' => 'Rechargez d’abord la sélection.',
         'hip_in_row' => 'Un toit en croupe n’a pas de sens dans une rangée : choisissez un toit plat, à deux pans ou une mansarde.',
         'wall_too_short' => 'L’angle est trop fermé pour l’épaisseur des murs de cette parcelle.',
         'roof_rear_too_short' => 'Le débord du toit croise les onglets à l’arrière de cette parcelle : réduisez le débord ou ouvrez l’angle.',

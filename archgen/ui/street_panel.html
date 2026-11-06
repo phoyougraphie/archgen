@@ -9,7 +9,7 @@
 </head>
 <body>
 <header class="bar">
-  <h1>Tracer une rue</h1>
+  <h1 id="title">Tracer une rue</h1>
   <p id="status" class="status" role="status" aria-live="polite">Prêt</p>
 </header>
 
@@ -19,7 +19,7 @@
 </div>
 
 <main class="form street">
-  <p class="hint">Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.</p>
+  <p id="guide" class="hint">Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.</p>
   <fieldset>
     <legend>Bâtiments</legend>
     <div class="field wide"><label for="s-profile">Style</label><select id="s-profile"></select></div>
@@ -47,11 +47,13 @@
     <h2 id="result-title">Résultat</h2>
     <p id="result" class="hint">Aucun tracé.</p>
     <ul id="warnings" hidden></ul>
+    <p id="replace-warning" class="hint" hidden>La géométrie de cet ensemble sera remplacée, tous ses bâtiments compris. Le tracé ne change pas. Annuler la rétablit en une fois.</p>
   </section>
   <div class="actions">
     <button type="button" id="create" class="primary" disabled>Créer</button>
     <button type="button" id="clear" disabled>Effacer le tracé</button>
     <button type="button" id="resume" hidden>Reprendre le tracé</button>
+    <button type="button" id="reload" hidden>Recharger la sélection</button>
   </div>
   </div>
 </main>

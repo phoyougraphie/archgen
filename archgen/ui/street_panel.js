@@ -5,7 +5,7 @@
 
   var DEBOUNCE_MS = 300;
   var COOLDOWN_MS = 700;
-  var state = { counter: 0, pending: {}, timer: null, digest: null, ready: false, busy: false, cooling: false, localError: null };
+  var state = { counter: 0, pending: {}, timer: null, digest: null, ready: false, busy: false, cooling: false, localError: null, mode: 'new', loaded: false };
 
   function byId(id) { return document.getElementById(id); }
   var el = {
@@ -13,6 +13,7 @@
     profile: byId('s-profile'), mode: byId('s-mode'), lod: byId('s-lod'), count: byId('s-count'), height: byId('s-height'),
     side: byId('s-side'), streetField: byId('s-street-field'), street: byId('s-street'), target: byId('s-target'), depth: byId('s-depth'), bay: byId('s-bay'),
     accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'), accessHeight: byId('s-access-height'),
+    title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume')
   };
 
@@ -57,10 +58,17 @@
   function requestPreview() {
     clearTimeout(state.timer);
     state.ready = false;
+    state.previewPending = true;
     updateButtons();
     state.timer = setTimeout(function () {
+      state.previewPending = false;
       var values = settings();
-      if (values) { send('preview', { settings: values }); } else { showLocalError(); }
+      if (!values) { showLocalError(); return; }
+      if (state.mode === 'edit') {
+        if (state.loaded) { send('edit_preview', { settings: values }); }
+      } else {
+        send('preview', { settings: values });
+      }
     }, DEBOUNCE_MS);
   }
 
@@ -119,8 +127,11 @@
   function showResult(result, ok) {
     var trace = result && result.trace;
     if (!trace) { return; }
-    el.side.value = trace.side;
-    el.streetField.hidden = trace.side !== 'both' || trace.closed;
+    // Une saisie encore en attente l'emporte sur l'état reçu de l'outil.
+    if (!state.previewPending) {
+      el.side.value = trace.side;
+      el.streetField.hidden = trace.side !== 'both' || trace.closed;
+    }
     el.side.disabled = trace.closed;
     el.accessFields.hidden = !trace.closed;
     state.hasTrace = trace.state !== 'empty';
@@ -152,6 +163,9 @@
     delete state.pending[response.request_id];
     if (action === 'init') { onInit(response); return; }
     if (action === 'create') { onCreated(response); return; }
+    if (action === 'load_selection') { onLoaded(response); return; }
+    if (action === 'edit_preview') { showDiagnostics(allDiagnostics(response)); showEdit(response.result, response.ok); return; }
+    if (action === 'regenerate') { onRegenerated(response); return; }
     showDiagnostics(allDiagnostics(response));
     showResult(response.result, response.ok);
   };
@@ -163,7 +177,10 @@
     showResult(update.result, update.ok);
   };
 
+  window.archgenStreetRestart = function () { send('init'); };
+
   window.archgenStreetTool = function (active) {
+    if (state.mode === 'edit') { return; }
     el.resume.hidden = active;
     el.status.textContent = active ? 'Tracé actif' : 'Outil inactif';
   };
@@ -190,8 +207,110 @@
     el.accessHeight.value = decimal(defaults.access.height_m);
     el.side.value = result.side;
     el.streetField.hidden = result.side !== 'both';
-    window.archgenStreetTool(result.tool_active);
-    requestPreview();
+    state.mode = result.mode;
+    applyMode();
+    if (state.mode === 'edit') {
+      send('load_selection');
+    } else {
+      window.archgenStreetTool(result.tool_active);
+      requestPreview();
+    }
+  }
+
+
+  function applyMode() {
+    var edit = state.mode === 'edit';
+    el.title.textContent = edit ? 'Modifier un ensemble' : 'Tracer une rue';
+    el.guide.textContent = edit ? 'Le tracé reste celui de l’ensemble : seuls ses réglages changent.'
+      : 'Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.';
+    el.replaceWarning.hidden = !edit;
+    el.reload.hidden = !edit;
+    el.clear.hidden = edit;
+    if (edit) { el.resume.hidden = true; }
+    state.loaded = false;
+    state.ready = false;
+    state.digest = null;
+    updateButtons();
+  }
+
+  function setOptional(input, value) {
+    input.value = value === undefined || value === null ? '' : decimal(value);
+  }
+
+  // Ce qui a été saisi à la création revient ; le reste suit le style.
+  function fill(values) {
+    var building = values.building;
+    var levels = building.levels || {};
+    el.profile.value = building.profile.id;
+    el.mode.value = building.mode || 'shell';
+    el.lod.value = String(building.lod === undefined ? 0 : building.lod);
+    setOptional(el.count, levels.count);
+    setOptional(el.height, levels.height_m);
+    setOptional(el.target, values.parcel.target_width_m);
+    setOptional(el.depth, values.parcel.depth_m);
+    setOptional(el.bay, values.parcel.bay_width_m);
+    var closed = values.trace.closed;
+    el.accessFields.hidden = !closed;
+    el.side.disabled = closed;
+    if (closed) {
+      el.accessCount.value = String(values.access.count);
+      setOptional(el.accessWidth, values.access.width_m);
+      setOptional(el.accessHeight, values.access.height_m);
+      el.streetField.hidden = true;
+    } else {
+      el.side.value = values.layout.side;
+      el.streetField.hidden = values.layout.side !== 'both';
+      if (values.layout.street_width_m !== undefined) { setOptional(el.street, values.layout.street_width_m); }
+    }
+  }
+
+  function onLoaded(response) {
+    showDiagnostics(response.diagnostics);
+    if (!response.ok) {
+      state.loaded = false;
+      state.digest = null;
+      state.ready = false;
+      el.status.textContent = 'Aucun ensemble chargé';
+      el.result.textContent = 'Sélectionnez un ensemble, puis cliquez sur Recharger la sélection.';
+      el.create.textContent = 'Remplacer cet ensemble';
+      updateButtons();
+      return;
+    }
+    state.loaded = true;
+    fill(response.result.settings);
+    el.status.textContent = 'Révision ' + response.result.revision;
+    showEdit(response.result, true);
+  }
+
+  function showEdit(result, ok) {
+    if (!result) { return; }
+    var metrics = result.metrics;
+    el.create.textContent = 'Remplacer cet ensemble';
+    state.digest = metrics ? result.ensemble_digest : null;
+    state.ready = Boolean(ok && metrics && result.changed);
+    if (metrics) {
+      el.result.textContent = metrics.parcel_count + ' bâtiments, dont ' + metrics.definition_count + ' différents ; ' +
+        (metrics.access_count ? metrics.access_count + ' accès à la cour ; ' : '') +
+        thousands(metrics.expanded_face_count) + ' faces.' + (result.changed ? '' : ' Aucun changement.');
+    } else {
+      el.result.textContent = 'Ces réglages ne peuvent pas être construits.';
+    }
+    updateButtons();
+  }
+
+  function onRegenerated(response) {
+    state.busy = false;
+    state.cooling = true;
+    setTimeout(function () { state.cooling = false; updateButtons(); }, COOLDOWN_MS);
+    showDiagnostics(response.diagnostics);
+    if (response.ok) {
+      el.status.textContent = 'Ensemble remplacé. Révision ' + response.result.revision;
+      showEdit(response.result, true);
+    } else {
+      el.status.textContent = 'Remplacement refusé';
+      state.ready = false;
+      updateButtons();
+    }
   }
 
   function onCreated(response) {
@@ -208,9 +327,13 @@
     updateButtons();
   }
 
-  Array.prototype.slice.call(document.querySelectorAll('input, select')).forEach(function (input) {
+  // Un champ de texte n'écoute que la frappe : `change` part quand il perd le focus, donc au
+  // moment du clic sur Créer, et l'aperçu relancé désactiverait le bouton sous la souris.
+  Array.prototype.slice.call(document.querySelectorAll('input')).forEach(function (input) {
     input.addEventListener('input', requestPreview);
-    input.addEventListener('change', requestPreview);
+  });
+  Array.prototype.slice.call(document.querySelectorAll('select')).forEach(function (select) {
+    select.addEventListener('change', requestPreview);
   });
 
   el.create.addEventListener('click', function () {
@@ -220,11 +343,12 @@
     state.ready = false;
     updateButtons();
     el.status.textContent = 'Écriture en cours…';
-    send('create', { settings: values, ensemble_digest: state.digest });
+    send(state.mode === 'edit' ? 'regenerate' : 'create', { settings: values, ensemble_digest: state.digest });
   });
 
   el.clear.addEventListener('click', function () { send('clear'); });
   el.resume.addEventListener('click', function () { window.sketchup.archgen_street('activate_tool'); });
+  el.reload.addEventListener('click', function () { send('load_selection'); });
 
   send('init');
 }());

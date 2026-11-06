@@ -1,13 +1,13 @@
-# Guide d'utilisation — ARCHGEN 0.2.0
+# Guide d'utilisation — ARCHGEN 0.3.0
 
-ARCHGEN génère dans SketchUp un bâtiment paramétrique, que vous pouvez ensuite déplacer, copier et régénérer à partir de ses réglages.
+ARCHGEN génère dans SketchUp un bâtiment paramétrique, ou toute une rue ou un îlot à partir d'une ligne tracée, que vous pouvez ensuite déplacer, copier et régénérer à partir de leurs réglages.
 
 **Configuration testée :** Windows 11 avec SketchUp 2026 (26.2.243). Les autres versions et macOS n'ont pas été testés et ne sont pas garantis.
 
 ## Installer
 
 1. Ouvrez **Extensions → Extension Manager**, puis **Install Extension**.
-2. Choisissez `archgen-0.2.0.rbz` et acceptez l'installation. L'extension n'est pas signée : si vos réglages de chargement n'autorisent que les extensions identifiées, SketchUp refuse de l'activer. Changez ce réglage dans le Gestionnaire d'extensions seulement si vous faites confiance à ce fichier.
+2. Choisissez `archgen-0.3.0.rbz` et acceptez l'installation. L'extension n'est pas signée : si vos réglages de chargement n'autorisent que les extensions identifiées, SketchUp refuse de l'activer. Changez ce réglage dans le Gestionnaire d'extensions seulement si vous faites confiance à ce fichier.
 3. Le menu **Extensions → ARCHGEN** apparaît.
 
 L'extension fonctionne hors ligne et n'envoie aucune donnée.
@@ -78,6 +78,37 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 - **Si le terrain a été supprimé ou masqué,** la régénération est refusée. Réaffichez-le, ou utilisez **Retirer l'assise**, qui ne change pas l'altitude.
 - **Adapter** part des réglages enregistrés du bâtiment : régénérez d'abord si vous en avez changé.
 
+## Tracer une rue ou un îlot
+
+1. **Extensions → ARCHGEN → Tracer une rue**. Le panneau de rue s'ouvre et l'outil de tracé est actif.
+2. Réglez le style, le mode, le niveau de détail et les parcelles. Laissez vide ce qui doit suivre le style.
+3. Cliquez le départ dans la vue, puis un point par sommet, ou tapez `longueur` ou `longueur;angle` puis Entrée. L'angle se compte en degrés depuis l'axe rouge. Les parcelles se dessinent pendant le tracé, sans rien écrire.
+4. **Double-clic ou Échap** termine une rue. **Cliquer le premier point** ferme un îlot.
+5. Vérifiez le résultat au panneau, puis cliquez sur **Créer ces N bâtiments**. **Annuler** retire tout en une fois.
+
+| Touche dans la vue | Effet |
+|---|---|
+| Ctrl | Côté bâti : à gauche du tracé, à droite, des deux côtés |
+| Alt | Verrouille le quart de tour |
+| Flèche droite, gauche | Bloque l'axe rouge, l'axe vert ; la même flèche débloque |
+| Flèche bas | Perpendiculaire ou prolongement du segment précédent |
+| Échap sur un tracé terminé | Efface le tracé |
+
+**Un îlot a toujours un accès à sa cour :** 1 sous 80 m de périmètre, 2 sous 160 m, 3 au-delà, ou le nombre que vous choisissez. Sa forme suit le style : un porche sous un bâtiment en Haussmannien et Toulousain, une interruption entre deux bâtiments en Brutaliste. S'il n'y a pas la place, le tracé est refusé : le nombre n'est jamais réduit en silence.
+
+**Le porche fait 2,7 m de haut par défaut**, car le rez-de-chaussée des styles livrés ne laisse que 2,8 à 2,9 m. Ce n'est pas une règle d'accès pompiers ni d'urbanisme.
+
+**Modifier :** sélectionnez l'ensemble, puis **Extensions → ARCHGEN → Modifier l'ensemble sélectionné**. Changez les réglages, puis cliquez sur **Remplacer cet ensemble**. Toute sa géométrie est remplacée, ses bâtiments compris. Le tracé ne change pas : pour le changer, tracez-en un autre. Une copie garde sa géométrie jusqu'à sa propre modification.
+
+**À savoir**
+
+- **Refus :** un angle trop fermé pour la profondeur, un segment de moins de 6 m, un tracé qui se coupe ou une cour de moins de 3 m sont refusés, avec la cause au panneau et les parcelles en rouge.
+- **Toit en croupe :** refusé dans une rangée, aucun autre toit ne lui est substitué.
+- **Limites :** 64 points, 200 bâtiments, 120 000 faces distinctes et 600 000 faces au total.
+- **Temps :** une rue droite partage presque tout : 200 bâtiments s'écrivent en 2 à 3 s. Un tracé dont tous les segments diffèrent partage peu : 76 bâtiments en Structural LOD 1 prennent 14 à 17 s, et SketchUp se fige pendant ce temps. Attendez, ne fermez pas la fenêtre.
+- **Après coup :** on déplace ou on copie l'ensemble entier. Pour agir sur un bâtiment, il faudrait éclater l'ensemble : ses bâtiments restent, mais ne sont plus modifiables par ARCHGEN.
+- **Hors de portée :** pas de chaussée, de trottoir ni de carrefour. Le tracé est horizontal, sans adaptation au terrain, et rien ne vérifie qu'il ne traverse pas d'autres objets du modèle.
+
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.
@@ -93,7 +124,7 @@ Dans cet export, les espaces et les accents des noms de matériaux deviennent `_
 
 ## Limites de cette version
 
-- Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur, de vitrage, de garde-corps, de rue ni d'îlot.
+- Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur, de vitrage ni de garde-corps.
 - Pas de calcul de structure ni de conformité réglementaire. Les styles sont des simplifications, pas des restitutions historiques.
 - Le champ « Variation des baies » est le plus souvent refusé dès qu'il n'est pas nul ; le message propose de changer la graine ou la variation.
 - Les anciennes définitions restent dans le fichier après une régénération, pour permettre Annuler. **Fenêtre → Infos sur le modèle → Statistiques → Purger les éléments inutilisés** les retire.

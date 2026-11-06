@@ -150,7 +150,8 @@ class EnsembleServiceTest < Minitest::Test
   def test_progress_reaches_the_status_bar
     FakeSketchUp::Host.statuses.clear
     summary = create
-    assert_equal summary.metrics['definition_count'], FakeSketchUp::Host.statuses.size
+    assert_equal summary.metrics['definition_count'], FakeSketchUp::Host.statuses.count { |s| s.include?('bâtiment') }
+    assert_equal '', FakeSketchUp::Host.statuses.last, 'la barre d’état ne garde pas un message périmé'
     assert_match(/bâtiment 1 sur/, FakeSketchUp::Host.statuses.first)
   end
 
@@ -360,7 +361,7 @@ class EnsembleServiceTest < Minitest::Test
   def test_selection_must_be_a_single_ensemble_root
     create
     select
-    assert_refused @service.load_selection(model: @model), 'E_TARGET_STALE', 'selection_not_single'
+    assert_refused @service.load_selection(model: @model), 'E_TARGET_STALE', 'ensemble_selection_not_single'
     other = @model.add_instance(@model.add_definition('autre'), FakeSketchUp::Host.identity)
     select(other)
     assert_refused @service.load_selection(model: @model), 'E_TARGET_STALE', 'not_an_ensemble_root'

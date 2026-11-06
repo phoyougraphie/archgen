@@ -77,9 +77,17 @@ class PanelAssetsTest < Minitest::Test
     assert_empty ids - labels
   end
 
+  # Défaut trouvé au vrai geste : taper une valeur puis cliquer Créer ne faisait rien.
+  def test_leaving_a_street_field_does_not_disable_the_button
+    source = read_utf8(*UI_DIR, 'street_panel.js')
+    refute_match(/querySelectorAll\('input, select'\)/, source)
+    assert_match(/querySelectorAll\('input'\)\)\.forEach\(function \(input\) \{\n\s+input\.addEventListener\('input', requestPreview\);\n\s+\}\);/, source)
+  end
+
   def test_street_panel_starts_without_anything_to_create
     html = read_utf8(*UI_DIR, 'street_panel.html')
     assert_match(/id="create"[^>]* disabled/, html)
+    assert_match(/id="replace-warning"[^>]* hidden/, html)
     assert_match(/id="status"[^>]*aria-live="polite"/, html)
   end
 
