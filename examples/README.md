@@ -5,6 +5,7 @@
 - [Toulousain](buildings/toulousain.json) et [Brutaliste](buildings/brutalist.json) : signatures de la recette.
 - [Registre générique](profiles/generic.json), [haussmann](profiles/haussmann.json), [toulousain](profiles/toulousain.json), [brutalist](profiles/brutalist.json) : données prêtes à reprendre dans le dépôt. Le répertoire profiles contient aussi les sept parents techniques.
 - [Terrains](terrain/) : grilles de relevé 12 × 9 m au pas de départ, pente de 8 %, creux et trou.
+- [Ensembles](ensembles/) : carré de 40 m, rue coudée des deux côtés, contour rentrant ; valeurs attendues calculées à la main dans `test/unit/parcel_layout_test.rb`.
 - [Matériaux d'assise](site_materials.v1.json) : la terre du talus, dans un catalogue séparé.
 - [Matériaux](materials.v1.json) : couleurs sRGB de génération ; textures et nomenclatures d'export sont différées.
 

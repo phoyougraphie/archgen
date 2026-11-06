@@ -23,8 +23,12 @@ module Archgen
       core/config_resolver
       core/survey_grid
       core/site_intake
+      core/ensemble_intake
       core/site_assise
       geometry/types
+      geometry/planar
+      geometry/trace_rows
+      geometry/parcel_layout
       geometry/footprint_solver
       geometry/floor_planner
       geometry/facade_solver

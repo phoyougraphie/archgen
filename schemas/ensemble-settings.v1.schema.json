@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN ensemble settings V1",
+  "type": "object",
+  "properties": {
+    "ensemble_version": {
+      "const": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "points_m": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "closed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "points_m",
+        "closed"
+      ],
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "side": {
+          "enum": [
+            "left",
+            "right",
+            "both"
+          ]
+        },
+        "street_width_m": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 60
+        }
+      },
+      "additionalProperties": false
+    },
+    "parcel": {
+      "type": "object",
+      "properties": {
+        "target_width_m": {
+          "type": "number",
+          "minimum": 6,
+          "maximum": 60
+        },
+        "depth_m": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 60
+        },
+        "bay_width_m": {
+          "type": "number",
+          "minimum": 1.5,
+          "maximum": 12
+        }
+      },
+      "additionalProperties": false
+    },
+    "access": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "enum": [
+            "auto",
+            1,
+            2,
+            3
+          ]
+        },
+        "width_m": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 6
+        },
+        "height_m": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "building": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "trace"
+  ],
+  "additionalProperties": false
+}

@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-028 : tracé et parcelles, noyau pur, à lancer une fois le contrat d'ensemble validé par le propriétaire ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — AG-029 : bâtiment de rangée, noyau pur ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -39,6 +39,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 H13 écriture — Vrai défaut trouvé : un rayon le long d'une arête verticale du soubassement ne renvoie rien ; rayons décalés de 0,2 mm. Les scripts patch en heredoc cassent les accents sous Git Bash (CP850) : les écrire dans un fichier. Le second clic sur Édition n'ouvre le menu qu'après un survol et 3 s.
     - 2026-11-06 AG-026 — Vrai défaut présent depuis la 0.1.0 : set_on_closed est perdu à la fermeture, la page rouverte recevait une ancienne réponse et annonçait une création non écrite. Rattaché à chaque affichage, init vide la mémoire. Rejeu : dernier cas de charge figé, fenêtre fermée à la main par le propriétaire, pas de plantage ; prévenir avant une charge, run_h14 rejoue H14 seule. Le relevé coûte 30 à 50 ms par point sur 100 000 faces. Une réponse témoin posée juste après show est effacée par init : attendre la page. (→ docs/recette/H14.md)
     - 2026-11-06 EXT-07 préparé — D-03 onglet, D-04 selon le style. Parcelle en trapèze à façade et arrière parallèles, donc convexe et toit en section ; murs mitoyens gardés ; même gabarit par ensemble. Report : carrefours, trottoirs, modification d'une seule parcelle. Annoncer la durée avant une écriture longue : une fenêtre figée se fait fermer. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-028 — Contrat corrigé à l'implémentation : l'écart de 3 m entre parcelles contredisait l'arrière minimal de 2 m autour d'un angle, il ne vaut donc plus entre segments contigus. Les numéros de segment restent ceux du tracé saisi, même parcouru à l'envers. Dans une classe de test, une méthode placée après private n'est pas lancée. (→ docs/ENSEMBLE_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -84,7 +85,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-026 Panneau terrain et RBZ 0.2.0 — Section Terrain, confirmation, guide, charge mesurée. H02 à H14 sans échec sur le RBZ. Réserves : profil non vierge, SketchUp figé sur très gros terrain. (→ docs/recette/V0.2.md)
     - [afaire] AG-027 Étagement par parcelle — Après EXT-07. Dép. AG-026, AG-036.
   - J7 Rue et îlots au tracé — Forme ouverte = rue, forme fermée = îlot ; une validation = un Annuler ; RBZ 0.3.0. AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
-    - [afaire] AG-028 Tracé et parcelles — Schéma ensemble V1, onglets, découpe, contrôles ; noyau pur. U16. Dép. AG-026.
+    - [fait] AG-028 Tracé et parcelles — core/ensemble_intake, geometry/{planar, trace_rows, parcel_layout}, schéma ensemble-settings, fixtures examples/ensembles. U16 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
     - [afaire] AG-029 Bâtiment de rangée — Murs latéraux aveugles, toits en section, plan de bâtiment seul inchangé. U17. Dép. AG-028.
     - [afaire] AG-030 Parcelle d'angle — Trapèze, joints, toits et détails coupés à l'onglet. U18. Dép. AG-029.
     - [afaire] AG-031 Plan d'ensemble — EnsemblePlan, seeds dérivées, définitions partagées, budgets. U19. Dép. AG-030.
@@ -239,7 +240,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U13 — Terrain : réglages, grille, plateforme, relief limite. Vert.
     - U14 — Soubassement et plancher, plan_digest inchangé. Vert.
     - U15 — Talus, 100 terrains pseudo-aléatoires. Vert.
-    - U16 — Tracé et parcelles, carré de référence. À faire en AG-028.
+    - U16 — Tracé et parcelles, carré de référence, 100 tracés pseudo-aléatoires. Vert.
     - U17 — Rangée rectangulaire, plan de bâtiment seul inchangé. À faire en AG-029.
     - U18 — Parcelle d'angle, angles saillants et rentrants. À faire en AG-030.
     - U19 — Plan d'ensemble, budgets. À faire en AG-031.

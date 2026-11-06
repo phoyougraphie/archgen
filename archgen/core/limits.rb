@@ -19,6 +19,12 @@ module Archgen
       SITE_RELIEF_MAX_M = 6.0
       SITE_MAX_SURVEY_POINTS = 3000
       SITE_MAX_FACES = 20_000
+      # Ensemble : valeurs de départ du contrat d'ensemble, à calibrer à la recette.
+      ENSEMBLE_MIN_SEGMENT_M = 6.0
+      ENSEMBLE_MAX_COORDINATE_M = 2000.0
+      ENSEMBLE_REAR_MIN_M = 2.0
+      ENSEMBLE_CLEARANCE_M = 3.0
+      ENSEMBLE_MAX_PARCELS = 200
     end
   end
 end

@@ -1,0 +1,10 @@
+{
+  "ensemble_version": 1,
+  "seed": 1,
+  "trace": {
+    "points_m": [[0, 0], [60, 0], [60, 48]],
+    "closed": false
+  },
+  "layout": { "side": "both", "street_width_m": 12 },
+  "parcel": { "target_width_m": 12, "depth_m": 9, "bay_width_m": 3 }
+}

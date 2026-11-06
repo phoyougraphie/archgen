@@ -34,7 +34,7 @@ Format séparé de la configuration du bâtiment, qui reste en V1 fermée. Clés
 ## Tracé et segments
 
 1. **Sens de calcul :** chaque rangée est parcourue le bâti à sa gauche, comme la façade `front` du contrat géométrique. Un contour fermé est ramené au sens antihoraire ; `right` inverse le tracé ; `both` calcule deux rangées, décalées de `street_width_m / 2` de chaque côté de l'axe.
-2. **Refus du tracé, `E_STREET_TRACE` sur `/trace/segments/<i>` :** moins de 2 points, ou 3 pour un contour fermé ; segment de moins de 6 m (départ) ; auto-intersection, avec les deux segments en cause ; point hors de ±2 000 m.
+2. **Refus du tracé, `E_STREET_TRACE` :** moins de 2 points, ou 3 pour un contour fermé, ou premier point ailleurs qu'en (0, 0), sur `/trace/points_m` ; point hors de ±2 000 m, sur `/trace/points_m/<i>` ; segment de moins de 6 m (départ) ou tracé qui se coupe ou se replie, avec les deux segments en cause, sur `/trace/segments/<i>`. Avec `both`, la longueur minimale vaut aussi pour les façades décalées, qui peuvent raccourcir ou s'inverser dans un angle. Les numéros de segment restent ceux du tracé saisi, même quand le calcul le parcourt en sens inverse.
 3. **Angle au sommet :** φ est l'angle signé dont tourne le tracé, positif vers le bâti. La coupe d'onglet suit la bissectrice, de la façade à l'arrière. **δ = D × tan(φ / 2)** est le recul de l'arrière à ce sommet, D étant la profondeur : positif sur un angle saillant, négatif sur un angle rentrant, 0 à l'extrémité d'une rue.
 
 ## Découpe en parcelles
@@ -61,11 +61,11 @@ Il est toujours convexe : c'est ce qui garde la géométrie simple. Sans onglet,
 | Situation | Code | Effet |
 |---|---|---|
 | Arrière d'une parcelle sous `rear_min` | `E_STREET_CORNER` | Refus sur le segment |
-| Deux parcelles non voisines qui se recouvrent, ou à moins de 3 m (départ) | `E_STREET_OVERLAP` sur `/parcels/<id>` | Refus, avec les deux parcelles. Couvre un tracé qui se replie et une cour trop étroite |
+| Deux parcelles non voisines qui se recouvrent ; ou, sur des segments non contigus ou des rangées différentes, à moins de 3 m (départ) | `E_STREET_OVERLAP` sur `/parcels/<id>` | Refus, avec les deux parcelles. Couvre un tracé qui se replie et une cour trop étroite. Sur deux segments contigus, seul le recouvrement compte : ils se rejoignent à l'angle, où `rear_min` fait déjà foi |
 | Plus de 200 parcelles (départ) ou plafonds d'ensemble dépassés | `E_STREET_BUDGET` | Refus avant écriture |
 | Refus du moteur pour une parcelle | Code du moteur, sur `/parcels/<id>/…` | Refus de tout l'ensemble |
 
-Voisines : consécutives dans une même rangée, ou de part et d'autre d'un même onglet. Elles se touchent par construction.
+Voisines : consécutives dans une même rangée, onglets compris. Elles se touchent par construction.
 
 ## Bâtiment de rangée
 
