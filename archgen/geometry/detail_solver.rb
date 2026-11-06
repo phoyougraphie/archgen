@@ -22,6 +22,20 @@ module Archgen
         mesh.to_primitive
       end
 
+      # Prisme vertical sur un contour antihoraire de 4 sommets.
+      def prism(ring, z0, z1, material)
+        low = ring.map { |x, y| [x, y, z0] }
+        high = ring.map { |x, y| [x, y, z1] }
+        mesh = MeshBuilder.new('solid')
+        mesh.add_face(low.reverse, material)
+        mesh.add_face(high, material)
+        ring.each_index do |i|
+          j = (i + 1) % ring.size
+          mesh.add_face([low[i], low[j], high[j], high[i]], material)
+        end
+        mesh.to_primitive
+      end
+
       # Boîte donnée en coordonnées de façade (u, z, d), quel que soit le côté.
       def on_facade(facade, u0, u1, z0, z1, d0, d1, material)
         p = facade.point(u0, z0, d0)
@@ -61,13 +75,15 @@ module Archgen
         nodes = frames(footprint, openings, config, definitions)
         nodes += surrounds(footprint, openings, config) if features['surrounds']
         nodes << cornice(footprint, levels, config) if features['cornice']
-        nodes += balconies(footprint, balcony_levels, config) if features['balcony']
-        warnings = features['balcony'] && balcony_levels.empty? ? [balcony_warning] : []
+        built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
+        nodes += built_balconies
+        warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
 
-      def balcony_warning
-        Core::Diagnostic.warning('W_DETAIL', '/features/balcony', reason: 'no_balcony_level', levels: BALCONY_LEVELS)
+      def balcony_warning(balcony_levels)
+        reason = balcony_levels.empty? ? 'no_balcony_level' : 'balcony_no_room'
+        Core::Diagnostic.warning('W_DETAIL', '/features/balcony', reason: reason, levels: BALCONY_LEVELS)
       end
       private_class_method :balcony_warning
 
@@ -180,15 +196,27 @@ module Archgen
       def cornice(footprint, levels, config)
         facade = footprint.facade('front')
         top = levels.last.top_z_m
+        return mitred_cornice(footprint, top, config) if footprint.trapezoid?
+
         Node.leaf('cornice', 'cornice',
                   Boxes.on_facade(facade, 0.0, facade.length_m, top - CORNICE_HEIGHT_M, top, -CORNICE_DEPTH_M, 0.0, config['materials']['wall']))
       end
       private_class_method :cornice
 
+      # Coupée par les plans d'onglet : deux voisines se rejoignent sans se recouvrir.
+      def mitred_cornice(footprint, top, config)
+        y = -CORNICE_DEPTH_M
+        ring = [[footprint.left_x(y), y], [footprint.right_x(y), y], [footprint.width_m, 0.0], [0.0, 0.0]]
+        Node.leaf('cornice', 'cornice', Boxes.prism(ring, top - CORNICE_HEIGHT_M, top, config['materials']['wall']))
+      end
+      private_class_method :mitred_cornice
+
       # Du premier au dernier axe de travée plus un demi-pas : de la marge à la marge.
       def balconies(footprint, balcony_levels, config)
         facade = footprint.facade('front')
         margin = config['facade']['margin_m']
+        return mitred_balconies(footprint, balcony_levels, margin, config) if footprint.trapezoid?
+
         balcony_levels.map do |level|
           Node.leaf("balcony/#{level.index}", 'balcony',
                     Boxes.on_facade(facade, margin, facade.length_m - margin, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m,
@@ -196,6 +224,20 @@ module Archgen
         end
       end
       private_class_method :balconies
+
+      # De marge à marge, comme ailleurs, mais sans franchir l'onglet d'un angle rentrant.
+      def mitred_balconies(footprint, balcony_levels, margin, config)
+        y = -BALCONY_DEPTH_M
+        near = [margin, footprint.width_m - margin]
+        far = [[margin, footprint.left_x(y)].max, [footprint.width_m - margin, footprint.right_x(y)].min]
+        return [] if far[1] - far[0] < Core::Quant::MIN_EDGE_M
+
+        ring = [[far[0], y], [far[1], y], [near[1], 0.0], [near[0], 0.0]]
+        balcony_levels.map do |level|
+          Node.leaf("balcony/#{level.index}", 'balcony', Boxes.prism(ring, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m, config['materials']['wall']))
+        end
+      end
+      private_class_method :mitred_balconies
     end
   end
 end

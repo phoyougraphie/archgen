@@ -9,11 +9,11 @@ module Archgen
       module_function
 
       def call(footprint, wall_top_z, roof, materials:)
-        problem = eave_problem(wall_top_z, roof)
+        problem = eave_problem(wall_top_z, roof) || rear_problem(footprint, roof)
         return Core::Result.fail([problem]) if problem
 
         section, ends = shapes(footprint.depth_m, wall_top_z, roof)
-        faces = pans(section, footprint.width_m) + gables(ends, footprint.width_m)
+        faces = pans(section, footprint) + gables(ends, footprint)
         nodes = faces.map { |id, category, points| node(id, category, points, materials) }
         top = section.map { |_, z| Core::Quant.q(z) }.max
         Core::Result.ok(RoofPlan.new(nodes: [Node.group('roof', 'roof', nodes)], top_z_m: top))
@@ -26,6 +26,16 @@ module Archgen
         Core::Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'eave_below_ground')
       end
       private_class_method :eave_problem
+
+      # Les plans d'onglet se rapprochent vers l'arrière : le débord ne doit pas les croiser.
+      def rear_problem(footprint, roof)
+        y = footprint.depth_m + roof['overhang_m']
+        length = footprint.right_x(y) - footprint.left_x(y)
+        return nil if length >= Core::Quant::MIN_EDGE_M
+
+        Core::Diagnostic.error('E_STREET_CORNER', '/roof/overhang_m', reason: 'roof_rear_too_short', value: length.round(3))
+      end
+      private_class_method :rear_problem
 
       # Section [[nom, y, z]...] de l'avant vers l'arrière, et polygones de pignon dans le plan (y, z).
       def shapes(depth, h, roof)
@@ -70,17 +80,17 @@ module Archgen
 
       # Sommets en sens antihoraire vu du dessus : y croît le long de la section, donc la
       # normale reste vers le haut sur les pans avant comme arrière.
-      def pans(section, width)
+      def pans(section, footprint)
         section.each_cons(2).with_index.map do |((y0, z0), (y1, z1)), index|
-          ["roof/pan/#{index}", 'roof_face', [[0.0, y0, z0], [width, y0, z0], [width, y1, z1], [0.0, y1, z1]]]
+          ["roof/pan/#{index}", 'roof_face', [[footprint.left_x(y0), y0, z0], [footprint.right_x(y0), y0, z0], [footprint.right_x(y1), y1, z1], [footprint.left_x(y1), y1, z1]]]
         end
       end
       private_class_method :pans
 
-      def gables(ends, width)
+      def gables(ends, footprint)
         ends.each_with_index.flat_map do |polygon, index|
-          right = polygon.map { |y, z| [width, y, z] }
-          left = polygon.reverse.map { |y, z| [0.0, y, z] }
+          right = polygon.map { |y, z| [footprint.right_x(y), y, z] }
+          left = polygon.reverse.map { |y, z| [footprint.left_x(y), y, z] }
           [["roof/gable/right/#{index}", 'gable_end', right], ["roof/gable/left/#{index}", 'gable_end', left]]
         end
       end

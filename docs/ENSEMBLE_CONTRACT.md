@@ -75,12 +75,15 @@ Chaque parcelle reçoit une configuration effective complète : largeur W, profo
 |---|---|
 | **Travées** | `front_bays = max(1, floor(W / bay))` ; `rear_bays = floor(arrière / bay)`, 0 permis ; `entry_bay = floor(front_bays / 2)`. Les baies suivent les règles et les refus du contrat géométrique |
 | **Murs latéraux** | Toujours aveugles et toujours émis, en entier, dans les deux modes, y compris les extrémités libres d'une rue (ADR-32) |
-| **Structural** | Le joint entre deux murs suit l'angle réel du trapèze. Dalles sur le trapèze intérieur. Deux murs mitoyens se touchent sans se recouvrir |
+| **Structural** | Le joint entre deux murs suit l'angle réel du trapèze : à l'intérieur, l'extrémité recule de `t × tan(virage / 2)`, soit t à angle droit. Dalles sur le trapèze intérieur. Deux murs mitoyens se touchent sans se recouvrir. Un mur dont les deux joints se rejoindraient : `E_STREET_CORNER` |
 | **Toit** | Une section constante dans le plan (y, z), balayée le long de la rangée et coupée par les deux plans latéraux. Faîtage parallèle à la façade, à y = D/2. Pas de débord latéral : un toit ne déborde jamais chez le voisin. Les toits de deux parcelles se rejoignent donc exactement sur l'onglet |
 | Plat, deux pans | Même section qu'en V1, débord en façade et à l'arrière |
 | Mansarde | Pans bas et hauts en façade et à l'arrière, sans pans latéraux : la croupe de couronnement disparaît. Un pignon aveugle de chaque côté, comme en deux pans |
 | Croupe | `E_STREET_ROOF` sur `/building/roof/type` : elle n'a pas de sens en rangée, et aucun autre toit ne lui est substitué. Aucun profil actif ne l'utilise |
-| **Corniche, balcon** | Coupés par le plan d'onglet, pour se rejoindre sur un angle saillant sans se recouvrir sur un angle rentrant |
+| **Corniche** | Coupée par le plan d'onglet : deux voisines se rejoignent sur un angle saillant et ne se recouvrent pas sur un angle rentrant |
+| **Balcon** | De marge à marge, comme ailleurs : il n'atteint donc pas l'angle. Sur un angle rentrant, son bord extérieur s'arrête à l'onglet. S'il n'a plus la place : `W_DETAIL`, sans balcon sur cette parcelle |
+| **Baies d'angle** | La trame se resserre entre les joints intérieurs : `P = (haut − bas) / N`, avec `bas = max(M, début du joint)` et `haut = min(L − M, fin du joint)`. Une baie ne tombe donc pas dans un angle fermé. Le dégagement aux extrémités se mesure depuis le joint. Si les baies ne tiennent plus : `E_OPENING_CLEARANCE` |
+| **Débord arrière** | Les plans d'onglet se rapprochent vers l'arrière. Si le débord les croiserait : `E_STREET_CORNER` |
 | **Cadres, encadrements** | Inchangés |
 
 **Arrière :** il suit la trame de la façade arrière V1, avec ses propres travées. Pas de vitrage ni de traitement particulier côté cour.

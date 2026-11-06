@@ -161,10 +161,10 @@ module Archgen
       end
       private_class_method :bounds
 
-      # À l'intérieur, u=0 devient t et u=L devient L−t ; les autres coupes gardent u.
+      # À l'intérieur, u=0 et u=L suivent le joint (t et L−t à angle droit) ; les autres coupes gardent u.
       def inner(grid, u, z, t)
-        mapped = if u.zero? then t
-                 elsif u == grid.facade.length_m then grid.facade.length_m - t
+        mapped = if u.zero? then grid.facade.inner_start(t)
+                 elsif u == grid.facade.length_m then grid.facade.inner_end(t)
                  else u
                  end
         grid.facade.point(mapped, z, t)
@@ -173,12 +173,22 @@ module Archgen
 
       def slabs(footprint, levels, config, material)
         t = config['structure']['wall_m']
+        return trapezoid_slabs(footprint, levels, t, material) if footprint.trapezoid?
+
         box = [t, footprint.width_m - t, t, footprint.depth_m - t]
         levels.drop(1).map do |level|
           Node.leaf("slab/#{level.index}", 'slab', Boxes.solid(*box, level.slab_bottom_z_m, level.base_z_m, material))
         end
       end
       private_class_method :slabs
+
+      def trapezoid_slabs(footprint, levels, thickness, material)
+        ring = footprint.facades.map { |facade| facade.point(facade.inner_start(thickness), 0.0, thickness).first(2) }
+        levels.drop(1).map do |level|
+          Node.leaf("slab/#{level.index}", 'slab', Boxes.prism(ring, level.slab_bottom_z_m, level.base_z_m, material))
+        end
+      end
+      private_class_method :trapezoid_slabs
     end
   end
 end

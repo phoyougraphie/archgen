@@ -10,10 +10,8 @@ module Archgen
 
       module_function
 
-      # Résultat : Built. Une parcelle d'angle attend sa capacité géométrique (AG-030).
+      # Résultat : Built.
       def call(settings, parcel, registry:, intake:, materials: nil)
-        return unavailable_corner(parcel) if parcel['corner']
-
         config = config_for(settings, parcel, registry: registry, intake: intake)
         return config unless config.ok?
 
@@ -21,7 +19,8 @@ module Archgen
         return Result.fail([hip]) if hip
 
         rear_bays = bays(parcel['rear_m'], settings.dig('parcel', 'bay_width_m'), 0)
-        plan = GeometryEngine.generate(config.value, materials: materials, row: { rear_bays: rear_bays })
+        row = { rear_bays: rear_bays, delta_left_m: parcel['delta_left_m'], delta_right_m: parcel['delta_right_m'] }
+        plan = GeometryEngine.generate(config.value, materials: materials, row: row)
         return localized(plan, parcel) unless plan.ok?
 
         Result.ok(Built.new(config: config.value, plan: plan.value, rear_bays: rear_bays), plan.diagnostics + config.diagnostics)
@@ -59,11 +58,6 @@ module Archgen
         Diagnostic.error('E_STREET_ROOF', '/building/roof/type', reason: 'hip_in_row')
       end
       private_class_method :hip_problem
-
-      def unavailable_corner(parcel)
-        Result.fail([Diagnostic.error('E_STREET_CORNER', "/parcels/#{parcel['id']}", reason: 'corner_parcel_unavailable', id: parcel['id'])])
-      end
-      private_class_method :unavailable_corner
 
       def localized(result, parcel)
         Result.fail(result.errors.map do |d|

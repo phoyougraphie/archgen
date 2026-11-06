@@ -253,14 +253,6 @@ class RowBuildingTest < Minitest::Test
     assert(result.errors.all? { |d| d.path.start_with?('/parcels/left/0/0/') }, result.errors.map(&:to_h).inspect)
   end
 
-  def test_corner_parcel_waits_for_its_capacity
-    value = settings(points: [[0, 0], [40, 0], [40, 40]])
-    corner = parcels_of(value).find { |p| p['corner'] }
-    result = build(value, corner)
-    assert_equal 'E_STREET_CORNER', result.errors.first.code
-    assert_equal 'corner_parcel_unavailable', result.errors.first.params['reason']
-  end
-
   # --- Un bâtiment seul ne change pas
 
   def test_lone_building_keeps_its_own_roof

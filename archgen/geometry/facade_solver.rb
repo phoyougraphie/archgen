@@ -6,7 +6,8 @@ module Archgen
     module FacadeSolver
       module_function
 
-      def call(footprint, levels, facade)
+      # `wall_m` : épaisseur des murs, nécessaire aux seules parcelles d'angle.
+      def call(footprint, levels, facade, wall_m: nil)
         problems = []
         candidates = footprint.facades.flat_map do |side|
           bays = bay_count(side.id, facade)
@@ -18,16 +19,27 @@ module Archgen
                                                id: side.id, length: side.length_m, margin: margin)
             next []
           end
-          pitch = (side.length_m - (2 * margin)) / bays
+          start, pitch = frame(side, margin, bays, wall_m)
           levels.flat_map do |level|
             (0...bays).map do |bay|
               Candidate.new(facade_id: side.id, level_index: level.index, bay_index: bay,
-                            center_u_m: margin + ((bay + 0.5) * pitch))
+                            center_u_m: start + ((bay + 0.5) * pitch))
             end
           end
         end
         problems.empty? ? Core::Result.ok(candidates) : Core::Result.fail(problems)
       end
+
+      # Sur une parcelle d'angle, la trame se resserre entre les joints intérieurs : une baie ne
+      # tombe pas dans un angle fermé. À angle droit, le calcul reste celui du contrat V1.
+      def frame(side, margin, bays, wall_m)
+        return [margin, (side.length_m - (2 * margin)) / bays] unless side.start_factor
+
+        low = [margin, side.inner_start(wall_m)].max
+        high = [side.length_m - margin, side.inner_end(wall_m)].min
+        [low, (high - low) / bays]
+      end
+      private_class_method :frame
 
       # `rear_bays` n'existe que pour un bâtiment de rangée, dont l'arrière a sa propre longueur.
       def bay_count(side_id, facade)

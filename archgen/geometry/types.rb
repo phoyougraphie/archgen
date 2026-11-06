@@ -3,7 +3,8 @@
 module Archgen
   module Geometry
     # Une façade : arête A→B de l'anneau, en repère local du bâtiment.
-    Facade = Struct.new(:id, :a, :tangent, :normal, :length_m, keyword_init: true) do
+    # `start_factor` et `end_factor` : recul du joint intérieur par unité d'épaisseur, absents à angle droit.
+    Facade = Struct.new(:id, :a, :tangent, :normal, :length_m, :start_factor, :end_factor, keyword_init: true) do
       # Point de mur = A + uT + zK − dN (contrat géométrique, Repères).
       def point(u, z, d = 0.0)
         [
@@ -12,11 +13,34 @@ module Archgen
           Core::Quant.q(z)
         ]
       end
+
+      # Abscisses du mur côté intérieur, à l'épaisseur t : à angle droit, t et L − t.
+      def inner_start(thickness)
+        thickness * (start_factor || 1.0)
+      end
+
+      def inner_end(thickness)
+        length_m - (thickness * (end_factor || 1.0))
+      end
     end
 
-    Footprint = Struct.new(:width_m, :depth_m, :ring, :facades, keyword_init: true) do
+    # `delta_left_m`, `delta_right_m` : reculs de l'arrière d'une parcelle d'angle, absents ailleurs.
+    Footprint = Struct.new(:width_m, :depth_m, :ring, :facades, :delta_left_m, :delta_right_m, keyword_init: true) do
       def facade(id)
         facades.find { |f| f.id == id }
+      end
+
+      def trapezoid?
+        !delta_left_m.nil?
+      end
+
+      # Abscisses des murs latéraux, prolongées au-delà de la façade et de l'arrière : le plan d'onglet.
+      def left_x(y)
+        delta_left_m.to_f * y / depth_m
+      end
+
+      def right_x(y)
+        width_m - (delta_right_m.to_f * y / depth_m)
       end
     end
 

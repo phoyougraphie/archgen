@@ -13,10 +13,13 @@ module Archgen
       # seul reste identique (docs/ENSEMBLE_CONTRACT.md).
       def generate(config, materials: nil, row: nil)
         input = config.geometry_input
-        footprint = Geometry::FootprintSolver.call(width_m: input['footprint']['width_m'], depth_m: input['footprint']['depth_m'])
+        footprint = footprint_for(input, row)
+        inner = row && footprint.trapezoid? ? Geometry::FootprintSolver.inner_problems(footprint, input['structure']['wall_m']) : []
+        return Result.fail(inner) unless inner.empty?
+
         levels = Geometry::FloorPlanner.call(input['levels'], slab_m: input['structure']['slab_m'])
         facade = row ? input['facade'].merge('rear_bays' => row.fetch(:rear_bays)) : input['facade']
-        candidates = Geometry::FacadeSolver.call(footprint, levels, facade)
+        candidates = Geometry::FacadeSolver.call(footprint, levels, facade, wall_m: input['structure']['wall_m'])
         return candidates unless candidates.ok?
 
         openings = Geometry::OpeningSolver.call(candidates.value, input, footprint: footprint, levels: levels)
@@ -24,6 +27,17 @@ module Archgen
 
         assemble(input, footprint, levels, openings.value, materials, row)
       end
+
+      def footprint_for(input, row)
+        width = input['footprint']['width_m']
+        depth = input['footprint']['depth_m']
+        left = row ? row.fetch(:delta_left_m, 0.0) : 0.0
+        right = row ? row.fetch(:delta_right_m, 0.0) : 0.0
+        return Geometry::FootprintSolver.call(width_m: width, depth_m: depth) if left.zero? && right.zero?
+
+        Geometry::FootprintSolver.trapezoid(width_m: width, depth_m: depth, delta_left_m: left, delta_right_m: right)
+      end
+      private_class_method :footprint_for
 
       def plan_digest(plan)
         Canonical.digest(plan)

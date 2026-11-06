@@ -62,10 +62,12 @@ module Archgen
 
       def check_extents(opening, config, footprint, levels)
         problems = []
-        length = footprint.facade(opening.facade_id).length_m
-        end_clearance = config['structure']['wall_m'] + CLEARANCE
-        if opening.u_min_m < end_clearance - EPS || length - opening.u_max_m < end_clearance - EPS
-          problems << clearance(width_path(opening), 'facade_end', opening, limit: end_clearance)
+        facade = footprint.facade(opening.facade_id)
+        wall = config['structure']['wall_m']
+        start_clearance = [wall, facade.inner_start(wall)].max + CLEARANCE
+        end_clearance = [wall, facade.length_m - facade.inner_end(wall)].max + CLEARANCE
+        if opening.u_min_m < start_clearance - EPS || facade.length_m - opening.u_max_m < end_clearance - EPS
+          problems << clearance(width_path(opening), 'facade_end', opening, limit: [start_clearance, end_clearance].max)
         end
         limit = top_limit(opening, config, levels)
         problems << clearance(height_path(opening), 'level_top', opening, limit: limit) if opening.z_max_m > limit + EPS
