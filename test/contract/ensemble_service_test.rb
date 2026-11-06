@@ -164,10 +164,18 @@ class EnsembleServiceTest < Minitest::Test
     assert_equal 0, starts
   end
 
-  def test_closed_trace_is_refused_until_its_accesses_exist
-    square = TREE.merge('trace' => { 'points_m' => [[0, 0], [40, 0], [40, 40], [0, 40]], 'closed' => true })
-    assert_refused @service.create(model: @model, tree: square, origin_m: ORIGIN), 'E_STREET_ACCESS', 'access_unavailable'
+  def test_closed_trace_without_a_form_is_refused
+    square = { 'trace' => { 'points_m' => [[0, 0], [40, 0], [40, 40], [0, 40]], 'closed' => true }, 'building' => { 'profile' => { 'id' => 'haussmann' } } }
+    assert_refused @service.create(model: @model, tree: square, origin_m: ORIGIN), 'E_STREET_ACCESS', 'access_form_unavailable'
     assert_equal 0, starts
+  end
+
+  def test_closed_trace_with_a_form_is_written
+    square = TREE.merge('trace' => { 'points_m' => [[0, 0], [40, 0], [40, 40], [0, 40]], 'closed' => true })
+    summary = create(square)
+    assert_equal 9, summary.metrics['parcel_count']
+    assert_equal 3, summary.metrics['access_count']
+    assert_equal 9, root.definition.entities.count { |e| e.is_a?(FakeSketchUp::Instance) }
   end
 
   def test_bad_origin_is_refused

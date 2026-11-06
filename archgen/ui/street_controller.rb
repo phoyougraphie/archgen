@@ -13,7 +13,8 @@ module Archgen
       DEFAULT_SETTINGS = {
         'building' => { 'profile' => { 'id' => 'haussmann' }, 'mode' => 'shell', 'lod' => 0 },
         'parcel' => { 'target_width_m' => 12.0, 'depth_m' => 9.0, 'bay_width_m' => 3.0 },
-        'layout' => { 'street_width_m' => 12.0 }
+        'layout' => { 'street_width_m' => 12.0 },
+        'access' => { 'count' => 'auto', 'width_m' => 3.5 }
       }.freeze
 
       attr_reader :session
@@ -152,8 +153,8 @@ module Archgen
       end
 
       def tree_for(settings)
-        tree = settings.reject { |key, _| key == 'layout' }.merge('trace' => @session.trace)
-        return tree if @session.closed?
+        tree = settings.reject { |key, _| %w[layout access].include?(key) }.merge('trace' => @session.trace)
+        return settings.key?('access') ? tree.merge('access' => settings['access']) : tree if @session.closed?
 
         tree.merge('layout' => layout_for(settings))
       end
@@ -169,7 +170,9 @@ module Archgen
         settings = Composition.ensemble_intake.settings(tree)
         return {} unless settings.ok?
 
-        layout = Geometry::ParcelLayout.call(settings.value)
+        layout = Core::EnsembleEngine.layout_for(settings.value, registry: @registry)
+        # Un îlot pas encore constructible garde ses parcelles visibles, sans ses accès.
+        layout = Geometry::ParcelLayout.call(settings.value) unless layout.ok?
         return {} unless layout.ok?
 
         first = @session.points.first

@@ -26,6 +26,24 @@ module Archgen
         finish(rows.value, plans, parcel['depth_m'])
       end
 
+      # La même parcelle, avancée le long de sa façade et élargie : ses onglets ne changent pas.
+      def reshaped(source, shift_m:, width_m:)
+        width = Core::Quant.q(width_m)
+        left = source['delta_left_m']
+        right = source['delta_right_m']
+        depth = source['depth_m']
+        tangent = source['tangent']
+        origin = Planar.add(source['origin_m'], Planar.scale(tangent, shift_m))
+        local = [[0.0, 0.0], [width, 0.0], [Core::Quant.q(width - right), depth], [left, depth]]
+        source.merge(
+          'width_m' => width,
+          'rear_m' => Core::Quant.q(width - left - right),
+          'origin_m' => Core::Quant.q3(origin),
+          'local_ring_m' => local,
+          'ring_m' => local.map { |x, y| Core::Quant.q3(to_model(origin, tangent, x, y)) }
+        )
+      end
+
       def budget_problem(count)
         limit = Core::Limits::ENSEMBLE_MAX_PARCELS
         return nil if count <= limit

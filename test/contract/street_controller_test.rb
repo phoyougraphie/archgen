@@ -111,12 +111,31 @@ class StreetControllerTest < Minitest::Test
     refute response['result'].key?('ensemble_digest')
   end
 
-  def test_closed_trace_is_explained_and_not_creatable
+  def test_closed_trace_of_a_style_with_a_form_is_creatable
     draw([0.0, 0.0], [40.0, 0.0], [40.0, 40.0], finish: false)
     @session.add([0.0, 40.0])
     @session.close
-    result = preview['result']
-    assert_equal 'access_unavailable', result['problems'].first['params']['reason']
+    result = call('preview', 'settings' => SETTINGS.merge('access' => { 'count' => 2 }))['result']
+    assert_equal 10, result['metrics']['parcel_count']
+    assert_equal 2, result['metrics']['access_count']
+    assert_equal 10, @controller.overlay[:rings].size, 'l’aperçu montre les vides'
+    created = create(result['ensemble_digest'], SETTINGS.merge('access' => { 'count' => 2 }))
+    assert created['ok'], created.inspect
+    assert_equal 2, created['result']['created']['metrics']['access_count']
+  end
+
+  def test_access_settings_are_ignored_on_an_open_street
+    draw([0.0, 0.0], [60.0, 0.0])
+    result = call('preview', 'settings' => SETTINGS.merge('access' => { 'count' => 2 }))['result']
+    assert_equal 5, result['metrics']['parcel_count']
+  end
+
+  def test_closed_trace_of_a_style_without_a_form_is_explained_and_not_creatable
+    draw([0.0, 0.0], [40.0, 0.0], [40.0, 40.0], finish: false)
+    @session.add([0.0, 40.0])
+    @session.close
+    result = call('preview', 'settings' => SETTINGS.merge('building' => { 'profile' => { 'id' => 'haussmann' } }))['result']
+    assert_equal 'access_form_unavailable', result['problems'].first['params']['reason']
     assert result['trace']['closed']
     assert @controller.overlay[:refused]
     assert_equal 12, @controller.overlay[:rings].size, 'les parcelles restent visibles'

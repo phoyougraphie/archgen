@@ -30,6 +30,7 @@ module Archgen
       geometry/planar
       geometry/trace_rows
       geometry/parcel_layout
+      geometry/access_planner
       geometry/footprint_solver
       geometry/floor_planner
       geometry/facade_solver

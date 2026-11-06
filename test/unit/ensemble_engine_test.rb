@@ -204,12 +204,12 @@ class EnsembleEngineTest < Minitest::Test
 
   # --- Refus
 
-  def test_closed_trace_waits_for_its_accesses
+  def test_closed_trace_waits_for_a_form_of_access
     square = [[0, 0], [40, 0], [40, 40], [0, 40]]
-    found = engine(settings(square, closed: true)).errors.first
+    found = engine(settings(square, closed: true, profile: 'haussmann')).errors.first
     assert_equal 'E_STREET_ACCESS', found.code
-    assert_equal '/access/count', found.path
-    assert_equal 'access_unavailable', found.params['reason']
+    assert_equal '/building/profile', found.path
+    assert_equal 'access_form_unavailable', found.params['reason']
   end
 
   def test_trace_refusals_pass_through

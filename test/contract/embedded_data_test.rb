@@ -27,6 +27,10 @@ class EmbeddedDataTest < Minitest::Test
                  File.binread(repo_path('archgen', 'styles', 'materials', 'site_materials.v1.json'))
   end
 
+  def test_ensemble_rules_match_reference
+    assert_equal File.binread(repo_path('examples', 'ensemble_rules.v1.json')), File.binread(repo_path('archgen', 'styles', 'ensemble_rules.v1.json'))
+  end
+
   def test_core_never_reads_files_outside_the_composition_point
     Dir.glob(repo_path('archgen', '{core,geometry}', '**', '*.rb')).each do |path|
       source = File.read(path, encoding: 'UTF-8')

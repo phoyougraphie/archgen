@@ -15,11 +15,8 @@ module Archgen
       module_function
 
       # Le bloc, facultatif, reçoit (parcelles traitées, total) : il alimente la barre d'état.
-      def call(settings, registry:, intake:, materials: nil, limits: DEFAULT_LIMITS, &progress)
-        unavailable = access_problem(settings)
-        return Result.fail([unavailable]) if unavailable
-
-        layout = Geometry::ParcelLayout.call(settings)
+      def call(settings, registry:, intake:, materials: nil, limits: DEFAULT_LIMITS, rules: nil, &progress)
+        layout = layout_for(settings, registry: registry, rules: rules)
         return layout unless layout.ok?
 
         parcels = layout.value['parcels']
@@ -27,22 +24,42 @@ module Archgen
         errors = prepared.flat_map(&:errors)
         return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
 
-        assemble(parcels, prepared, layout.value['metrics'], materials, limits, progress)
+        assemble(parcels, prepared, layout.value, materials, limits, progress)
+      end
+
+      # Les parcelles définitives, accès de cour compris. Une forme fermée n'en sort jamais sans accès.
+      def layout_for(settings, registry:, rules: nil)
+        layout = Geometry::ParcelLayout.call(settings)
+        return layout unless layout.ok?
+        return Result.ok(layout.value.merge('accesses' => [])) unless settings.dig('trace', 'closed')
+
+        form = access_form(settings, registry, rules || Composition.ensemble_rules)
+        form.ok? ? Geometry::AccessPlanner.call(layout.value, settings, form: form.value) : form
       end
 
       def digest(plan)
         Canonical.digest(plan)
       end
 
-      # Tant que les accès de cour n'existent pas, une forme fermée n'est jamais produite.
-      def access_problem(settings)
-        return nil unless settings.dig('trace', 'closed')
+      # La forme vient du catalogue, au couple profil/révision exact. Une entrée n'est publiée
+      # qu'avec sa capacité (ADR-31) : un profil sans entrée ne ferme pas d'îlot.
+      def access_form(settings, registry, rules)
+        reference = settings.dig('building', 'profile')
+        return Result.fail([Diagnostic.error('E_PROFILE_UNAVAILABLE', '/building/profile', reason: 'profile_required')]) unless reference&.fetch('id', nil)
 
-        Diagnostic.error('E_STREET_ACCESS', '/access/count', reason: 'access_unavailable')
+        profile = registry.fetch(reference['id'], revision: reference['revision'])
+        unless profile.ok?
+          return Result.fail(profile.errors.map { |d| Diagnostic.error(d.code, "/building#{d.path}", **d.params.transform_keys(&:to_sym)) })
+        end
+
+        form = rules.dig('access_forms', profile.value.id, profile.value.revision.to_s)
+        return Result.ok(form) if Geometry::AccessPlanner::FORMS.include?(form)
+
+        Result.fail([Diagnostic.error('E_STREET_ACCESS', '/building/profile', reason: 'access_form_unavailable', id: profile.value.id)])
       end
-      private_class_method :access_problem
+      private_class_method :access_form
 
-      def assemble(parcels, prepared, layout_metrics, materials, limits, progress)
+      def assemble(parcels, prepared, layout, materials, limits, progress)
         definitions = {}
         placed = []
         diagnostics = []
@@ -65,7 +82,7 @@ module Archgen
           placed << { 'id' => parcel['id'], 'definition_id' => id, 'matrix' => matrix(parcel) }
           progress&.call(index + 1, parcels.size)
         end
-        finish(definitions, placed, layout_metrics, unique, expanded, diagnostics)
+        finish(definitions, placed, layout, unique, expanded, diagnostics)
       end
       private_class_method :assemble
 
@@ -103,21 +120,21 @@ module Archgen
       end
       private_class_method :matrix
 
-      def finish(definitions, placed, layout_metrics, unique, expanded, diagnostics)
+      def finish(definitions, placed, layout, unique, expanded, diagnostics)
         plan = {
           'schema_version' => SCHEMA_VERSION,
           'engine_version' => ENGINE_VERSION,
           'units' => 'm',
           'definitions' => definitions.transform_values { |built| built.value.plan },
           'parcels' => placed,
-          'accesses' => [],
+          'accesses' => layout['accesses'],
           'metrics' => {
             'parcel_count' => placed.size,
             'definition_count' => definitions.size,
             'unique_face_count' => unique,
             'expanded_face_count' => expanded,
-            'facade_length_m' => layout_metrics['facade_length_m'],
-            'access_count' => 0
+            'facade_length_m' => layout['metrics']['facade_length_m'],
+            'access_count' => layout['accesses'].size
           }
         }
         problems = EnsemblePlanValidator.call(plan)

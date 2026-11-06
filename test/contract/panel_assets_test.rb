@@ -73,7 +73,7 @@ class PanelAssetsTest < Minitest::Test
     html = read_utf8(*UI_DIR, 'street_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal 10, ids.size
+    assert_equal 12, ids.size
     assert_empty ids - labels
   end
 

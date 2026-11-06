@@ -41,6 +41,11 @@ module Archgen
       materials.fetch('materials').merge(read_json('styles', 'materials', 'site_materials.v1.json').fetch('materials'))
     end
 
+    # Forme d'accès à la cour par couple profil/révision (ADR-31).
+    def ensemble_rules
+      read_json('styles', 'ensemble_rules.v1.json')
+    end
+
     # Retourne un Result<StyleRegistry>.
     def registry(capabilities: IMPLEMENTED_CAPABILITIES, sources: schemas)
       Core::StyleRegistry.load(

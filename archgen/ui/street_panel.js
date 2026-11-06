@@ -12,6 +12,7 @@
     status: byId('status'), summary: byId('summary'), summaryList: byId('summary-list'), result: byId('result'), warnings: byId('warnings'),
     profile: byId('s-profile'), mode: byId('s-mode'), lod: byId('s-lod'), count: byId('s-count'), height: byId('s-height'),
     side: byId('s-side'), streetField: byId('s-street-field'), street: byId('s-street'), target: byId('s-target'), depth: byId('s-depth'), bay: byId('s-bay'),
+    accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume')
   };
 
@@ -35,7 +36,7 @@
     var levels = {};
     var count = number(el.count);
     var height = number(el.height);
-    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay)];
+    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth)];
     state.localError = values.some(function (v) { return v !== null && isNaN(v); }) ? 'Saisissez un nombre valide.' : null;
     if (state.localError) { return null; }
     if (count !== null) { levels.count = count; }
@@ -47,7 +48,9 @@
     if (number(el.bay) !== null) { parcel.bay_width_m = number(el.bay); }
     var layout = { side: el.side.value };
     if (el.side.value === 'both' && number(el.street) !== null) { layout.street_width_m = number(el.street); }
-    return { building: building, parcel: parcel, layout: layout };
+    var access = { count: el.accessCount.value === 'auto' ? 'auto' : Number(el.accessCount.value) };
+    if (number(el.accessWidth) !== null) { access.width_m = number(el.accessWidth); }
+    return { building: building, parcel: parcel, layout: layout, access: access };
   }
 
   function requestPreview() {
@@ -116,7 +119,9 @@
     var trace = result && result.trace;
     if (!trace) { return; }
     el.side.value = trace.side;
-    el.streetField.hidden = trace.side !== 'both';
+    el.streetField.hidden = trace.side !== 'both' || trace.closed;
+    el.side.disabled = trace.closed;
+    el.accessFields.hidden = !trace.closed;
     state.hasTrace = trace.state !== 'empty';
     // « N bâtiments créés » ne vaut plus dès qu'un nouveau tracé commence.
     if (state.hasTrace && el.status.textContent.indexOf('créés') !== -1) { el.status.textContent = 'Tracé actif'; }
@@ -129,6 +134,7 @@
       el.create.textContent = 'Créer';
     } else if (metrics) {
       el.result.textContent = metrics.parcel_count + ' bâtiments, dont ' + metrics.definition_count + ' différents ; ' +
+        (metrics.access_count ? metrics.access_count + ' accès à la cour ; ' : '') +
         thousands(metrics.expanded_face_count) + ' faces ; façades de ' + decimal(metrics.facade_length_m) + ' m.' +
         (finished ? '' : ' Tracé en cours.');
       el.create.textContent = 'Créer ces ' + metrics.parcel_count + ' bâtiments';
@@ -179,6 +185,7 @@
     el.depth.value = decimal(defaults.parcel.depth_m);
     el.bay.value = decimal(defaults.parcel.bay_width_m);
     el.street.value = decimal(defaults.layout.street_width_m);
+    el.accessWidth.value = decimal(defaults.access.width_m);
     el.side.value = result.side;
     el.streetField.hidden = result.side !== 'both';
     window.archgenStreetTool(result.tool_active);
