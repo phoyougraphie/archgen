@@ -29,22 +29,22 @@ Le talus utilise `earth`, d'un catalogue séparé `site_materials.v1.json` : `ma
 ## Grille de relevé
 
 ```json
-{ "schema_version": 1, "xs_m": [-11.0, -9.0, 0.0, 12.0], "ys_m": [-11.0, 0.0, 9.0], "z_m": [[7.25, null, 7.3, 7.4], [7.3, 7.31, 7.4, 7.5], [7.4, 7.5, 7.6, 7.7]] }
+{ "schema_version": 1, "xs_m": [0.0, 6.0, 12.0], "ys_m": [0.0, 4.5, 9.0], "z_m": [[7.25, null, 7.3], [7.3, 7.31, 7.4], [7.4, 7.5, 7.6]] }
 ```
 
 - Coordonnées dans le repère du bâtiment ; `z_m[j][i]` est l'altitude du point (`xs_m[i]`, `ys_m[j]`) dans le repère du modèle ; `null` = pas de terrain.
-- `xs_m` et `ys_m` croissent strictement, au pas `step_m`, et contiennent 0, W et D pour que les angles de l'emprise soient relevés. Quantification à 10⁻⁶ m.
-- **Marge :** 0 pour `plinth` ; `RELIEF_MAX × embankment_ratio + step_m` pour `embankment`.
-- **Budget :** au plus 3 000 points (départ), au-delà `E_SITE_BUDGET` avec le conseil d'augmenter le pas. Aucun pas n'est changé en silence.
+- **Axes imposés :** sur [0, L], `n = ⌈L / step_m⌉` intervalles égaux, donc un pas au plus égal à `step_m`, 0 et L étant toujours relevés, sans petit intervalle au bout. Hors de l'emprise, des points au pas `step_m` jusqu'à couvrir la marge. Le noyau calcule ces axes (`SurveyGrid.plan`) ; l'adaptateur les reçoit, et une grille aux axes différents est refusée. Quantification à 10⁻⁶ m.
+- **Marge :** 0 pour `plinth` ; `(RELIEF_MAX + |offset_m|) × embankment_ratio + step_m` pour `embankment`, le décalage pouvant ajouter du remblai.
+- **Budget :** au plus 3 000 points (départ), au-delà `E_SITE_BUDGET` avec le conseil d'augmenter le pas, avant tout relevé. Aucun pas n'est changé en silence.
 
 ## Assise
 
 Soit E l'ensemble des points de la grille dans l'emprise, angles compris.
 
-1. Tout point de E à `null`, ou tout point nécessaire au talus : `E_SITE_SURVEY` sur `/site/survey`, avec les coordonnées des premiers points manquants. Aucune altitude n'est interpolée au-dessus d'un trou.
+1. Tout point de E à `null` : `E_SITE_SURVEY` sur `/site/survey`, avec le nombre de points manquants et les coordonnées des dix premiers. Aucune altitude n'est interpolée au-dessus d'un trou. Un point nécessaire au talus et manquant relève du même code (AG-023).
 2. **Relief :** `max(E) − min(E) ≤ 6,0 m` (départ), sinon `E_SITE_RELIEF` sur `/site/platform`.
 3. **Plateforme :** `P = référence + offset_m`, quantifiée. `high` prend `max(E)` ; `mean` prend la moyenne arithmétique de E. Le niveau z=0 du bâtiment est à P.
-4. **Indicateurs :** `platform_z_m`, `terrain_min_z_m`, `terrain_max_z_m`, `cut_max_m = max(0, max(E) − P)`, `fill_max_m = max(0, P − min(E))`, et les volumes `cut_volume_m3` et `fill_volume_m3` par quadrature sur les cellules.
+4. **Indicateurs :** `platform_z_m`, `terrain_min_z_m`, `terrain_max_z_m`, `relief_m`, `cut_max_m = max(0, max(E) − P)`, `fill_max_m = max(0, P − min(E))`, et les volumes `cut_volume_m3` et `fill_volume_m3` : pour chaque cellule de l'emprise, aire × moyenne des hauteurs positives aux quatre angles. C'est exact sur un plan entièrement d'un côté de P, approché sinon.
 5. L'altitude entre les points est interpolée de façon bilinéaire dans la cellule. Elle est donc approchée à l'échelle du pas : c'est une limite assumée, pas un réglage caché.
 
 | Situation | Code | Effet |

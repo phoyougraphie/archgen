@@ -21,6 +21,9 @@ module Archgen
       core/style_registry
       core/fidelity_rules
       core/config_resolver
+      core/survey_grid
+      core/site_intake
+      core/site_assise
       geometry/types
       geometry/footprint_solver
       geometry/floor_planner

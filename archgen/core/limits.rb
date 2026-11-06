@@ -15,6 +15,9 @@ module Archgen
       MAX_EXPANDED_FACES = 60_000
       MAX_WALL_CELLS = 100_000
       MAX_DETAIL_DEFINITIONS = 128
+      # Assise : valeurs de départ du contrat terrain, à calibrer à la recette.
+      SITE_RELIEF_MAX_M = 6.0
+      SITE_MAX_SURVEY_POINTS = 3000
     end
   end
 end

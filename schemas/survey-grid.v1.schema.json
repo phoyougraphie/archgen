@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN survey grid V1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "xs_m",
+    "ys_m",
+    "z_m"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "xs_m": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3000,
+      "items": {
+        "type": "number"
+      }
+    },
+    "ys_m": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3000,
+      "items": {
+        "type": "number"
+      }
+    },
+    "z_m": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3000,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 3000,
+        "items": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

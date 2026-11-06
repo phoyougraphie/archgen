@@ -26,6 +26,9 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::ConstraintValidator | call(config, profile:) → Diagnostic[] | Contraintes transversales et cohérence historique ; paths JSON Pointer. |
 | Core::DeterministicRandom | unit(seed, key) → Float | Tirages stables par clé sémantique ; voir contrat géométrique. |
 | Core::GeometryEngine | generate(config) → Result<GeometryPlan> | Pipeline pur, valide le plan avant retour. |
+| Core::SiteIntake | settings(input), stored_settings(input), grid(tree, ...) → Result | Réglages d'assise et grille de relevé, chemins sous /site. |
+| Core::SurveyGrid | plan(...) → Result<axes> ; altitude_at(x, y) | Axes attendus, altitudes, interpolation bilinéaire. |
+| Core::SiteAssise | call(grid, settings, width_m:, depth_m:) → Result<Hash> | Plateforme, relief et indicateurs. |
 | Geometry::FootprintSolver | call(width_m:, depth_m:) → Footprint | Anneau CCW et repères de façades. |
 | Geometry::FloorPlanner | call(footprint, levels) → Level[] | Altitudes, plages de dalle. |
 | Geometry::FacadeSolver | call(footprint, levels, facade) → Candidate[] | Positions candidates à pas constant. |

@@ -23,7 +23,10 @@ module Archgen
         '/structure/wall_m' => 'Épaisseur de mur', '/structure/slab_m' => 'Épaisseur de dalle',
         '/roof/type' => 'Type de toit', '/roof/overhang_m' => 'Débord', '/roof/pitch_deg' => 'Pente', '/roof/lower_pitch_deg' => 'Pente basse', '/roof/inset_m' => 'Retrait du brisis',
         '/materials/wall' => 'Matériau des murs', '/materials/roof' => 'Matériau du toit', '/materials/frames' => 'Matériau des cadres',
-        '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements'
+        '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
+        '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
+        '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
+        '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
       }.freeze
 
       REASONS = {
@@ -96,6 +99,12 @@ module Archgen
         'expanded_face_count' => 'Ce bâtiment est trop détaillé. Réduisez les travées, les niveaux ou le niveau de détail.',
         'wall_cell_count' => 'Ce bâtiment est trop détaillé. Réduisez les travées, les niveaux ou le niveau de détail.',
         'detail_definition_count' => 'Trop de cadres différents. Réduisez le niveau de détail.',
+        # Terrain
+        'missing_points' => 'Le terrain manque sous le bâtiment en %{count} points. Complétez-le ou déplacez le bâtiment.',
+        'relief_exceeded' => 'Le terrain varie de %{value} m sous le bâtiment, au-delà de la limite de %{limit} m.',
+        'survey_points' => 'Ce relevé demanderait %{value} points, pour une limite de %{limit}. Augmentez le pas du relevé.',
+        'grid_axes' => 'Le relevé ne correspond pas à ce bâtiment. Relevez de nouveau.',
+        'grid_shape' => 'Le relevé du terrain est incomplet. Relevez de nouveau.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',
         'deleted_target' => 'Le bâtiment sélectionné a été supprimé. Rechargez la sélection.',

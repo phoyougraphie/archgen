@@ -21,7 +21,9 @@ module Archgen
       {
         'draft' => read_json('schemas', 'building-draft.v1.schema.json'),
         'config' => read_json('schemas', 'building-config.v1.schema.json'),
-        'profile' => read_json('schemas', 'style-profile.v1.schema.json')
+        'profile' => read_json('schemas', 'style-profile.v1.schema.json'),
+        'site' => read_json('schemas', 'site-settings.v1.schema.json'),
+        'survey' => read_json('schemas', 'survey-grid.v1.schema.json')
       }
     end
 
@@ -46,6 +48,10 @@ module Archgen
 
     def intake(sources: schemas)
       Core::Intake.new(sources)
+    end
+
+    def site_intake(sources: schemas)
+      Core::SiteIntake.new(sources, materials: materials.fetch('materials'))
     end
   end
 end
