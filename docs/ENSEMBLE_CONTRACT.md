@@ -111,8 +111,11 @@ Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS`. U
 
 `EnsemblePlan = {schema_version:1, units:"m", definitions:{id:RowPlan}, parcels:[{id, definition_id, matrix}], accesses:[...], metrics:{...}}`, avec sa propre empreinte `ensemble_digest`.
 
-- **Définitions partagées :** deux parcelles dont les configurations effectives sont identiques partagent une définition. La seed n'entre dans la comparaison que si le jitter n'est pas nul.
-- **Métriques :** `parcel_count`, `definition_count`, `unique_face_count`, `expanded_face_count`, `perimeter_m`, `access_count`.
+- **Définitions partagées :** deux parcelles partagent une définition si leurs configurations effectives, leurs reculs et leurs travées arrière sont identiques, hors nom. La seed n'entre dans la comparaison que si le jitter n'est pas nul. L'identifiant d'une définition vient de ce contenu. Les tirages de style par parcelle changent la configuration effective : ils peuvent donc réduire le partage.
+- **Placement :** `matrix` a les colonnes (T, gauche, K) et la translation de l'origine de la parcelle : une rotation autour de Z, sans autre transformation.
+- **Métriques :** `parcel_count`, `definition_count`, `unique_face_count`, `expanded_face_count`, `facade_length_m`, `access_count`.
+- **Forme fermée :** refusée par `E_STREET_ACCESS` tant que ses accès n'existent pas (AG-034).
+- **Avertissements :** un avertissement de définition est répété pour chaque parcelle qui l'utilise, sur `/parcels/<id>/…`.
 - **Plafonds de départ :** 120 000 faces uniques et 400 000 faces étendues, à calibrer par la mesure de charge.
 
 ## Écriture et persistance

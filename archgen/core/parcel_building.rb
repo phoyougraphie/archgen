@@ -6,24 +6,50 @@ module Archgen
     # effective complète, puis plan. Les diagnostics du moteur sont localisés sur la parcelle.
     module ParcelBuilding
       SEED_HEX_CHARS = 8
-      Built = Struct.new(:config, :plan, :rear_bays, keyword_init: true)
+      Built = Struct.new(:config, :plan, :rear_bays, :plan_warnings, keyword_init: true)
+      # Tout ce qui décide de la géométrie, avant de la calculer.
+      Prepared = Struct.new(:config, :row, :warnings, keyword_init: true)
 
       module_function
 
       # Résultat : Built.
       def call(settings, parcel, registry:, intake:, materials: nil)
+        ready = prepare(settings, parcel, registry: registry, intake: intake)
+        ready.ok? ? generate(ready.value, parcel, materials: materials) : ready
+      end
+
+      def prepare(settings, parcel, registry:, intake:)
         config = config_for(settings, parcel, registry: registry, intake: intake)
         return config unless config.ok?
 
         hip = hip_problem(config.value)
         return Result.fail([hip]) if hip
 
-        rear_bays = bays(parcel['rear_m'], settings.dig('parcel', 'bay_width_m'), 0)
-        row = { rear_bays: rear_bays, delta_left_m: parcel['delta_left_m'], delta_right_m: parcel['delta_right_m'] }
-        plan = GeometryEngine.generate(config.value, materials: materials, row: row)
+        row = { rear_bays: bays(parcel['rear_m'], settings.dig('parcel', 'bay_width_m'), 0),
+                delta_left_m: parcel['delta_left_m'], delta_right_m: parcel['delta_right_m'] }
+        Result.ok(Prepared.new(config: config.value, row: row, warnings: config.warnings))
+      end
+
+      def generate(ready, parcel, materials: nil)
+        plan = GeometryEngine.generate(ready.config, materials: materials, row: ready.row)
         return localized(plan, parcel) unless plan.ok?
 
-        Result.ok(Built.new(config: config.value, plan: plan.value, rear_bays: rear_bays), plan.diagnostics + config.diagnostics)
+        built = Built.new(config: ready.config, plan: plan.value, rear_bays: ready.row[:rear_bays], plan_warnings: plan.warnings)
+        Result.ok(built, (ready.warnings + plan.warnings).map { |d| relocate(d, parcel) })
+      end
+
+      # Deux parcelles de même clé ont le même plan. Reculs et travées arrière n'étant pas dans la
+      # configuration, ils entrent ici. La seed n'y entre que si le jitter la rend géométrique.
+      def share_key(ready)
+        data = ready.config.to_h
+        ignored = data.dig('facade', 'jitter_m').zero? ? %w[name seed] : %w[name]
+        Canonical.digest('config' => data.reject { |key, _| ignored.include?(key) }, 'row' => ready.row.transform_keys(&:to_s))
+      end
+
+      def relocate(diagnostic, parcel)
+        path = "/parcels/#{parcel['id']}#{diagnostic.path}"
+        params = diagnostic.params.transform_keys(&:to_sym)
+        diagnostic.error? ? Diagnostic.error(diagnostic.code, path, **params) : Diagnostic.warning(diagnostic.code, path, **params)
       end
 
       def config_for(settings, parcel, registry:, intake:)
@@ -60,9 +86,7 @@ module Archgen
       private_class_method :hip_problem
 
       def localized(result, parcel)
-        Result.fail(result.errors.map do |d|
-          Diagnostic.error(d.code, "/parcels/#{parcel['id']}#{d.path}", **d.params.transform_keys(&:to_sym))
-        end)
+        Result.fail(result.errors.map { |d| relocate(d, parcel) })
       end
       private_class_method :localized
     end
