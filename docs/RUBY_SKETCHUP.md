@@ -1,6 +1,6 @@
 # Conventions Ruby et SketchUp
 
-**Cible de développement :** SketchUp Desktop 2024–2026, Windows/macOS ; Ruby 3.2 comme base de compatibilité. Consigner version complète hôte, Ruby et OS de chaque test. Ne pas s'appuyer sur une API ajoutée après la version minimale ; publier uniquement les combinaisons vérifiées.
+**Cible V0.1 (ADR-26) :** SketchUp Desktop 2026 sous Windows ; Ruby 3.2 comme base de compatibilité. Consigner version complète hôte, Ruby et OS de chaque test. Ne pas s'appuyer sans décision sur une API ajoutée après la 2024 : cela garde possible une extension future. Publier uniquement les combinaisons vérifiées.
 
 - `Archgen` contient toutes les constantes du plugin ; noms de fichiers en snake_case, méthodes courtes, objets de valeurs gelés. Fichiers UTF-8/LF. JSON à clés chaînes, unités dans les noms. Éviter monkey patches, globals, dépendances natives, accès réseau et modification de `$LOAD_PATH`.
 - `archgen.rb` enregistre `SketchupExtension` via `Sketchup.register_extension` ; logique dans `archgen/main.rb`. Utiliser `Sketchup.require` pour les chemins internes à partir de l'extension et protéger le bootstrap contre la double exécution ; pas de chargement d'interface si l'extension est désactivée.

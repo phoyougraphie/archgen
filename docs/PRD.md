@@ -14,7 +14,7 @@
 | P08 | Exploiter | Faces visibles orientées, matériaux nommés et pièces organisées ; un aller-retour export hôte sur un outil cible documenté. |
 | P09 | Gérer les erreurs | Champ et cause expliqués ; aucune modification du modèle sur rejet ; échec d'écriture restauré. |
 
-**Inclus.** SketchUp Desktop ; une génération à la fois au niveau racine du modèle ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; toit plat, deux pans, croupe, mansarde ; matériaux unis embarqués ; LOD 0 et 1 ; haussmannien, toulousain et brutaliste. Les réglages sont une liste fermée, détaillée par [le contrat de configuration](CONFIG_SCHEMA.md). Le nombre de champs affichés vient de l'utilité du parcours, pas d'un quota.
+**Inclus.** SketchUp Desktop 2026 sous Windows ([ADR-26](DECISIONS.md)) ; une génération à la fois au niveau racine du modèle ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; toit plat, deux pans, croupe, mansarde ; matériaux unis embarqués ; LOD 0 et 1 ; haussmannien, toulousain et brutaliste. Les réglages sont une liste fermée, détaillée par [le contrat de configuration](CONFIG_SCHEMA.md). Le nombre de champs affichés vient de l'utilité du parcours, pas d'un quota.
 
 **Signatures V0.1.** Haussmannien : pierre claire, verticalité des baies, mansarde, corniche et balcon filant simplifiés au LOD 1. Toulousain : brique foraine, toit en tuile canal, baies verticales et encadrements au LOD 1. Brutaliste : béton, toit plat, grille répétitive et baies en retrait visuel au LOD 1 Structural. Un profil simplifié peut être crédible sans prétendre restituer toutes ses techniques.
 

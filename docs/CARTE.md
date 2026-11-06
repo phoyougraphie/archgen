@@ -7,12 +7,12 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-019 bloqué sur sa matrice : H12 est réussi, il manque le plancher SketchUp 2024 et macOS, non accessibles ici, pour y rejouer H01 à H10 et H12. AG-020 en dépend, donc la sortie V0.1 reste bloquée sans cet accès. Restent à faire par le propriétaire : fournir l'accès aux versions manquantes, pousser sur GitHub, trancher D-01 à D-06. L'extension de dev reste installée et active dans son SketchUp 2026.
+  - Prochaine action — AG-020 : produire le RBZ reproductible, le journal et le guide, l'installer depuis un profil propre, y rejouer H01 à H12 et démontrer P01 à P09. Cible réduite à Windows et SketchUp 2026 (ADR-26). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01 à D-06. L'extension de dev reste installée et active dans son SketchUp 2026.
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/h10.rb et h11.rb, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Décisions ouvertes D-03 à D-06 — Après J5. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé), terrain intact ou remodelé (intact d'abord recommandé), ordre : terrain puis rue recommandé. (→ docs/DECISIONS.md)
   - Mesures H11 — SketchUp 26.2.243, Ryzen 7 5800H, p95 : plan Haussmann 12×9 13 à 71 ms (cible 150 ms) ; écriture LOD 1 52 à 161 ms (cible 2 s) ; 24×18 Structural 454 ms en générique, 921 ms en Toulousain (cible 5 s) ; 20 régénérations +0,89 Mo (plafond 10 Mo), cadres stables. Plus grand plan accepté : environ 5,5 s, hors contrat. (→ docs/recette/H11.md)
-  - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; ni macOS ni SketchUp 2024/2025. (→ docs/MATRICE_POSTE.md)
+  - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; macOS et SketchUp 2024/2025 hors cible V0.1. (→ docs/MATRICE_POSTE.md)
   - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
   - Commande de test — bundle exec rake test (Ruby pur, sans SketchUp). Le script hôte test/host/run.rb se charge à la main dans la console SketchUp.
   - Journal — Écarts et décisions rencontrés en développement
@@ -32,6 +32,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
     - 2026-11-06 H11 — Réussi, aucun code livré modifié. Trois écarts de la sonde corrigés : brouillon qui n'était pas la fixture, model.definitions compte aussi les groupes, l'objet Ruby d'une définition change après un Rétablir (comparer le contenu ou le persistent_id). H06 et H07 rejoués en LOD 1, 12 pannes sans résidu. Avec type via presse-papiers, valider la console par une touche Entrée séparée.
     - 2026-11-06 H12 — Réussi vers Blender 5.2 sans interface : écart nul sur W, D, H-toit, 148 baies traversantes. L'OBJ n'a pas d'unité : units 'model' donne un facteur 1 000 dans le gabarit Architecture en millimètres, exporter en 'm'. Accents remplacés par _ dans les noms de matériaux. (→ docs/recette/H12.md)
+    - 2026-11-06 Cible réduite — Choix du propriétaire : Windows et SketchUp 2026 seulement, AG-019 débloqué. (→ docs/DECISIONS.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -64,9 +65,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-015 Détails et profils — geometry/detail_solver, definitions partagées du writer, Resources#shared_definition ; trois profils publiés. U11 vert, H08 réussi sur Windows / 26.2.243, rendus dans docs/recette/img. (→ docs/recette/H08.md)
     - [fait] AG-016 Formulaire et aperçu — ui/{dialog_controller, messages, panel.rb, panel.html, panel.css, panel.js, panel_logic.js}. Générer reste désactivé. H09 réussi sur Windows / 26.2.243, 150 % émulé. (→ docs/recette/H09.md)
     - [fait] AG-017 Création et édition — ui/{confirmation_tokens, panel_observers}, actions generate et regenerate, confirmation, requête unique, sonde test/host/h10.rb. H10 réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
-  - J5 Livraison — Matrice hôte, sécurité, budgets, export, RBZ installé. AG-018 à 020.
+  - J5 Livraison — Recette Windows et SketchUp 2026, sécurité, budgets, export, RBZ installé. AG-018 à 020.
     - [fait] AG-018 Sécurité et charge — test/contract/security_test.rb, configurations jusqu'aux bornes, sonde test/host/h11.rb. U10, U12, H06, H07 en LOD 1 et H11 réussis, toutes cibles tenues. (→ docs/recette/H11.md)
-    - [bloque] AG-019 Export et compatibilité — H12 réussi vers Blender, OBJ en mètres. H01 à H10 et H12 prouvés sur Windows / 26.2.243 seulement ; manquent SketchUp 2024 et macOS. (→ docs/recette/H12.md)
+    - [fait] AG-019 Export et compatibilité — Cible réduite à Windows et SketchUp 2026 (ADR-26). H12 réussi vers Blender, OBJ en mètres. H01 à H10 prouvés sur 26.2.243, chacun sur le code de son époque : le rejeu sur le RBZ final est à faire en AG-020. (→ docs/recette/H12.md)
     - [afaire] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. P01 à P09. Dép. AG-018, 019.
   - J6+ Extensions — Après J5 seulement, EXT-01 à 10 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
@@ -112,7 +113,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-05 — Subdivision explicite, onglets, 4 pièces murales fermées ; pas de booléens ; racine non solide.
     - ADR-06 — m/rad au calcul, degrés en saisie ; une seule conversion par frontière.
     - ADR-07 — Aperçu 2D en dialogue, sans écriture.
-    - ADR-08 — Cible Desktop 2024–2026, Ruby 3.2, Windows et macOS ; aucune compatibilité annoncée avant recette.
+    - ADR-08 — Cible initiale 2024–2026, Windows et macOS, remplacée par ADR-26.
+    - ADR-26 — Cible V0.1 : Windows et SketchUp 2026 ; seule la combinaison testée est annoncée ; pas de refus au chargement ailleurs.
     - ADR-09 — API minimale, géométrie locale, pas de purge globale.
     - ADR-10 — Migrations de format distinctes des changements de règles.
     - ADR-11 — Code E_PLAN pour tout invariant de plan violé.
@@ -128,7 +130,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-21 — Messages par raison dans UI::Messages, couverture testée ; logique JS isolée ; Diagnostic retiré du menu en AG-020.
     - ADR-22 — Confirmation unique de 120 s ; Annuler redemande un aperçu ; enregistrer recharge sans perdre le brouillon ; autres événements = rechargement explicite.
     - ADR-23 — Recettes de panneau scriptées quand c'est possible ; pilotage écran réservé aux contrôles qui l'exigent.
-  - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
+  - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? dans le produit (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
 - Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
   - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
   - Tolérances — Comparaisons 1e-6 m ; quantification 1e-6 (demi éloigné de zéro, −0 → 0) ; arête émise ≥ 0,002 m ; dégagements ≥ 0,10 m ; coupes distinctes < 0,002 m ⇒ erreur.

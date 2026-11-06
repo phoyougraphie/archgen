@@ -9,7 +9,7 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J2 — Enveloppe neutre | J1 | AG-006–010 | Shell et Structural ; découpes, dalles et quatre toits éprouvés en Ruby ; plans quantifiés et bornés. |
 | J3 — Adaptateur et persistance | J2 | AG-011–014 | Une racine native, aller-retour SKP, Undo/Redo, copie isolée et échecs restaurés. |
 | J4 — Styles et panneau | J3 | AG-015–017 | Trois signatures, réglages et aperçu réels, confirmation et diagnostics lisibles. |
-| J5 — Livraison | J4 | AG-018–020 | Matrice hôte, sécurité, budgets, export repère et RBZ installé. |
+| J5 — Livraison | J4 | AG-018–020 | Recette sur Windows et SketchUp 2026 (ADR-26), sécurité, budgets, export repère et RBZ installé. |
 | J6+ — Bibliothèque, intérieur, ville, terrain | J5 + contrats par capacité | EXT-01–10 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
 
 Les branches AG-004/005, AG-007/009 et AG-018/019 sont indépendantes une fois leurs prérequis satisfaits. Les dépendances dans [TASKS](TASKS.md) priment sur les numéros et permettent de commencer du Ruby pur avant de fermer J0 ; la table fixe l'ordre de validation des jalons. Attacher les éléments de preuve au ticket et garder une démo neutre de référence. Sans hôte disponible, continuer sur les tests purs ; ne pas franchir un jalon qui requiert la recette native.
