@@ -162,6 +162,11 @@ module FakeSketchUp
     def get_attribute(dictionary, key)
       attrs[[dictionary, key]]
     end
+
+    def delete_attribute(dictionary)
+      attrs.delete_if { |(name, _key), _value| name == dictionary }
+      true
+    end
   end
 
   class Material

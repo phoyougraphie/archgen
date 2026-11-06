@@ -18,6 +18,8 @@ Une copie SketchUp peut reproduire le même UUID et la même définition. L'adre
 
 L'ancienne définition gérée peut être retirée dans la même opération seulement si elle est une racine créée par ARCHGEN, a zéro instance (y compris dans des définitions inutilisées) et que la recette Undo/Redo et SKP confirme la sécurité sur toute la matrice. En V0.1, conserver les anciennes définitions si ce retrait n'est pas validé ; mesurer la croissance et la publier. Aucune purge globale, aucun retrait de ressource utilisateur ; les composants répétitifs sont réutilisés si leur contenu et marqueur sont valides.
 
+Une racine peut porter une assise dans le dictionnaire `archgen.site` : voir [le contrat terrain](TERRAIN_CONTRACT.md), qui fixe la seule exception à la conservation de la transformation (le Z de la racine).
+
 ## Éditions manuelles
 
 La confirmation s'affiche à chaque régénération : « La géométrie générée de ce bâtiment sera remplacée. Placez les ajouts à conserver dans des groupes séparés. » Aucun détecteur de retouches requis en V0.1. Une modification dans la définition partagée peut affecter les copies via SketchUp ; la régénération elle-même ne retouche jamais cette définition. L'Undo restaure aussi les données et la géométrie remplacées. Un bâtiment avec format/révision inconnus est consultable en diagnostic, non régénérable. Ne pas écrire dans un contexte d'édition de groupe ou sur plusieurs sélections.

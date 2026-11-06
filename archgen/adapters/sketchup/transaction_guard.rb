@@ -91,7 +91,8 @@ module Archgen
         def instance_state(instance)
           return :deleted unless instance.valid?
 
-          metadata = ComponentRepository::KEYS.map { |key| instance.get_attribute(ComponentRepository::DICTIONARY, key) }
+          metadata = ComponentRepository::KEYS.map { |key| instance.get_attribute(ComponentRepository::DICTIONARY, key) } +
+                     ComponentRepository::SITE_KEYS.map { |key| instance.get_attribute(ComponentRepository::SITE_DICTIONARY, key) }
           [instance.definition, instance.transformation.to_a, metadata]
         end
 

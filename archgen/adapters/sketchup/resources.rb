@@ -10,7 +10,7 @@ module Archgen
         DICTIONARY = 'archgen.resource'
         TAG_LABELS = {
           'walls' => 'ARCHGEN Murs', 'slabs' => 'ARCHGEN Dalles',
-          'roof' => 'ARCHGEN Toiture', 'details' => 'ARCHGEN Détails'
+          'roof' => 'ARCHGEN Toiture', 'details' => 'ARCHGEN Détails', 'site' => 'ARCHGEN Terrassement'
         }.freeze
 
         # Journal des ressources créées, pour le contrôle d'intégrité du service.

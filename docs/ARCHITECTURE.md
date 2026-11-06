@@ -26,6 +26,7 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::ConstraintValidator | call(config, profile:) → Diagnostic[] | Contraintes transversales et cohérence historique ; paths JSON Pointer. |
 | Core::DeterministicRandom | unit(seed, key) → Float | Tirages stables par clé sémantique ; voir contrat géométrique. |
 | Core::GeometryEngine | generate(config) → Result<GeometryPlan> | Pipeline pur, valide le plan avant retour. |
+| Adapters::SketchUp::BuildingService (assise) | preview_site, adapt_to_site, remove_site, site_status | Une opération par action ; relevé refait avant d'écrire. |
 | Adapters::SketchUp::TerrainSurveyor | retain(model), survey(model, ref, instance, axes) → Result | Terrain désigné, rayons verticaux, obstacles ; aucune écriture. |
 | Core::SiteIntake | settings(input), stored_settings(input), grid(tree, ...) → Result | Réglages d'assise et grille de relevé, chemins sous /site. |
 | Core::SurveyGrid | plan(...) → Result<axes> ; altitude_at(x, y) | Axes attendus, altitudes, interpolation bilinéaire. |

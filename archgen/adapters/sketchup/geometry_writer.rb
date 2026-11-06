@@ -31,6 +31,18 @@ module Archgen
           stats
         end
 
+        # Ajoute le plan d'assise à une définition déjà écrite : mêmes primitives, mêmes contrôles.
+        def write_site(site_plan, entities:, resources:)
+          raise WriteError, 'Unité de plan non prise en charge' unless site_plan['units'] == 'm'
+
+          stats = WriteStats.new(face_count: 0, group_count: 0, hidden_edge_count: 0)
+          site_plan['nodes'].each { |node| write_node(node, entities, resources, stats) }
+          expected = site_plan['metrics']['site_face_count']
+          raise WriteError, "Faces d'assise écrites #{stats.face_count}, attendues #{expected}" unless stats.face_count == expected
+
+          stats
+        end
+
         # Marqueur d'origine sans valeur d'autorité : la configuration vit sur l'instance.
         def mark_definition(definition, plan_digest:)
           definition.set_attribute(DEFINITION_DICTIONARY, 'kind', 'building')

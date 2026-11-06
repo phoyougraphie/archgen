@@ -12,6 +12,10 @@ module Archgen
         MAX_PASSES = 64
         METERS_PER_INCH = 0.0254
         ABOVE_M = 1.0
+        # Écart de chaque rayon au nœud, dans le repère de la racine. Les nœuds du périmètre sont dans
+        # le plan des murs et sur les arêtes verticales du soubassement : mesuré en H13, un rayon qui
+        # file le long d'une arête ne renvoie plus rien. Assez grand pour la tolérance de SketchUp.
+        RAY_OFFSET_M = 0.0002
         HORIZONTAL_TOLERANCE = 1e-6
         BUILDING_DICTIONARY = 'archgen.building'
         REASONS = %w[terrain_selection terrain_kind terrain_nested terrain_is_building terrain_hidden terrain_missing terrain_other_document].freeze
@@ -95,8 +99,8 @@ module Archgen
         end
 
         def world_xy(matrix, x_m, y_m)
-          x = x_m / METERS_PER_INCH
-          y = y_m / METERS_PER_INCH
+          x = (x_m + RAY_OFFSET_M) / METERS_PER_INCH
+          y = (y_m + RAY_OFFSET_M) / METERS_PER_INCH
           [(matrix[0] * x) + (matrix[4] * y) + matrix[12], (matrix[1] * x) + (matrix[5] * y) + matrix[13]]
         end
 

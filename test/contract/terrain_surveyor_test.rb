@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../test_helper'
-require_relative '../support/fake_sketchup'
+require_relative '../support/fake_terrain'
 
 Archgen::Loader.load_adapter
 
@@ -14,68 +14,11 @@ class TerrainSurveyorTest < Minitest::Test
   IDENTITY = FakeSketchUp::IDENTITY
   INCH = 0.0254
 
-  Point = Struct.new(:x, :y, :z)
-  Bounds = Struct.new(:max)
-  Layer = Struct.new(:visible) { def visible? = visible }
-
-  # Un groupe de terrain ou un obstacle : le double ne fait que répondre aux lectures.
-  class Solid
-    include FakeSketchUp::Attributes
-    attr_accessor :parent, :hidden, :layer, :valid, :bounds
-    attr_reader :persistent_id
-
-    def initialize(persistent_id, parent)
-      @persistent_id = persistent_id
-      @parent = parent
-      @hidden = false
-      @valid = true
-      @layer = Layer.new(true)
-      @bounds = Bounds.new(Point.new(0.0, 0.0, 200.0 / INCH))
-    end
-
-    def hidden? = hidden
-    def valid? = valid
-  end
-
-  # Le natif est un double : seul Group est testé par `is_a?`, on l'accepte ici.
-  module Host
-    extend FakeSketchUp::Host
-    module_function
-
-    def point(x, y, z) = FakeSketchUp::Host.point(x, y, z)
-    def vector(x, y, z) = [x, y, z]
-    def group?(entity) = entity.is_a?(Solid) || FakeSketchUp::Host.group?(entity)
-    def component_instance?(entity) = entity.is_a?(FakeSketchUp::Instance)
-    def face?(entity) = FakeSketchUp::Host.face?(entity)
-    def edge?(entity) = FakeSketchUp::Host.edge?(entity)
-    def identity = FakeSketchUp::Host.identity
-    def transformation(matrix) = FakeSketchUp::Host.transformation(matrix)
-    def color(red, green, blue) = FakeSketchUp::Host.color(red, green, blue)
-  end
-
-  # Le modèle répond aux rayons par le bloc fourni et les compte.
-  class RayModel < FakeSketchUp::ServiceModel
-    attr_accessor :ray_answer, :ray_count, :solids, :rays
-
-    def initialize
-      super
-      @solids = []
-      @rays = []
-      @ray_count = 0
-    end
-
-    def raytest(ray, wysiwyg)
-      raise 'wysiwyg doit rester vrai' unless wysiwyg
-
-      @ray_count += 1
-      @rays << ray
-      @ray_answer.call(ray[0])
-    end
-
-    def find_entity_by_persistent_id(persistent_id)
-      @solids.find { |s| s.persistent_id == persistent_id } || super
-    end
-  end
+  Point = FakeTerrain::Point
+  Layer = FakeTerrain::Layer
+  Solid = FakeTerrain::Solid
+  Host = FakeTerrain::Host
+  RayModel = FakeTerrain::RayModel
 
   def setup
     @model = RayModel.new
@@ -192,7 +135,7 @@ class TerrainSurveyorTest < Minitest::Test
     turn[13] = 200.0
     @instance.transformation = FakeSketchUp::Transformation.new(turn)
     survey
-    corner = @model.rays.find { |ray, _| (ray.to_a[0] - (100.0 - (9.0 / INCH))).abs < 1e-6 && (ray.to_a[1] - (200.0 + (12.0 / INCH))).abs < 1e-6 }
+    corner = @model.rays.find { |ray, _| (ray.to_a[0] - (100.0 - ((9.0 + TerrainSurveyor::RAY_OFFSET_M) / INCH))).abs < 1e-6 && (ray.to_a[1] - (200.0 + ((12.0 + TerrainSurveyor::RAY_OFFSET_M) / INCH))).abs < 1e-6 }
     refute_nil corner, 'le point (12, 9) du bâtiment, tourné de 90°'
   end
 
@@ -200,6 +143,14 @@ class TerrainSurveyorTest < Minitest::Test
     assert_equal 7 * 6, survey.value.grid.xs.size * survey.value.grid.ys.size
     denser = survey({ 'survey' => { 'step_m' => 1 } }).value.grid
     assert_equal 13 * 10, denser.xs.size * denser.ys.size
+  end
+
+  def test_rays_never_run_in_the_plane_of_a_wall
+    survey
+    origins = @model.rays.map { |ray, _| ray.to_a.first(2) }
+    [0.0, 12.0 / INCH].each { |wall| assert(origins.none? { |x, _y| (x - wall).abs < 1e-6 }, 'plan x') }
+    [0.0, 9.0 / INCH].each { |wall| assert(origins.none? { |_x, y| (y - wall).abs < 1e-6 }, 'plan y') }
+    assert_in_delta TerrainSurveyor::RAY_OFFSET_M / INCH, origins.first.first, 1e-9
   end
 
   def test_obstacle_is_crossed_by_restarting_from_its_impact
@@ -232,7 +183,7 @@ class TerrainSurveyorTest < Minitest::Test
 
   def test_ray_escaping_gives_a_null_and_a_located_refusal
     @model.ray_answer = lambda do |origin|
-      origin.to_a[0].abs < 1e-6 && origin.to_a[1].abs < 1e-6 ? nil : [Point.new(origin.to_a[0], origin.to_a[1], 100.0 / INCH), [@terrain]]
+      origin.to_a[0].abs < 0.1 && origin.to_a[1].abs < 0.1 ? nil : [Point.new(origin.to_a[0], origin.to_a[1], 100.0 / INCH), [@terrain]]
     end
     found = assert_refused survey, 'E_SITE_SURVEY', '/site/survey', 'missing_points'
     assert_equal [[0.0, 0.0]], found.params['points']

@@ -5,10 +5,12 @@ require 'securerandom'
 module Archgen
   module Adapters
     module SketchUp
-      BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, :target, keyword_init: true)
+      BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, :target, :site_metrics, keyword_init: true)
       LoadedBuilding = Struct.new(:record, :config, :target, keyword_init: true)
       Preview = Struct.new(:config, :plan, :projection, :plan_digest, :base, keyword_init: true)
       SiteSurvey = Struct.new(:settings, :grid, :assise, :survey_digest, keyword_init: true)
+      # Une assise calculée, prête à être écrite ; rien n'a encore touché au modèle.
+      SiteWrite = Struct.new(:settings, :survey, :site_plan, :site_digest, :terrain_pid, keyword_init: true)
 
       # Résout, calcule, vérifie le contexte et tient la transaction. Seul propriétaire
       # de l'opération : writer, ressources et dépôt n'en démarrent jamais.
@@ -109,10 +111,13 @@ module Archgen
 
           config, plan = prepared.value
           record = loaded.value.record
-          written = @guard.run(model, 'ARCHGEN : régénérer', instance: record.instance) { replace_definition(model, record, config, plan) }
+          site = kept_site(model, record, config, plan)
+          return site unless site.ok?
+
+          written = @guard.run(model, 'ARCHGEN : régénérer', instance: record.instance) { replace_definition(model, record, config, plan, site: site.value) }
           return written unless written.ok?
 
-          Core::Result.ok(written.value, prepared.diagnostics)
+          Core::Result.ok(written.value, prepared.diagnostics + site.diagnostics)
         end
 
         # La sélection courante devient le terrain retenu. Aucune écriture.
@@ -140,6 +145,73 @@ module Archgen
           site_survey(surveyed.value, settings.value, footprint)
         end
 
+        # Assise calculée avant confirmation : aucune écriture, aucune opération.
+        def preview_site(model:, target:, terrain:, site:)
+          loaded = writable_root(model, target)
+          return loaded unless loaded.ok?
+
+          settings = site_intake.settings(site)
+          return settings unless settings.ok?
+
+          config = loaded.value.config
+          plan = Core::GeometryEngine.generate(config, materials: @materials)
+          return plan unless plan.ok?
+
+          compute_site(model, loaded.value.record.instance, config, plan.value, settings.value, terrain)
+        end
+
+        # Pose la racine sur son assise. Le relevé est refait avant d'écrire : un terrain changé
+        # depuis l'aperçu (survey_digest) est refusé sans rien toucher.
+        def adapt_to_site(model:, target:, terrain:, site:, survey_digest: nil)
+          computed = preview_site(model: model, target: target, terrain: terrain, site: site)
+          return computed unless computed.ok?
+          return stale('terrain_changed') if survey_digest && computed.value.survey.survey_digest != survey_digest
+
+          loaded = verify_target(model, target).value
+          record = loaded.record
+          config = loaded.config
+          plan = Core::GeometryEngine.generate(config, materials: @materials).value
+          written = @guard.run(model, 'ARCHGEN : adapter au terrain', instance: record.instance) do
+            replace_definition(model, record, config, plan, site: computed.value)
+          end
+          written.ok? ? Core::Result.ok(written.value, computed.diagnostics) : written
+        end
+
+        # Retire l'assise : nouvelle définition sans elle, dictionnaire retiré, altitude inchangée.
+        def remove_site(model:, target:)
+          loaded = writable_root(model, target)
+          return loaded unless loaded.ok?
+
+          record = loaded.value.record
+          return stale('site_absent') unless @repository.read_site(record.instance)
+
+          config = loaded.value.config
+          plan = Core::GeometryEngine.generate(config, materials: @materials)
+          return plan unless plan.ok?
+
+          @guard.run(model, 'ARCHGEN : retirer l’assise', instance: record.instance) { replace_definition(model, record, config, plan.value, site: nil) }
+        end
+
+        # Lecture seule pour le panneau : réglages, terrain et placement enregistrés. nil sans assise.
+        def site_status(model:, target:)
+          loaded = verify_target(model, target)
+          return loaded unless loaded.ok?
+
+          instance = loaded.value.record.instance
+          site = @repository.read_site(instance)
+          return Core::Result.ok(nil) unless site
+
+          problem = @repository.site_problem(site)
+          return Core::Result.fail([problem]) if problem
+
+          settings = site_intake.stored_settings(site['site_json'])
+          return settings unless settings.ok?
+
+          moved = Core::StrictJson.parse(site['placement_json']).value != @repository.placement(instance)
+          Core::Result.ok('settings' => settings.value, 'terrain_pid' => site['terrain_pid'], 'survey_digest' => site['survey_digest'],
+                          'site_digest' => site['site_digest'], 'moved' => moved)
+        end
+
         private
 
         def stale(reason, **params)
@@ -148,6 +220,55 @@ module Archgen
 
         def site_intake
           @site_intake ||= Composition.site_intake
+        end
+
+        def site_catalog
+          @site_catalog ||= @materials.merge(Composition.site_materials)
+        end
+
+        # Cible vérifiée, versions du bâtiment et de son assise lisibles : on peut y écrire.
+        def writable_root(model, target)
+          loaded = verify_target(model, target)
+          return loaded unless loaded.ok?
+
+          version = version_problem(loaded.value.record.metadata)
+          return Core::Result.fail([version]) if version
+
+          problem = @repository.site_problem(@repository.read_site(loaded.value.record.instance))
+          problem ? Core::Result.fail([problem]) : loaded
+        end
+
+        # Une racine qui a une assise la garde : son terrain est relevé de nouveau pour la
+        # nouvelle emprise. Terrain disparu : refus, jamais de retrait silencieux.
+        def kept_site(model, record, config, plan)
+          stored = @repository.read_site(record.instance)
+          return Core::Result.ok(nil) unless stored
+
+          problem = @repository.site_problem(stored)
+          return Core::Result.fail([problem]) if problem
+
+          settings = site_intake.stored_settings(stored['site_json'])
+          return settings unless settings.ok?
+
+          compute_site(model, record.instance, config, plan, settings.value, TerrainRef.new(document_key: model.guid, persistent_id: stored['terrain_pid']))
+        end
+
+        def compute_site(model, instance, config, plan, settings, terrain)
+          footprint = config.to_h['footprint']
+          axes = Core::SurveyGrid.plan(width_m: footprint['width_m'], depth_m: footprint['depth_m'], settings: settings)
+          return axes unless axes.ok?
+
+          surveyed = @surveyor.survey(model, terrain, instance, axes.value)
+          return surveyed unless surveyed.ok?
+
+          survey = site_survey(surveyed.value, settings, footprint)
+          return survey unless survey.ok?
+
+          planned = Geometry::SitePlanner.call(plan: plan, config: config.to_h, grid: survey.value.grid, settings: settings, assise: survey.value.assise, materials: site_catalog)
+          return planned unless planned.ok?
+
+          Core::Result.ok(SiteWrite.new(settings: settings, survey: survey.value, site_plan: planned.value, site_digest: Geometry::SitePlanner.digest(planned.value),
+                                        terrain_pid: terrain.persistent_id), planned.diagnostics)
         end
 
         def site_survey(tree, settings, footprint)
@@ -203,22 +324,37 @@ module Archgen
           nil
         end
 
-        def replace_definition(model, record, config, plan)
-          definition, digest = write_definition(model, plan)
+        def replace_definition(model, record, config, plan, site: nil)
+          definition, digest = write_definition(model, plan, site)
           @repository.swap(record.instance, definition: definition)
+          @repository.place_at_altitude(record.instance, site.survey.assise['platform_z_m']) if site
           previous = record.metadata
           uuid = @repository.uuid_shared?(model, previous['building_uuid'], except: record.instance) ? @uuid.call : previous['building_uuid']
           metadata = metadata_for(config, digest, uuid: uuid, revision: previous['revision'] + 1)
           store_metadata(record.instance, metadata)
-          summary_for(model, record.instance, config, plan, metadata)
+          store_site(record.instance, site)
+          summary_for(model, record.instance, config, plan, metadata, site)
         end
 
-        def write_definition(model, plan)
-          resources = Resources.new(model, catalog: @materials, revision: @material_revision, host: @host)
+        def store_site(instance, site)
+          return @repository.clear_site(instance) unless site
+
+          stored = { 'site_version' => ComponentRepository::SITE_VERSION, 'site_json' => Core::Canonical.dump(site.settings),
+                     'survey_digest' => site.survey.survey_digest, 'site_digest' => site.site_digest, 'terrain_pid' => site.terrain_pid,
+                     'placement_json' => Core::Canonical.dump(@repository.placement(instance)) }
+          @repository.write_site(instance, stored)
+          return if @repository.read_site(instance) == stored
+
+          raise WriteError, 'Relecture de l’assise incohérente'
+        end
+
+        def write_definition(model, plan, site = nil)
+          resources = Resources.new(model, catalog: site ? site_catalog : @materials, revision: @material_revision, host: @host)
           definition = model.definitions.add(DEFINITION_NAME)
           raise WriteError, 'Création de la définition refusée' unless definition
 
           @writer.write(plan, entities: definition.entities, resources: resources)
+          @writer.write_site(site.site_plan, entities: definition.entities, resources: resources) if site
           digest = Core::GeometryEngine.plan_digest(plan)
           @writer.mark_definition(definition, plan_digest: digest)
           [definition, digest]
@@ -231,10 +367,10 @@ module Archgen
           raise WriteError, 'Relecture des métadonnées incohérente'
         end
 
-        def summary_for(model, instance, config, plan, metadata)
+        def summary_for(model, instance, config, plan, metadata, site = nil)
           BuildingSummary.new(persistent_id: instance.persistent_id, building_uuid: metadata['building_uuid'], revision: metadata['revision'],
                               name: config.to_h['name'], plan_digest: metadata['plan_digest'], metrics: plan['metrics'],
-                              target: target_for(model, instance, metadata))
+                              target: target_for(model, instance, metadata), site_metrics: site&.site_plan&.fetch('metrics'))
         end
 
         def prepare(draft, base: nil)

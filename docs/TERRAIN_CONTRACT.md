@@ -77,6 +77,7 @@ Faits mesurés par `test/host/terrain_spike.rb` sur 26.2.243 :
 | Un trou renvoie `nil` | `null` dans la grille |
 | Terrain ou tag masqué : `nil` avec `wysiwyg` vrai | `wysiwyg` reste vrai ; terrain invisible = refus, jamais de géométrie masquée |
 | Une face inversée reste touchée | L'orientation du terrain est sans effet |
+| Un rayon qui file le long d'une arête verticale ne renvoie plus rien (H13 : soubassement déjà écrit, nœud sur une arête de bande) | Chaque rayon est décalé de 0,2 mm en X et en Y dans le repère de la racine ; l'altitude lue reste juste à moins de 1 mm tant que le terrain ne dépasse pas une pente de 100 % |
 | 0,84 ms par rayon sur 7 200 faces | Relevé sur demande seulement, jamais à chaque frappe |
 
 **Le terrain est désigné par l'utilisateur :** un seul `Group` ou `ComponentInstance` de niveau racine, sélectionné puis retenu dans le panneau. Pas de déduction : avec des arbres ou un autre bâtiment, deviner reviendrait à inventer une altitude. Des faces libres sont refusées, avec le conseil de les grouper. Un bâtiment ARCHGEN, une entité imbriquée ou masquée sont refusés aussi. Terrain absent ou d'un autre document : `E_SITE_TERRAIN` sur `/site/terrain`. Terrain trop petit : ses nœuds sont à `null`, donc `E_SITE_SURVEY`. Rien n'est écrit sur le terrain : la référence retenue vit dans la session, et sa persistance relève de l'écriture de l'assise.
@@ -86,10 +87,11 @@ Faits mesurés par `test/host/terrain_spike.rb` sur 26.2.243 :
 - **Transaction :** une action = une opération « ARCHGEN : adapter au terrain ». Le relevé est refait avant d'écrire ; si son empreinte diffère de celle de l'aperçu, `E_TARGET_STALE` avec `terrain_changed`.
 - **Définition :** fraîche comme toute régénération, avec le plan du bâtiment et le plan d'assise. Nouveau tag « ARCHGEN Terrassement » sur les conteneurs d'assise.
 - **Placement :** seul le Z de la racine change, pour valoir P ; X, Y et la rotation restent. C'est la seule exception à « la transformation est conservée ». Refus `E_SITE_TRANSFORM` sur `/site/placement`, dès le relevé, si la racine n'est pas horizontale : une rotation hors de l'axe Z rendrait la grille fausse.
-- **Attributs :** dictionnaire séparé `archgen.site` sur la racine : `site_version`, `site_json`, `survey_digest`, `site_digest`, `terrain_pid`, `placement_xy_m`. La grille n'est pas conservée : elle dépasserait 64 Kio. Ces attributs entrent dans le relevé d'intégrité de `TransactionGuard` et dans la relecture finale.
+- **Attributs :** dictionnaire séparé `archgen.site` sur la racine : `site_version`, `site_json`, `survey_digest`, `site_digest`, `terrain_pid`, `placement_json` (X et Y en mètres, puis l'axe X de la racine en plan, pour repérer aussi une rotation). La grille n'est pas conservée : elle dépasserait 64 Kio. Ces attributs entrent dans le relevé d'intégrité de `TransactionGuard` et dans la relecture finale.
 - **Assise périmée :** ni observateur de terrain ni relevé automatique. Le panneau compare le placement enregistré à l'actuel et propose « Relever de nouveau ». Un terrain modifié n'est vu qu'au relevé suivant, et cette limite est écrite dans le guide.
+- **Régénérer une racine qui a une assise :** elle la garde (ADR-29). Le terrain enregistré est relevé de nouveau à l'emplacement actuel, pour la nouvelle emprise, et le Z suit la nouvelle plateforme, le tout dans la même opération. Terrain disparu, masqué ou relief devenu trop fort : refus localisé. L'assise n'est jamais retirée en silence.
 - **Retirer l'assise :** action explicite, nouvelle définition sans assise, dictionnaire retiré, Z inchangé.
-- **Copies :** la copie garde sa définition et son assise jusqu'à sa propre adaptation, comme toute régénération.
+- **Copies :** la copie garde sa définition et son assise jusqu'à sa propre écriture. Elle est alors relevée à son propre emplacement, sans toucher à l'original.
 
 Un bâtiment écrit par un moteur antérieur reste valable sans `archgen.site`. Un `site_version` plus récent : consultable, non régénérable, `E_VERSION`.
 

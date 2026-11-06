@@ -14,6 +14,10 @@ module Archgen
         DICTIONARY = 'archgen.building'
         METADATA_VERSION = 1
         KEYS = %w[metadata_version building_uuid revision config_json plan_digest engine_version material_revision].freeze
+        SITE_DICTIONARY = 'archgen.site'
+        SITE_VERSION = 1
+        SITE_KEYS = %w[site_version site_json survey_digest site_digest terrain_pid placement_json].freeze
+        METERS_PER_INCH = 0.0254
         UUID_V4 = /\A\h{8}-\h{4}-4\h{3}-[89ab]\h{3}-\h{12}\z/
         SHA256 = /\A\h{64}\z/
         RIGID_TOLERANCE = 1e-6
@@ -36,6 +40,49 @@ module Archgen
 
         def read_metadata(instance)
           KEYS.to_h { |key| [key, instance.get_attribute(DICTIONARY, key)] }
+        end
+
+        # nil si la racine n'a pas d'assise.
+        def read_site(instance)
+          return nil if instance.get_attribute(SITE_DICTIONARY, 'site_version').nil?
+
+          SITE_KEYS.to_h { |key| [key, instance.get_attribute(SITE_DICTIONARY, key)] }
+        end
+
+        def write_site(instance, site)
+          SITE_KEYS.each { |key| instance.set_attribute(SITE_DICTIONARY, key, site.fetch(key)) }
+        end
+
+        def clear_site(instance)
+          instance.delete_attribute(SITE_DICTIONARY)
+        end
+
+        # Un diagnostic si l'assise enregistrée n'est pas exploitable, sinon nil.
+        def site_problem(site)
+          return nil unless site
+          unless site['site_version'] == SITE_VERSION
+            return Core::Diagnostic.error('E_VERSION', '/metadata/site/site_version', reason: 'unsupported', value: site['site_version'], supported: SITE_VERSION)
+          end
+
+          field = invalid_site_field(site)
+          field && Core::Diagnostic.error('E_SCHEMA', "/metadata/site/#{field}", reason: 'invalid_metadata')
+        end
+
+        # X, Y et orientation de la racine, en mètres : ce qui rend une assise périmée s'il change.
+        def placement(instance)
+          m = instance.transformation.to_a
+          [m[12] * METERS_PER_INCH, m[13] * METERS_PER_INCH, m[0], m[1]].map { |value| Core::Quant.q(value) }
+        end
+
+        # Seule exception à « la transformation est conservée » : le Z vaut la plateforme.
+        def place_at_altitude(instance, altitude_m)
+          before = instance.transformation.to_a
+          after = before.dup
+          after[14] = altitude_m / METERS_PER_INCH
+          instance.transformation = @host.transformation(after)
+          now = instance.transformation.to_a
+          same = now.each_index.reject { |i| i == 14 }.all? { |i| (now[i] - before[i]).abs <= RIGID_TOLERANCE }
+          raise WriteError, 'Placement modifié pendant la pose sur la plateforme' unless same && (now[14] - after[14]).abs <= RIGID_TOLERANCE
         end
 
         # Lecture seule : Result<BuildingRecord>, aucun attribut n'est réparé ni complété.
@@ -105,6 +152,14 @@ module Archgen
 
         def stale(reason)
           Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/target', reason: reason)])
+        end
+
+        def invalid_site_field(site)
+          %w[site_json placement_json].each { |key| return key unless site[key].is_a?(String) }
+          %w[survey_digest site_digest].each { |key| return key unless site[key].is_a?(String) && SHA256.match?(site[key]) }
+          return 'terrain_pid' unless site['terrain_pid'].is_a?(Integer)
+
+          nil
         end
 
         def metadata_problem(metadata)

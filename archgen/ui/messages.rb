@@ -114,6 +114,8 @@ module Archgen
         'terrain_other_document' => 'Le terrain retenu appartient à un autre document. Retenez-en un dans celui-ci.',
         'not_horizontal' => 'Ce bâtiment est incliné. Rétablissez son axe vertical pour l’adapter au terrain.',
         'too_many_obstacles' => 'Trop d’objets au-dessus du terrain en %{count} points. Masquez-les ou déplacez le bâtiment.',
+        'terrain_changed' => 'Le terrain a changé depuis l’aperçu. Relevez de nouveau.',
+        'site_absent' => 'Ce bâtiment n’a pas d’assise à retirer.',
         'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
         'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
