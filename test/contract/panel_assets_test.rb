@@ -36,7 +36,7 @@ class PanelAssetsTest < Minitest::Test
   end
 
   def test_panel_script_never_injects_markup_or_evaluates
-    %w[panel.js panel_logic.js].each do |name|
+    %w[panel.js panel_logic.js street_panel.js].each do |name|
       source = read_utf8(*UI_DIR, name)
       refute_match(/\.innerHTML|\.outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function/, source, name)
       refute_match(%r{https?://(?!www\.w3\.org/2000/svg)}, source, name)
@@ -67,6 +67,20 @@ class PanelAssetsTest < Minitest::Test
       refute_nil path.split('/').drop(1).reduce(schema) { |s, key| s.fetch('properties').fetch(key) }, path
       assert Archgen::UI::Messages.field_label("/site#{path}"), "libellé de message pour #{path}"
     end
+  end
+
+  def test_every_street_field_has_a_label
+    html = read_utf8(*UI_DIR, 'street_panel.html')
+    ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
+    labels = html.scan(/<label for="([^"]+)"/).flatten
+    assert_equal 10, ids.size
+    assert_empty ids - labels
+  end
+
+  def test_street_panel_starts_without_anything_to_create
+    html = read_utf8(*UI_DIR, 'street_panel.html')
+    assert_match(/id="create"[^>]* disabled/, html)
+    assert_match(/id="status"[^>]*aria-live="polite"/, html)
   end
 
   def test_status_region_is_announced

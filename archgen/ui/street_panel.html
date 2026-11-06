@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : rue</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1>Tracer une rue</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Prêt</p>
+</header>
+
+<div id="summary" class="summary" tabindex="-1" hidden>
+  <h2>À corriger</h2>
+  <ul id="summary-list"></ul>
+</div>
+
+<main class="form street">
+  <p class="hint">Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.</p>
+  <fieldset>
+    <legend>Bâtiments</legend>
+    <div class="field wide"><label for="s-profile">Style</label><select id="s-profile"></select></div>
+    <div class="field"><label for="s-mode">Mode</label><select id="s-mode"><option value="shell">Shell (surfaces)</option><option value="structural">Structural (murs épais)</option></select></div>
+    <div class="field"><label for="s-lod">Niveau de détail</label><select id="s-lod"><option value="0">LOD 0, volume</option><option value="1">LOD 1, détails</option></select></div>
+    <div class="field"><label for="s-count">Niveaux, RDC inclus (vide : selon le style)</label><input id="s-count" inputmode="numeric"></div>
+    <div class="field"><label for="s-height">Hauteur courante, m (vide : selon le style)</label><input id="s-height" inputmode="decimal"></div>
+  </fieldset>
+  <fieldset>
+    <legend>Rue et parcelles</legend>
+    <div class="field wide"><label for="s-side">Côté bâti (Ctrl dans la vue)</label><select id="s-side"><option value="left">À gauche du tracé</option><option value="right">À droite du tracé</option><option value="both">Des deux côtés</option></select></div>
+    <div class="field" id="s-street-field" hidden><label for="s-street">Largeur de rue (m)</label><input id="s-street" inputmode="decimal"></div>
+    <div class="field"><label for="s-target">Largeur de parcelle (m)</label><input id="s-target" inputmode="decimal"></div>
+    <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
+    <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
+  </fieldset>
+  <div class="street-footer">
+  <section aria-labelledby="result-title">
+    <h2 id="result-title">Résultat</h2>
+    <p id="result" class="hint">Aucun tracé.</p>
+    <ul id="warnings" hidden></ul>
+  </section>
+  <div class="actions">
+    <button type="button" id="create" class="primary" disabled>Créer</button>
+    <button type="button" id="clear" disabled>Effacer le tracé</button>
+    <button type="button" id="resume" hidden>Reprendre le tracé</button>
+  </div>
+  </div>
+</main>
+<script src="street_panel.js"></script>
+</body>
+</html>

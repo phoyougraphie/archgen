@@ -119,6 +119,8 @@ module Archgen
         'ensemble_expanded_faces' => 'Cet ensemble compte %{value} faces au total, pour une limite de %{limit}. Réduisez le niveau de détail ou le nombre de parcelles.',
         'not_an_ensemble_root' => 'Sélectionnez un ensemble ARCHGEN, au niveau du modèle.',
         'invalid_origin' => 'Le point de départ du tracé est invalide.',
+        'trace_not_ready' => 'Terminez d’abord le tracé : double-clic ou Échap.',
+        'preview_changed' => 'Le résultat a changé depuis l’affichage. Vérifiez-le, puis cliquez de nouveau sur Créer.',
         'hip_in_row' => 'Un toit en croupe n’a pas de sens dans une rangée : choisissez un toit plat, à deux pans ou une mansarde.',
         'wall_too_short' => 'L’angle est trop fermé pour l’épaisseur des murs de cette parcelle.',
         'roof_rear_too_short' => 'Le débord du toit croise les onglets à l’arrière de cette parcelle : réduisez le débord ou ouvrez l’angle.',

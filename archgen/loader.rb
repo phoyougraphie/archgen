@@ -24,6 +24,7 @@ module Archgen
       core/survey_grid
       core/site_intake
       core/ensemble_intake
+      core/trace_session
       core/site_assise
       geometry/types
       geometry/planar
@@ -60,10 +61,12 @@ module Archgen
       adapters/sketchup/ensemble_repository
       adapters/sketchup/building_service
       adapters/sketchup/ensemble_service
+      adapters/sketchup/street_tool
       ui/target_tokens
       ui/confirmation_tokens
       ui/messages
       ui/dialog_controller
+      ui/street_controller
     ].freeze
 
     def self.load_core

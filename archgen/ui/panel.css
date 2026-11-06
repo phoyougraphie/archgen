@@ -63,3 +63,8 @@ button.primary:disabled { color: var(--muted); background: var(--paper); border-
   .layout { grid-template-columns: minmax(0, 1fr); }
   .preview { position: static; }
 }
+
+.street { padding: 0.75rem 1rem 1rem; }
+.street section h2 { margin: 0 0 0.25rem; font-size: inherit; }
+.street ul { margin: 0.25rem 0 0; padding: 0 0 0 1rem; }
+.street-footer { position: sticky; bottom: 0; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0; background: var(--paper); border-top: 1px solid var(--line); }

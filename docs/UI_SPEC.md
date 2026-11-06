@@ -14,6 +14,10 @@ Menu **Extensions → ARCHGEN** : « Nouveau bâtiment », « Modifier le bâtim
 
 Entrées numériques affichables avec virgule en français ; parser une représentation décimale non ambiguë et envoyer un nombre JSON. Une saisie vide ou invalide est indiquée, sans envoi. Un champ désactivé n'est pas écrasé. À la sélection d'un nouveau profil en édition, envoyer le couple `id/revision` reçu dans `init`, vider les overrides locaux des blocs que le profil reprend, montrer les nouvelles valeurs issues de l'aperçu et permettre de les modifier avant application.
 
+## Panneau de rue
+
+Fenêtre séparée, ouverte par « Tracer une rue » : son pont `archgen_street`, ses actions et son geste sont décrits dans [le contrat d'ensemble](ENSEMBLE_CONTRACT.md). Elle ne reçoit jamais de géométrie du tracé par le pont : le tracé vient de l'outil seul.
+
 ## Contrat du pont
 
 Un callback `archgen_dispatch` reçoit **une chaîne JSON** : `{v:1,request_id:"...",action:"preview",payload:{...}}`. Réponse : `{v:1,request_id:"...",ok:true,result:{...},diagnostics:[]}`. Si échec, `ok:false,result:null`. Pour les identifiants, utiliser des chaînes ; Ruby valide toutes les entrées indépendamment de JS.

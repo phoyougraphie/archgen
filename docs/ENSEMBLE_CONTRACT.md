@@ -135,10 +135,10 @@ Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS`. U
 - clic de départ, puis un clic par sommet, ou `longueur` ou `longueur;angle` dans la boîte de mesure ;
 - flèche droite : axe rouge ; flèche gauche : axe vert ; flèche bas : perpendiculaire ou prolongement du segment précédent ; la même flèche débloque ;
 - Ctrl : côté du tracé ; Alt : angle verrouillé à 90° ;
-- cliquer le premier point, à 1 mm près, ferme la forme ; Échap ou double-clic termine une forme ouverte ;
+- cliquer le premier point, à 10 pixels près, ferme la forme ; Échap ou double-clic termine une forme ouverte ; Échap sur un tracé terminé l'efface ;
 - pas d'arc : Tab n'est pas repris, car un segment courbe n'a pas de parcelle au contrat.
 
-Les réglages viennent du panneau. Le tracé en cours et ses parcelles sont dessinés dans la vue, sans écrire dans le modèle. Le tracé doit être horizontal : tous les points sont ramenés dans le plan du premier, et un point inféré à une autre altitude est refusé avec un message. Le panneau annonce ensuite parcelles, faces, accès et diagnostics, puis demande la confirmation.
+Les réglages viennent d'un panneau de rue séparé, ouvert par « Tracer une rue » ; il ne connaît jamais la géométrie du tracé, qui vient de l'outil seul. Le tracé en cours et ses parcelles sont dessinés dans la vue, sans écrire dans le modèle. Le tracé est horizontal : un point visé à une autre altitude est ramené dans le plan du premier, le long du rayon de vue. Le panneau annonce bâtiments, faces et diagnostics ; son bouton « Créer ces N bâtiments » vaut confirmation. Il renvoie l'empreinte montrée : si le résultat a changé, `E_CONFIRMATION_STALE`. Fermer le panneau quitte l'outil et oublie le tracé. Changer de document oublie le tracé. Créer laisse l'outil actif pour une autre rue, et sélectionne la racine créée.
 
 ## Charge
 
