@@ -20,7 +20,7 @@ class CarteTest < Minitest::Test
 
   def test_every_ticket_of_tasks_has_a_status
     expected = read_utf8('planning', 'TASKS.md').scan(/\*\*(AG-\d{3})/).flatten
-    assert_equal 27, expected.size
+    assert_equal 36, expected.size
     found = nodes.select { |n| n['label'].match?(/\AAG-\d{3}/) }
     assert_equal expected, found.map { |n| n['label'][/AG-\d{3}/] }
     found.each { |n| refute_nil n['status'], "#{n['label']} sans statut" }
@@ -34,7 +34,7 @@ class CarteTest < Minitest::Test
 
   def test_all_test_ids_and_requirements_are_mapped
     labels = nodes.map { |n| n['label'] }
-    ids = (1..15).map { |i| format('U%02d', i) } + (1..14).map { |i| format('H%02d', i) }
+    ids = (1..21).map { |i| format('U%02d', i) } + (1..17).map { |i| format('H%02d', i) }
     ids += (1..9).map { |i| format('P%02d', i) }
     ids.each { |id| assert(labels.any? { |l| l.start_with?(id) }, "#{id} absent de la carte") }
   end

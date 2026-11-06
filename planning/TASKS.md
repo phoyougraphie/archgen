@@ -37,6 +37,22 @@ Contrat : [TERRAIN_CONTRACT](../docs/TERRAIN_CONTRACT.md). Ordre fixé par ADR-2
 | **AG-024 — Relevé dans SketchUp** | AG-021 | Port de relevé, terrain retenu, obstacles, trous, repère de la racine ; aucune écriture. | Fait mesuré par le contrat rejoué sur le produit ; temps publié ; aucune trace d'Annuler. H13, partie relevé. |
 | **AG-025 — Écrire et persister l'assise** | AG-023, AG-024 | Définition avec assise, Z de la racine, `archgen.site`, garde de transaction, retrait, version future. | Une entrée d'Annuler, terrain intact, pannes sans résidu, terrain changé refusé, aller-retour SKP, bâtiment V0.1 inchangé. H13. |
 | **AG-026 — Panneau terrain et RBZ 0.2.0** | AG-025 | Section Terrain, aperçu, confirmation, assise périmée, guide, journal, RBZ. | Valeurs issues du plan, parcours complet, charge sur 100 000 faces ; H01 à H14 rejouées sur le RBZ. H14. |
-| **AG-027 — Étagement par parcelle** | AG-026, EXT-07.5 | Une assise par parcelle le long d'une rue en pente, raccord par soubassement. | À détailler à l'ouverture, après le contrat d'EXT-07. |
+| **AG-027 — Étagement par parcelle** | AG-026, AG-036 | Une assise par parcelle le long d'une rue en pente, raccord par soubassement. | À détailler à l'ouverture, après le contrat d'EXT-07. |
+
+## J7 — Rue et îlots au tracé (EXT-07)
+
+Contrat : [ENSEMBLE_CONTRACT](../docs/ENSEMBLE_CONTRACT.md). Décisions : ADR-30 à ADR-32. Une rue ouverte est utilisable dès AG-033 ; l'îlot fermé attend ses accès.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-028 — Tracé et parcelles** | AG-026 | Schéma `ensemble` V1, tracé, onglets, découpe, parcelles, contrôles d'ensemble, fixtures ; noyau pur. | Carré de référence exact à la main ; segments, angles et recouvrements refusés avec chemin ; 100 tracés pseudo-aléatoires reproductibles. U16. |
+| **AG-029 — Bâtiment de rangée** | AG-028 | Plan de rangée rectangulaire : murs latéraux aveugles, travées calculées, toits en section sans débord latéral, croupe refusée. | Toits raccordés entre deux parcelles ; `plan_digest` de toutes les fixtures inchangé. U17. |
+| **AG-030 — Parcelle d'angle** | AG-029 | Trapèze en Shell et Structural : joints, dalles, toits, corniche et balcon coupés à l'onglet. | Angles saillants et rentrants : sommets communs sur l'onglet, aucun recouvrement de volume, normales conformes. U18. |
+| **AG-031 — Plan d'ensemble** | AG-030 | `EnsemblePlan`, seeds dérivées, définitions partagées, `ensemble_digest`, budgets, progression. | Même entrée, même empreinte ; limites et premier dépassement. Plafonds revus après la mesure hôte d'AG-032. U19. |
+| **AG-032 — Écrire et persister l'ensemble** | AG-031 | Racine d'ensemble, `archgen.ensemble`, une opération, régénération, copies, refus, version future. | Une entrée d'Annuler, pannes sans résidu, aller-retour SKP, bâtiment seul inchangé ; charge sur 12, 50 et 200 parcelles publiée. H15. |
+| **AG-033 — Outil de tracé** | AG-032 | `Sketchup::Tool` au geste YSKE, aperçu dans la vue, réglages et confirmation au panneau. Forme ouverte seulement ; une forme fermée reste refusée tant qu'elle n'a pas d'accès. | Clics, saisie, axes, côté, 90°, fermeture et Échap ; aucune écriture avant confirmation. H16. |
+| **AG-034 — Accès par interruption** | AG-033 | Placement déterministe, `gap`, catalogue `ensemble_rules.v1.json` avec Brutaliste, ouverture de la forme fermée pour ce profil. | Carré de référence : 3 accès sur 3 côtés, jamais en angle ; nombre impossible refusé ; aucune cour sans accès. U20. |
+| **AG-035 — Accès par porche** | AG-034 | Capacité porche : passage, parois, plafond, étages au-dessus ; entrées Haussmannien et Toulousain. | Shell et Structural, hauteur limite et premier dépassement, baies recouvertes retirées ; fixtures inchangées hors porche. U21. |
+| **AG-036 — Panneau d'ensemble et RBZ 0.3.0** | AG-035 | Modifier un ensemble, guide, journal, RBZ. | Parcours rue et îlot complet ; H01 à H17 rejouées sur le RBZ. H17. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

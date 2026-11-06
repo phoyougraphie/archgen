@@ -4,6 +4,8 @@ Besoin exprimé par le propriétaire le 05/11/2026. **Hors périmètre V0.1** (v
 
 ## 1. Générateur de rue et d'îlot au tracé (EXT-07)
 
+**Contrat :** [ENSEMBLE_CONTRACT](ENSEMBLE_CONTRACT.md) ; il prime sur cette section, qui garde le besoin d'origine. Il garde notamment les murs mitoyens émis (ADR-32) et reporte la modification d'une seule parcelle.
+
 **Résultat attendu.** Créer des rues, des pâtés de maisons et des quartiers en traçant une ligne dans la vue, comme on trace des murs avec l'outil Mur connecté de YSKE, au lieu de placer les bâtiments un par un.
 
 **Geste de référence.** Repris de `agen-sketchup/src/yske/tools/mur_tool.rb` :
@@ -69,17 +71,8 @@ Règles proposées pour les ouvertures, à valider :
 
 ## 3. Décisions à trancher
 
-Reprises dans [DECISIONS](DECISIONS.md) : D-03 (angles) et D-04 (forme des ouvertures) restent ouvertes ; D-05 et D-06 sont tranchées par ADR-27.
+Toutes tranchées, voir [DECISIONS](DECISIONS.md) : D-03 par ADR-30 (onglet), D-04 par ADR-31 (selon le style), D-05 et D-06 par ADR-27.
 
 ## 4. Découpage prévisionnel
 
-Chaque ticket apporte son contrat, ses tests et sa preuve hôte. Numérotation et ordre à confirmer à l'ouverture de J6.
-
-| Ticket | Dépend de | Livrable |
-|---|---|---|
-| EXT-07.1 Contrat de tracé | J5, D-03 | Polyligne, fermeture, auto-intersection, découpe en parcelles ; noyau pur et fixtures. |
-| EXT-07.2 Racine d'ensemble | EXT-07.1 | Format versionné de l'îlot, persistance, une opération Undo, copies. |
-| EXT-07.3 Mitoyenneté et angles | EXT-07.1 | Murs mitoyens, parcelles d'angle, budget d'ensemble. |
-| EXT-07.4 Ouvertures de cour | EXT-07.3, D-04 | 1 à 3 accès déterministes, refus si infaisable. |
-| EXT-07.5 Outil de tracé | EXT-07.2 | `Sketchup::Tool` au geste YSKE, aperçu dans la vue, recette hôte. |
-| EXT-10 | J5 | Détaillé en AG-021 à AG-027 dans [TASKS](../planning/TASKS.md). |
+Remplacé par les tickets AG-028 à AG-036 et AG-021 à AG-027 de [TASKS](../planning/TASKS.md).
