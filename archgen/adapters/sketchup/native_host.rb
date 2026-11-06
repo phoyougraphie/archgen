@@ -40,6 +40,10 @@ module Archgen
           ::Geom::Transformation.new(matrix)
         end
 
+        def status(text)
+          ::Sketchup.status_text = text
+        end
+
         def color(red, green, blue)
           ::Sketchup::Color.new(red, green, blue)
         end

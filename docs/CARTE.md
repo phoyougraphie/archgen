@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-032 : écrire et persister l'ensemble, première preuve dans SketchUp ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — AG-033 : outil de tracé au geste YSKE et réglages au panneau, première rue utilisable ; suite jusqu'à AG-036, puis AG-027. RBZ 0.2.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.2.0.rbz, H02 à H14 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, trancher D-01, confirmer la sortie sur un profil vierge s'il le souhaite. Suite possible : accélérer le relevé sur les très gros terrains. (→ docs/ENSEMBLE_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -42,6 +42,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 AG-028 — Contrat corrigé à l'implémentation : l'écart de 3 m entre parcelles contredisait l'arrière minimal de 2 m autour d'un angle, il ne vaut donc plus entre segments contigus. Les numéros de segment restent ceux du tracé saisi, même parcouru à l'envers. Dans une classe de test, une méthode placée après private n'est pas lancée. (→ docs/ENSEMBLE_CONTRACT.md)
     - 2026-11-06 AG-030 — Trame des baies resserrée entre les joints : sinon un angle rentrant très fermé refusait toute la parcelle. À angle droit, le calcul V1 reste séparé pour ne pas bouger les empreintes. Reculs et travées arrière ne sont pas dans la configuration : AG-031 doit les inclure pour partager une définition entre parcelles. (→ docs/ENSEMBLE_CONTRACT.md)
     - 2026-11-06 AG-031 — Calcul pur sous Ruby 3.2.11, hors écriture : 10 à 69 ms pour 12 à 50 parcelles, au plus 231 ms pour 200 ; 1 à 3 définitions grâce au partage, sans jitter. Le plafond de 400 000 faces étendues refuse déjà 200 parcelles Brutaliste Structural LOD 1 (401 723) : à revoir avec la mesure d'écriture d'AG-032. Les profils livrés n'ont aucun tirage de style. D-01 pèse davantage ici : un jitter refuse presque toujours au moins une parcelle, donc tout l'ensemble. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-032 — Le coût d'écriture suit les faces uniques : 200 parcelles droites 2,4 s, 76 parcelles sans partage 14 à 17 s. Plafond étendu porté à 600 000. view.write_image évite de piloter l'écran pour regarder un rendu. Copie de développement dans Plugins, l'ancienne dans tmp/plugins-avant-ag032/. (→ docs/recette/H15.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -91,7 +92,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-029 Bâtiment de rangée — core/parcel_building, geometry/row_roof_solver ; murs latéraux aveugles, toits en section, plan d'un bâtiment seul inchangé. U17 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-030 Parcelle d'angle — Trapèze en Shell et Structural : joints, dalles, toits, corniche et balcon. Empreintes des bâtiments seuls inchangées. U18 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-031 Plan d'ensemble — core/ensemble_engine, EnsemblePlanValidator, définitions partagées par contenu, plafonds, progression. U19 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
-    - [afaire] AG-032 Écrire et persister l'ensemble — Racine d'ensemble, une opération, régénération, copies, charge. H15. Dép. AG-031.
+    - [fait] AG-032 Écrire et persister l'ensemble — adapters/sketchup/{ensemble_service, ensemble_repository}, version 0.3.0-dev. H15 : 77 contrôles sans échec, rendu regardé, rues ouvertes seulement. (→ docs/recette/H15.md)
     - [afaire] AG-033 Outil de tracé — Geste YSKE, aperçu dans la vue, panneau ; rue ouverte utilisable. H16. Dép. AG-032.
     - [afaire] AG-034 Accès par interruption — Placement déterministe, catalogue ensemble_rules ; îlot fermé pour Brutaliste. U20. Dép. AG-033.
     - [afaire] AG-035 Accès par porche — Passage sous le bâtiment ; îlot fermé pour Haussmannien et Toulousain. U21. Dép. AG-034.
@@ -263,7 +264,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
     - H13 — Terrain : relevé et écriture réussis, une entrée d'Annuler, terrain intact. Réussi sur Windows / 26.2.243. (→ docs/recette/H13.md)
     - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. Réussi sur Windows / 26.2.243 ; plus grand bâtiment : 1 min 30 par relevé. (→ docs/recette/H14.md)
-    - H15 — Écriture d'un ensemble, Annuler, pannes, copies, charge. À faire en AG-032.
+    - H15 — Écriture d'un ensemble, Annuler, pannes, copies, charge. Réussi sur Windows / 26.2.243, rues ouvertes ; 200 parcelles en 2,4 s. (→ docs/recette/H15.md)
     - H16 — Outil de tracé à la souris et au clavier. À faire en AG-033.
     - H17 — Parcours rue et îlot sur le RBZ. À faire en AG-036.
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.

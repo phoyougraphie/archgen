@@ -199,7 +199,7 @@ class EnsembleEngineTest < Minitest::Test
 
   def test_default_limits_come_from_the_contract
     assert_equal 120_000, Limits::ENSEMBLE_MAX_UNIQUE_FACES
-    assert_equal 400_000, Limits::ENSEMBLE_MAX_EXPANDED_FACES
+    assert_equal 600_000, Limits::ENSEMBLE_MAX_EXPANDED_FACES
   end
 
   # --- Refus

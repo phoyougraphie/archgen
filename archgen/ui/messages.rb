@@ -117,6 +117,8 @@ module Archgen
         'access_unavailable' => 'Les îlots fermés ne sont pas encore pris en charge : leurs accès à la cour n’existent pas. Tracez une rue ouverte.',
         'ensemble_unique_faces' => 'Cet ensemble compte %{value} faces distinctes, pour une limite de %{limit}. Réduisez le niveau de détail ou le nombre de parcelles.',
         'ensemble_expanded_faces' => 'Cet ensemble compte %{value} faces au total, pour une limite de %{limit}. Réduisez le niveau de détail ou le nombre de parcelles.',
+        'not_an_ensemble_root' => 'Sélectionnez un ensemble ARCHGEN, au niveau du modèle.',
+        'invalid_origin' => 'Le point de départ du tracé est invalide.',
         'hip_in_row' => 'Un toit en croupe n’a pas de sens dans une rangée : choisissez un toit plat, à deux pans ou une mansarde.',
         'wall_too_short' => 'L’angle est trop fermé pour l’épaisseur des murs de cette parcelle.',
         'roof_rear_too_short' => 'Le débord du toit croise les onglets à l’arrière de cette parcelle : réduisez le débord ou ouvrez l’angle.',

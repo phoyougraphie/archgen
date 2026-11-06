@@ -116,7 +116,7 @@ Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS`. U
 - **Métriques :** `parcel_count`, `definition_count`, `unique_face_count`, `expanded_face_count`, `facade_length_m`, `access_count`.
 - **Forme fermée :** refusée par `E_STREET_ACCESS` tant que ses accès n'existent pas (AG-034).
 - **Avertissements :** un avertissement de définition est répété pour chaque parcelle qui l'utilise, sur `/parcels/<id>/…`.
-- **Plafonds de départ :** 120 000 faces uniques et 400 000 faces étendues, à calibrer par la mesure de charge.
+- **Plafonds :** 120 000 faces uniques et 600 000 faces étendues, d'après la mesure de [H15](recette/H15.md) : le coût d'écriture suit les faces uniques.
 
 ## Écriture et persistance
 
@@ -125,6 +125,7 @@ Un profil absent du catalogue ne peut pas fermer un îlot : `E_STREET_ACCESS`. U
 - **Attributs :** dictionnaire `archgen.ensemble` sur la racine : `ensemble_version`, `ensemble_json`, `ensemble_digest`, révisions du moteur et des catalogues. Les parcelles ne portent pas `archgen.building` : elles ne sont pas des cibles de l'édition d'un bâtiment seul.
 - **Modifier :** l'ensemble se régénère en entier depuis ses réglages et son tracé, dans une définition fraîche. Une copie garde sa définition. La géométrie partagée n'est jamais modifiée sur place.
 - **Refus :** sélection d'une parcelle à l'intérieur de l'ensemble, racine éclatée, mise à l'échelle ou en miroir, version future (`E_VERSION`). Une racine éclatée laisse des bâtiments ordinaires, sans lien avec l'ensemble.
+- **Barre d'état :** elle suit les bâtiments écrits ; c'est le panneau qui annonce le nombre avant de commencer (AG-033).
 - **Terrain :** pas d'assise en V1 : une racine d'ensemble n'est pas une cible de la section Terrain. AG-027 traitera l'étagement.
 
 ## Outil de tracé
@@ -141,7 +142,7 @@ Les réglages viennent du panneau. Le tracé en cours et ses parcelles sont dess
 
 ## Charge
 
-Le terrain a montré qu'une fenêtre figée se fait fermer : la recette a perdu un passage ainsi. **Chaque écriture de plus de quelques secondes annonce le nombre de bâtiments avant de commencer, et la barre d'état suit la progression.** Le ticket de plan mesure aussi l'écriture sur 12, 50 et 200 parcelles. Cible de départ : p95 ≤ 10 s pour l'îlot de 12 parcelles en LOD 1. Le plafond de 200 parcelles est revu d'après cette mesure.
+Le terrain a montré qu'une fenêtre figée se fait fermer : la recette a perdu un passage ainsi. **Chaque écriture de plus de quelques secondes annonce le nombre de bâtiments avant de commencer, et la barre d'état suit la progression.** Mesure de [H15](recette/H15.md) : 0,3 s pour 12 parcelles et 2,4 s pour 200 en rue droite, 14 à 17 s pour 76 parcelles qui ne partagent presque rien. Le plafond de 200 parcelles reste inchangé.
 
 ## Hors périmètre V1
 

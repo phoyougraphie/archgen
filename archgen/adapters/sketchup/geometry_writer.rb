@@ -44,8 +44,8 @@ module Archgen
         end
 
         # Marqueur d'origine sans valeur d'autorité : la configuration vit sur l'instance.
-        def mark_definition(definition, plan_digest:)
-          definition.set_attribute(DEFINITION_DICTIONARY, 'kind', 'building')
+        def mark_definition(definition, plan_digest:, kind: 'building')
+          definition.set_attribute(DEFINITION_DICTIONARY, 'kind', kind)
           definition.set_attribute(DEFINITION_DICTIONARY, 'engine_version', ENGINE_VERSION)
           definition.set_attribute(DEFINITION_DICTIONARY, 'plan_digest', plan_digest)
         end

@@ -36,6 +36,14 @@ module FakeSketchUp
       Transformation.new(matrix)
     end
 
+    def statuses
+      @statuses ||= []
+    end
+
+    def status(text)
+      statuses << text
+    end
+
     def color(red, green, blue)
       Color.new(red, green, blue)
     end

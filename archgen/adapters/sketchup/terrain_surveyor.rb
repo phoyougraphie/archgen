@@ -72,6 +72,7 @@ module Archgen
           return 'terrain_missing' unless entity.valid?
           return 'terrain_nested' unless entity.parent == model
           return 'terrain_is_building' if entity.get_attribute(BUILDING_DICTIONARY, 'metadata_version')
+          return 'terrain_is_building' if entity.get_attribute(EnsembleRepository::DICTIONARY, 'ensemble_version')
           return 'terrain_hidden' if entity.hidden? || !entity.layer.visible?
 
           nil

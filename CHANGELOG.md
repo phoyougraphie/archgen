@@ -1,5 +1,9 @@
 # Journal des versions
 
+## 0.3.0-dev
+
+En cours : rue et îlots au tracé ([contrat](docs/ENSEMBLE_CONTRACT.md)). Rien n'est encore livré aux utilisateurs.
+
 ## 0.2.0
 
 Adaptation d'un bâtiment à un terrain déjà présent dans le modèle. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments restent identiques. Le rapport de recette est dans [docs/recette/V0.2.md](docs/recette/V0.2.md).
