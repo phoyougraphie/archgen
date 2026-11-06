@@ -279,17 +279,6 @@ class SitePlannerTest < Minitest::Test
 
   # --- Refus et budgets
 
-  def test_embankment_is_refused_until_it_exists
-    settings = intake.settings('earthwork' => 'embankment').value
-    config, plan = building
-    axes = SurveyGrid.plan(width_m: WIDTH, depth_m: DEPTH, settings: settings).value
-    tree = { 'schema_version' => 1, 'xs_m' => axes['xs_m'], 'ys_m' => axes['ys_m'], 'z_m' => axes['ys_m'].map { axes['xs_m'].map { 100.0 } } }
-    grid = intake.grid(tree, width_m: WIDTH, depth_m: DEPTH, settings: settings).value
-    assise = SiteAssise.call(grid, settings, width_m: WIDTH, depth_m: DEPTH).value
-    result = SitePlanner.call(plan: plan, config: config, grid: grid, settings: settings, assise: assise)
-    assert_refused result, 'E_SCHEMA', '/site/earthwork', 'earthwork_unavailable'
-  end
-
   def test_budget_exact_limits_and_first_overflow
     small = { 'expanded_face_count' => 100, 'unique_face_count' => 100 }
     assert_empty SitePlanner.budget_problems({ 'site_face_count' => Limits::SITE_MAX_FACES }, small)

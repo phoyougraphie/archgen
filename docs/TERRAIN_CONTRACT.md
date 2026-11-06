@@ -41,7 +41,7 @@ Le talus utilise `earth`, d'un catalogue séparé `site_materials.v1.json` : `ma
 
 Soit E l'ensemble des points de la grille dans l'emprise, angles compris.
 
-1. Tout point de E à `null` : `E_SITE_SURVEY` sur `/site/survey`, avec le nombre de points manquants et les coordonnées des dix premiers. Aucune altitude n'est interpolée au-dessus d'un trou. Un point nécessaire au talus et manquant relève du même code (AG-023).
+1. Tout point de E à `null` : `E_SITE_SURVEY` sur `/site/survey`, avec le nombre de points manquants et les coordonnées des dix premiers. Aucune altitude n'est interpolée au-dessus d'un trou. Un trou rencontré par un rayon de talus relève du même code, avec les coordonnées du point ; un trou au-delà du pied n'est pas utile et n'est pas refusé.
 2. **Relief :** `max(E) − min(E) ≤ 6,0 m` (départ), sinon `E_SITE_RELIEF` sur `/site/platform`.
 3. **Plateforme :** `P = référence + offset_m`, quantifiée. `high` prend `max(E)` ; `mean` prend la moyenne arithmétique de E. Le niveau z=0 du bâtiment est à P.
 4. **Indicateurs :** `platform_z_m`, `terrain_min_z_m`, `terrain_max_z_m`, `relief_m`, `cut_max_m = max(0, max(E) − P)`, `fill_max_m = max(0, P − min(E))`, et les volumes `cut_volume_m3` et `fill_volume_m3` : pour chaque cellule de l'emprise, aire × moyenne des hauteurs positives aux quatre angles. C'est exact sur un plan entièrement d'un côté de P, approché sinon.
@@ -52,7 +52,7 @@ Soit E l'ensemble des points de la grille dans l'emprise, angles compris.
 | Terrain au-dessus du seuil de la porte de plus de 0,02 m, relevé aux deux bords et au milieu de la porte | `E_SITE_DOOR_BURIED` sur `/site/platform` | Refus : la porte serait inutilisable |
 | Seuil de la porte à plus de 0,20 m au-dessus du terrain, au milieu de la porte (départ) | `W_SITE_DOOR_GAP` | Avertissement avec la hauteur : aucun escalier n'est généré |
 | `cut_max_m` > 0 | `W_SITE_BURIED` | Avertissement avec la hauteur et le nombre de baies dont le bas est sous le terrain, relevé aux deux bords et au milieu de chaque baie, dans le plan de sa façade |
-| Pied de talus introuvable dans la marge | `E_SITE_TOE` sur `/site/embankment_ratio` | Refus localisé par façade |
+| Pied de talus introuvable dans la marge | `E_SITE_TOE` sur `/site/embankment_ratio` | Refus localisé par façade, sans altitude extrapolée |
 | Plus de 20 000 faces d'assise, ou total hors plafonds | `E_SITE_BUDGET` | Refus avant écriture |
 
 ## Plan d'assise
@@ -61,7 +61,7 @@ Soit E l'ensemble des points de la grille dans l'emprise, angles compris.
 
 - **`platform` :** quad à z=0, normale vers le haut. Emprise pleine en Shell, retrait de `wall_m` en Structural, pour ne pas superposer des faces au bas des murs.
 - **`plinth` :** une bande par façade, dans le plan extérieur du mur, normale N, de z=0 jusqu'à `terrain − 0,05 m`. Le bord bas suit les abscisses de la grille. Aucune bande là où `terrain − 0,05 m` atteint z=0 : la bande s'arrête par un triangle au point de passage. Un bord bas à moins de 2 mm de z=0 compte pour z=0, et un triangle réduit à moins de 2 mm est omis, car ces arêtes seraient refusées par le validateur. Les bandes de deux façades partagent les sommets de l'angle.
-- **`embankment` :** là où il y a remblai, le talus part du bas du mur à z=0 avec la pente `1 / embankment_ratio` et descend jusqu'à son premier point sous le terrain, puis 0,05 m au-delà. Rayons perpendiculaires à la façade aux abscisses de la grille ; à chaque angle, trois rayons en éventail. Normales vers le haut et vers l'extérieur.
+- **`embankment` :** remplace entièrement les bandes de soubassement. Là où il y a remblai, le talus part du bas du mur à z=0 avec la pente `1 / embankment_ratio` et descend jusqu'à son premier point sous le terrain, puis encore 0,05 m en altitude. Rayons perpendiculaires à la façade aux abscisses de la grille ; à chaque angle, trois rayons en éventail à 22,5°, 45° et 67,5°. Le pied est cherché par pas de `step_m / 4`, puis affiné. Un rayon dont l'origine est au niveau du terrain ou dessous n'a pas de longueur. Faces triangulées, car le terrain est quelconque ; normales vers le haut et vers l'extérieur. La métrique `embankment_reach_m` donne la plus grande emprise du talus au sol.
 
 Le chevauchement de 0,05 m évite une fente visible au raccord. Le terrain restant visible aux raccords est la limite connue de ce choix.
 

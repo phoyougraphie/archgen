@@ -35,6 +35,11 @@ module Archgen
       Dir.glob('styles/profiles/*.json', base: ROOT).sort.map { |path| read_json(path) }
     end
 
+    # Catalogue complet d'une assise : celui du bâtiment, inchangé, plus la terre du talus.
+    def site_materials
+      materials.fetch('materials').merge(read_json('styles', 'materials', 'site_materials.v1.json').fetch('materials'))
+    end
+
     # Retourne un Result<StyleRegistry>.
     def registry(capabilities: IMPLEMENTED_CAPABILITIES, sources: schemas)
       Core::StyleRegistry.load(

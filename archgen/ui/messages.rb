@@ -105,7 +105,7 @@ module Archgen
         'survey_points' => 'Ce relevé demanderait %{value} points, pour une limite de %{limit}. Augmentez le pas du relevé.',
         'grid_axes' => 'Le relevé ne correspond pas à ce bâtiment. Relevez de nouveau.',
         'grid_shape' => 'Le relevé du terrain est incomplet. Relevez de nouveau.',
-        'earthwork_unavailable' => 'Ce type de terrassement n’est pas encore disponible.',
+        'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
         'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
         'terrain_above_platform' => 'Le terrain dépasse la plateforme de %{value} m et traverse le bâtiment. Baies touchées : %{count}.',

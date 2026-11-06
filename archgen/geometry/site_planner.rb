@@ -14,18 +14,20 @@ module Archgen
       module_function
 
       # plan : GeometryPlan validé ; config : configuration effective du bâtiment.
-      def call(plan:, config:, grid:, settings:, assise:)
-        return unavailable_earthwork unless settings['earthwork'] == 'plinth'
-
+      # materials : le catalogue complet, terre comprise ; nil ne contrôle pas les identifiants.
+      def call(plan:, config:, grid:, settings:, assise:, materials: nil)
         footprint = FootprintSolver.call(width_m: plan['metrics']['width_m'], depth_m: plan['metrics']['depth_m'])
         platform = assise['platform_z_m']
         height = ->(facade, u) { terrain_height(grid, facade, u, platform) }
         door = door_diagnostic(plan, footprint, height)
         return Core::Result.fail([door]) if door&.error?
 
-        built = build(footprint, grid, settings, config, platform, assise, door_gap(plan, footprint, height), buried_openings(plan, footprint, height))
+        earthwork = earthwork_nodes(footprint, grid, settings, platform)
+        return earthwork unless earthwork.ok?
+
+        built = build(footprint, settings, config, assise, earthwork.value, door_gap(plan, footprint, height), buried_openings(plan, footprint, height))
         problems = budget_problems(built['metrics'], plan['metrics'])
-        problems = Core::SitePlanValidator.call(built, materials: nil) if problems.empty?
+        problems = Core::SitePlanValidator.call(built, materials: materials) if problems.empty?
         return Core::Result.fail(problems) unless problems.empty?
 
         Core::Result.ok(Core::Canonical.deep_freeze(built), warnings(door, assise, built['metrics']))
@@ -87,11 +89,6 @@ module Archgen
       end
       private_class_method :snap
 
-      def unavailable_earthwork
-        Core::Result.fail([Core::Diagnostic.error('E_SCHEMA', '/site/earthwork', reason: 'earthwork_unavailable')])
-      end
-      private_class_method :unavailable_earthwork
-
       def terrain_height(grid, facade, u, platform)
         point = facade.point(u, 0.0)
         grid.altitude_at(point[0], point[1]) - platform
@@ -147,15 +144,31 @@ module Archgen
       end
       private_class_method :warnings
 
-      def build(footprint, grid, settings, config, platform, assise, gap, buried)
+      # Result<{ nodes:, reach_m: }> : un groupe de soubassement ou de talus, absent s'il est vide.
+      def earthwork_nodes(footprint, grid, settings, platform)
+        if settings['earthwork'] == 'embankment'
+          built = EmbankmentBuilder.call(footprint: footprint, grid: grid, settings: settings, platform: platform)
+          return built unless built.ok?
+
+          return Core::Result.ok(nodes: wrap('site/embankment', 'embankment', built.value[:nodes]), reach_m: built.value[:reach_m])
+        end
+        strips = FACADE_ORDER.filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, settings['plinth_material']) }
+        Core::Result.ok(nodes: wrap('site/plinth', 'plinth', strips), reach_m: 0.0)
+      end
+      private_class_method :earthwork_nodes
+
+      def wrap(id, category, children)
+        children.empty? ? [] : [Node.group(id, category, children)]
+      end
+      private_class_method :wrap
+
+      def build(footprint, settings, config, assise, earthwork, gap, buried)
         material = settings['plinth_material']
-        strips = FACADE_ORDER.filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, material) }
-        children = [Node.leaf('site/platform', 'platform', platform_primitive(footprint, config, material))]
-        children << Node.group('site/plinth', 'plinth', strips) unless strips.empty?
+        children = [Node.leaf('site/platform', 'platform', platform_primitive(footprint, config, material))] + earthwork[:nodes]
         nodes = [Node.group('site', 'site', children)]
         {
           'schema_version' => SCHEMA_VERSION, 'units' => 'm', 'nodes' => nodes,
-          'metrics' => assise.merge('site_face_count' => count_faces(nodes), 'door_gap_m' => gap, 'buried_opening_count' => buried)
+          'metrics' => assise.merge('site_face_count' => count_faces(nodes), 'door_gap_m' => gap, 'buried_opening_count' => buried, 'embankment_reach_m' => earthwork[:reach_m])
         }
       end
       private_class_method :build

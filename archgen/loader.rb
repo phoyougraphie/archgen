@@ -37,6 +37,7 @@ module Archgen
       core/site_plan_validator
       core/plan_projection
       core/geometry_engine
+      geometry/embankment_builder
       geometry/site_planner
       composition
     ].freeze

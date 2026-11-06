@@ -23,6 +23,8 @@ class EmbeddedDataTest < Minitest::Test
   def test_materials_match_reference
     assert_equal File.binread(repo_path('examples', 'materials.v1.json')),
                  File.binread(repo_path('archgen', 'styles', 'materials', 'materials.v1.json'))
+    assert_equal File.binread(repo_path('examples', 'site_materials.v1.json')),
+                 File.binread(repo_path('archgen', 'styles', 'materials', 'site_materials.v1.json'))
   end
 
   def test_core_never_reads_files_outside_the_composition_point

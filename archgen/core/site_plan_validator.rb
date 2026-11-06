@@ -4,7 +4,7 @@ module Archgen
   module Core
     # Mêmes refus de maillage que le plan du bâtiment, sur la structure du plan d'assise.
     class SitePlanValidator < PlanValidator
-      CATEGORIES = %w[site platform plinth].freeze
+      CATEGORIES = %w[site platform plinth embankment].freeze
 
       def call
         return @out unless header_ok?
