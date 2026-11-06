@@ -7,10 +7,10 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — V0.1 livrable : tous les tickets sont faits. Le RBZ 0.1.0 est installé et actif dans son SketchUp 2026 ; l'ancienne copie de dev est dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01 à D-06. Suite possible après J5 : EXT-10 et EXT-07. (→ docs/recette/V0.1.md)
+  - Prochaine action — AG-021 : réglages, grille et assise, en noyau pur (contrat prêt). V0.1 livrable : RBZ 0.1.0 installé et actif dans son SketchUp 2026 ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
-  - Décisions ouvertes D-03 à D-06 — Après J5. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé), terrain intact ou remodelé (intact d'abord recommandé), ordre : terrain puis rue recommandé. (→ docs/DECISIONS.md)
+  - Décisions ouvertes D-03 et D-04 — Avant EXT-07. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé). D-05 et D-06 tranchées : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
   - Mesures H11 — SketchUp 26.2.243, Ryzen 7 5800H, p95 : plan Haussmann 12×9 13 à 71 ms (cible 150 ms) ; écriture LOD 1 52 à 161 ms (cible 2 s) ; 24×18 Structural 454 ms en générique, 921 ms en Toulousain (cible 5 s) ; 20 régénérations +0,89 Mo (plafond 10 Mo), cadres stables. Plus grand plan accepté : environ 5,5 s, hors contrat. (→ docs/recette/H11.md)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; macOS et SketchUp 2024/2025 hors cible V0.1. (→ docs/MATRICE_POSTE.md)
   - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
@@ -34,6 +34,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 H12 — Réussi vers Blender 5.2 sans interface : écart nul sur W, D, H-toit, 148 baies traversantes. L'OBJ n'a pas d'unité : units 'model' donne un facteur 1 000 dans le gabarit Architecture en millimètres, exporter en 'm'. Accents remplacés par _ dans les noms de matériaux. (→ docs/recette/H12.md)
     - 2026-11-06 Cible réduite — Choix du propriétaire : Windows et SketchUp 2026 seulement, AG-019 débloqué. (→ docs/DECISIONS.md)
     - 2026-11-06 AG-020 — RBZ 0.1.0 installé, H01 à H12 rejoués sans échec. Bascule du Gestionnaire non conservée au redémarrage sur ce poste, alors que check/uncheck en Ruby l'est ; fermer SketchUp normalement, une fermeture forcée perd l'état. Sketchup.quit peut ramener à l'accueil sans quitter. Ne pas cliquer le gabarit d'accueil avant 28 s. Viser les boutons du panneau d'après une capture : ils bougent avec l'aperçu. (→ docs/recette/V0.1.md)
+    - 2026-11-06 EXT-10 préparé — D-05 et D-06 tranchées. Sonde raytest : altitude exacte, relance sous obstacle sans blocage, trou et masqué = nil, 0,84 ms par rayon, d'où un relevé sur demande au pas de 2 m. Terrain intact : plateforme au point haut par défaut, déblai annoncé mais non montré. Assise appliquée à une racine déjà placée. (→ docs/TERRAIN_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -70,7 +71,15 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-018 Sécurité et charge — test/contract/security_test.rb, configurations jusqu'aux bornes, sonde test/host/h11.rb. U10, U12, H06, H07 en LOD 1 et H11 réussis, toutes cibles tenues. (→ docs/recette/H11.md)
     - [fait] AG-019 Export et compatibilité — Cible réduite à Windows et SketchUp 2026 (ADR-26). H12 réussi vers Blender, OBJ en mètres. H01 à H10 prouvés sur 26.2.243, chacun sur le code de son époque : le rejeu sur le RBZ final est à faire en AG-020. (→ docs/recette/H12.md)
     - [fait] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. Installé par le Gestionnaire, H01 à H12 rejoués sur ce RBZ, P01 à P09 démontrées. Réserves : profil non vierge, état du Gestionnaire non conservé. (→ docs/recette/V0.1.md)
-  - J6+ Extensions — Après J5 seulement, EXT-01 à 10 ; voir branche Extensions.
+  - J6 Terrain d'un bâtiment — Assise sur terrain réel, terrain intact, RBZ 0.2.0. AG-021 à 026. (→ docs/TERRAIN_CONTRACT.md)
+    - [afaire] AG-021 Réglages, grille et assise — Noyau pur, fixtures, plateforme, refus. U13. Dép. AG-020.
+    - [afaire] AG-022 Soubassement et plancher — SitePlan, validateur, porte enterrée ou haute. U14. Dép. AG-021.
+    - [afaire] AG-023 Talus — Pied de talus, angles, catalogue séparé. U15. Dép. AG-022.
+    - [afaire] AG-024 Relevé dans SketchUp — Terrain retenu, obstacles, trous, sans écriture. H13. Dép. AG-021.
+    - [afaire] AG-025 Écrire et persister l'assise — Z de la racine, archgen.site, une entrée d'Annuler. H13. Dép. AG-023, 024.
+    - [afaire] AG-026 Panneau terrain et RBZ 0.2.0 — Aperçu, confirmation, guide, H01 à H14. Dép. AG-025.
+    - [afaire] AG-027 Étagement par parcelle — Après EXT-07. Dép. AG-026.
+  - J7+ Extensions — Après J5 seulement, EXT-01 à 09 ; EXT-07 en premier (ADR-27) ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
@@ -116,6 +125,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-07 — Aperçu 2D en dialogue, sans écriture.
     - ADR-08 — Cible initiale 2024–2026, Windows et macOS, remplacée par ADR-26.
     - ADR-26 — Cible V0.1 : Windows et SketchUp 2026 ; seule la combinaison testée est annoncée ; pas de refus au chargement ailleurs.
+    - ADR-27 — D-05 et D-06 : terrain intact ; assise d'un bâtiment seul, puis EXT-07, puis étagement.
+    - ADR-28 — Assise sur racine existante, plateforme au point haut par défaut, format séparé, terrain désigné.
     - ADR-09 — API minimale, géométrie locale, pas de purge globale.
     - ADR-10 — Migrations de format distinctes des changements de règles.
     - ADR-11 — Code E_PLAN pour tout invariant de plan violé.
@@ -208,6 +219,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U10 — 259 cellules, 218 faces Shell, 709 Structural ; limites exactes et 100 configs pseudo-aléatoires.
     - U11 — 3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.
     - U12 — Pont adverse, faux writer, panne avant/après swap.
+    - U13 — Terrain : réglages, grille, plateforme, relief limite. À faire en AG-021.
+    - U14 — Soubassement et plancher, plan_digest inchangé. À faire en AG-022.
+    - U15 — Talus, 100 terrains pseudo-aléatoires. À faire en AG-023.
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
@@ -221,6 +235,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H10 — Double clic, confirmation annulée puis refaite, observateurs, expiration, document. Réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
     - H11 — Mesures et 20 régénérations. Réussi sur Windows / 26.2.243. (→ docs/recette/H11.md)
     - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
+    - H13 — Terrain : relevé, assise, une entrée d'Annuler, terrain intact. À faire en AG-024 et AG-025.
+    - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. À faire en AG-026.
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
   - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.
@@ -232,4 +248,4 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. (→ docs/RUE_ILOT_TERRAIN.md)
   - EXT-08 Quartier — Densité, seeds par parcelle.
   - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
-  - EXT-10 Terrain et terrassement — Terrain incliné ou accidenté : relevé d'altitudes, plateforme, déblai/remblai, soubassement, talus ; étagement par parcelle avec EXT-07. (→ docs/RUE_ILOT_TERRAIN.md)
+  - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)

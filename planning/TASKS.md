@@ -25,4 +25,18 @@ Chaque bloc est un ticket importable. Dépendances = prérequis à valider. Les 
 | **AG-019 — Recette export et compatibilité** | AG-017 | Cible Windows et SketchUp 2026 (ADR-26), versions réellement testées ; export d'un Shell LOD 0 vers un outil choisi. | H01–H10 et H12 sur cette cible ; rapport cotes, orientations, matériaux, format/édition ; ne pas annoncer une plateforme non vérifiée. |
 | **AG-020 — Produire le RBZ V0.1** | AG-018, AG-019 | Paquet reproductible, journal de version, guide utilisateur, rapport de recette. | RBZ installé depuis un profil propre, fonctionnalités P01–P09 démontrées, recettes H01–H12 rejouées sur ce RBZ, limitations documentées ; contrôle final J5. |
 
+## J6 — Terrain d'un bâtiment (EXT-10)
+
+Contrat : [TERRAIN_CONTRACT](../docs/TERRAIN_CONTRACT.md). Ordre fixé par ADR-27.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-021 — Réglages, grille et assise** | AG-020 | Schéma `site` V1, grille de relevé, fixtures (pente, creux, trou), plateforme, indicateurs et refus ; noyau pur. | Réglages et grilles adverses refusés avec chemin ; `high` et `mean` exacts ; relief limite et premier dépassement. U13. |
+| **AG-022 — Soubassement et plancher** | AG-021 | SitePlan, bandes, plancher, validateur, budgets, porte enterrée ou haute. | Géométrie et normales conformes ; empreinte déterministe ; `plan_digest` inchangé pour toutes les fixtures. U14. |
+| **AG-023 — Talus** | AG-022 | Rayons, pied de talus, angles en éventail, catalogue `site_materials.v1.json`. | Pente exacte, pied introuvable refusé, 100 terrains pseudo-aléatoires reproductibles. U15. |
+| **AG-024 — Relevé dans SketchUp** | AG-021 | Port de relevé, terrain retenu, obstacles, trous, repère de la racine ; aucune écriture. | Fait mesuré par le contrat rejoué sur le produit ; temps publié ; aucune trace d'Annuler. H13, partie relevé. |
+| **AG-025 — Écrire et persister l'assise** | AG-023, AG-024 | Définition avec assise, Z de la racine, `archgen.site`, garde de transaction, retrait, version future. | Une entrée d'Annuler, terrain intact, pannes sans résidu, terrain changé refusé, aller-retour SKP, bâtiment V0.1 inchangé. H13. |
+| **AG-026 — Panneau terrain et RBZ 0.2.0** | AG-025 | Section Terrain, aperçu, confirmation, assise périmée, guide, journal, RBZ. | Valeurs issues du plan, parcours complet, charge sur 100 000 faces ; H01 à H14 rejouées sur le RBZ. H14. |
+| **AG-027 — Étagement par parcelle** | AG-026, EXT-07.5 | Une assise par parcelle le long d'une rue en pente, raccord par soubassement. | À détailler à l'ouverture, après le contrat d'EXT-07. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

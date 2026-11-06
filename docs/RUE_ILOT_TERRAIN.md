@@ -46,6 +46,8 @@ Règles proposées pour les ouvertures, à valider :
 
 ## 2. Adaptation au terrain et terrassement (EXT-10)
 
+**Contrat :** [TERRAIN_CONTRACT](TERRAIN_CONTRACT.md) ; il prime sur cette section, qui garde le besoin d'origine. Il retient notamment la plateforme au point haut par défaut (ADR-28) et le terrain intact (ADR-27).
+
 **Résultat attendu.** L'outil s'adapte aux terrains accidentés : si le sol est incliné ou irrégulier sous une construction, sa base est terrassée.
 
 **Fonctionnement proposé.**
@@ -60,14 +62,14 @@ Règles proposées pour les ouvertures, à valider :
 - L'aperçu indique les hauteurs de déblai et de remblai avant toute écriture.
 - Au-delà d'une dénivelée maximale (limite à fixer), la construction est refusée avec un diagnostic localisé, sans adaptation silencieuse.
 - Terrain absent, troué ou ambigu : refus localisé, sans altitude inventée. Générer sur un plan horizontal reste un choix explicite.
-- Un Annuler ramène le terrain à l'identique, y compris s'il a été modifié (D-05).
+- Le terrain n'est jamais modifié (ADR-27) : un Annuler ne concerne que le bâtiment.
 - Pas d'étude géotechnique : le terrassement est une représentation, comme Structural n'est pas un calcul porteur.
 
 **Dépendances.** Le terrain concerne d'abord un bâtiment seul, puis EXT-07 l'applique par parcelle. L'import de terrain géospatial reste en EXT-09 et n'est pas nécessaire : un terrain déjà présent dans le modèle suffit.
 
 ## 3. Décisions à trancher
 
-Reprises dans [DECISIONS](DECISIONS.md) : D-03 (angles), D-04 (forme des ouvertures), D-05 (terrain modifié ou non), D-06 (ordre de réalisation).
+Reprises dans [DECISIONS](DECISIONS.md) : D-03 (angles) et D-04 (forme des ouvertures) restent ouvertes ; D-05 et D-06 sont tranchées par ADR-27.
 
 ## 4. Découpage prévisionnel
 
@@ -80,6 +82,4 @@ Chaque ticket apporte son contrat, ses tests et sa preuve hôte. Numérotation e
 | EXT-07.3 Mitoyenneté et angles | EXT-07.1 | Murs mitoyens, parcelles d'angle, budget d'ensemble. |
 | EXT-07.4 Ouvertures de cour | EXT-07.3, D-04 | 1 à 3 accès déterministes, refus si infaisable. |
 | EXT-07.5 Outil de tracé | EXT-07.2 | `Sketchup::Tool` au geste YSKE, aperçu dans la vue, recette hôte. |
-| EXT-10.1 Relevé et assise | J5, D-05 | Grille d'altitudes, plateforme, déblai/remblai, limites ; noyau pur. |
-| EXT-10.2 Écriture du terrassement | EXT-10.1 | Soubassement et talus, Undo, recette sur terrain réel. |
-| EXT-10.3 Terrain par parcelle | EXT-07.5, EXT-10.2 | Étagement le long d'une rue en pente. |
+| EXT-10 | J5 | Détaillé en AG-021 à AG-027 dans [TASKS](../planning/TASKS.md). |

@@ -16,6 +16,9 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U10 | Le plan neutre sans fusion compte 259 cellules candidates, 218 faces en Shell et 709 en Structural, toit compris. Tester les limites exactes et le premier dépassement en taille, faces, ouvertures et cellules ; au moins 100 configurations pseudo-aléatoires bornées, seed de suite fixée et reproduite dans les erreurs. |
 | U11 | Les trois fixtures actives ; centre des baies ouvert malgré les cadres, aucun détail LOD 0 ; absence de géométrie LOD 1 incompatible. |
 | U12 | Pont : strings HTML malicieuses, actions inconnues, données trop grandes, requêtes répétées ; faux writer : échec avant/après swap et aucun commit. |
+| U13 | Réglages `site` et grille : clés inconnues, grille non croissante, angle absent, `null`, budget et premier dépassement. Plan neutre : pente de 8 % sur 12 m, `high` donne P = max(E), `mean` la moyenne ; relief exact à 6,0 m accepté, 6,001 m refusé. |
+| U14 | SitePlan : bandes dans le plan des murs, normales, bas à terrain − 0,05 m ; aucune bande où le terrain dépasse z=0 ; plancher inséré en Structural ; porte enterrée refusée, porte haute avertie. Même grille et mêmes réglages : même `site_digest`, quel que soit l'ordre de parcours. `plan_digest` de toutes les fixtures inchangé. |
+| U15 | Talus : pente exacte sur plan incliné, pied trouvé ou `E_SITE_TOE`, éventail d'angle sans croisement, 100 terrains pseudo-aléatoires bornés avec seed reproduite ; budget. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 
@@ -33,5 +36,7 @@ Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; Sketc
 | H10 | Doubler Générer ; changer le profil, annuler la confirmation puis confirmer à nouveau sur un aperçu frais. | Une création ; annuler garde l'état ; une régénération. |
 | H11 | Exécuter mesures et 20 régénérations de référence. | CSV ou tableau avec p95, compteurs, taille SKP, versions et différences. |
 | H12 | Exporter le Shell LOD 0 dans un format effectivement disponible sur l'édition hôte, importer dans un outil de contrôle. | Note des unités et matériaux visibles, normales/baies ; écart dimensionnel ≤1 % sur W, D, H-toit après configuration d'import. |
+| H13 | Relever sur un terrain imbriqué et pivoté, avec obstacle, trou et tag masqué ; adapter un bâtiment déplacé et pivoté ; Annuler, Rétablir ; pannes ; terrain modifié entre aperçu et écriture ; enregistrer et rouvrir. | Altitudes ≤1 mm aux sommets ; une entrée d'Annuler ; empreinte des sommets du terrain identique avant et après ; PID, X, Y et rotation conservés ; refus sans résidu. |
+| H14 | Parcours complet au panneau : retenir le terrain, relever, lire les valeurs, confirmer, déplacer, relever de nouveau, retirer l'assise ; temps de relevé sur un terrain de 100 000 faces. | Valeurs identiques au plan ; relevé sans trace dans l'Annuler ; temps mesuré et publié. |
 
 Gabarit de rapport : commit et moteur ; OS, édition hôte, Ruby et matériel ; identifiant fixture ; mode/LOD ; attendu, observé, résultat, trace minimale ; motif des cas non exécutés. Cible V0.1 : Windows et SketchUp 2026 (ADR-26). Les versions non testées sont annoncées comme telles. Faire la recette dans des copies de modèles et noter les opérations reproductibles.
