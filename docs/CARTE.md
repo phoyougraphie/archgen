@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-024 : relevé dans SketchUp, première étape dans l'hôte. Le noyau du terrain est fait (AG-021 à 023). V0.1 livrable : RBZ 0.1.0 installé et actif dans son SketchUp 2026 ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
+  - Prochaine action — AG-025 : écrire et persister l'assise, une entrée d'Annuler, terrain intact. Calcul et relevé du terrain sont faits (AG-021 à 024). Version 0.2.0-dev installée dans son SketchUp 2026, le terrain n'étant pas encore au panneau ; pkg/archgen-0.1.0.rbz reste la version livrable ; ancienne copie de dev dans tmp/plugins-avant-ag020/. Restent à faire par le propriétaire : pousser sur GitHub, confirmer la sortie sur un profil vierge s'il le souhaite, trancher D-01, D-03 et D-04. (→ docs/TERRAIN_CONTRACT.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - Décisions ouvertes D-03 et D-04 — Avant EXT-07. Angles du tracé (onglet recommandé), forme des accès de cour (porche recommandé). D-05 et D-06 tranchées : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -35,6 +35,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 Cible réduite — Choix du propriétaire : Windows et SketchUp 2026 seulement, AG-019 débloqué. (→ docs/DECISIONS.md)
     - 2026-11-06 AG-020 — RBZ 0.1.0 installé, H01 à H12 rejoués sans échec. Bascule du Gestionnaire non conservée au redémarrage sur ce poste, alors que check/uncheck en Ruby l'est ; fermer SketchUp normalement, une fermeture forcée perd l'état. Sketchup.quit peut ramener à l'accueil sans quitter. Ne pas cliquer le gabarit d'accueil avant 28 s. Viser les boutons du panneau d'après une capture : ils bougent avec l'aperçu. (→ docs/recette/V0.1.md)
     - 2026-11-06 EXT-10 préparé — D-05 et D-06 tranchées. Sonde raytest : altitude exacte, relance sous obstacle sans blocage, trou et masqué = nil, 0,84 ms par rayon, d'où un relevé sur demande au pas de 2 m. Terrain intact : plateforme au point haut par défaut, déblai annoncé mais non montré. Assise appliquée à une racine déjà placée. (→ docs/TERRAIN_CONTRACT.md)
+    - 2026-11-06 H13 relevé — 26 contrôles, écart 0,0005 mm. open_application lance une seconde instance si SketchUp tourne déjà : vérifier les processus d'abord, et regarder l'écran avant de cliquer. La session Windows se verrouille après inactivité : LogonUI actif = écran inaccessible, demander au propriétaire. (→ docs/recette/H13.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -75,7 +76,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-021 Réglages, grille et assise — core/site_intake, survey_grid, site_assise ; schémas site et grille, fixtures examples/terrain. U13 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
     - [fait] AG-022 Soubassement et plancher — geometry/site_planner, core/site_plan_validator ; plan du bâtiment inchangé. U14 vert. (→ docs/TERRAIN_CONTRACT.md)
     - [fait] AG-023 Talus — geometry/embankment_builder, catalogue site_materials, plus de refus earthwork_unavailable. U15 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
-    - [afaire] AG-024 Relevé dans SketchUp — Terrain retenu, obstacles, trous, sans écriture. H13. Dép. AG-021.
+    - [fait] AG-024 Relevé dans SketchUp — adapters/sketchup/terrain_surveyor, BuildingService#survey_site. Altitudes à 0,0005 mm sur un terrain imbriqué et pivoté, aucune écriture ni ligne d'Annuler. H13, partie relevé. (→ docs/recette/H13.md)
     - [afaire] AG-025 Écrire et persister l'assise — Z de la racine, archgen.site, une entrée d'Annuler. H13. Dép. AG-023, 024.
     - [afaire] AG-026 Panneau terrain et RBZ 0.2.0 — Aperçu, confirmation, guide, H01 à H14. Dép. AG-025.
     - [afaire] AG-027 Étagement par parcelle — Après EXT-07. Dép. AG-026.
@@ -235,7 +236,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H10 — Double clic, confirmation annulée puis refaite, observateurs, expiration, document. Réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
     - H11 — Mesures et 20 régénérations. Réussi sur Windows / 26.2.243. (→ docs/recette/H11.md)
     - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
-    - H13 — Terrain : relevé, assise, une entrée d'Annuler, terrain intact. À faire en AG-024 et AG-025.
+    - H13 — Terrain : relevé réussi (26 contrôles) ; assise, une entrée d'Annuler et terrain intact à faire en AG-025. (→ docs/recette/H13.md)
     - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. À faire en AG-026.
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)

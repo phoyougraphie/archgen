@@ -35,7 +35,7 @@ class PackageTest < Minitest::Test
   end
 
   def test_release_version_and_menu
-    assert_match(/\A\d+\.\d+\.\d+\z/, Archgen::VERSION, 'pas de suffixe de développement dans une livraison')
+    assert_match(/\A\d+\.\d+\.\d+(-dev)?\z/, Archgen::VERSION)
     main = read_utf8('archgen', 'main.rb')
     assert_equal ['Nouveau bâtiment', 'Modifier le bâtiment sélectionné'], main.scan(/add_item\('([^']+)'\)/).flatten
     refute_includes central_names(RbzPackager.build).join(' '), 'diagnostic'

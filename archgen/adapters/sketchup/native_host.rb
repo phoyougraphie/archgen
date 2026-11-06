@@ -12,6 +12,10 @@ module Archgen
           ::Geom::Point3d.new(x, y, z)
         end
 
+        def vector(x, y, z)
+          ::Geom::Vector3d.new(x, y, z)
+        end
+
         def face?(entity)
           entity.is_a?(::Sketchup::Face)
         end

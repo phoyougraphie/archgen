@@ -49,6 +49,7 @@ module Archgen
       adapters/sketchup/geometry_writer
       adapters/sketchup/component_repository
       adapters/sketchup/transaction_guard
+      adapters/sketchup/terrain_surveyor
       adapters/sketchup/building_service
       ui/target_tokens
       ui/confirmation_tokens

@@ -8,6 +8,7 @@ module Archgen
       BuildingSummary = Struct.new(:persistent_id, :building_uuid, :revision, :name, :plan_digest, :metrics, :target, keyword_init: true)
       LoadedBuilding = Struct.new(:record, :config, :target, keyword_init: true)
       Preview = Struct.new(:config, :plan, :projection, :plan_digest, :base, keyword_init: true)
+      SiteSurvey = Struct.new(:settings, :grid, :assise, :survey_digest, keyword_init: true)
 
       # Résout, calcule, vérifie le contexte et tient la transaction. Seul propriétaire
       # de l'opération : writer, ressources et dépôt n'en démarrent jamais.
@@ -25,7 +26,7 @@ module Archgen
         end
 
         def initialize(registry:, intake:, materials:, material_revision:, allow_internal: false, host: NativeHost,
-                       writer: nil, repository: nil, uuid: -> { SecureRandom.uuid })
+                       writer: nil, repository: nil, surveyor: nil, uuid: -> { SecureRandom.uuid })
           @registry = registry
           @intake = intake
           @materials = materials
@@ -34,6 +35,7 @@ module Archgen
           @host = host
           @writer = writer || GeometryWriter.new(host: host)
           @repository = repository || ComponentRepository.new(host: host)
+          @surveyor = surveyor || TerrainSurveyor.new(host: host)
           @uuid = uuid
           @guard = TransactionGuard.new
         end
@@ -113,10 +115,50 @@ module Archgen
           Core::Result.ok(written.value, prepared.diagnostics)
         end
 
+        # La sélection courante devient le terrain retenu. Aucune écriture.
+        def retain_terrain(model:)
+          context = context_problem(model)
+          context ? Core::Result.fail([context]) : @surveyor.retain(model)
+        end
+
+        # Relève le terrain sous la racine ciblée et calcule l'assise. Aucune écriture, aucune
+        # opération : le relevé peut être refait autant que nécessaire avant de confirmer.
+        def survey_site(model:, target:, terrain:, site:)
+          loaded = verify_target(model, target)
+          return loaded unless loaded.ok?
+
+          settings = site_intake.settings(site)
+          return settings unless settings.ok?
+
+          footprint = loaded.value.config.to_h['footprint']
+          axes = Core::SurveyGrid.plan(width_m: footprint['width_m'], depth_m: footprint['depth_m'], settings: settings.value)
+          return axes unless axes.ok?
+
+          surveyed = @surveyor.survey(model, terrain, loaded.value.record.instance, axes.value)
+          return surveyed unless surveyed.ok?
+
+          site_survey(surveyed.value, settings.value, footprint)
+        end
+
         private
 
         def stale(reason, **params)
           Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/target', reason: reason, **params)])
+        end
+
+        def site_intake
+          @site_intake ||= Composition.site_intake
+        end
+
+        def site_survey(tree, settings, footprint)
+          size = { width_m: footprint['width_m'], depth_m: footprint['depth_m'] }
+          grid = site_intake.grid(tree, settings: settings, **size)
+          return grid unless grid.ok?
+
+          assise = Core::SiteAssise.call(grid.value, settings, **size)
+          return assise unless assise.ok?
+
+          Core::Result.ok(SiteSurvey.new(settings: settings, grid: grid.value, assise: assise.value, survey_digest: grid.value.digest))
         end
 
         def load_record(model, record)

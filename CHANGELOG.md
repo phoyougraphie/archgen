@@ -1,5 +1,9 @@
 # Journal des versions
 
+## 0.2.0-dev
+
+En cours : adaptation au terrain ([contrat](docs/TERRAIN_CONTRACT.md)). Rien n'est encore livré aux utilisateurs.
+
 ## 0.1.0
 
 Première version, testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, catalogue de matériaux 1. Le rapport de recette est dans [docs/recette/V0.1.md](docs/recette/V0.1.md).

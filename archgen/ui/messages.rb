@@ -26,7 +26,7 @@ module Archgen
         '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
         '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
         '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
-        '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
+        '/site/terrain' => 'Terrain', '/site/placement' => 'Placement', '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
       }.freeze
 
       REASONS = {
@@ -105,6 +105,15 @@ module Archgen
         'survey_points' => 'Ce relevé demanderait %{value} points, pour une limite de %{limit}. Augmentez le pas du relevé.',
         'grid_axes' => 'Le relevé ne correspond pas à ce bâtiment. Relevez de nouveau.',
         'grid_shape' => 'Le relevé du terrain est incomplet. Relevez de nouveau.',
+        'terrain_selection' => 'Sélectionnez un seul groupe ou composant comme terrain.',
+        'terrain_kind' => 'Le terrain doit être un groupe ou un composant. Groupez ses faces.',
+        'terrain_nested' => 'Ce terrain est dans un groupe ou un composant. Sortez-le au niveau du modèle.',
+        'terrain_is_building' => 'Un bâtiment ARCHGEN ne peut pas servir de terrain.',
+        'terrain_hidden' => 'Ce terrain est masqué. Affichez-le pour le relever.',
+        'terrain_missing' => 'Le terrain retenu n’existe plus. Retenez-en un autre.',
+        'terrain_other_document' => 'Le terrain retenu appartient à un autre document. Retenez-en un dans celui-ci.',
+        'not_horizontal' => 'Ce bâtiment est incliné. Rétablissez son axe vertical pour l’adapter au terrain.',
+        'too_many_obstacles' => 'Trop d’objets au-dessus du terrain en %{count} points. Masquez-les ou déplacez le bâtiment.',
         'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
         'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',

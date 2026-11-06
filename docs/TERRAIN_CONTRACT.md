@@ -71,21 +71,21 @@ Faits mesurés par `test/host/terrain_spike.rb` sur 26.2.243 :
 
 | Fait mesuré | Règle de l'adaptateur |
 |---|---|
-| `raytest` donne l'altitude exacte sur un terrain imbriqué et pivoté (écart 0,0 m aux sommets) | Le rayon vertical part au-dessus de la boîte du terrain |
+| `raytest` donne l'altitude exacte sur un terrain imbriqué et pivoté (écart 0,0 m aux sommets) | Le rayon vertical part 1 m au-dessus de la boîte du terrain : ce qui est plus haut ne compte pas |
 | Le dernier élément du chemin est une `Face` ou une `Edge` | Les deux sont acceptés : seul `chemin[0]` désigne le terrain |
-| Un obstacle arrête le rayon ; relancer depuis le point d'impact le fait traverser sans blocage | Si `chemin[0]` n'est pas le terrain, relancer, au plus 16 fois, puis `E_SITE_SURVEY` |
+| Un obstacle arrête le rayon ; relancer depuis le point d'impact le fait traverser sans blocage | Si `chemin[0]` n'est pas le terrain, relancer, au plus 64 fois, puis `E_SITE_SURVEY` avec `too_many_obstacles` : un bâtiment Structural de 15 niveaux compte déjà une trentaine de faces sur un rayon |
 | Un trou renvoie `nil` | `null` dans la grille |
 | Terrain ou tag masqué : `nil` avec `wysiwyg` vrai | `wysiwyg` reste vrai ; terrain invisible = refus, jamais de géométrie masquée |
 | Une face inversée reste touchée | L'orientation du terrain est sans effet |
 | 0,84 ms par rayon sur 7 200 faces | Relevé sur demande seulement, jamais à chaque frappe |
 
-**Le terrain est désigné par l'utilisateur :** un seul `Group` ou `ComponentInstance` de niveau racine, sélectionné puis retenu dans le panneau. Pas de déduction : avec des arbres ou un autre bâtiment, deviner reviendrait à inventer une altitude. Des faces libres sont refusées, avec le conseil de les grouper. Terrain absent ou trop petit : `E_SITE_TERRAIN`.
+**Le terrain est désigné par l'utilisateur :** un seul `Group` ou `ComponentInstance` de niveau racine, sélectionné puis retenu dans le panneau. Pas de déduction : avec des arbres ou un autre bâtiment, deviner reviendrait à inventer une altitude. Des faces libres sont refusées, avec le conseil de les grouper. Un bâtiment ARCHGEN, une entité imbriquée ou masquée sont refusés aussi. Terrain absent ou d'un autre document : `E_SITE_TERRAIN` sur `/site/terrain`. Terrain trop petit : ses nœuds sont à `null`, donc `E_SITE_SURVEY`. Rien n'est écrit sur le terrain : la référence retenue vit dans la session, et sa persistance relève de l'écriture de l'assise.
 
 ## Écriture et persistance
 
 - **Transaction :** une action = une opération « ARCHGEN : adapter au terrain ». Le relevé est refait avant d'écrire ; si son empreinte diffère de celle de l'aperçu, `E_TARGET_STALE` avec `terrain_changed`.
 - **Définition :** fraîche comme toute régénération, avec le plan du bâtiment et le plan d'assise. Nouveau tag « ARCHGEN Terrassement » sur les conteneurs d'assise.
-- **Placement :** seul le Z de la racine change, pour valoir P ; X, Y et la rotation restent. C'est la seule exception à « la transformation est conservée ». Refus `E_SITE_TRANSFORM` si la racine n'est pas horizontale : une rotation hors de l'axe Z rendrait la grille fausse.
+- **Placement :** seul le Z de la racine change, pour valoir P ; X, Y et la rotation restent. C'est la seule exception à « la transformation est conservée ». Refus `E_SITE_TRANSFORM` sur `/site/placement`, dès le relevé, si la racine n'est pas horizontale : une rotation hors de l'axe Z rendrait la grille fausse.
 - **Attributs :** dictionnaire séparé `archgen.site` sur la racine : `site_version`, `site_json`, `survey_digest`, `site_digest`, `terrain_pid`, `placement_xy_m`. La grille n'est pas conservée : elle dépasserait 64 Kio. Ces attributs entrent dans le relevé d'intégrité de `TransactionGuard` et dans la relecture finale.
 - **Assise périmée :** ni observateur de terrain ni relevé automatique. Le panneau compare le placement enregistré à l'actuel et propose « Relever de nouveau ». Un terrain modifié n'est vu qu'au relevé suivant, et cette limite est écrite dans le guide.
 - **Retirer l'assise :** action explicite, nouvelle définition sans assise, dictionnaire retiré, Z inchangé.
