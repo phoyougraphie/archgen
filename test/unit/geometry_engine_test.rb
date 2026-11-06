@@ -233,6 +233,61 @@ class GeometryEngineTest < Minitest::Test
     assert_operator outcomes[:ok], :>=, 40, "trop peu de plans valides : #{outcomes} (suite=#{SUITE_SEED})"
   end
 
+  # --- U10 : jusqu'aux bornes du schéma, LOD 1 et profils actifs
+
+  def wide_blocks(rng)
+    count = rng.rand(1..15)
+    width = rng.rand(6..60).to_f
+    front = rng.rand(1..[12, (width / 2).floor].min)
+    {
+      seed: rng.rand(0..0xFFFF_FFFF), mode: %w[shell structural].sample(random: rng), lod: 1,
+      footprint: { 'width_m' => width, 'depth_m' => rng.rand(6..60).to_f },
+      levels: { 'count' => count, 'height_m' => rng.rand(26..40) * 0.1 },
+      facade: { 'front_bays' => front, 'side_bays' => rng.rand(0..12), 'entry_bay' => 0 }
+    }
+  end
+
+  def test_pseudo_random_configs_up_to_the_schema_bounds
+    rng = Random.new(SUITE_SEED + 1)
+    known = %w[E_OPENING_CLEARANCE E_ROOF_GEOMETRY E_BUDGET E_SCHEMA]
+    accepted = 0
+    %w[haussmann-12x9 toulousain brutalist].cycle.first(24).each_with_index do |fixture, i|
+      blocks = wide_blocks(rng)
+      context = "suite=#{SUITE_SEED + 1} tirage=#{i} #{fixture} config=#{blocks.inspect}"
+      data = config(fixture, **blocks)
+      hard = ConstraintValidator.call(data)
+      result = hard.empty? ? GeometryEngine.generate(data, materials: TestData.materials) : Result.fail(hard)
+      unless result.ok?
+        result.errors.each { |d| assert_includes known, d.code, context }
+        next
+      end
+
+      accepted += 1
+      assert_empty Budget.check(result.value['metrics']), context
+      assert_equal GeometryEngine.plan_digest(result.value), GeometryEngine.plan_digest(GeometryEngine.generate(data, materials: TestData.materials).value), context
+    end
+    assert_operator accepted, :>=, 8, "trop peu de plans valides (suite=#{SUITE_SEED + 1})"
+  end
+
+  # Le schéma borne le pire cas loin des plafonds : aucun détail caché ne s'en approche.
+  def test_largest_accepted_plan_stays_under_every_budget
+    data = plan('toulousain', mode: 'structural', lod: 1, **max_openings_config)
+    metrics = data['metrics']
+    assert_equal 720, metrics['opening_count']
+    assert_operator metrics['unique_face_count'], :<, Limits::MAX_UNIQUE_FACES
+    assert_operator metrics['expanded_face_count'], :<, Limits::MAX_EXPANDED_FACES
+    assert_operator metrics['wall_cell_count'], :<, Limits::MAX_WALL_CELLS
+    assert_operator metrics['detail_definition_count'], :<, Limits::MAX_DETAIL_DEFINITIONS
+  end
+
+  def test_first_overflow_in_a_real_config_is_refused
+    tall = config('rect-neutre-structural', levels: { 'count' => 15, 'height_m' => 4.01 })
+    problems = ConstraintValidator.call(tall)
+    problems = GeometryEngine.generate(tall, materials: TestData.materials).errors if problems.empty?
+    assert_equal ['E_BUDGET'], problems.map(&:code).uniq
+    assert_equal '/levels', problems.first.path
+  end
+
   def structural_walls_closed(data, context)
     Geo.find_nodes(data['nodes'], 'wall').each do |node|
       assert_operator Geo.signed_volume(node['primitive']), :>, 0.0, context

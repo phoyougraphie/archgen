@@ -8,15 +8,14 @@
 #   (Édition > Annuler ; le menu doit revenir à la sentinelle)
 #   ArchgenFaultProbe.h07_targets ; ArchgenFaultProbe.h07_document
 # Les pannes passent par les ports du service : le produit ne contient aucun crochet.
+# ArchgenFaultProbe.lod = 1 rejoue tout en LOD 1 ; test/host/h11.rb enchaîne ce rejeu.
 module ArchgenFaultProbe
   REPO = File.expand_path('../..', __dir__)
   TMP = File.join(REPO, 'tmp')
   SP = Archgen::Adapters::SketchUp
   Injected = Class.new(StandardError)
-  DRAFT = { 'schema_version' => 1, 'profile' => { 'id' => 'generic' }, 'name' => 'Cible', 'mode' => 'structural' }.freeze
   # zinc et calcaire n'existent pas encore : la tentative crée de vraies ressources à retirer.
   EDIT = { 'schema_version' => 1, 'footprint' => { 'width_m' => 15.0 }, 'materials' => { 'roof' => 'zinc', 'wall' => 'limestone' } }.freeze
-  NEW_BUILDING = DRAFT.merge('name' => 'Tentative', 'materials' => { 'roof' => 'zinc', 'wall' => 'limestone' }).freeze
 
   # Panne après les premières pièces écrites.
   class FaultAfterPieces < SP::GeometryWriter
@@ -84,9 +83,33 @@ module ArchgenFaultProbe
     end
   end
 
+  # Panne sur la pose d'un cadre partagé : la définition vient d'être créée (LOD 1).
+  class FaultOnFrame < SP::GeometryWriter
+    private
+
+    def write_instance(*)
+      super
+      raise Injected, 'panne à la pose d’un cadre'
+    end
+  end
+
   @lines = []
+  @lod = 0
 
   module_function
+
+  # ArchgenFaultProbe.lod = 1 rejoue les mêmes pannes et cibles en LOD 1 (AG-018).
+  def lod=(value)
+    @lod = value
+  end
+
+  def draft
+    { 'schema_version' => 1, 'profile' => { 'id' => 'generic' }, 'name' => 'Cible', 'mode' => 'structural', 'lod' => @lod }
+  end
+
+  def new_building
+    draft.merge('name' => 'Tentative', 'materials' => { 'roof' => 'zinc', 'wall' => 'limestone' })
+  end
 
   def service(**ports)
     SP::BuildingService.default(allow_internal: true, **ports)
@@ -133,7 +156,7 @@ module ArchgenFaultProbe
 
   def h06_prepare
     @lines << "H06 #{Sketchup.version} Ruby #{RUBY_VERSION} #{Sketchup.platform}"
-    result = service.create(model: model, draft: DRAFT)
+    result = service.create(model: model, draft: draft)
     check('Cible créée', result.ok?, result.errors.map(&:to_h).inspect)
     @a = model.find_entity_by_persistent_id(result.value.persistent_id)
     model.selection.clear
@@ -146,8 +169,12 @@ module ArchgenFaultProbe
     flush('h06-preparation')
   end
 
+  def frame_faults
+    @lod == 1 ? { 'Écriture : à la pose d’un cadre partagé' => { writer: FaultOnFrame.new } } : {}
+  end
+
   def faults
-    {
+    frame_faults.merge(
       'Écriture : après la première pièce' => { writer: FaultAfterPieces.new(1) },
       'Écriture : après trois pièces' => { writer: FaultAfterPieces.new(3) },
       'Écriture : au marquage de la définition' => { writer: FaultOnMark.new },
@@ -155,15 +182,15 @@ module ArchgenFaultProbe
       'Métadonnées : avant la première écriture' => { repository: FaultBeforeMetadata.new },
       'Métadonnées : au milieu de l’écriture' => { repository: FaultMidMetadata.new },
       'Métadonnées : relecture finale' => { repository: FaultOnReadBack.new }
-    }
+    )
   end
 
   def creation_faults
-    {
+    frame_faults.transform_keys { |label| label.sub('Écriture', 'Création') }.merge(
       'Création : après la première pièce' => { writer: FaultAfterPieces.new(1) },
       'Création : à l’insertion' => { repository: FaultOnInsert.new },
       'Création : au milieu des métadonnées' => { repository: FaultMidMetadata.new }
-    }
+    )
   end
 
   def h06_faults
@@ -178,12 +205,18 @@ module ArchgenFaultProbe
     end
     creation_faults.each do |label, ports|
       before = record(@a)
-      result = service(**ports).create(model: model, draft: NEW_BUILDING)
+      result = service(**ports).create(model: model, draft: new_building)
       check("#{label} : refusé", !result.ok? && result.errors.first.code == 'E_WRITE', result.errors.map { |d| d.params['reason'] }.join(','))
       after = record(@a)
       check("#{label} : enregistrements identiques", before == after, diff(before, after))
     end
     flush('h06-pannes')
+  end
+
+  # À appeler après un Annuler natif : si les pannes avaient laissé une ligne, la sentinelle resterait.
+  def h06_sentinel_was_last
+    check('Un Annuler après les pannes retire la sentinelle', @a.get_attribute('autre.extension', 'cle').nil?)
+    flush('h06-sentinelle')
   end
 
   # Après toutes les pannes, l'écriture réelle doit encore fonctionner normalement.
@@ -204,7 +237,7 @@ module ArchgenFaultProbe
   end
 
   def fresh_target(name)
-    created = service.create(model: model, draft: DRAFT.merge('name' => name))
+    created = service.create(model: model, draft: draft.merge('name' => name))
     instance = model.find_entity_by_persistent_id(created.value.persistent_id)
     model.selection.clear
     model.selection.add(instance)
@@ -271,7 +304,7 @@ module ArchgenFaultProbe
     edit_context(group) do
       before = record(instance)
       expect_refusal('Édition d’un groupe en cours : régénérer', %w[nested_edit_context], before: before, instance: instance) { probe.regenerate(model: model, target: target, draft: EDIT) }
-      expect_refusal('Édition d’un groupe en cours : créer', %w[nested_edit_context], before: before, instance: instance) { probe.create(model: model, draft: DRAFT) }
+      expect_refusal('Édition d’un groupe en cours : créer', %w[nested_edit_context], before: before, instance: instance) { probe.create(model: model, draft: draft) }
     end
 
     h07_versions(probe)
