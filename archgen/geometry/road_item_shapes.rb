@@ -23,6 +23,8 @@ module Archgen
                  when 'bollard' then [lathe([[0, 0], [0.05, 0], [0.05, height], [0, height]], 'steel')]
                  when 'pole' then catenary_pole(height)
                  when 'post' then [box(-crown / 2, crown / 2, -crown / 2, crown / 2, 0, height, variant)]
+                 # Traverse : 2,60 m en travers, 0,25 m le long, 0,15 m d'épaisseur dont 2 cm hors du ballast.
+                 when 'sleeper' then [box(-0.125, 0.125, -1.3, 1.3, -height + 0.02, 0.02, variant)]
                  else raise ArgumentError, "Objet sans forme : #{kind}"
                  end
         solids.each_with_index.map do |primitive, i|

@@ -54,6 +54,14 @@ Hors plage ou type inconnu : `E_ROAD_BAND` sur `/bands/<i>/…`. **Bordure :** e
 
 **Rails :** écartement standard de 1,435 m, centré sur la bande. Plusieurs voies parallèles sont plusieurs bandes. D'autres écartements, comme le métrique, sont hors de cette version.
 
+**Rails dans le plan (AG-041, U26) :** deux rails par bande, à ± 0,7175 m de son milieu, suivis le long de l'axe comme toute ligne de pose : l'écartement reste exact en droite, en courbe et à l'onglet.
+
+- **Voie mixte et plateforme tram :** champignon de 0,07 m **dans le plan de la surface**, en bande de matière `road/rail_steel` qui partage les sommets de la chaussée. Aucune face n'est superposée à une autre, ce qui évite le scintillement de deux faces coplanaires dans SketchUp. Pas de gorge.
+- **Voie sur ballast :** chaque rail est un profilé fermé de 0,07 × 0,17 m, dessus à la cote de la coupe (niveau du ballast + 0,17 m). Les traverses font 2,60 × 0,25 × 0,15 m, au milieu de la bande, tous les 0,60 m à partir de 0,30 m ; leur dessus dépasse le ballast de 2 cm. Elles forment une définition partagée, `sleeper`, sous un groupe `road/sleepers`.
+- **Plafond, `road_sleepers` :** 20 000 traverses (départ), à part des 5 000 objets : une voie double de 2 km en compte 6 666.
+- **Matériau :** `road/rail_steel`, distinct de `road/rail`, qui est la bande de ballast.
+- **Métriques :** `rail_count` (rails sur ballast), `sleeper_count` ; `item_count` compte toutes les instances, traverses comprises.
+
 ### Éléments (`road_items.v1.json`)
 
 Un élément appartient à une bande. Ses positions en travers se répartissent à parts égales dans la bande : avec n éléments, le j-ième est à `(j + 1) / (n + 1)` de sa largeur.

@@ -7,18 +7,27 @@ module Archgen
     module RoadRibbons
       PLANAR_SPLIT_M = 1e-6
 
+      # Champignon d'un rail au ras de la surface (voie mixte, plateforme tram).
+      RAIL_HEAD_M = 0.07
+      FLUSH_RAILS = %w[embedded platform].freeze
+      # Distinct de la bande « rail » (ballast), dont la clé est road/rail.
+      RAIL_MATERIAL = 'road/rail_steel'
+
       module_function
 
       # Ligne de coupe continue, de gauche à droite : [[x, z], [x, z], matériau].
       def cross_line(section)
         bands = section['bands']
         curbs = section['curbs']
+        flush = section.fetch('rails', []).select { |r| FLUSH_RAILS.include?(r['kind']) }
         out = []
         last = nil
         bands.each do |band|
           start = band['surface'].first
           out << riser(last, start, bands, band, curbs) if last && (last[1] - start[1]).abs > 1e-9
-          split(band, curbs).each_cons(2) do |a, b|
+          points = split(band, curbs)
+          flush.select { |r| r['band'] == band['index'] }.each { |r| insert_rail(points, r['x_m']) }
+          points.each_cons(2) do |a, b|
             out << [a[0], b[0], a[1]]
           end
           last = band['surface'].last
@@ -53,6 +62,15 @@ module Archgen
         out << [[x1 - width, z], 'road/curb'] if ends
         out << [[x1, z], nil]
         out
+      end
+
+      # Rail encastré : une bande de 7 cm en matière rail, dans le plan de la surface, sommets partagés.
+      # Aucune face superposée à la chaussée, donc aucun scintillement dans SketchUp.
+      def insert_rail(points, x)
+        half = RAIL_HEAD_M / 2
+        at = points.index { |(p, _)| p[0] > x - half }
+        before = points[at - 1]
+        points.insert(at, [[x - half, before[0][1]], RAIL_MATERIAL], [[x + half, before[0][1]], before[1]])
       end
 
       # x de coupe -> décalage à gauche de l'axe, selon la position de l'axe dans l'emprise.

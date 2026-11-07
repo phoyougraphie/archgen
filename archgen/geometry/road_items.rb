@@ -25,7 +25,11 @@ module Archgen
 
       module_function
 
-      # Retourne { definitions:, instances:, linear: } en données de plan.
+      RAIL_HEAD_M = 0.07
+      RAIL_HEIGHT_M = 0.17
+      SLEEPER_PITCH_M = 0.6
+
+      # Retourne { definitions:, instances:, linear:, sleepers: } en données de plan.
       # stations : RoadAxis ; section : RoadSection ; ax : x de l'axe dans la coupe ; seed : réglage de la voie.
       def call(stations, section, items:, ax:, seed:)
         definitions = {}
@@ -40,7 +44,34 @@ module Archgen
             sweep_linear(item, stations, offset, line, definitions, instances, linear)
           end
         end
-        { definitions: definitions, instances: instances, linear: linear }
+        sleepers = []
+        lay_track(stations, section, ax, definitions, linear, sleepers)
+        { definitions: definitions, instances: instances, linear: linear, sleepers: sleepers }
+      end
+
+      # Voie sur ballast : deux rails de 0,07 × 0,17 m, dessus à la cote de la coupe, posés sur des
+      # traverses de 2,60 m tous les 0,60 m, dont le dessus dépasse le ballast de 2 cm.
+      def lay_track(stations, section, ax, definitions, linear, sleepers)
+        section['rails'].select { |r| r['kind'] == 'ballast' }.each_with_index do |rail, k|
+          half = RAIL_HEAD_M / 2
+          linear << { 'id' => "rail/#{rail['band']}/#{k}", 'category' => 'linear', 'children' => [],
+                      'primitive' => extrude(stations, ax - rail['x_m'], rail['z_m'] - RAIL_HEIGHT_M,
+                                             rect(-half, half, 0.0, RAIL_HEIGHT_M), RoadRibbons::RAIL_MATERIAL) }
+        end
+        section['bands'].select { |b| b['type'] == 'rail' }.each do |band|
+          definitions['sleeper'] ||= RoadItemShapes.definition('sleeper', 'concrete', 0.15)
+          line = offset_line(stations, ax - ((band['x0_m'] + band['x1_m']) / 2))
+          spaced_positions(polyline_length(line), SLEEPER_PITCH_M).each_with_index do |s, rank|
+            point, dir = point_at(line, s)
+            sleepers << instance("sleeper/#{band['index']}/#{rank}", 'sleeper', point, dir, band['level_m'], 'left')
+          end
+        end
+      end
+
+      def sleeper_estimate(stations, section, ax)
+        section['bands'].select { |b| b['type'] == 'rail' }.sum do |band|
+          Geometry::RoadSection.count_over(SLEEPER_PITCH_M, polyline_length(offset_line(stations, ax - ((band['x0_m'] + band['x1_m']) / 2))))
+        end
       end
 
       def offset_line(stations, offset)

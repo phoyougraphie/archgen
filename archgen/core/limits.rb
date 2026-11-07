@@ -36,6 +36,7 @@ module Archgen
       ROAD_MAX_UNIQUE_FACES = 60_000
       ROAD_MAX_ITEMS = 5000
       ROAD_MAX_EXPANDED_FACES = 600_000
+      ROAD_MAX_SLEEPERS = 20_000
     end
   end
 end

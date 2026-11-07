@@ -7,7 +7,8 @@ module Archgen
     # en mètres, repère de la racine.
     module RoadEngine
       LIMITS = {
-        unique: Limits::ROAD_MAX_UNIQUE_FACES, items: Limits::ROAD_MAX_ITEMS, expanded: Limits::ROAD_MAX_EXPANDED_FACES
+        unique: Limits::ROAD_MAX_UNIQUE_FACES, items: Limits::ROAD_MAX_ITEMS, expanded: Limits::ROAD_MAX_EXPANDED_FACES,
+        sleepers: Limits::ROAD_MAX_SLEEPERS
       }.freeze
 
       module_function
@@ -29,6 +30,9 @@ module Archgen
 
         count = item_estimate(stations, section, ax)
         return Result.fail([budget('road_items', limits[:items], count)]) if count > limits[:items]
+
+        sleepers = Geometry::RoadItems.sleeper_estimate(stations, section, ax)
+        return Result.fail([budget('road_sleepers', limits[:sleepers], sleepers)]) if sleepers > limits[:sleepers]
 
         surface = Geometry::RoadRibbons.mesh(stations, line, width: width, axis: settings['axis'])
         placed = Geometry::RoadItems.call(stations, section, items: items, ax: ax, seed: settings['seed'])
@@ -59,7 +63,9 @@ module Archgen
       def budget_problems(metrics, limits)
         out = []
         out << budget('road_faces', limits[:unique], metrics['unique_face_count']) if metrics['unique_face_count'] > limits[:unique]
-        out << budget('road_items', limits[:items], metrics['item_count']) if metrics['item_count'] > limits[:items]
+        objects = metrics['item_count'] - metrics['sleeper_count']
+        out << budget('road_items', limits[:items], objects) if objects > limits[:items]
+        out << budget('road_sleepers', limits[:sleepers], metrics['sleeper_count']) if metrics['sleeper_count'] > limits[:sleepers]
         out << budget('road_expanded_faces', limits[:expanded], metrics['expanded_face_count']) if metrics['expanded_face_count'] > limits[:expanded]
         out
       end
@@ -68,10 +74,12 @@ module Archgen
         children = [{ 'id' => 'road/surface', 'category' => 'surface', 'children' => [], 'primitive' => surface }]
         children << { 'id' => 'road/linear', 'category' => 'linear', 'children' => placed[:linear] } unless placed[:linear].empty?
         children << { 'id' => 'road/items', 'category' => 'item', 'children' => placed[:instances] } unless placed[:instances].empty?
+        children << { 'id' => 'road/sleepers', 'category' => 'item', 'children' => placed[:sleepers] } unless placed[:sleepers].empty?
         definitions = placed[:definitions].sort.to_h
         definition_faces = definitions.transform_values { |nodes| nodes.sum { |n| n['primitive']['faces'].size } }
         linear_faces = placed[:linear].sum { |n| n['primitive']['faces'].size }
-        instanced = placed[:instances].sum { |n| definition_faces.fetch(n['primitive']['definition_id']) }
+        all_instances = placed[:instances] + placed[:sleepers]
+        instanced = all_instances.sum { |n| definition_faces.fetch(n['primitive']['definition_id']) }
         {
           'schema_version' => 1, 'engine_version' => ROAD_ENGINE_VERSION, 'units' => 'm',
           'nodes' => [{ 'id' => 'road', 'category' => 'road', 'children' => children }],
@@ -81,7 +89,8 @@ module Archgen
             'station_count' => stations.size, 'cross_segment_count' => line.size,
             'width_m' => section['width_m'], 'length_m' => Quant.q(length(stations)),
             'linear_face_count' => linear_faces, 'definition_count' => definitions.size,
-            'item_count' => placed[:instances].size,
+            'item_count' => all_instances.size, 'sleeper_count' => placed[:sleepers].size,
+            'rail_count' => placed[:linear].count { |n| n['id'].start_with?('rail/') },
             'unique_face_count' => surface['faces'].size + linear_faces + definition_faces.values.sum,
             'expanded_face_count' => surface['faces'].size + linear_faces + instanced
           }

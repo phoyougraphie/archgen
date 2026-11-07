@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-041, rails et tram (noyau pur), puis AG-042 pour écrire la voie dans SketchUp. AG-040 fait : arbres, lampadaires, haies, barrières, glissières, potelets et poteaux posés le long de la voie en volumes 3D simples (ADR-35), U25 vert. Rien n'est encore écrit dans SketchUp. Code non poussé.
+  - Prochaine action — AG-042 : écrire la voie dans SketchUp (racine archgen.road, outil de tracé à rayons, modifier, RBZ 0.5.0). AG-041 fait : rails encastrés au ras de la chaussée et sur plateforme, voie sur ballast avec traverses, U26 vert. Rien n'est encore écrit dans SketchUp. Code non poussé.
   - Décisions ouvertes D-07, D-08, D-10 — Naissance des carrefours (réseau par racine recommandé) ; voie sur terrain intact, où un fossé reste enterré (copie entaillée recommandée) ; sens de « clous ». D-09 tranchée : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
@@ -55,6 +55,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-07 Échelles — À la demande du propriétaire, chaque objet de la coupe est mesuré dans la géométrie rendue : 18 écarts sur 82 avant correction (rails 12 cm trop haut, train flottant de 13 cm, crosses et globe au-dessus de la hauteur annoncée). Après : 102 objets, 0 écart dans SketchUp. Un dessin « à l'œil » ne suffit pas : mesurer chaque objet contre le sol réel. (→ docs/recette/H19.md)
     - 2026-11-07 AG-039 — Sur un arc comme à l'onglet, un quadrilatère de ruban en pente reste plan : les deux arêtes de coupe sont coplanaires. Une marche de ballast n'est pas une bordure : la bordure est réservée aux trottoirs, terre-pleins, bandes plantées et pistes. Une raison émise par une méthode error échappe au relevé des messages : la tester à part. (→ docs/VOIRIE_CONTRACT.md)
     - 2026-11-07 AG-040 — D-09 tranchée : 3D simple (ADR-35). La coupe ne transmettait pas la variation de hauteur à la pose : une seule hauteur d'arbre sur la route de campagne, vu en comptant les définitions. Une assertion « moins d'objets sur la ligne intérieure » était trop faible : mesurer la longueur de la ligne. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-041 — Un rail au ras de la chaussée, posé comme une face à part, scintillerait dans SketchUp : il est taillé dans la surface. La matière des rails portait la clé de la bande de ballast (road/rail) : le ballast aurait pris leur couleur, vu en comptant les matières ; clé distincte road/rail_steel. (→ docs/VOIRIE_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -114,7 +115,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-038 Éditeur de coupe — geometry/road_section, ui/road_{controller,panel}, page road_panel ; menu Composer une coupe de voirie, version 0.5.0-dev. H19 réussi, vrai geste à la souris ; rien n'est écrit dans le modèle. (→ docs/recette/H19.md)
     - [fait] AG-039 Axe et rubans — core/road_intake (format road V1), geometry/road_axis (arcs, onglets, refus), geometry/road_ribbons, core/road_engine (RoadPlan, validateur, road_digest). U24 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
     - [fait] AG-040 Arbres, lampadaires, haies, clôtures — geometry/road_item_shapes (formes 3D, ADR-35), geometry/road_items (pose au pas, variation, extrusions, poteaux) ; RoadPlan avec définitions partagées et plafonds. U25 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
-    - [afaire] AG-041 Rails et tram — 1,435 m, ballast, plateforme, voie mixte, caténaire. U26. Dép. AG-039.
+    - [fait] AG-041 Rails et tram — Rails encastrés dans la surface (road/rail_steel), rails sur traverses et ballast, plafond de traverses. U26 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
     - [afaire] AG-042 Écrire, tracer, modifier, RBZ 0.5.0 — Racine archgen.road, tags, outil à rayons ; première voie utilisable, sans carrefour. H20. Dép. AG-038, 040, 041.
     - [afaire] AG-043 Réseau et carrefour simple — Nœuds, branches, angles, raccord de coupes, autoroute refusée à niveau. U27. Dép. AG-042, D-07.
     - [afaire] AG-044 Carrefour à feux — Feux, lignes d'arrêt, passages piétons. U28. Dép. AG-043.
@@ -282,6 +283,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U23 — Coupe de voirie : limites et premier dépassement par type, registre fermé, préréglages, variation, avertissements. Vert.
     - U24 — Axe et rubans : largeurs exactes en droite, courbe et onglet, corde sous 5 cm, rayon limite, refus du tracé, 100 tracés reproductibles. Vert.
     - U25 — Éléments de voirie : positions à la main, pose sur la ligne d'un arc, crosse vers la chaussée, définitions partagées, variation, extrusions, plafonds. Vert.
+    - U26 — Rails : écartement exact en droite, courbe et onglet, rails au ras en voie mixte, traverses, plafond. Vert.
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
