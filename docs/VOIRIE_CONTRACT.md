@@ -280,7 +280,51 @@ Livré par AG-042, recette [H20](recette/H20.md), RBZ 0.5.0.
 
 ## Terrain
 
-Soumis à D-08. Jusqu'à cette décision, une voie est horizontale, posée au premier point du tracé, et ne regarde pas le terrain.
+### Voie sur un terrain (AG-049, ADR-38)
+
+Une voie seule peut être posée sur un terrain désigné. Le terrain d'origine n'est jamais modifié : il est masqué, et ARCHGEN écrit à sa place une **copie entaillée** le long de la voie (ADR-38). Les réseaux restent horizontaux dans cette version. Une voie sans réglage `ground` reste horizontale : son plan et son empreinte ne changent pas.
+
+Livré en deux étapes, chacune avec ses tests :
+
+1. **Profil en long et talus** (noyau, U32) : la voie suit le terrain avec une pente bornée ; des talus la raccordent au terrain de chaque côté.
+2. **Copie entaillée et écriture** (adaptateur, H22) : relevé dans SketchUp, terrain d'origine masqué, copie dont les faces sous l'emprise et les talus sont retirées, une opération d'Annuler.
+
+#### Réglages `ground`, dans les réglages de voie V1
+
+Clé facultative, fermée comme le reste du format.
+
+| Champ | Valeurs | Défaut (départ) | Sens |
+|---|---|---|---|
+| `survey_step_m` | [1 ; 10] | 4 | Pas du relevé le long et en travers de la voie |
+| `grade_step_m` | [5 ; 100] | 20 | Pas du profil en long : un point de pente tous les `grade_step_m` |
+| `max_grade_percent` | [1 ; 15] | 8 | Pente en long maximale |
+| `slope_ratio` | [1 ; 3] | 1,5 | Talus : horizontal pour 1 vertical |
+
+Une coupe qui porte une voie ferrée sur ballast est bornée à 2,5 %, une coupe qui porte un tram à 6 %, quel que soit `max_grade_percent` : règle écrite, pas un réglage caché.
+
+#### Relevé du couloir
+
+Grille dans le repère de la voie : abscisses `s` le long de l'axe, de 0 à L, en `⌈L / survey_step_m⌉` intervalles égaux ; décalages `u` en travers, de `−(droite + marge)` à `gauche + marge` au même pas, 0 et les deux bords de l'emprise toujours relevés. Marge = `RELIEF_MAX × slope_ratio + survey_step_m`, avec `RELIEF_MAX` = 6 m (départ). `z[i][j]` est l'altitude du terrain au point (`s_i`, `u_j`), dans le repère du modèle ; `null` sans terrain. Le noyau calcule les axes (`RoadGround.axes`), l'adaptateur relève (même règles de rayons que [le relevé du terrain](TERRAIN_CONTRACT.md)). Au plus 6 000 points (départ), sinon `E_ROAD_BUDGET` avec le conseil d'augmenter le pas, avant tout relevé. Entre les points, interpolation bilinéaire.
+
+#### Profil en long
+
+1. Points de pente aux abscisses `0, grade_step_m, 2 × grade_step_m, …, L` (le dernier intervalle peut être plus court).
+2. Altitude d'un point de pente : moyenne du terrain sur l'emprise de la chaussée (ou de toute l'emprise sans chaussée) à cette abscisse. Un point de l'emprise à `null` : `E_ROAD_GROUND` sur `/ground`, avec l'abscisse.
+3. Entre deux points, la pente est droite. Pente au-delà de la borne : `E_ROAD_GRADE` sur `/ground/max_grade_percent`, avec l'abscisse de départ, la pente et la borne.
+4. Le tracé reçoit une station de plus à chaque point de pente qui tombe sur un segment droit, pour que le ruban suive le profil. Dans un virage, la pente est interpolée aux stations de l'arc.
+5. Ce qui est entre l'emprise et le terrain, déblai ou remblai : au plus `RELIEF_MAX` (6 m), sinon `E_ROAD_EARTHWORK` avec l'abscisse et la hauteur.
+
+#### Talus
+
+À chaque station, de chaque bord de l'emprise, un talus part du bord à la cote de la voie : vers le bas en remblai, vers le haut en déblai, avec la pente `1 / slope_ratio`. Il s'arrête à son premier point sur le terrain, cherché par pas de `survey_step_m / 4` puis affiné par dichotomie, et le dépasse de 0,05 m en altitude (comme le talus d'assise). Un bord déjà au niveau du terrain à 1 cm près : pas de talus. Pied introuvable dans la marge : `E_ROAD_TOE` sur `/ground/slope_ratio`, avec l'abscisse et le côté. Faces triangulées entre deux stations voisines, matière `road/bank`, normales vers le haut et vers l'extérieur.
+
+#### Plan
+
+Mêmes nœuds qu'une voie horizontale, cotes en repère de la racine : la racine est au premier point du tracé, à l'altitude du profil en long en ce point. Les objets répétés et continus suivent le profil : leur pied est à la cote de la voie à leur abscisse. Un groupe `road/earthwork` porte les talus, sous la balise `ARCHGEN Voirie chaussée et trottoirs`. Métriques ajoutées : `grade_max_percent`, `cut_max_m`, `fill_max_m`, `earthwork_reach_m`, `earthwork_face_count`.
+
+#### Copie entaillée (étape 2)
+
+Précisée avant son code, dans ce contrat : copie du terrain retenu dans un groupe ARCHGEN, faces sous l'emprise et les talus retirées par intersection avec leur contour, original masqué ; une opération ; Annuler rend l'original visible et retire la copie ; régénérer la voie refait la copie depuis l'original, jamais depuis la copie.
 
 ## Hors périmètre V1
 

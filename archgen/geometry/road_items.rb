@@ -194,7 +194,7 @@ module Archgen
       def extrude(stations, offset, z0, polygon, material)
         builder = MeshBuilder.new('solid')
         ring = lambda do |s|
-          polygon.map { |u, z| [s.point[0] + (s.normal[0] * (offset + u)), s.point[1] + (s.normal[1] * (offset + u)), z0 + z] }
+          polygon.map { |u, z| [s.point[0] + (s.normal[0] * (offset + u)), s.point[1] + (s.normal[1] * (offset + u)), z0 + z + (s.z || 0.0)] }
         end
         rings = stations.map { |s| ring.call(s) }
         faces = []

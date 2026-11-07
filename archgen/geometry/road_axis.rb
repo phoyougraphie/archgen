@@ -10,7 +10,7 @@ module Archgen
       MAX_TURN_RAD = 179.0 * Math::PI / 180.0
       TOL = 1e-9
 
-      Station = Struct.new(:point, :normal, :vertex, keyword_init: true)
+      Station = Struct.new(:point, :normal, :vertex, :z, keyword_init: true)
 
       module_function
 

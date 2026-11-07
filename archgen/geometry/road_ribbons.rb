@@ -101,7 +101,7 @@ module Archgen
       end
 
       def place(station, offset, z)
-        [station.point[0] + (station.normal[0] * offset), station.point[1] + (station.normal[1] * offset), z]
+        [station.point[0] + (station.normal[0] * offset), station.point[1] + (station.normal[1] * offset), z + (station.z || 0.0)]
       end
 
       def planar?(quad)

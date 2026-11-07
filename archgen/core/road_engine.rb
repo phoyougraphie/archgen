@@ -15,7 +15,8 @@ module Archgen
       module_function
 
       # settings : réglages effectifs de RoadIntake ; bands, items : catalogues chargés.
-      def call(settings, bands:, items:, limits: {})
+      # survey : grille relevée du couloir (Geometry::RoadGround), exigée si les réglages ont `ground`.
+      def call(settings, bands:, items:, limits: {}, survey: nil)
         limits = LIMITS.merge(limits)
         section = Geometry::RoadSection.call(settings['profile'], bands: bands, items: items)
         width = section['width_m']
@@ -26,6 +27,13 @@ module Archgen
 
         stations = axis.value
         line = Geometry::RoadRibbons.cross_line(section)
+        ground = nil
+        if settings['ground']
+          ground = on_ground(settings, section, stations, line, ax, survey)
+          return ground unless ground.ok?
+
+          stations = ground.value[:stations]
+        end
         estimate = Geometry::RoadRibbons.face_estimate(stations.size, line)
         return Result.fail([budget('road_faces', limits[:unique], estimate)]) if estimate > limits[:unique]
 
@@ -37,11 +45,84 @@ module Archgen
 
         surface = Geometry::RoadRibbons.mesh(stations, line, width: width, axis: settings['axis'])
         placed = Geometry::RoadItems.call(stations, section, items: items, ax: ax, seed: settings['seed'])
+        lift_instances(placed, stations) if ground
         plan = assemble(surface, placed, stations, section, line)
+        add_earthwork(plan, ground.value) if ground
         problems = budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
 
         Result.ok(Canonical.deep_freeze(plan))
+      end
+
+      # Voie sur un terrain (AG-049, étape 1) : profil en long, stations à cote (repère de la racine,
+      # z = 0 au premier point), contrôle des terrassements, talus.
+      def on_ground(settings, section, stations, line, ax, survey)
+        g = Geometry::RoadGround
+        ground = g.settings(settings['ground'])
+        width = section['width_m']
+        length = length(stations)
+        axes = g.axes(length, ax, width - ax, ground)
+        return axes unless axes.ok?
+        return Result.fail([Diagnostic.error('E_ROAD_GROUND', '/ground', reason: 'survey_missing')]) unless survey
+        unless survey['s_m'] == axes.value['s_m'] && survey['u_m'] == axes.value['u_m']
+          return Result.fail([Diagnostic.error('E_ROAD_GROUND', '/ground', reason: 'survey_axes')])
+        end
+
+        lanes = section['bands'].select { |b| b['role'] == 'carriageway' }
+        lanes = section['bands'] if lanes.empty?
+        span = [lanes.map { |b| ax - b['x1_m'] }.min, lanes.map { |b| ax - b['x0_m'] }.max]
+        samples = g.profile(survey, length, span, ground, section)
+        return samples unless samples.ok?
+
+        placed = g.stations(stations, samples.value)
+        work = g.earthwork(survey, placed, line, ax)
+        return work unless work.ok?
+
+        z0 = placed.first[0].z
+        slopes = g.slopes(survey, placed, line, ax, ground, z0)
+        return slopes unless slopes.ok?
+
+        relative = placed.map { |st, _| Geometry::RoadAxis::Station.new(point: st.point, normal: st.normal, vertex: st.vertex, z: Quant.q(st.z - z0)) }
+        grades = samples.value.each_cons(2).map { |(s0, z0a), (s1, z1)| ((z1 - z0a) / (s1 - s0)).abs * 100 }
+        Result.ok({ stations: relative, z0: z0, slopes: slopes.value, work: work.value, grade: grades.max || 0.0 })
+      end
+
+      # Les objets posés par RoadItems sont à la cote de la coupe : on ajoute celle du profil à leur abscisse.
+      def lift_instances(placed, stations)
+        (placed[:instances] + placed[:sleepers]).each do |node|
+          m = node['primitive']['matrix']
+          m[14] = Quant.q(m[14] + z_under(stations, m[12], m[13]))
+        end
+      end
+
+      # Cote du profil sous un point : projeté sur l'axe, interpolée entre les stations.
+      def z_under(stations, x, y)
+        best = nil
+        stations.each_cons(2) do |a, b|
+          d = [b.point[0] - a.point[0], b.point[1] - a.point[1]]
+          len2 = (d[0] * d[0]) + (d[1] * d[1])
+          t = len2.zero? ? 0.0 : [[(((x - a.point[0]) * d[0]) + ((y - a.point[1]) * d[1])) / len2, 0.0].max, 1.0].min
+          px = a.point[0] + (d[0] * t)
+          py = a.point[1] + (d[1] * t)
+          dist = Math.hypot(x - px, y - py)
+          best = [dist, a.z + ((b.z - a.z) * t)] if best.nil? || dist < best[0]
+        end
+        best ? best[1] : 0.0
+      end
+
+      def add_earthwork(plan, ground)
+        builder = Geometry::MeshBuilder.new('surface')
+        ground[:slopes][:faces].each { |f| builder.add_face(f, 'road/bank') }
+        primitive = builder.to_primitive
+        root = plan['nodes'][0]
+        root['children'].insert(1, { 'id' => 'road/earthwork', 'category' => 'road_surface', 'children' => [], 'primitive' => primitive })
+        count = primitive['faces'].size
+        m = plan['metrics']
+        m['unique_face_count'] += count
+        m['expanded_face_count'] += count
+        m.merge!('earthwork_face_count' => count, 'earthwork_reach_m' => Quant.q(ground[:slopes][:reach]),
+                 'grade_max_percent' => Quant.q(ground[:grade]), 'cut_max_m' => Quant.q(ground[:work][:cut]),
+                 'fill_max_m' => Quant.q(ground[:work][:fill]), 'origin_z_m' => Quant.q(ground[:z0]))
       end
 
       def budget(reason, limit, value)

@@ -221,6 +221,13 @@ module Archgen
         'first_road_kept' => 'La première voie porte l’origine du réseau : elle reste.',
         'no_road' => 'Tracez et ajoutez au moins une voie.',
         'not_a_network_root' => 'Ce composant n’est pas un réseau de voies ARCHGEN.',
+        'survey_missing' => 'Cette voie suit un terrain : relevez-le d’abord.',
+        'survey_axes' => 'Le relevé ne correspond plus à la voie. Relevez de nouveau.',
+        'ground_missing' => 'Pas de terrain sous la voie à %{s_m} m du départ.',
+        'ground_points' => 'Le relevé compterait %{value} points, pour %{limit} au plus. Augmentez le pas du relevé.',
+        'grade_too_steep' => 'À %{s_m} m du départ, la pente atteint %{value} %, pour %{limit} % au plus.',
+        'earthwork_too_high' => 'À %{s_m} m du départ, le terrain est à %{value} m de la voie, pour %{limit} m au plus.',
+        'road_toe_not_found' => 'À %{s_m} m du départ, le talus n’atteint pas le terrain. Changez la pente du talus ou le tracé.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

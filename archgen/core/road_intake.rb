@@ -78,7 +78,7 @@ module Archgen
             'radii_m' => tree['trace']['radii_m'].map { |r| Quant.q(r.to_f) }
           },
           'profile' => profile
-        }
+        }.merge(tree['ground'] ? { 'ground' => Geometry::RoadGround.settings(tree['ground'].transform_values { |v| Quant.q(v.to_f) }) } : {})
       end
     end
   end
