@@ -152,7 +152,7 @@ Livré dans le noyau par AG-039 (U24) ; l'écriture dans SketchUp et l'outil de 
 | `radius_too_small` | `/trace/radii_m/<j>` | Rayon intérieur sous 1 m (départ) : R doit valoir au moins la portée du côté intérieur + 1 m, ce que le paramètre `min` donne |
 | `arcs_too_long` | `/trace/segments/<k>` | Les tangentes de ses deux arcs dépassent le segment |
 | `inner_edge_folds` | `/trace/points_m/<i>` | À un onglet, le bord intérieur recule plus que la place disponible |
-| `self_overlap` | `/trace/points_m/<i>` | Le contour de l'emprise se coupe : un croisement attend les carrefours (AG-043) |
+| `self_overlap` | `/trace/points_m/<i>` | Le contour de l'emprise se coupe : une voie ne se croise pas elle-même ; deux voies se croisent dans un réseau (Carrefours) |
 
 **Plafond, `E_ROAD_BUDGET`, `road_faces`, sur `/trace` :** 60 000 faces (départ), estimées avant construction. Les objets et les faces étendues ont leurs propres plafonds : voir Pose le long de la voie.
 
@@ -160,26 +160,58 @@ Livré dans le noyau par AG-039 (U24) ; l'écriture dans SketchUp et l'outil de 
 
 ## Carrefours
 
-Le réseau, les nœuds et leur création sont soumis à D-07. Types de nœud proposés :
+**Naissance (ADR-36).** Un réseau `road_network` V1 regroupe 1 à 24 voies, chacune avec son nom (`id`) et ses réglages de voie ; la première part de l'origine du réseau. Un nœud naît tout seul là où deux axes se croisent, où le bout d'une voie touche une autre voie à 1 m près, ou où deux bouts se rejoignent. Une abscisse à moins de 2 m d'un bout est ce bout : la voie finit au carrefour, sans moignon. Les touches à 2 m près se regroupent en un nœud, nommé `voie@abscisse+voie@abscisse` (abscisses au décimètre, triées). Le type se choisit ensuite dans le panneau (AG-048) ; sans réglage, le nœud est `simple`.
 
-| Type | Géométrie | Porte |
-|---|---|---|
-| `simple` | Surface de chaussée, trottoirs arrondis aux angles (rayon réglable), marquage de priorité. 3 à 6 branches (départ) | Toute coupe avec chaussée |
-| `signals` | Comme `simple`, plus feux aux angles, lignes d'arrêt, passages piétons | Idem |
-| `roundabout` | Anneau, îlot central, îlots séparateurs. Rayon extérieur et largeur d'anneau réglables : 13 m et 6 m au minimum (départ) | Idem |
-| `double_roundabout` | Deux anneaux reliés par un tronçon de longueur `link_m`, branches réparties par angle | Idem, au moins 3 branches |
-| `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route (AG-047) |
+```json
+{ "network_version": 1,
+  "roads": [ { "id": "rue", "road": { "trace": { "points_m": [[0, 0], [100, 0]], "radii_m": [] }, "profile": { } } },
+             { "id": "allee", "road": { "trace": { "points_m": [[50, 0], [50, 60]], "radii_m": [] }, "profile": { } } } ],
+  "junctions": [ { "id": "allee@0.0+rue@50.0", "corner_radius_m": 8 } ] }
+```
 
-Chaque branche garde sa coupe. Un trottoir contourne l'angle jusqu'à la branche voisine ; une piste cyclable s'interrompt au carrefour dans cette version, avec sa marque.
+Types de nœud, livrés ticket par ticket :
 
-**Refus, `E_ROAD_JUNCTION`, sur `/nodes/<id>` :**
+| Type | Géométrie | Porte | Ticket |
+|---|---|---|---|
+| `simple` | Plateau de chaussée, trottoirs qui tournent l'angle par une bordure arrondie, contremarches et murets. 2 à 6 branches | Toute coupe sans `hard`, sans rail ni tram | **AG-043, livré** |
+| `signals` | Comme `simple`, plus feux aux angles, lignes d'arrêt, passages piétons, marquage de priorité | Idem, avec chaussée | AG-044 |
+| `roundabout` | Anneau, îlot central, îlots séparateurs. Rayon extérieur et largeur d'anneau réglables : 13 m et 6 m au minimum (départ) | Idem | AG-045 |
+| `double_roundabout` | Deux anneaux reliés par un tronçon de longueur `link_m`, branches réparties par angle | Idem, au moins 3 branches | AG-046 |
+| `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route | AG-047 |
 
-- une coupe avec `hard` à un nœud à niveau : **une autoroute se raccorde par un échangeur, hors de ce lot** ;
-- une voie `rail` à un nœud autre que `level_crossing` ;
-- une coupe sans chaussée à un nœud `signals` ou giratoire ;
-- deux branches formant moins de 30° (départ), rayons qui ne tiennent pas, anneau qui recouvre une autre branche.
+### Carrefour simple (AG-043, U27)
 
-**Tram au carrefour :** les rails d'un tronçon passent droit à travers le nœud et l'îlot central, si deux branches à rails sont opposées à 15° près (départ). Toute autre disposition est refusée. Les courbes de rails d'un carrefour sont hors de cette version.
+`Geometry::RoadNetwork` trouve les nœuds et découpe les voies ; `Geometry::RoadJunction` dessine chaque carrefour ; `Core::RoadNetworkEngine` assemble un seul plan validé.
+
+- **Branches.** Chaque voie donne une branche vers l'aval et une vers l'amont du nœud (une seule à son bout), triées dans le sens direct. Chaque branche part du point de l'axe de sa voie au nœud et garde sa coupe. La **bordure** d'une branche est le bord de ses bandes de chaussée ; sans chaussée (chemin), c'est le bord de l'emprise.
+- **Coins.** Entre deux branches voisines :
+  - angle de moins de 175° et les deux côtés bordés d'un trottoir ou d'un accotement : **bordure arrondie** de rayon `corner_radius_m` (6 m par défaut, 2 à 30 m), corde de 5 cm au plus. Le bord extérieur du trottoir garde l'angle vif quand il reste à 0,3 m au moins derrière la bordure ; sinon il s'arrondit, du plus grand rayon (par pas de 0,5 m, en partant de R − la plus petite largeur, concentrique quand les largeurs sont égales) qui reste à 0,3 m derrière la bordure ;
+  - angle de 175° et plus, ou un seul côté bordé (un chemin rejoint une rue) : **onglet**, à l'intersection des bordures et des bords ; corde droite si l'onglet partirait à plus de deux emprises du nœud.
+- **Coupe.** Chaque branche est coupée net, à 1 m au moins, assez loin pour que les arrondis, l'onglet et le recouvrement des deux emprises restent dans le carrefour. La zone coupée doit tenir dans un segment droit de la voie.
+- **Faces.** Le cœur, entre les bordures, est un plateau à 0 s'il y a une chaussée (matière `road/lane`), sinon au plus bas des chemins (`road/path`). Chaque coin est un plateau au plus bas des deux bandes qui bordent la bordure, en matière de trottoir s'il y en a un. Une contremarche (`road/curb`) suit la bordure là où le coin la borde ; un coin vide, parce qu'un chemin prend la place du trottoir, reste au niveau du cœur. À chaque coupe, un muret (`road/curb`) ferme chaque segment de la coupe qui n'est pas au niveau de la face voisine, tourné vers le côté bas.
+- **Soudure.** Tronçons et carrefours partagent un maillage. Un sommet de carrefour posé au milieu d'une arête y est inséré ; la face touchée est retriangulée dans son plan. Vu de dessus, chaque point des emprises est couvert une fois et une seule ; aucune arête n'est libre dans les emprises ni portée par plus de deux faces.
+- **Tronçons.** Entre deux coupes, chaque voie donne un tronçon, balayé comme une voie seule, avec ses objets ; les objets prennent le nom de leur voie et de leur tronçon (`…@rue.2`) et partagent leurs formes. Aucun objet ne tombe dans un carrefour. Un réseau sans nœud donne exactement les voies seules.
+- **Jonction de deux coupes différentes** bout à bout, alignées : les bords se raccordent en biseau sur les deux coupes de 1 m. Plus long : hors de cette version.
+- **Plan.** Une racine `road`, la surface et les familles d'objets comme une voie seule ; `junctions` liste chaque nœud (`id`, branches, rayon, coupe de chaque branche) ; `metrics` ajoute `road_count`, `junction_count`, `piece_count`, `junction_face_count`. Mêmes plafonds qu'une voie.
+
+**Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
+
+| Raison | Quand |
+|---|---|
+| `motorway_at_grade` | Une branche porte une bande d'arrêt d'urgence (`hard`) : **une autoroute se raccorde par un échangeur, hors de ce lot** |
+| `rails_at_junction` | Une branche porte un rail, un tram ou une voie mixte : jusqu'à AG-047 |
+| `too_many_arms` | Plus de 6 branches |
+| `arms_too_close` | Deux branches à moins de 30° |
+| `junction_on_curve` | La zone coupée d'une branche touche un virage ou un sommet de sa voie (`road`) |
+| `arm_too_short` | La voie est plus courte que sa coupe (`road`) |
+| `junctions_too_close` | Les zones coupées de deux nœuds se touchent sur une voie (`road`, `other`) |
+| `junction_shape` | Aucun coin ne se construit : bords extérieurs très inégaux pour ce rayon (par exemple 0,8 m contre 6 m à 125° : 8 m de rayon passent) |
+| `junction_levels` | À une coupe, un segment passe d'un côté à l'autre du niveau voisin |
+| `unknown_junction` | Un réglage vise un nœud qui n'existe pas (`/junctions/<id>`) |
+
+La saisie refuse aussi `duplicate_road_id` (`E_ROAD_TRACE`, `/roads/<i>/id`), `duplicate_junction`, `first_point_not_network_origin` et `unsupported_network` (`E_VERSION`). Un refus d'une voie garde son chemin dans le réseau, `/roads/<i>/road/…`.
+
+**Tram au carrefour (AG-047) :** les rails d'un tronçon passeront droit à travers le nœud et l'îlot central, si deux branches à rails sont opposées à 15° près (départ). Toute autre disposition sera refusée. Les courbes de rails d'un carrefour sont hors de cette version.
 
 ## Écriture et persistance
 

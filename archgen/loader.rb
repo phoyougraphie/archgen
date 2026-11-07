@@ -26,6 +26,7 @@ module Archgen
       core/ensemble_intake
       core/road_profile_intake
       core/road_intake
+      core/road_network_intake
       core/trace_session
       core/site_assise
       geometry/types
@@ -34,6 +35,8 @@ module Archgen
       geometry/road_ribbons
       geometry/road_item_shapes
       geometry/road_items
+      geometry/road_junction
+      geometry/road_network
       geometry/planar
       geometry/trace_rows
       geometry/parcel_layout
@@ -56,6 +59,7 @@ module Archgen
       core/ensemble_engine
       core/ensemble_site
       core/road_engine
+      core/road_network_engine
       geometry/embankment_builder
       geometry/site_planner
       composition

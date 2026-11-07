@@ -80,7 +80,12 @@ module Archgen
 
       def mesh(stations, line, width:, axis:)
         builder = MeshBuilder.new('surface')
-        ax = axis_x(width, axis)
+        sweep(builder, stations, line, axis_x(width, axis))
+        builder.to_primitive
+      end
+
+      # Balaye la ligne de coupe le long des stations dans un maillage commun (réseau : tronçons et carrefours).
+      def sweep(builder, stations, line, ax)
         stations.each_cons(2) do |a, b|
           line.each do |(xa, za), (xb, zb), mat|
             quad = [place(a, ax - xa, za), place(a, ax - xb, zb), place(b, ax - xb, zb), place(b, ax - xa, za)]
@@ -92,7 +97,7 @@ module Archgen
             end
           end
         end
-        builder.to_primitive
+        builder
       end
 
       def place(station, offset, z)

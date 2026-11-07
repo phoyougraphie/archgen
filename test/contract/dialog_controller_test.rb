@@ -213,7 +213,9 @@ class DialogControllerTest < Minitest::Test
     assert_equal 'A', result['config']['name']
     assert_equal 1, result['revision']
     assert_match(/\A\h{32}\z/, result['target_token'])
-    refute_includes JSON.generate(result), created.persistent_id.to_s, 'le PID ne quitte pas Ruby'
+    # Le jeton est tiré au hasard : il peut contenir les chiffres du PID par chance (vu une fois, « 1000 »).
+    refute_includes JSON.generate(result.except('target_token')), created.persistent_id.to_s, 'le PID ne quitte pas Ruby'
+    refute_equal created.persistent_id.to_s, result['target_token']
   end
 
   def test_load_selection_without_selection_is_explained
