@@ -24,6 +24,7 @@ module Archgen
       core/survey_grid
       core/site_intake
       core/ensemble_intake
+      core/road_profile_intake
       core/trace_session
       core/site_assise
       geometry/types

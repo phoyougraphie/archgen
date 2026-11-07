@@ -24,8 +24,26 @@ module Archgen
         'profile' => read_json('schemas', 'style-profile.v1.schema.json'),
         'site' => read_json('schemas', 'site-settings.v1.schema.json'),
         'survey' => read_json('schemas', 'survey-grid.v1.schema.json'),
-        'ensemble' => read_json('schemas', 'ensemble-settings.v1.schema.json')
+        'ensemble' => read_json('schemas', 'ensemble-settings.v1.schema.json'),
+        'road_profile' => read_json('schemas', 'road-profile.v1.schema.json')
       }
+    end
+
+    # Catalogues fermés de la voirie (ADR-34) et préréglages de coupe.
+    def road_bands
+      read_json('styles', 'road', 'road_bands.v1.json')
+    end
+
+    def road_items
+      read_json('styles', 'road', 'road_items.v1.json')
+    end
+
+    def road_presets
+      read_json('styles', 'road', 'road_presets.v1.json')
+    end
+
+    def road_profile_intake(sources: schemas)
+      Core::RoadProfileIntake.new(sources.fetch('road_profile'), bands: road_bands, items: road_items)
     end
 
     def materials

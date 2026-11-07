@@ -25,6 +25,10 @@ Format séparé, clés inconnues refusées. Les bandes vont de gauche à droite 
 
 De 1 à 32 bandes (départ), au plus 6 éléments par bande (départ). Un préréglage n'est qu'un profil de départ recopié : la voie enregistre ses valeurs effectives, pas une référence au préréglage.
 
+**Champs** ([schéma](../schemas/road-profile.v1.schema.json)) : `bands` obligatoire ; `road_profile_version` vaut 1, une autre valeur donne `E_VERSION` ; `name` facultatif, de 1 à 60 caractères, absent s'il n'est pas saisi. Une bande exige `type` et `width_m`. Un élément exige `kind` ; `variant`, `height_m` et `spacing_m` prennent les valeurs du catalogue. Le profil effectif est complet : chaque élément répété porte son pas, chaque arbre sa variation (0 par défaut). Les longueurs sont quantifiées au micromètre, comme ailleurs.
+
+**Catalogues :** références dans `examples/`, copies embarquées identiques dans `archgen/styles/road/`, vérifiées par test (ADR-13). Chaque bande porte aussi son rôle (`carriageway`, `tram`, `rail`, `cycle`, `pedestrian`, `median`, `verge`, `planting`, `ditch`, `bank`), ses rails (`none`, `embedded`, `platform`, `ballast`), `accepts_items` et, pour les voies où passent des véhicules, `clearance_m` : 4,5 m (départ) sur `lane`, `tram_lane`, `tram` et `rail`.
+
 ### Bandes (`road_bands.v1.json`)
 
 | Clé | Libellé | Défaut (m) | Plage (m) | Niveau (m) | Forme |
@@ -65,13 +69,14 @@ Un élément appartient à une bande. Ses positions en travers se répartissent 
 | `guard` | `guard`, `concrete` | 0,6 à 1,5 | Continu | Extrusion simple |
 
 - **Répétition :** le premier objet est à `spacing_m / 2` de l'origine du tronçon, puis tous les `spacing_m` mesurés le long de la ligne de pose. Un objet qui tomberait hors du tronçon n'est pas posé.
-- **Variation :** `height_variation` optionnel, de 0 à 0,3, tire pour un arbre l'une de trois hauteurs par `unit(seed, "road/item/<bande>/<élément>/<rang>")`. Chaque hauteur reste une définition partagée. Sans ce champ, tous les arbres ont la même hauteur.
-- **Refus, `E_ROAD_ITEM` :** hauteur ou pas hors plage ; tout élément dans un `ditch`. **Avertissement, `W_ROAD_CLEARANCE` :** couronne d'arbre au-dessus d'une voie, à moins de 4,50 m du sol (départ).
-- **Avertissements de composition :** voie ferrée contre une chaussée, fossé contre une chaussée sans accotement. Ils ne bloquent pas.
+- **Variation :** `height_variation` optionnel, de 0 à 0,3, arbres seulement. Pour une hauteur h et une variation v, chaque arbre prend l'une des trois hauteurs h(1 − v), h, h(1 + v), tirée par `unit(seed, "road/item/<bande>/<élément>/<rang>")`. Les trois doivent rester dans la plage de hauteur. Chaque hauteur reste une définition partagée. Sans variation, tous les arbres ont la même hauteur.
+- **Refus, `E_ROAD_ITEM` :** type, variante inconnus ; hauteur hors plage (`height_range`) ; pas sous le minimum (`spacing_range`) ; pas sur un élément continu (`continuous_item`) ; variation sur un autre élément qu'un arbre (`variation_unavailable`) ou qui sort de la plage (`variation_range`) ; tout élément dans un `ditch` (`band_accepts_no_items`).
+- **Avertissement, `W_ROAD_CLEARANCE`,** sur l'élément : la couronne d'un arbre recouvre en plan une bande à `clearance_m`, et son bas est plus bas que cette hauteur, pour l'une des trois hauteurs. Couronne : rayon et hauteur du bas en proportion de la hauteur, par variante, dans le catalogue ; position en travers comme ci-dessus.
+- **Avertissement, `W_ROAD_COMPOSITION`,** sur la première des deux bandes : voie ferrée contre une chaussée (`rail_next_to_carriageway`), fossé contre une chaussée sans accotement (`ditch_next_to_carriageway`). Les avertissements ne bloquent pas.
 
 ### Préréglages (`road_presets.v1.json`)
 
-Autoroute, route à deux voies, route de campagne à fossés, chemin rural, boulevard planté, rue de ville, rue tram et voitures, tram en site propre, voie ferrée double, voie verte, chemin piéton. Leur composition exacte est dans la maquette et sera figée par fixture en AG-037.
+Autoroute, route à deux voies, route de campagne à fossés, chemin rural, boulevard planté, rue de ville, rue tram et voitures, tram en site propre, voie ferrée double, voie verte, chemin piéton. Leur composition est figée dans le fichier, dans cet ordre, et chacun est accepté sans avertissement (U23). Le contrôle de couronne a corrigé la maquette : sur un terre-plein de 4 m, l'arbre colonnaire de 14 m du boulevard surplombait une voie à 2,24 m du sol ; le terre-plein mesure donc 6 m.
 
 ## Éditeur de coupe
 

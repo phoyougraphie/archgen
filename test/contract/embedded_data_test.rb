@@ -31,6 +31,12 @@ class EmbeddedDataTest < Minitest::Test
     assert_equal File.binread(repo_path('examples', 'ensemble_rules.v1.json')), File.binread(repo_path('archgen', 'styles', 'ensemble_rules.v1.json'))
   end
 
+  def test_road_catalogues_match_reference
+    %w[road_bands.v1.json road_items.v1.json road_presets.v1.json].each do |name|
+      assert_equal File.binread(repo_path('examples', name)), File.binread(repo_path('archgen', 'styles', 'road', name)), name
+    end
+  end
+
   def test_core_never_reads_files_outside_the_composition_point
     Dir.glob(repo_path('archgen', '{core,geometry}', '**', '*.rb')).each do |path|
       source = File.read(path, encoding: 'UTF-8')

@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — EXT-11 Voirie cadrée, à valider sur la maquette (docs/maquettes/voirie-coupe.html), puis AG-037. Aucun code de voirie écrit. Le propriétaire doit aussi trancher D-07 à D-10 ; seules D-07, D-08 et D-09 bloquent, et plus tard (AG-043, AG-049, AG-040). RBZ 0.4.0 livré, code poussé sur GitHub. Restent de son côté : essayer sur un vrai terrain, contredire ADR-33 s'il ne convient pas, trancher D-01. (→ docs/VOIRIE_CONTRACT.md)
+  - Prochaine action — AG-038, éditeur de coupe dans SketchUp. AG-037 fait : format de coupe, catalogues et onze préréglages dans le noyau, U23 vert. Le propriétaire doit aussi trancher D-07 à D-10 ; seules D-07, D-08 et D-09 bloquent, et plus tard (AG-043, AG-049, AG-040). RBZ 0.4.0 livré, code poussé sur GitHub. Restent de son côté : essayer sur un vrai terrain, contredire ADR-33 s'il ne convient pas, trancher D-01. (→ docs/VOIRIE_CONTRACT.md)
   - Décisions ouvertes D-07 à D-10 — Naissance des carrefours (réseau par racine recommandé) ; voie sur terrain intact, où un fossé reste enterré (copie entaillée recommandée) ; détail des arbres et lampadaires (3D simple recommandée) ; sens de « clous ». (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
@@ -50,6 +50,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 AG-036 — La recette complète passait alors que le vrai clic sur Remplacer ne faisait rien : le change d'un champ à la perte de focus désactivait le bouton sous la souris. Un clic DOM ne perd pas le focus : toujours faire le vrai geste sur une étape importante. Trois RBZ successifs, recette complète rejouée sur le dernier. (→ docs/recette/H17.md)
     - 2026-11-07 AG-027 — Une dalle pile à l'altitude du terrain arrête le rayon, qui repart dessous et ne voit plus le terrain : relance à 1 mm puis 5 mm après un obstacle. Le vrai geste a encore montré quatre défauts d'interface invisibles au DOM. Faire le geste avant la recette complète évite de la rejouer. Une sonde qui ne lit que les sommets donne de fausses alertes : lire le bord réel. (→ docs/recette/H18.md)
     - 2026-11-07 EXT-11 cadré — Demande du propriétaire : coupe d'abord, à l'échelle humaine, puis carrefours, rails, routes variées ; mobilier urbain renvoyé à EXT-12. Une maquette a suffi à montrer deux écueils : le terrain intact enterrerait les fossés (D-08), et une autoroute n'a pas de carrefour à niveau. Le tracé devra gagner des rayons. Dans une sonde de page, rechercher les boutons à chaque clic : un rendu les remplace. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-037 — Le contrôle de couronne a trouvé un défaut dans un préréglage de la maquette : arbre colonnaire du boulevard au-dessus d'une voie à 2,24 m ; terre-plein porté à 6 m. Une raison de refus passée par une variable échappe au relevé des messages du panneau : la tester à part. Le message de version d'une coupe parle encore d'un bâtiment, à reprendre en AG-038. (→ docs/VOIRIE_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -105,7 +106,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-035 Accès par porche — geometry/porch_solver, entrées du catalogue pour Haussmannien et Toulousain, hauteur de départ 2,7 m. U21 vert, vues regardées. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier l'ensemble sélectionné, guide, journal, RBZ. H02 à H17 sans échec, vrai tracé et vraie modification à la souris. Réserves : profil non vierge, cycle H01 sur le paquet précédent. (→ docs/recette/V0.3.md)
   - J8 Voirie — Composer une voie en coupe à l'échelle humaine, la tracer ; carrefours ; puis sur un terrain. AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
-    - [afaire] AG-037 Format de coupe et catalogues — road_profile V1, bandes et éléments fermés, onze préréglages ; noyau pur. U23. Dép. AG-027.
+    - [fait] AG-037 Format de coupe et catalogues — core/road_profile_intake, schéma road-profile V1, catalogues road_bands et road_items, onze préréglages dans archgen/styles/road. U23 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
     - [afaire] AG-038 Éditeur de coupe — Panneau à l'échelle, personnage, ordre, largeurs, éléments, plan ; aucune écriture. H19. Dép. AG-037.
     - [afaire] AG-039 Axe et rubans — Polyligne à rayons, rubans, bordures, fossés, talus, RoadPlan. U24. Dép. AG-037.
     - [afaire] AG-040 Arbres, lampadaires, haies, clôtures — Répétition au pas, définitions partagées, plafonds. U25. Dép. AG-039, D-09.
@@ -273,6 +274,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - U20 — Accès par interruption, carré de référence, 100 contours pseudo-aléatoires. Vert.
     - U21 — Accès par porche, Shell et Structural, limites. Vert.
     - U22 — Étagement : rectangle = bâtiment seul, trapèzes, angles rentrants, trous, refus par parcelle, porches, plafonds. Vert.
+    - U23 — Coupe de voirie : limites et premier dépassement par type, registre fermé, préréglages, variation, avertissements. Vert.
   - H01–H12 — Recette dans SketchUp, seule preuve native
     - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
     - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)

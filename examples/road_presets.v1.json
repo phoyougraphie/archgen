@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "presets": [
+    {
+      "id": "autoroute",
+      "profile": { "road_profile_version": 1, "name": "Autoroute", "bands": [
+        { "type": "bank", "width_m": 3 },
+        { "type": "ditch", "width_m": 1.5 },
+        { "type": "verge", "width_m": 1, "items": [{ "kind": "fence", "variant": "mesh", "height_m": 1.6 }] },
+        { "type": "hard", "width_m": 2.5 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "edge", "width_m": 1 },
+        { "type": "median", "width_m": 3, "items": [{ "kind": "guard", "variant": "concrete", "height_m": 0.8 }] },
+        { "type": "edge", "width_m": 1 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "hard", "width_m": 2.5 },
+        { "type": "verge", "width_m": 1, "items": [{ "kind": "fence", "variant": "mesh", "height_m": 1.6 }] },
+        { "type": "ditch", "width_m": 1.5 },
+        { "type": "bank", "width_m": 3 }
+      ] }
+    },
+    {
+      "id": "nationale",
+      "profile": { "road_profile_version": 1, "name": "Route à deux voies", "bands": [
+        { "type": "ditch", "width_m": 1.5 },
+        { "type": "verge", "width_m": 2, "items": [{ "kind": "guard", "variant": "guard", "height_m": 0.8 }] },
+        { "type": "edge", "width_m": 0.5 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "lane", "width_m": 3.5 },
+        { "type": "edge", "width_m": 0.5 },
+        { "type": "verge", "width_m": 2 },
+        { "type": "ditch", "width_m": 1.5 }
+      ] }
+    },
+    {
+      "id": "campagne",
+      "profile": { "road_profile_version": 1, "name": "Route de campagne à fossés", "bands": [
+        { "type": "plant", "width_m": 1, "items": [{ "kind": "hedge", "variant": "hedge", "height_m": 1.5 }] },
+        { "type": "ditch", "width_m": 1.2 },
+        { "type": "verge", "width_m": 1 },
+        { "type": "lane", "width_m": 2.8 },
+        { "type": "lane", "width_m": 2.8 },
+        { "type": "verge", "width_m": 1, "items": [{ "kind": "tree", "variant": "wide", "height_m": 14, "spacing_m": 14, "height_variation": 0.2 }] },
+        { "type": "ditch", "width_m": 1.2 },
+        { "type": "plant", "width_m": 1, "items": [{ "kind": "hedge", "variant": "hedge", "height_m": 1.5 }] }
+      ] }
+    },
+    {
+      "id": "rural",
+      "profile": { "road_profile_version": 1, "name": "Chemin rural", "bands": [
+        { "type": "verge", "width_m": 0.8 },
+        { "type": "track", "width_m": 3.2 },
+        { "type": "verge", "width_m": 0.8, "items": [{ "kind": "fence", "variant": "fence", "height_m": 1.1 }] }
+      ] }
+    },
+    {
+      "id": "boulevard",
+      "profile": { "road_profile_version": 1, "name": "Boulevard planté", "bands": [
+        { "type": "sidewalk", "width_m": 4, "items": [{ "kind": "tree", "variant": "round", "height_m": 12, "spacing_m": 9 }] },
+        { "type": "cycle", "width_m": 2 },
+        { "type": "parking", "width_m": 2.2 },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "median", "width_m": 6, "items": [{ "kind": "tree", "variant": "columnar", "height_m": 14, "spacing_m": 9 }, { "kind": "lamp", "variant": "double", "height_m": 10, "spacing_m": 28 }] },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "parking", "width_m": 2.2 },
+        { "type": "cycle", "width_m": 2 },
+        { "type": "sidewalk", "width_m": 4, "items": [{ "kind": "tree", "variant": "round", "height_m": 12, "spacing_m": 9 }] }
+      ] }
+    },
+    {
+      "id": "ville",
+      "profile": { "road_profile_version": 1, "name": "Rue de ville", "bands": [
+        { "type": "sidewalk", "width_m": 2.5, "items": [{ "kind": "lamp", "variant": "heritage", "height_m": 5, "spacing_m": 22 }] },
+        { "type": "parking", "width_m": 2 },
+        { "type": "lane", "width_m": 3 },
+        { "type": "lane", "width_m": 3 },
+        { "type": "sidewalk", "width_m": 2.5, "items": [{ "kind": "bollard", "variant": "bollard", "height_m": 0.9, "spacing_m": 2.5 }] }
+      ] }
+    },
+    {
+      "id": "mixte",
+      "profile": { "road_profile_version": 1, "name": "Rue tram et voitures", "bands": [
+        { "type": "sidewalk", "width_m": 3, "items": [{ "kind": "pole", "variant": "pole", "height_m": 7, "spacing_m": 40 }, { "kind": "lamp", "variant": "single", "height_m": 8, "spacing_m": 28 }] },
+        { "type": "tram_lane", "width_m": 3.3 },
+        { "type": "tram_lane", "width_m": 3.3 },
+        { "type": "sidewalk", "width_m": 3, "items": [{ "kind": "pole", "variant": "pole", "height_m": 7, "spacing_m": 40 }] }
+      ] }
+    },
+    {
+      "id": "tram",
+      "profile": { "road_profile_version": 1, "name": "Tram en site propre", "bands": [
+        { "type": "sidewalk", "width_m": 3, "items": [{ "kind": "tree", "variant": "round", "height_m": 9, "spacing_m": 9 }] },
+        { "type": "cycle", "width_m": 2 },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "tram", "width_m": 3.2, "items": [{ "kind": "pole", "variant": "pole", "height_m": 7, "spacing_m": 40 }] },
+        { "type": "tram", "width_m": 3.2 },
+        { "type": "lane", "width_m": 3.2 },
+        { "type": "cycle", "width_m": 2 },
+        { "type": "sidewalk", "width_m": 3, "items": [{ "kind": "tree", "variant": "round", "height_m": 9, "spacing_m": 9 }] }
+      ] }
+    },
+    {
+      "id": "fer",
+      "profile": { "road_profile_version": 1, "name": "Voie ferrée double", "bands": [
+        { "type": "ditch", "width_m": 1.5 },
+        { "type": "verge", "width_m": 1.5, "items": [{ "kind": "fence", "variant": "mesh", "height_m": 1.8 }, { "kind": "pole", "variant": "pole", "height_m": 7, "spacing_m": 40 }] },
+        { "type": "rail", "width_m": 4.5 },
+        { "type": "rail", "width_m": 4.5 },
+        { "type": "verge", "width_m": 1.5, "items": [{ "kind": "pole", "variant": "pole", "height_m": 7, "spacing_m": 40 }] },
+        { "type": "ditch", "width_m": 1.5 }
+      ] }
+    },
+    {
+      "id": "verte",
+      "profile": { "road_profile_version": 1, "name": "Voie verte", "bands": [
+        { "type": "plant", "width_m": 2, "items": [{ "kind": "tree", "variant": "conifer", "height_m": 11, "spacing_m": 12 }] },
+        { "type": "cycle", "width_m": 3 },
+        { "type": "path", "width_m": 2, "items": [{ "kind": "lamp", "variant": "ped", "height_m": 4, "spacing_m": 20 }] },
+        { "type": "plant", "width_m": 2, "items": [{ "kind": "hedge", "variant": "hedge", "height_m": 1.2 }] }
+      ] }
+    },
+    {
+      "id": "pieton",
+      "profile": { "road_profile_version": 1, "name": "Chemin piéton", "bands": [
+        { "type": "verge", "width_m": 1, "items": [{ "kind": "hedge", "variant": "hedge", "height_m": 1.4 }] },
+        { "type": "path", "width_m": 2 },
+        { "type": "verge", "width_m": 1, "items": [{ "kind": "lamp", "variant": "ped", "height_m": 3.5, "spacing_m": 18 }] }
+      ] }
+    }
+  ]
+}
