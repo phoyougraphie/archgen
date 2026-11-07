@@ -334,6 +334,8 @@
     function X(m) { return ox + m * s; }
     function Z(z) { return base - z * s; }
     root.setAttribute('viewBox', '0 0 ' + VW + ' ' + H);
+    // Échelle exposée pour la recette : les sondes mesurent chaque objet en mètres.
+    root.setAttribute('data-scale', s);
 
     svg('rect', { x: 0, y: 0, width: VW, height: base, class: 's-sky' }, root);
     var d = 'M0 ' + Z(sec.bands[0].surface[0][1]);
@@ -354,12 +356,15 @@
       var x = c.side === 'right' ? X(c.x_m) : X(c.x_m - c.width_m);
       svg('rect', { x: x, y: Z(c.z_high_m), width: Math.max(2, c.width_m * s), height: Math.max(3, (c.z_high_m - c.z_low_m + 0.12) * s), class: 's-curb' }, root);
     });
-    sec.rails.forEach(function (r) {
-      svg('rect', { x: X(r.x_m) - Math.max(2, 0.04 * s), y: Z(r.z_m) - Math.max(3, 0.12 * s), width: Math.max(4, 0.08 * s), height: Math.max(4, 0.14 * s), class: 's-rail' }, root);
-    });
+    // Traverses de 2,6 m sous les rails, dessus au niveau du ballast ; rails posés dessus (0,17 m de haut),
+    // ou encastrés au ras de la chaussée. Défaut vu à la mesure : rails dessinés 12 cm trop haut.
     sec.bands.filter(function (b) { return b.type === 'rail'; }).forEach(function (b) {
       var c = (b.x0_m + b.x1_m) / 2;
-      svg('rect', { x: X(c - 1.3), y: Z(b.level_m + 0.1), width: 2.6 * s, height: Math.max(3, 0.1 * s), class: 's-trunk' }, root);
+      svg('rect', { x: X(c - 1.3), y: Z(b.level_m), width: 2.6 * s, height: Math.max(3, 0.15 * s), class: 's-trunk' }, root);
+    });
+    sec.rails.forEach(function (r) {
+      var tall = r.kind === 'ballast' ? 0.17 : 0.05;
+      svg('rect', { x: X(r.x_m) - Math.max(2, 0.035 * s), y: Z(r.z_m), width: Math.max(4, 0.07 * s), height: Math.max(3, tall * s), class: 's-rail', 'data-rail': r.band, 'data-x': X(r.x_m), 'data-top': Z(r.z_m) }, root);
     });
     if (state.veh) { drawVehicles(root, sec, X, Z, s); }
     sec.items.forEach(function (it) { drawItem(root, it, X, Z, s); });
@@ -382,13 +387,15 @@
       if (type === 'cycle') { v = 'bike'; }
       if (!v) { return; }
       var c = (b.x0_m + b.x1_m) / 2;
-      var z = type === 'rail' ? b.level_m + 0.3 : surfaceZ(c);
+      // Un train roule sur ses rails, pas sur le ballast : défaut vu à la mesure, il flottait de 13 cm.
+      var onRails = sec.rails.filter(function (r) { return r.band === b.index; });
+      var z = type === 'rail' && onRails.length ? onRails[0].z_m : surfaceZ(c);
       var dim = VEHICLES[v];
       var w = dim[0] * s;
       var h = dim[1] * s;
       var x = X(c);
       var y = Z(z);
-      var g = svg('g', { 'pointer-events': 'none' }, root);
+      var g = svg('g', { 'pointer-events': 'none', 'data-vehicle': v, 'data-on-band': b.index, 'data-w-m': dim[0], 'data-h-m': dim[1], 'data-x': x }, root);
       svg('title', {}, g, dim[2]);
       if (v === 'bike') {
         svg('circle', { cx: x, cy: y - h + 0.12 * s, r: 0.12 * s, class: 's-veh' }, g);
@@ -405,7 +412,7 @@
   }
 
   function drawItem(root, it, X, Z, s) {
-    var g = svg('g', {}, root);
+    var g = svg('g', { 'data-kind': it.kind, 'data-variant': it.variant, 'data-height-m': it.height_m, 'data-crown-m': it.kind === 'tree' ? 2 * it.crown_radius_m : 0, 'data-x': X(it.x_m) }, root);
     var c = state.items[it.kind];
     var variant = c.variants.filter(function (v) { return v.id === it.variant; })[0];
     svg('title', {}, g, c.label + ' : ' + variant.label + ', ' + fmt(it.height_m) + ' m');
@@ -428,15 +435,17 @@
       if (it.variant === 'single' || it.variant === 'double') {
         [dir, it.variant === 'double' ? -dir : null].forEach(function (k) {
           if (k === null) { return; }
-          svg('path', { d: 'M' + x + ' ' + (z - h) + 'q' + (k * a * 0.6) + ' ' + (-0.12 * s) + ' ' + (k * a) + ' 0', class: 's-pole', 'stroke-width': 2 }, g);
-          svg('rect', { x: x + k * a - 0.25 * s, y: z - h, width: 0.5 * s, height: 3, class: 's-steel' }, g);
+          // La crosse retombe depuis le haut du mât : rien ne dépasse la hauteur annoncée (défaut vu à la mesure).
+          svg('path', { d: 'M' + x + ' ' + (z - h) + 'q' + (k * a * 0.6) + ' 0 ' + (k * a) + ' ' + (0.12 * s), class: 's-pole', 'stroke-width': 2 }, g);
+          svg('rect', { x: x + k * a - 0.25 * s, y: z - h + 0.12 * s, width: 0.5 * s, height: 3, class: 's-steel' }, g);
         });
       } else if (it.variant === 'ped') {
-        svg('circle', { cx: x, cy: z - h, r: Math.max(3, 0.18 * s), class: 's-steel' }, g);
+        var globe = Math.max(3, 0.18 * s);
+        svg('circle', { cx: x, cy: z - h + globe, r: globe, class: 's-steel' }, g);
       } else if (it.variant === 'heritage') {
         svg('path', { d: 'M' + (x - 0.22 * s) + ' ' + (z - h + 0.55 * s) + 'L' + (x + 0.22 * s) + ' ' + (z - h + 0.55 * s) + 'L' + (x + 0.3 * s) + ' ' + (z - h) + 'L' + (x - 0.3 * s) + ' ' + (z - h) + 'Z', class: 's-steel' }, g);
       } else {
-        svg('rect', { x: x - 0.9 * s, y: z - h - 3, width: 1.8 * s, height: 4, class: 's-steel' }, g);
+        svg('rect', { x: x - 0.9 * s, y: z - h, width: 1.8 * s, height: Math.max(4, 0.25 * s), class: 's-steel' }, g);
       }
     } else if (it.kind === 'hedge') {
       svg('rect', { x: x - 0.4 * s, y: z - h, width: 0.8 * s, height: h, rx: Math.min(6, 0.2 * s), class: 's-hedge' }, g);
@@ -460,8 +469,10 @@
 
   function drawPerson(root, X, Z, s, W) {
     if (state.person === null) {
+      // Sur un cheminement piéton, sinon sur une bande plate hors voies, fossés et talus (pas au fond d'un fossé).
+      var away = ['carriageway', 'tram', 'rail', 'ditch', 'bank'];
       var ped = state.section.bands.filter(function (b) { return b.role === 'pedestrian'; })[0] ||
-        state.section.bands.filter(function (b) { return b.role !== 'carriageway'; })[0] || state.section.bands[0];
+        state.section.bands.filter(function (b) { return away.indexOf(b.role) < 0; })[0] || state.section.bands[0];
       state.person = ped.x0_m + (ped.x1_m - ped.x0_m) * 0.7;
     }
     state.person = Math.max(0, Math.min(W, state.person));

@@ -13,6 +13,9 @@ module ArchgenH19Probe
   PANEL = Archgen::UI::RoadPanel
   DELAY_S = 1.0
   PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton].freeze
+  # Mesure indépendante de chaque objet (hauteur, largeur, pose au sol ou sur les rails).
+  SCALE_PROBE = File.read(File.join(__dir__, 'road_scale_probe.js'), encoding: 'UTF-8').strip.delete_suffix(';')
+  CATALOGUE_SETUP = File.read(File.join(__dir__, 'road_catalogue_setup.js'), encoding: 'UTF-8')
 
   SNAPSHOT = <<~JS
     (function () {
@@ -38,10 +41,13 @@ module ArchgenH19Probe
         // La zone de saisie du personnage descend jusqu'au sol : l'écart avec les pieds doit être nul.
         feet_gap_m: parts.length && pxPerM ? (head.parentNode.querySelector('.s-hit').getBoundingClientRect().bottom - bottom) / pxPerM : null,
         band_m: hits.map(function (h) { return h.getBoundingClientRect().width / pxPerM; }),
-        svg_nodes: all('#section *').length + all('#plan *').length
+        svg_nodes: all('#section *').length + all('#plan *').length,
+        kinds: all('#section [data-kind]').map(function (g) { return g.getAttribute('data-kind') + '/' + g.getAttribute('data-variant'); }),
+        scale: JSON.parse(__SCALE_PROBE__)
       }));
     }());
   JS
+    .sub('__SCALE_PROBE__') { SCALE_PROBE }
 
   module_function
 
@@ -90,10 +96,17 @@ module ArchgenH19Probe
       p['presets'] == 11 && p['status'] == 'Coupe acceptée' && p['pressed'] == 'Rue de ville' && p['bands'].size == 5
     }]]
     PRESETS.each do |id|
-      out << ["Préréglage #{id} accepté et dessiné", -> { click("[data-preset=\"#{id}\"]") }, lambda { |p|
-        p['status'] == 'Coupe acceptée' && p['svg_nodes'] > 40 && p['diag'] == ['Aucun refus ni alerte.']
+      out << ["Préréglage #{id} accepté, dessiné, chaque objet à l’échelle", -> { click("[data-preset=\"#{id}\"]") }, lambda { |p|
+        @measured += p['scale']['count']
+        p['status'] == 'Coupe acceptée' && p['svg_nodes'] > 40 && p['diag'] == ['Aucun refus ni alerte.'] && p['scale']['failures'].empty?
       }]
     end
+    out << ['Catalogue complet composé au panneau, chaque variante à l’échelle', -> { js(CATALOGUE_SETUP) }, lambda { |p|
+      @measured += p['scale']['count']
+      expected = %w[lamp/single lamp/double lamp/ped lamp/heritage lamp/high hedge/hedge fence/mesh fence/fence guard/guard guard/concrete
+                    bollard/bollard tree/columnar tree/wide tree/conifer pole/pole]
+      p['status'] == 'Coupe acceptée' && (expected - p['kinds']).empty? && p['scale']['failures'].empty?
+    }]
     out + [
       ['Échelle à l’écran : personnage de 1,75 m, bandes à leur largeur (tram en site propre)', -> { click('[data-preset="tram"]') }, lambda { |p|
         expected = [3, 2, 3.2, 3.2, 3.2, 3.2, 2, 3]
@@ -163,7 +176,11 @@ module ArchgenH19Probe
     end
     @current = [label, check_block]
     if check_block
-      UI.start_timer(DELAY_S + (label.start_with?('Rouvrir') || label.start_with?('Ajouter') ? 1.5 : 0), false) { js(SNAPSHOT) }
+      extra = if label.start_with?('Catalogue') then 13
+              elsif label.start_with?('Rouvrir', 'Ajouter') then 1.5
+              else 0
+              end
+      UI.start_timer(DELAY_S + extra, false) { js(SNAPSHOT) }
     else
       log("FAIT  #{label}")
       UI.start_timer(DELAY_S * 2, false) { advance }
@@ -172,6 +189,7 @@ module ArchgenH19Probe
 
   def finish
     log("Mesure : #{@scale}") if @scale
+    log("Objets mesurés à l’échelle : #{@measured}")
     check('Modèle inchangé : entités, définitions, matériaux, balises, état modifié', model_print == @before, "#{@before.inspect} -> #{model_print.inspect}")
     log("FIN #{@failures} echec(s), ARCHGEN #{Archgen::VERSION}, SketchUp #{Sketchup.version}, Ruby #{RUBY_VERSION}")
   end
@@ -179,6 +197,7 @@ module ArchgenH19Probe
   def run
     @lines = []
     @failures = 0
+    @measured = 0
     @before = model_print
     @queue = steps
     PANEL.show
