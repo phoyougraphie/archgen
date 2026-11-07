@@ -12,6 +12,8 @@ module Archgen
       BALLAST_RAIL_RISE_M = 0.17
       LENGTH_FOR_COUNT_M = 100.0
       CROWN_ROLES = %w[carriageway tram rail].freeze
+      # Une bordure ne borde qu'un trottoir, un terre-plein, une bande plantée ou une piste : le ballast n'en a pas.
+      CURB_ROLES = %w[pedestrian median planting cycle].freeze
 
       module_function
 
@@ -75,6 +77,8 @@ module Archgen
           next if step.abs < CURB_MIN_STEP_M - 1e-9
 
           high = step.positive? ? b : a
+          next unless CURB_ROLES.include?(high['role'])
+
           { 'x_m' => b['x0_m'], 'band' => high['index'], 'side' => step.positive? ? 'right' : 'left',
             'width_m' => CURB_WIDTH_M, 'z_low_m' => q([a['level_m'], b['level_m']].min), 'z_high_m' => q([a['level_m'], b['level_m']].max) }
         end

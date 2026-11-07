@@ -103,15 +103,42 @@ Calcul pur, repris par le tronçon. x part du bord gauche, z du niveau 0.
 
 ## Tronçon
 
-**Tracé :** polyligne de 2 à 64 points au geste de l'outil existant, chaque sommet intérieur portant un rayon `radius_m`. L'arc est discrétisé avec un écart à la corde d'au plus 5 cm (départ). Un sommet de rayon 0 reste un angle vif avec onglet. La courbe est nécessaire ici : ni une route ni un rail ne se tracent en lignes brisées.
+Livré dans le noyau par AG-039 (U24) ; l'écriture dans SketchUp et l'outil de tracé viennent en AG-042.
 
-**Géométrie :** chaque bande est un ruban entre deux lignes décalées de l'axe ; les rubans voisins partagent leurs sommets. Une ligne d'axe d'une coupe asymétrique reste l'axe du tracé : le décalage peut viser le milieu ou un bord (`axis`, `center` par défaut).
+**Format `road` V1** ([schéma](../schemas/road-settings.v1.schema.json)), clés inconnues refusées :
 
-**Refus, `E_ROAD_TRACE`, sur `/trace/…` :** tracé qui se coupe avant les carrefours (AG-043), segment trop court pour ses deux arcs, rayon qui replierait le bord intérieur (rayon intérieur sous 1 m, départ), point hors de ±2 000 m.
+```json
+{ "road_version": 1, "seed": 1, "axis": "center",
+  "trace": { "points_m": [[0, 0], [100, 0], [100, 80]], "radii_m": [40] },
+  "profile": { "bands": [ … ] } }
+```
 
-**Plafonds, `E_ROAD_BUDGET` (départ, à revoir après mesure) :** 5 000 objets répétés, 60 000 faces uniques, 600 000 faces étendues.
+- `trace.points_m` : 2 à 64 points `[x, y]`, dans le repère de la racine ; le premier est (0, 0). `trace.radii_m` : un rayon par sommet intérieur, de 0 à 5 000 m, ni plus ni moins.
+- `axis` : `center` (défaut), `left` ou `right` : le tracé suit le milieu ou un bord de l'emprise.
+- `seed` : 1 par défaut, réservée à la variation des arbres (AG-040).
+- `profile` : une coupe `road_profile`, jugée comme au panneau ; ses diagnostics sont rapportés sous `/profile/…`.
 
-**Plan :** `RoadPlan = {schema_version:1, units:"m", definitions, strips, instances, metrics}`, avec sa propre empreinte `road_digest` et son validateur. Écart de cote attendu dans SketchUp : au plus 1 mm, comme ailleurs.
+**Axe.** Un rayon nul garde un angle vif à **onglet** : la normale suit la bissectrice, allongée de 1 / cos(φ/2), si bien que chaque bande garde sa largeur perpendiculairement aux deux segments. Un rayon non nul pose un **arc tangent**, de longueur de tangente R × tan(|φ|/2) de chaque côté du sommet. L'arc est découpé pour qu'au bord le plus éloigné de l'axe l'écart à la corde reste sous 5 cm (départ) : pas de 2 × acos(1 − 0,05 / (R + portée)). La courbe est nécessaire ici : ni une route ni un rail ne se tracent en lignes brisées.
+
+**Rubans.** La ligne de coupe est une polyligne continue de gauche à droite : surface de chaque bande, coupée au bord de ses bordures, et une **contremarche** verticale à chaque changement de niveau. Elle est balayée d'une station de l'axe à la suivante : une face par segment de coupe et par intervalle, quadrilatère plan. Seul un segment en pente, au droit d'un onglet, peut ne pas être plan : il est alors coupé en deux triangles. Sur un arc ou à l'onglet, les quadrilatères restent plans par construction. Tout est **une seule surface** : deux rubans voisins partagent leurs sommets, et les faces sont orientées vers le haut, les contremarches vers la bande basse. Une ligne droite n'a aucune station intermédiaire, ce qui n'en fait qu'une face par segment de coupe ; le terrain (AG-049) demandera de la redécouper. Matériaux, par clé : `road/<type de bande>` et `road/curb` ; leur catalogue vient en AG-042.
+
+**Bordure, précision :** une bordure ne borde qu'une bande `pedestrian`, `median`, `planting` ou `cycle` plus haute. Une autre marche, comme celle du ballast, est une contremarche de la matière de la bande haute.
+
+**Refus, `E_ROAD_TRACE` :**
+
+| Raison | Chemin | Cas |
+|---|---|---|
+| `too_few_points`, `first_point_not_road_origin`, `coordinate_range`, `radii_count` | `/trace/points_m…`, `/trace/radii_m` | Forme du tracé ; point hors de ±2 000 m |
+| `segment_too_short` | `/trace/segments/<k>` | Segment de moins de 0,5 m (départ) |
+| `reversal` | `/trace/points_m/<i>` | Demi-tour de plus de 179° |
+| `radius_too_small` | `/trace/radii_m/<j>` | Rayon intérieur sous 1 m (départ) : R doit valoir au moins la portée du côté intérieur + 1 m, ce que le paramètre `min` donne |
+| `arcs_too_long` | `/trace/segments/<k>` | Les tangentes de ses deux arcs dépassent le segment |
+| `inner_edge_folds` | `/trace/points_m/<i>` | À un onglet, le bord intérieur recule plus que la place disponible |
+| `self_overlap` | `/trace/points_m/<i>` | Le contour de l'emprise se coupe : un croisement attend les carrefours (AG-043) |
+
+**Plafond, `E_ROAD_BUDGET`, `road_faces`, sur `/trace` :** 60 000 faces (départ), estimées avant construction. Les objets répétés et les faces étendues viendront avec AG-040.
+
+**Plan :** `RoadPlan = {schema_version:1, engine_version, units:"m", nodes:[road > surface], metrics}`, métriques `face_count`, `vertex_count`, `station_count`, `cross_segment_count`, `width_m`, `length_m`. Il est validé par `RoadPlanValidator` (mêmes refus de maillage que le bâtiment : sommets quantifiés, faces planes, arêtes d'au moins 2 mm, orientation cohérente), et son empreinte `road_digest` est le SHA-256 du JSON canonique. Le moteur de voirie a sa propre version, `ROAD_ENGINE_VERSION`. Écart de cote attendu dans SketchUp : au plus 1 mm, comme ailleurs. Mesure Ruby : un kilomètre de route de campagne sinueuse en 22 ms, 968 faces ; au plus 26 ms sur 100 tracés tirés.
 
 ## Carrefours
 

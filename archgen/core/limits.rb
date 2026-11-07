@@ -28,6 +28,12 @@ module Archgen
       ENSEMBLE_MAX_UNIQUE_FACES = 120_000
       ENSEMBLE_MAX_EXPANDED_FACES = 600_000
       ENSEMBLE_SITE_MAX_POINTS = 12_000
+      # Voirie : valeurs de départ du contrat de voirie, à calibrer à la recette.
+      ROAD_MAX_COORDINATE_M = 2000.0
+      ROAD_MIN_SEGMENT_M = 0.5
+      ROAD_MIN_INNER_RADIUS_M = 1.0
+      ROAD_CHORD_TOLERANCE_M = 0.05
+      ROAD_MAX_UNIQUE_FACES = 60_000
     end
   end
 end

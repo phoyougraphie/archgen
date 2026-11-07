@@ -38,6 +38,12 @@ class RoadSectionTest < Minitest::Test
     assert_in_delta 0.12, curbs[0]['z_high_m'] - curbs[0]['z_low_m'], 1e-9
   end
 
+  def test_ballast_has_no_curb
+    assert_empty section(preset('fer'))['curbs']
+    boulevard = section(preset('boulevard'))
+    assert_equal %w[sidewalk median median sidewalk], boulevard['curbs'].map { |c| boulevard['bands'][c['band']]['type'] }
+  end
+
   def test_ditch_is_a_trapezoid_with_a_thirty_percent_floor
     ditch = section('bands' => [{ 'type' => 'verge', 'width_m' => 1 }, { 'type' => 'ditch', 'width_m' => 1.5 }])['bands'][1]
     assert_equal [[1.0, 0.0], [1.525, -0.6], [1.975, -0.6], [2.5, 0.0]], ditch['surface']

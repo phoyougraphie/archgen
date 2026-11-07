@@ -25,7 +25,8 @@ module Archgen
         'site' => read_json('schemas', 'site-settings.v1.schema.json'),
         'survey' => read_json('schemas', 'survey-grid.v1.schema.json'),
         'ensemble' => read_json('schemas', 'ensemble-settings.v1.schema.json'),
-        'road_profile' => read_json('schemas', 'road-profile.v1.schema.json')
+        'road_profile' => read_json('schemas', 'road-profile.v1.schema.json'),
+        'road' => read_json('schemas', 'road-settings.v1.schema.json')
       }
     end
 
@@ -44,6 +45,10 @@ module Archgen
 
     def road_profile_intake(sources: schemas)
       Core::RoadProfileIntake.new(sources.fetch('road_profile'), bands: road_bands, items: road_items)
+    end
+
+    def road_intake(sources: schemas)
+      Core::RoadIntake.new(sources.fetch('road'), profiles: road_profile_intake(sources: sources))
     end
 
     def materials
