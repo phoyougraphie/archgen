@@ -12,16 +12,20 @@
   var VEHICLES = { car: [1.8, 1.5, 'Voiture'], bus: [2.55, 3.0, 'Bus'], tram: [2.4, 3.4, 'Tram'], train: [2.9, 4.1, 'Train'], bike: [0.6, 1.75, 'Cycliste'] };
 
   var state = {
-    counter: 0, latest: null, timer: null, bands: {}, bandList: [], items: {}, presets: [],
+    counter: 0, latest: null, pending: {}, timer: null, bands: {}, bandList: [], items: {}, presets: [],
     draft: [], name: null, preset: null, sel: 0, section: null, diagnostics: [], person: null,
-    veh: true, drag: null, geom: null, stale: false, localError: null
+    veh: true, drag: null, geom: null, stale: false, localError: null,
+    mode: 'trace', writes: false, digest: null, busy: false, loaded: false, radiusError: null, notice: null
   };
 
   function byId(id) { return document.getElementById(id); }
   var el = {
     status: byId('status'), presets: byId('presets'), section: byId('section'), plan: byId('plan'), sum: byId('sum'),
     count: byId('count'), n: byId('n'), addType: byId('add-type'), addBand: byId('add-band'), mirror: byId('mirror'),
-    bands: byId('bands'), diag: byId('diag'), veh: byId('veh')
+    bands: byId('bands'), diag: byId('diag'), veh: byId('veh'), title: byId('title'),
+    roadBox: byId('road-box'), roadHint: byId('road-hint'), radius: byId('r-radius'), axis: byId('r-axis'),
+    roadResult: byId('road-result'), roadDiag: byId('road-diag'), create: byId('road-create'), clear: byId('road-clear'),
+    reload: byId('road-reload'), resume: byId('road-resume')
   };
 
   // --- Pont
@@ -29,7 +33,8 @@
   function send(action, payload) {
     state.counter += 1;
     var id = 'r' + state.counter;
-    state.latest = id;
+    state.pending[id] = action;
+    if (action === 'preview' || action === 'init') { state.latest = id; }
     window.sketchup.archgen_road(JSON.stringify({ v: 1, request_id: id, action: action, payload: payload || {} }));
   }
 
@@ -39,12 +44,34 @@
     return out;
   }
 
+  // Rayon vide : celui de départ à la création, ceux enregistrés à la modification.
+  function road() {
+    var out = { axis: el.axis.value };
+    var text = el.radius.value.trim();
+    var value = text === '' ? null : L.parseDecimal(text);
+    state.radiusError = text !== '' && value === null ? 'Saisissez un rayon valide.' : null;
+    if (value !== null) { out.radius_m = value; }
+    return out;
+  }
+
   function requestPreview(now) {
     clearTimeout(state.timer);
+    // Une saisie de l'utilisateur efface l'annonce d'une écriture ; le recalcul qui la suit la garde.
+    if (!now) { state.notice = null; }
+    state.digest = null;
+    updateButtons();
     el.status.textContent = 'Calcul…';
     var go = function () {
       if (state.localError) { showLocal(); return; }
-      send('preview', { profile: profile() });
+      var r = road();
+      if (state.radiusError) {
+        el.roadResult.textContent = state.radiusError;
+        el.roadDiag.textContent = '';
+        el.status.textContent = 'Saisie à corriger';
+        el.status.className = 'status is-bad';
+        return;
+      }
+      send('preview', { profile: profile(), road: r });
     };
     // Jamais d'envoi depuis la réception d'une réponse : le pont pourrait rappeler la page en cascade.
     state.timer = setTimeout(go, now ? 0 : DEBOUNCE_MS);
@@ -53,24 +80,119 @@
   // Ruby envoie une chaîne JSON, comme aux autres panneaux (défaut vu en H19 : un objet était attendu).
   window.archgenRoadReceive = function (json) {
     var response = JSON.parse(json);
-    if (response.request_id !== state.latest) { return; }
-    if (response.result && response.result.bands && response.result.presets) { return start(response.result); }
+    var action = state.pending[response.request_id];
+    delete state.pending[response.request_id];
+    if ((action === 'preview' || action === 'init') && response.request_id !== state.latest) { return; }
+    if (action === 'init') { return start(response.result); }
+    if (action === 'preview') { return previewed(response); }
+    if (action === 'create' || action === 'regenerate') { return written(response, action); }
+    if (action === 'load_selection') { return loadedRoad(response); }
+    if (action === 'clear') { requestPreview(true); }
+  };
+
+  function previewed(response) {
     state.diagnostics = response.diagnostics || [];
     if (response.ok) {
       state.section = response.result.section;
       state.stale = false;
-      el.status.textContent = 'Coupe acceptée';
+      el.status.textContent = state.notice || 'Coupe acceptée';
       el.status.className = 'status';
+      showRoad(response.result.road);
     } else {
       state.stale = true;
       el.status.textContent = 'Coupe refusée : voir les bandes en rouge';
       el.status.className = 'status is-bad';
+      showRoad(null);
     }
     drawAll();
     showRowErrors();
-  };
+  }
+
+  // --- Voie : tracé, résultat, écriture
+
+  function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+
+  function showRoad(road) {
+    el.roadDiag.textContent = '';
+    state.digest = null;
+    if (!state.writes) { el.roadBox.hidden = true; return; }
+    el.roadBox.hidden = false;
+    if (!road) {
+      el.roadResult.textContent = state.mode === 'edit'
+        ? (state.loaded ? 'Calcul impossible : corrigez la coupe.' : 'Sélectionnez une voie ARCHGEN, puis cliquez sur Recharger la sélection.')
+        : 'Tracez la voie dans la vue : un clic par sommet, ou « longueur;angle » au clavier. Double-clic ou Échap pour finir.';
+    } else if (road.ok) {
+      var m = road.metrics;
+      el.roadResult.textContent = 'Voie de ' + fmt(m.length_m) + ' m sur ' + fmt(m.width_m) + ' m : ' + fmtInt(m.item_count) + ' objets' +
+        (m.sleeper_count ? ' dont ' + fmtInt(m.sleeper_count) + ' traverses' : '') + ', ' + fmtInt(m.expanded_face_count) + ' faces au total.';
+      state.digest = road.road_digest;
+    } else {
+      el.roadResult.textContent = 'Cette voie ne peut pas être créée :';
+    }
+    (road && road.diagnostics || []).forEach(function (d) {
+      node('li', { className: d.severity === 'error' ? 'is-error' : 'is-warning' }, el.roadDiag, d.message);
+    });
+    updateButtons();
+  }
+
+  function updateButtons() {
+    el.create.disabled = !state.digest || state.busy;
+    el.clear.hidden = state.mode !== 'trace';
+    el.reload.hidden = state.mode !== 'edit';
+  }
+
+  function written(response, action) {
+    state.busy = false;
+    if (response.ok) {
+      var r = response.result;
+      state.notice = (action === 'create' ? 'Voie créée' : 'Voie remplacée') + ', révision ' + r.revision + '. Annuler la retire en une fois.';
+      el.status.textContent = state.notice;
+      el.status.className = 'status';
+    } else {
+      el.status.textContent = response.diagnostics.map(function (d) { return d.message; }).join(' ');
+      el.status.className = 'status is-bad';
+    }
+    requestPreview(true);
+  }
+
+  function loadedRoad(response) {
+    if (!response.ok) {
+      state.loaded = false;
+      el.status.textContent = response.diagnostics.map(function (d) { return d.message; }).join(' ');
+      el.status.className = 'status is-bad';
+      showRoad(null);
+      return;
+    }
+    var r = response.result;
+    state.loaded = true;
+    el.axis.value = r.axis;
+    el.radius.value = r.radius_m === null ? '' : L.formatNumber(r.radius_m);
+    el.radius.placeholder = r.radius_m === null ? 'rayons enregistrés' : '';
+    state.notice = 'Voie chargée, révision ' + r.revision;
+    el.status.textContent = state.notice;
+    el.status.className = 'status';
+    load(r.profile, matchPreset(r.profile));
+  }
+
+  window.archgenRoadTrace = function () { requestPreview(false); };
+  window.archgenRoadTool = function (active) { el.resume.hidden = active || state.mode !== 'trace'; };
+  window.archgenRoadRestart = function () { send('init', {}); };
+
+  function setMode(mode) {
+    state.mode = mode;
+    el.title.textContent = mode === 'edit' ? 'Modifier la voie' : 'Tracer une voie';
+    el.create.textContent = mode === 'edit' ? 'Remplacer cette voie' : 'Créer la voie';
+    el.roadHint.textContent = mode === 'edit'
+      ? 'Le tracé ne change pas. Rayon vide : chaque sommet garde le sien. La voie est remplacée en entier ; Annuler la rétablit en une fois.'
+      : 'Rayon appliqué à chaque sommet, 0 pour un angle vif. L’axe suit le milieu ou un bord de la coupe.';
+  }
 
   function start(result) {
+    state.writes = result.writes;
+    state.loaded = false;
+    setMode(result.mode);
+    if (result.mode === 'trace' && el.radius.value === '') { el.radius.value = L.formatNumber(result.default_radius_m); }
+    el.resume.hidden = result.tool_active || result.mode !== 'trace';
     state.bands = {};
     state.bandList = result.bands;
     result.bands.forEach(function (b) { state.bands[b.type] = b; });
@@ -641,6 +763,20 @@
   });
 
   el.veh.addEventListener('change', function () { state.veh = el.veh.checked; drawSection(); });
+
+  // Seul « input » relance l'aperçu : quitter un champ ne doit jamais désactiver le bouton sous la souris (AG-036).
+  el.radius.addEventListener('input', function () { requestPreview(false); });
+  el.axis.addEventListener('input', function () { requestPreview(false); });
+  el.create.addEventListener('click', function () {
+    if (!state.digest || state.busy) { return; }
+    state.busy = true;
+    updateButtons();
+    el.status.textContent = state.mode === 'edit' ? 'Remplacement en cours…' : 'Écriture de la voie en cours…';
+    send(state.mode === 'edit' ? 'regenerate' : 'create', { profile: profile(), road: road(), road_digest: state.digest });
+  });
+  el.clear.addEventListener('click', function () { send('clear', {}); });
+  el.reload.addEventListener('click', function () { send('load_selection', {}); });
+  el.resume.addEventListener('click', function () { window.sketchup.archgen_road('activate_tool'); });
 
   send('init', {});
 }());

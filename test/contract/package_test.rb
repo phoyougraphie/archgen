@@ -37,7 +37,7 @@ class PackageTest < Minitest::Test
   def test_release_version_and_menu
     assert_match(/\A\d+\.\d+\.\d+(-dev)?\z/, Archgen::VERSION)
     main = read_utf8('archgen', 'main.rb')
-    assert_equal ['Nouveau bâtiment', 'Modifier le bâtiment sélectionné', 'Tracer une rue', 'Modifier l’ensemble sélectionné', 'Composer une coupe de voirie'], main.scan(/add_item\('([^']+)'\)/).flatten
+    assert_equal ['Nouveau bâtiment', 'Modifier le bâtiment sélectionné', 'Tracer une rue', 'Modifier l’ensemble sélectionné', 'Tracer une voie', 'Modifier la voie sélectionnée'], main.scan(/add_item\('([^']+)'\)/).flatten
     refute_includes central_names(RbzPackager.build).join(' '), 'diagnostic'
   end
 

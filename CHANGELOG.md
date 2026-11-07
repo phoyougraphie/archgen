@@ -1,11 +1,24 @@
 # Journal des versions
 
-## 0.5.0-dev
+## 0.5.0
 
-En cours, non publiée : voirie ([contrat](docs/VOIRIE_CONTRACT.md)).
+Voirie : composer une coupe à l'échelle humaine et tracer une voie, de l'autoroute au chemin piéton, rails compris. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 inchangé : bâtiments et ensembles identiques. Moteur de voirie 1. Le rapport de recette est dans [docs/recette/V0.5.md](docs/recette/V0.5.md).
 
-- Menu **Composer une coupe de voirie** : onze types de voie de départ, bandes à ajouter, retirer, ordonner et élargir, arbres, lampadaires, haies, barrières, glissières, potelets et poteaux de caténaire, à l'échelle d'un personnage de 1,75 m. Rien n'est encore écrit dans le modèle.
+**Ajouts**
 
+- **Extensions → ARCHGEN → Tracer une voie** : coupe à composer (onze types de départ, bandes, largeurs, ordre, éléments), à l'échelle d'un personnage de 1,75 m ; tracé dans la vue au clic ou au clavier, rayon des virages, axe au milieu ou sur un bord ; aperçu de la longueur, des objets et des faces avant de créer.
+- Chaussée, trottoirs et bordures, pistes, stationnement, terre-pleins, accotements, fossés et talus, suivis exactement en droite, en courbe et à l'angle vif.
+- Arbres, lampadaires, potelets et poteaux de caténaire au pas choisi, en volumes simples partagés ; haies, barrières et glissières continues avec leurs poteaux ; arbres de trois hauteurs au choix.
+- Rails de tram au ras de la chaussée ou de la plateforme, voie ferrée sur traverses et ballast, écartement de 1,435 m.
+- Une balise par famille : chaussée et trottoirs, végétation, éclairage, mobilier et clôtures, rails.
+- **Modifier la voie sélectionnée** : changer la coupe, le rayon ou l'axe ; le tracé est gardé. Une création ou un remplacement = une entrée d'Annuler.
+
+**Limites connues**
+
+- Voie horizontale : elle ne suit pas encore un terrain. Pas de carrefour : une voie qui se recouvre est refusée.
+- Pas de marquage au sol, de passage piéton, de gorge de rail, ni de fil de caténaire.
+- Un seul rayon pour tous les sommets d'une nouvelle voie.
+- Les largeurs sont des valeurs de conception, pas une vérification réglementaire.
 ## 0.4.0
 
 Étagement d'une rue ou d'un îlot sur un terrain déjà présent dans le modèle. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments et des ensembles restent identiques. Le rapport de recette est dans [docs/recette/V0.4.md](docs/recette/V0.4.md).

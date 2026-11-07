@@ -126,17 +126,26 @@ Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain,
 
 **Limites.** Soubassement seulement, pas de talus entre voisins. Pas d'escalier ni de rampe : un seuil haut est signalé, pas résolu. Un terrain modifié n'est vu qu'au relevé suivant.
 
-## Composer une coupe de voirie (version de développement)
+## Tracer une voie
 
-**Extensions → ARCHGEN → Composer une coupe de voirie.** Le panneau dessine la voie en coupe, à l'échelle, avec un personnage de 1,75 m.
+**Extensions → ARCHGEN → Tracer une voie.** Le panneau s'ouvre et l'outil de tracé est actif.
 
-1. Partez d'un type de voie : autoroute, route de campagne à fossés, boulevard planté, rue tram et voitures, voie ferrée double, chemin piéton…
-2. Les bandes se lisent de gauche à droite. Ajoutez-en une après la bande choisie, retirez-la, déplacez-la avec les flèches, ou inversez tout avec **Miroir**.
-3. Tapez une largeur, ou glissez la poignée bleue sous la limite de deux bandes. Une largeur hors de la plage du type est refusée : la bande passe en rouge, avec la plage à respecter.
-4. Sur la bande choisie, ajoutez des arbres, lampadaires, haies, barrières, glissières, potelets ou poteaux de caténaire, avec leur hauteur et leur pas. La vue en plan compte les objets sur 100 m.
+1. **Composez la coupe.** Partez d'un type de voie : autoroute, route de campagne à fossés, boulevard planté, rue tram et voitures, voie ferrée double, chemin piéton… Les bandes se lisent de gauche à droite dans le sens du tracé. Ajoutez-en une après la bande choisie, retirez-la, déplacez-la avec les flèches, ou inversez tout avec **Miroir**. Tapez une largeur, ou glissez la poignée bleue sous la limite de deux bandes. Sur la bande choisie, ajoutez arbres, lampadaires, haies, barrières, glissières, potelets ou poteaux de caténaire, avec leur hauteur et leur pas.
+2. **Tracez dans la vue.** Cliquez le départ, puis un point par sommet, ou tapez « longueur » ou « longueur;angle » dans la boîte de mesure. Les flèches bloquent un axe, Alt l'angle droit. Double-clic ou Échap pour finir ; Échap sur un tracé terminé l'efface.
+3. **Réglez le tracé.** Le rayon des virages vaut pour chaque sommet, 0 pour un angle vif. Le tracé peut suivre le milieu de la coupe ou l'un de ses bords. Le panneau annonce la longueur, les objets et les faces ; un rayon trop serré pour la largeur est refusé avec le minimum à respecter.
+4. **Cliquez sur Créer la voie.** Une seule entrée d'Annuler retire tout. L'outil reste actif pour une autre voie.
 
-Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Gabarits de véhicules** pour masquer voitures, bus, tram et train. **Rien n'est écrit dans le modèle** pour l'instant : tracer la voie viendra dans une version suivante. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Gabarits de véhicules** pour masquer voitures, bus, tram et train.
 
+**Modifier :** sélectionnez la voie, puis **Extensions → ARCHGEN → Modifier la voie sélectionnée**, et cliquez sur **Recharger la sélection**. Changez la coupe, le rayon (vide : chaque sommet garde le sien) ou l'axe, puis cliquez sur **Remplacer cette voie**. Le tracé ne change pas. Une copie garde sa géométrie.
+
+**À savoir**
+
+- **Balises :** ARCHGEN Voirie chaussée et trottoirs, végétation, éclairage, mobilier et clôtures, rails : masquez une famille d'un clic.
+- **Refus :** rayon trop petit pour la largeur, virages plus longs que leur segment, demi-tour, angle vif où le bord intérieur se replierait, voie qui se recouvre elle-même.
+- **Limites :** 64 points, 5 000 objets, 20 000 traverses, 60 000 faces distinctes et 600 000 faces au total.
+- **Temps :** 2 km de boulevard planté s'écrivent en moins d'une demi-seconde, 2 km de voie ferrée double en moins de 3 s.
+- **Hors de portée :** la voie est horizontale et ne suit pas un terrain ; pas de carrefour, de marquage, de passage piéton ni de fil de caténaire. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.

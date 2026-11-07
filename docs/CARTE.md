@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-042 : écrire la voie dans SketchUp (racine archgen.road, outil de tracé à rayons, modifier, RBZ 0.5.0). AG-041 fait : rails encastrés au ras de la chaussée et sur plateforme, voie sur ballast avec traverses, U26 vert. Rien n'est encore écrit dans SketchUp. Code non poussé.
+  - Prochaine action — AG-043, réseau et carrefour simple, qui attend D-07 (naissance des carrefours). RBZ 0.5.0 livrable et installé (pkg/archgen-0.5.0.rbz, H02 à H20 sans échec) : composer une coupe et tracer une voie dans SketchUp. Restent au propriétaire : pousser, essayer, trancher D-07, D-08 et D-10. (→ docs/recette/V0.5.md)
   - Décisions ouvertes D-07, D-08, D-10 — Naissance des carrefours (réseau par racine recommandé) ; voie sur terrain intact, où un fossé reste enterré (copie entaillée recommandée) ; sens de « clous ». D-09 tranchée : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
@@ -56,6 +56,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-07 AG-039 — Sur un arc comme à l'onglet, un quadrilatère de ruban en pente reste plan : les deux arêtes de coupe sont coplanaires. Une marche de ballast n'est pas une bordure : la bordure est réservée aux trottoirs, terre-pleins, bandes plantées et pistes. Une raison émise par une méthode error échappe au relevé des messages : la tester à part. (→ docs/VOIRIE_CONTRACT.md)
     - 2026-11-07 AG-040 — D-09 tranchée : 3D simple (ADR-35). La coupe ne transmettait pas la variation de hauteur à la pose : une seule hauteur d'arbre sur la route de campagne, vu en comptant les définitions. Une assertion « moins d'objets sur la ligne intérieure » était trop faible : mesurer la longueur de la ligne. (→ docs/VOIRIE_CONTRACT.md)
     - 2026-11-07 AG-041 — Un rail au ras de la chaussée, posé comme une face à part, scintillerait dans SketchUp : il est taillé dans la surface. La matière des rails portait la clé de la bande de ballast (road/rail) : le ballast aurait pris leur couleur, vu en comptant les matières ; clé distincte road/rail_steel. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-042 — Le writer existant a suffi : la voie est un plan comme un autre, avec ses balises par famille et des définitions préfixées road1/. Le banc de navigateur relié au vrai service sur doubles a trouvé trois défauts d'affichage avant SketchUp. Au vrai geste, un segment tapé en perspective est parti presque à rebours : refus juste, message à mieux dire. Recette complète : deux sondes se partagent un panneau ; une sonde doit cesser d'écouter après sa fin, et ne pas supposer l'état de départ d'une session. Copier-Coller des recettes H05 et H17 : surveiller le journal pour ne pas les manquer. (→ docs/recette/V0.5.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -116,7 +117,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-039 Axe et rubans — core/road_intake (format road V1), geometry/road_axis (arcs, onglets, refus), geometry/road_ribbons, core/road_engine (RoadPlan, validateur, road_digest). U24 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
     - [fait] AG-040 Arbres, lampadaires, haies, clôtures — geometry/road_item_shapes (formes 3D, ADR-35), geometry/road_items (pose au pas, variation, extrusions, poteaux) ; RoadPlan avec définitions partagées et plafonds. U25 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
     - [fait] AG-041 Rails et tram — Rails encastrés dans la surface (road/rail_steel), rails sur traverses et ballast, plafond de traverses. U26 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
-    - [afaire] AG-042 Écrire, tracer, modifier, RBZ 0.5.0 — Racine archgen.road, tags, outil à rayons ; première voie utilisable, sans carrefour. H20. Dép. AG-038, 040, 041.
+    - [fait] AG-042 Écrire, tracer, modifier, RBZ 0.5.0 — adapters/sketchup/road_{service,repository}, catalogue road_materials, balises par famille, outil de tracé en mode voie, panneau Tracer une voie et Modifier la voie sélectionnée. H20 et vrai geste ; H02 à H20 sans échec sur le RBZ. (→ docs/recette/V0.5.md)
     - [afaire] AG-043 Réseau et carrefour simple — Nœuds, branches, angles, raccord de coupes, autoroute refusée à niveau. U27. Dép. AG-042, D-07.
     - [afaire] AG-044 Carrefour à feux — Feux, lignes d'arrêt, passages piétons. U28. Dép. AG-043.
     - [afaire] AG-045 Giratoire — Anneau, îlot central, îlots séparateurs. U29. Dép. AG-043.
@@ -304,6 +305,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H17 — Parcours rue et îlot, modifier, rouvrir, vraie copie. Réussi sur Windows / 26.2.243. (→ docs/recette/H17.md)
     - H18 — Étagement sur un vrai terrain, refus, pannes, panneau, rouvrir, charge. Réussi sur Windows / 26.2.243. (→ docs/recette/H18.md)
     - H19 — Éditeur de coupe : préréglages, échelle mesurée à l'écran, refus, rouvrir, modèle inchangé. Réussi sur Windows / 26.2.243, copie de développement. (→ docs/recette/H19.md)
+    - H20 — Écrire une voie : service, faces écrites égales au plan, balises, Annuler, panne, copie, panneau, rouvrir, charge jusqu'à 2 km. Réussi sur Windows / 26.2.243. (→ docs/recette/H20.md)
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
   - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.

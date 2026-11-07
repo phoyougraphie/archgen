@@ -98,3 +98,9 @@ line.s-hedge-line { stroke: var(--hedge); }
 .road-sw.c-track { color: var(--gravel); }
 .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank { color: var(--grass); }
 .road-sw.c-ditch { color: var(--water); }
+
+/* Tracé de la voie (AG-042) */
+.road-trace { border-bottom: 2px solid var(--accent); }
+.road-trace-body { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0.75rem 0.75rem; }
+.road-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0.5rem; }
+.road-result { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }

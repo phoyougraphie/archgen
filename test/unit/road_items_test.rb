@@ -33,9 +33,15 @@ class RoadItemsTest < Minitest::Test
     result.value
   end
 
+  P = Archgen::Geometry::RoadItems::PREFIX
+
+  # Toutes les instances, quelle que soit leur famille ; prefix filtre sur « type/bande/ ».
   def instances(plan, prefix = '')
-    group = plan['nodes'][0]['children'].find { |c| c['id'] == 'road/items' }
-    (group ? group['children'] : []).select { |n| n['id'].start_with?(prefix) }
+    plan['nodes'][0]['children'].flat_map { |g| g['children'] }.select { |n| n.dig('primitive', 'type') == 'instance' && n['id'].start_with?(prefix) }
+  end
+
+  def group(plan, id)
+    plan['nodes'][0]['children'].find { |c| c['id'] == id }
   end
 
   def origin(node)
@@ -59,8 +65,8 @@ class RoadItemsTest < Minitest::Test
 
   def test_city_street_lamps_and_bollards_by_hand
     p = plan(tree([[0, 0], [100, 0]], [], preset('ville')))
-    lamps = instances(p, 'item/0/')
-    bollards = instances(p, 'item/4/')
+    lamps = instances(p, 'lamp/0/')
+    bollards = instances(p, 'bollard/4/')
     # Lampadaire au milieu du trottoir gauche (x = 1,25 dans la coupe, axe à 6,5) : y = 5,25, z = 0,14.
     assert_equal [[11.0, 5.25, 0.14], [33.0, 5.25, 0.14], [55.0, 5.25, 0.14], [77.0, 5.25, 0.14], [99.0, 5.25, 0.14]], lamps.map { |n| origin(n) }
     assert_equal 40, bollards.size
@@ -72,8 +78,8 @@ class RoadItemsTest < Minitest::Test
   def test_a_crosier_turns_toward_the_nearest_carriageway
     p = plan(tree([[0, 0], [100, 0]], [], preset('ville')))
     # Trottoir gauche : chaussée à droite, donc X local = −T et la crosse (+Y local) vise −y, la chaussée.
-    assert_equal [-1.0, 0.0], axis_x(instances(p, 'item/0/').first)
-    assert_equal [1.0, 0.0], axis_x(instances(p, 'item/4/').first)
+    assert_equal [-1.0, 0.0], axis_x(instances(p, 'lamp/0/').first)
+    assert_equal [1.0, 0.0], axis_x(instances(p, 'bollard/4/').first)
   end
 
   def test_first_at_half_spacing_and_none_beyond_the_end
@@ -115,7 +121,7 @@ class RoadItemsTest < Minitest::Test
 
   def test_one_definition_per_variant_and_height
     p = plan(tree([[0, 0], [300, 0]], [], preset('boulevard')))
-    assert_equal %w[lamp/double/10000 tree/columnar/14000 tree/round/12000], p['definitions'].keys
+    assert_equal %w[lamp/double/10000 tree/columnar/14000 tree/round/12000].map { |k| P + k }, p['definitions'].keys
     assert_equal p['metrics']['item_count'], instances(p).size
   end
 
@@ -124,17 +130,17 @@ class RoadItemsTest < Minitest::Test
     a = plan(tree([[0, 0], [200, 0]], [], profile, seed: 7))
     b = plan(tree([[0, 0], [200, 0]], [], profile, seed: 7))
     c = plan(tree([[0, 0], [200, 0]], [], profile, seed: 8))
-    assert_equal %w[tree/round/10000 tree/round/12000 tree/round/8000], a['definitions'].keys
+    assert_equal %w[tree/round/10000 tree/round/12000 tree/round/8000].map { |k| P + k }, a['definitions'].keys
     assert_equal RoadEngine.digest(a), RoadEngine.digest(b)
     refute_equal RoadEngine.digest(a), RoadEngine.digest(c)
     plain = plan(tree([[0, 0], [200, 0]], [], single('tree', height: 10, spacing: 5, band: 'plant', width: 3), seed: 7))
-    assert_equal %w[tree/round/10000], plain['definitions'].keys
+    assert_equal ["#{P}tree/round/10000"], plain['definitions'].keys
   end
 
   def test_each_definition_has_the_height_it_names
     p = plan(tree([[0, 0], [200, 0]], [], catalogue_profile))
     p['definitions'].each do |id, nodes|
-      next if id.start_with?('post/')
+      next if id.include?('/post/')
 
       top = nodes.flat_map { |n| n['primitive']['vertices'] }.map { |v| v[2] }.max
       assert_in_delta id.split('/').last.to_i / 1000.0, top, 1e-6, id
@@ -145,7 +151,7 @@ class RoadItemsTest < Minitest::Test
 
   def test_hedge_is_a_closed_solid_following_the_curve
     p = plan(tree([[0, 0], [100, 0], [100, 100]], [30], single('hedge', band: 'plant', width: 2)))
-    linear = p['nodes'][0]['children'].find { |c| c['id'] == 'road/linear' }['children']
+    linear = group(p, 'road/vegetation')['children']
     assert_equal 1, linear.size
     assert_equal 'solid', linear[0]['primitive']['type']
     assert_empty RoadPlanValidator.call(p)
@@ -156,7 +162,7 @@ class RoadItemsTest < Minitest::Test
   def test_fences_and_guard_rails_have_posts_at_each_end_and_every_pitch
     fence = plan(tree([[0, 0], [21, 0]], [], single('fence', variant: 'fence', band: 'verge', width: 1)))
     assert_equal [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 21.0], instances(fence).map { |n| origin(n)[0] }
-    assert_equal 2, fence['nodes'][0]['children'].find { |c| c['id'] == 'road/linear' }['children'].size
+    assert_equal 2, group(fence, 'road/furniture')['children'].count { |n| n.dig('primitive', 'type') == 'solid' }
     concrete = plan(tree([[0, 0], [21, 0]], [], single('guard', variant: 'concrete', band: 'median', width: 2)))
     assert_empty instances(concrete)
   end
@@ -165,7 +171,7 @@ class RoadItemsTest < Minitest::Test
     [[[0, 0], [150, 0], [150, 150]], [[0, 0], [150, 0], [150, 150]]].zip([[60], [0]]).each do |points, radii|
       p = plan(tree(points, radii, catalogue_profile))
       assert_empty RoadPlanValidator.call(p)
-      kinds = p['definitions'].keys.map { |k| k.split('/')[0, 2].join('/') }.uniq
+      kinds = p['definitions'].keys.map { |k| k.split('/')[1, 2].join('/') }.uniq
       %w[lamp/single lamp/double lamp/ped lamp/heritage lamp/high tree/round tree/columnar tree/wide tree/conifer bollard/bollard pole/pole].each do |k|
         assert_includes kinds, k
       end

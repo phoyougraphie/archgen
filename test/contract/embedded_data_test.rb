@@ -32,7 +32,7 @@ class EmbeddedDataTest < Minitest::Test
   end
 
   def test_road_catalogues_match_reference
-    %w[road_bands.v1.json road_items.v1.json road_presets.v1.json].each do |name|
+    %w[road_bands.v1.json road_items.v1.json road_presets.v1.json road_materials.v1.json].each do |name|
       assert_equal File.binread(repo_path('examples', name)), File.binread(repo_path('archgen', 'styles', 'road', name)), name
     end
   end

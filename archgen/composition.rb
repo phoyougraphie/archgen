@@ -43,6 +43,15 @@ module Archgen
       read_json('styles', 'road', 'road_presets.v1.json')
     end
 
+    def road_materials
+      read_json('styles', 'road', 'road_materials.v1.json')
+    end
+
+    # Catalogue complet d'une voie : celui du bâtiment, inchangé, plus les matières de voirie.
+    def road_catalog
+      materials.fetch('materials').merge(road_materials.fetch('materials'))
+    end
+
     def road_profile_intake(sources: schemas)
       Core::RoadProfileIntake.new(sources.fetch('road_profile'), bands: road_bands, items: road_items)
     end

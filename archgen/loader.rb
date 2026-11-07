@@ -72,6 +72,8 @@ module Archgen
       adapters/sketchup/ensemble_repository
       adapters/sketchup/building_service
       adapters/sketchup/ensemble_service
+      adapters/sketchup/road_repository
+      adapters/sketchup/road_service
       adapters/sketchup/street_tool
       ui/target_tokens
       ui/confirmation_tokens

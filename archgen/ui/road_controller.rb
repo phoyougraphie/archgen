@@ -2,23 +2,42 @@
 
 module Archgen
   module UI
-    # Liaison entre l'éditeur de coupe et le noyau (AG-038). L'éditeur n'écrit rien dans le
-    # modèle : il compose une coupe, Ruby la juge et en calcule le dessin. Le panneau ne
-    # reproduit aucune règle de plage ni de catalogue.
+    # Liaison entre le panneau de voirie, le tracé en cours et le service de voie (AG-038, AG-042).
+    # Le panneau compose la coupe et règle rayon et axe ; le tracé ne vient que de l'outil. Ruby juge
+    # tout, calcule la coupe dessinée et l'aperçu ; une écriture exige l'empreinte montrée.
     class RoadController
       PROTOCOL = 1
-      ACTIONS = %w[init preview].freeze
-      PAYLOAD_KEYS = { 'init' => [], 'preview' => %w[profile] }.freeze
+      ACTIONS = %w[init preview create clear load_selection regenerate].freeze
+      MUTATIONS = %w[create regenerate].freeze
+      PAYLOAD_KEYS = {
+        'init' => [], 'preview' => %w[profile road], 'create' => %w[profile road road_digest], 'clear' => [],
+        'load_selection' => [], 'regenerate' => %w[profile road road_digest]
+      }.freeze
       MAX_REQUEST_ID = 64
       START_PRESET = 'ville'
+      DEFAULT_RADIUS_M = 20.0
+      AXES = %w[center left right].freeze
 
-      def initialize(intake:, bands:, items:, presets:)
+      attr_reader :session
+      attr_accessor :mode, :tool_active
+
+      # service, session, model_provider : absents, le panneau ne fait que composer une coupe.
+      def initialize(intake:, bands:, items:, presets:, service: nil, session: nil, model_provider: nil)
         @intake = intake
         @bands = bands
         @items = items
         @presets = presets.fetch('presets')
         @profile = @presets.find { |p| p['id'] == START_PRESET }.fetch('profile')
+        @service = service
+        @session = session || Core::TraceSession.new
+        @model_provider = model_provider
+        @mode = 'trace'
+        @overlay = {}
+        @mutations = {}
       end
+
+      # Contour de la voie à dessiner dans la vue, en mètres dans le repère du modèle.
+      attr_reader :overlay
 
       def dispatch(raw)
         parsed = Core::StrictJson.parse(raw)
@@ -27,11 +46,30 @@ module Archgen
         envelope = parsed.value
         request_id = safe_request_id(envelope)
         problem = envelope_problem(envelope)
-        return respond(request_id, failure(problem)) if problem
+        return respond(request_id, failure('E_SCHEMA', '/request', problem)) if problem
+        return @mutations[request_id] if MUTATIONS.include?(envelope['action']) && @mutations.key?(request_id)
 
-        respond(request_id, envelope['action'] == 'init' ? init : preview(envelope['payload']['profile']))
+        response = respond(request_id, perform(envelope['action'], envelope['payload']))
+        @mutations[request_id] = response if MUTATIONS.include?(envelope['action'])
+        response
       rescue StandardError => e
-        respond(request_id, Core::Result.fail([Core::Diagnostic.error('E_WRITE', '/model', reason: 'internal_error', error: e.class.name)]))
+        respond(request_id, failure('E_WRITE', '/model', 'internal_error', error: e.class.name))
+      end
+
+      # Le tracé a changé (outil) : on garde le dernier aperçu pour la vue.
+      def trace_state
+        { 'points' => @session.points.size, 'finished' => @session.finished?, 'length_m' => Core::Quant.q(@session.length_m) }
+      end
+
+      def close_session
+        @session.clear
+        @overlay = {}
+        @edit = nil
+        @mutations.clear
+      end
+
+      def document_changed
+        close_session
       end
 
       private
@@ -51,33 +89,187 @@ module Archgen
 
         payload = envelope['payload']
         return 'invalid_envelope' unless payload.is_a?(Hash) && (payload.keys - PAYLOAD_KEYS.fetch(envelope['action'])).empty?
-        return 'invalid_envelope' if envelope['action'] == 'preview' && !payload['profile'].is_a?(Hash)
+        return 'invalid_envelope' if PAYLOAD_KEYS.fetch(envelope['action']).include?('profile') && !payload['profile'].is_a?(Hash)
+        return 'invalid_envelope' if payload.key?('road') && !payload['road'].is_a?(Hash)
 
         nil
       end
 
-      def failure(reason)
-        Core::Result.fail([Core::Diagnostic.error('E_SCHEMA', '/request', reason: reason)])
+      def failure(code, path, reason, **params)
+        Core::Result.fail([Core::Diagnostic.error(code, path, reason: reason, **params)])
+      end
+
+      def perform(action, payload)
+        case action
+        when 'init' then init
+        when 'preview' then preview(payload)
+        when 'create' then create(payload)
+        when 'clear' then clear
+        when 'load_selection' then load_selection
+        when 'regenerate' then regenerate(payload)
+        end
       end
 
       # La page se recharge à chaque ouverture : elle retrouve la dernière coupe acceptée.
       def init
+        @mutations.clear
         Core::Result.ok(
-          'version' => VERSION,
-          'profile' => @profile,
+          'version' => VERSION, 'mode' => @mode, 'tool_active' => @tool_active == true, 'writes' => !@service.nil?,
+          'profile' => @profile, 'default_radius_m' => DEFAULT_RADIUS_M,
           'presets' => @presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name'), 'profile' => p['profile'] } },
-          'bands' => band_catalogue,
-          'items' => item_catalogue
+          'bands' => band_catalogue, 'items' => item_catalogue, 'trace' => trace_state
         )
       end
 
-      def preview(profile)
+      # La coupe est jugée et dessinée ; si un tracé ou une voie chargée existe, la voie entière est calculée.
+      def preview(payload)
+        section = section_for(payload['profile'])
+        return section unless section.ok?
+
+        # Un refus de la voie n'est pas un refus de la coupe : il voyage dans son propre bloc.
+        road = road_preview(payload)
+        Core::Result.ok(section.value.merge('road' => road && summary(road)), section.diagnostics)
+      end
+
+      def section_for(profile)
         result = @intake.profile(profile)
         return result unless result.ok?
 
         @profile = result.value
-        section = Geometry::RoadSection.call(result.value, bands: @bands, items: @items)
-        Core::Result.ok({ 'profile' => result.value, 'section' => section }, result.diagnostics)
+        Core::Result.ok({ 'profile' => result.value, 'section' => Geometry::RoadSection.call(result.value, bands: @bands, items: @items) },
+                        result.diagnostics)
+      end
+
+      # nil quand il n'y a rien à calculer : ni tracé terminé, ni voie chargée.
+      def road_preview(payload)
+        return nil unless @service
+
+        tree = road_tree(payload)
+        return nil unless tree
+
+        result = tree.ok? ? @service.preview(tree: tree.value) : tree
+        @overlay = @mode == 'trace' ? outline(result) : {}
+        result
+      end
+
+      # Les diagnostics de coupe (/profile) sont déjà rendus avec la coupe.
+      def summary(result)
+        own = result.diagnostics.reject { |d| d.path.start_with?('/profile') }.map { |d| Messages.to_h(d) }
+        return { 'ok' => false, 'diagnostics' => own } unless result.ok?
+
+        metrics = result.value.plan['metrics']
+        { 'ok' => true, 'road_digest' => result.value.road_digest, 'diagnostics' => own,
+          'metrics' => metrics.slice('length_m', 'width_m', 'station_count', 'item_count', 'sleeper_count', 'definition_count', 'unique_face_count', 'expanded_face_count') }
+      end
+
+      # Réglages de voie : tracé de l'outil (création) ou tracé enregistré (modification).
+      def road_tree(payload)
+        road = payload['road'] || {}
+        axis = road.fetch('axis', 'center')
+        return failure('E_SCHEMA', '/road/axis', 'enum', allowed: AXES) unless AXES.include?(axis)
+
+        radius = road['radius_m']
+        return failure('E_SCHEMA', '/road/radius_m', 'type', expected: 'number') unless radius.nil? || radius.is_a?(Numeric)
+
+        if @mode == 'edit'
+          return nil unless @edit
+
+          trace = @edit.settings['trace']
+          radii = radius.nil? ? trace['radii_m'] : Array.new(trace['radii_m'].size, radius)
+          return Core::Result.ok(@edit.settings.merge('profile' => payload['profile'], 'axis' => axis, 'trace' => trace.merge('radii_m' => radii)))
+        end
+        return nil unless @session.finished?
+
+        points = @session.relative_points
+        radii = Array.new([points.size - 2, 0].max, radius.nil? ? DEFAULT_RADIUS_M : radius)
+        Core::Result.ok({ 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'axis' => axis, 'profile' => payload['profile'] })
+      end
+
+      # Contour de l'emprise, dans le repère du modèle, pour la vue.
+      def outline(result)
+        return { refused: true, rings: [] } unless result.ok?
+
+        settings = result.value.settings
+        width = result.value.plan['metrics']['width_m']
+        ax = Geometry::RoadRibbons.axis_x(width, settings['axis'])
+        stations = Geometry::RoadAxis.call(settings['trace']['points_m'], settings['trace']['radii_m'], left_m: ax, right_m: width - ax).value
+        origin = @session.origin_m
+        ring = stations.map { |s| shifted(s, ax, origin) } + stations.reverse.map { |s| shifted(s, ax - width, origin) }
+        { refused: false, rings: [ring] }
+      end
+
+      def shifted(station, offset, origin)
+        [station.point[0] + (station.normal[0] * offset) + origin[0], station.point[1] + (station.normal[1] * offset) + origin[1]]
+      end
+
+      def model
+        @model_provider&.call
+      end
+
+      def create(payload)
+        return failure('E_TARGET_STALE', '/trace', 'trace_unfinished') unless @mode == 'trace' && @session.finished?
+
+        tree = road_tree(payload)
+        return tree unless tree&.ok?
+
+        computed = @service.preview(tree: tree.value)
+        return computed unless computed.ok?
+        return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
+
+        written = @service.create(model: model, tree: tree.value, origin_m: @session.origin_m)
+        return written unless written.ok?
+
+        select_root(written.value.persistent_id)
+        @session.clear
+        @overlay = {}
+        Core::Result.ok({ 'created' => true, 'revision' => written.value.revision, 'metrics' => written.value.metrics }, written.diagnostics)
+      end
+
+      def clear
+        @session.clear
+        @overlay = {}
+        Core::Result.ok('trace' => trace_state)
+      end
+
+      def load_selection
+        return failure('E_TARGET_STALE', '/model', 'model_unavailable') unless @service
+
+        loaded = @service.load_selection(model: model)
+        return loaded unless loaded.ok?
+
+        @edit = loaded.value
+        settings = @edit.settings
+        radii = settings['trace']['radii_m'].uniq
+        Core::Result.ok({ 'profile' => settings['profile'], 'axis' => settings['axis'], 'radius_m' => radii.size == 1 ? radii.first : nil,
+                          'vertex_count' => settings['trace']['points_m'].size, 'revision' => @edit.target.revision })
+      end
+
+      def regenerate(payload)
+        return failure('E_TARGET_STALE', '/target', 'invalid_target') unless @mode == 'edit' && @edit
+
+        tree = road_tree(payload)
+        return tree unless tree&.ok?
+
+        computed = @service.preview(tree: tree.value)
+        return computed unless computed.ok?
+        return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
+
+        changes = { 'profile' => tree.value['profile'], 'axis' => tree.value['axis'], 'trace' => { 'radii_m' => tree.value['trace']['radii_m'] } }
+        written = @service.regenerate(model: model, target: @edit.target, changes: changes)
+        return written unless written.ok?
+
+        reloaded = @service.load_selection(model: model)
+        @edit = reloaded.value if reloaded.ok?
+        Core::Result.ok({ 'regenerated' => true, 'revision' => written.value.revision, 'metrics' => written.value.metrics }, written.diagnostics)
+      end
+
+      def select_root(persistent_id)
+        current = model
+        entity = current&.find_entity_by_persistent_id(persistent_id)
+        return unless entity
+
+        current.selection.clear
+        current.selection.add(entity)
       end
 
       def band_catalogue

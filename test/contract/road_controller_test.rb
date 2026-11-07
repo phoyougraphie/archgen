@@ -66,9 +66,10 @@ class RoadControllerTest < Minitest::Test
     assert_nil long['request_id']
   end
 
-  def test_the_editor_never_reaches_the_model
+  # Seul le service écrit, dans une opération : le contrôleur et le panneau ne touchent jamais à la géométrie.
+  def test_the_panel_never_writes_the_model_itself
     source = read_utf8('archgen', 'ui', 'road_controller.rb') + read_utf8('archgen', 'ui', 'road_panel.rb')
-    refute_match(/active_model|start_operation|entities|Sketchup\./, source)
+    refute_match(/start_operation|commit_operation|\.entities|add_instance|add_group|set_attribute|erase/, source)
   end
 
   # Défaut vu en H19 : le panneau reçoit une chaîne JSON, il doit la décoder.
@@ -81,7 +82,120 @@ class RoadControllerTest < Minitest::Test
     html = read_utf8('archgen', 'ui', 'road_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal %w[veh add-type], ids
+    assert_equal %w[veh r-radius r-axis add-type], ids
     assert_empty ids - labels
+  end
+end
+
+# Parcours du panneau de voirie avec le vrai service sur doubles (AG-042) : tracer, aperçu, créer,
+# recharger, remplacer. La preuve native est H20.
+class RoadControllerFlowTest < Minitest::Test
+  include Archgen::Adapters::SketchUp
+
+  def setup
+    @model = FakeSketchUp::ServiceModel.new
+    service = RoadService.new(intake: Archgen::Composition.road_intake, bands: Archgen::Composition.road_bands, items: Archgen::Composition.road_items,
+                              materials: Archgen::Composition.road_catalog, material_revision: 1, host: FakeSketchUp::Host)
+    @session = Archgen::Core::TraceSession.new
+    @controller = Archgen::UI::RoadController.new(
+      intake: Archgen::Composition.road_profile_intake, bands: Archgen::Composition.road_bands, items: Archgen::Composition.road_items,
+      presets: Archgen::Composition.road_presets, service: service, session: @session, model_provider: -> { @model }
+    )
+    @counter = 0
+  end
+
+  def call(action, payload = {}, id = nil)
+    @counter += 1
+    @controller.dispatch(JSON.generate('v' => 1, 'request_id' => id || "r#{@counter}", 'action' => action, 'payload' => payload))
+  end
+
+  def profile
+    Archgen::Composition.road_presets.fetch('presets').find { |p| p['id'] == 'ville' }.fetch('profile')
+  end
+
+  def draw(*points)
+    @session.start(points[0][0], points[0][1], 2.0)
+    points.drop(1).each { |p| @session.add(p) }
+    @session.finish
+  end
+
+  def preview(road = { 'radius_m' => 20, 'axis' => 'center' })
+    call('preview', 'profile' => profile, 'road' => road)
+  end
+
+  def roots
+    @model.instances.select { |i| i.get_attribute('archgen.road', 'road_version') }
+  end
+
+  def test_no_trace_no_road_and_nothing_written
+    r = preview
+    assert r['ok']
+    assert_nil r['result']['road']
+    assert_empty @model.operations
+  end
+
+  def test_a_finished_trace_gives_a_road_preview_and_an_outline
+    draw([10, 20], [90, 20], [90, 80])
+    r = preview
+    road = r['result']['road']
+    assert road['ok'], road.inspect
+    assert_match(/\A\h{64}\z/, road['road_digest'])
+    assert_operator road['metrics']['length_m'], :>, 100
+    ring = @controller.overlay[:rings].first
+    assert_in_delta 10.0, ring.first[0], 1e-6
+    assert_in_delta 26.5, ring.first[1], 1e-6
+    assert_empty @model.operations
+  end
+
+  def test_a_refused_road_does_not_refuse_the_section
+    draw([0, 0], [80, 0], [80, 60])
+    r = preview('radius_m' => 1, 'axis' => 'center')
+    assert r['ok']
+    road = r['result']['road']
+    refute road['ok']
+    assert_equal ['radius_too_small'], road['diagnostics'].map { |d| d['params']['reason'] }
+    assert @controller.overlay[:refused]
+  end
+
+  def test_create_needs_the_shown_digest_then_writes_once
+    draw([10, 20], [90, 20], [90, 80])
+    digest = preview['result']['road']['road_digest']
+    stale = call('create', 'profile' => profile, 'road' => { 'radius_m' => 25, 'axis' => 'center' }, 'road_digest' => digest)
+    assert_equal 'confirmation_mismatch', stale['diagnostics'][0]['params']['reason']
+    assert_empty roots
+    created = call('create', { 'profile' => profile, 'road' => { 'radius_m' => 20, 'axis' => 'center' }, 'road_digest' => digest }, 'c1')
+    assert created['ok'], created.inspect
+    again = call('create', { 'profile' => profile, 'road' => { 'radius_m' => 20, 'axis' => 'center' }, 'road_digest' => digest }, 'c1')
+    assert_equal created, again, 'un double clic ne crée pas deux voies'
+    assert_equal 1, roots.size
+    assert_equal 1, @model.operations.count { |op| op.first == :commit }
+    assert_in_delta 10.0, roots.first.transform.to_a[12] * 0.0254, 1e-9
+    assert_equal [roots.first], @model.selection.to_a
+    assert @session.empty?, 'le tracé est oublié après création'
+  end
+
+  def test_create_without_a_finished_trace_is_refused
+    r = call('create', 'profile' => profile, 'road' => {}, 'road_digest' => 'x' * 64)
+    assert_equal 'trace_unfinished', r['diagnostics'][0]['params']['reason']
+  end
+
+  def test_edit_reloads_keeps_the_trace_and_replaces_in_one_operation
+    draw([0, 0], [80, 0], [80, 60])
+    digest = preview['result']['road']['road_digest']
+    assert call('create', 'profile' => profile, 'road' => { 'radius_m' => 20, 'axis' => 'center' }, 'road_digest' => digest)['ok']
+    @controller.mode = 'edit'
+    loaded = call('load_selection')
+    assert loaded['ok'], loaded.inspect
+    assert_equal [20.0, 'center', 3, 1], loaded['result'].values_at('radius_m', 'axis', 'vertex_count', 'revision')
+    mixte = Archgen::Composition.road_presets.fetch('presets').find { |p| p['id'] == 'mixte' }.fetch('profile')
+    shown = call('preview', 'profile' => mixte, 'road' => { 'axis' => 'center' })['result']['road']
+    assert shown['ok'], shown.inspect
+    done = call('regenerate', 'profile' => mixte, 'road' => { 'axis' => 'center' }, 'road_digest' => shown['road_digest'])
+    assert done['ok'], done.inspect
+    assert_equal 2, done['result']['revision']
+    assert_equal 1, roots.size
+    stored = JSON.parse(roots.first.get_attribute('archgen.road', 'road_json'))
+    assert_equal 'Rue tram et voitures', stored.dig('profile', 'name')
+    assert_equal [20.0], stored.dig('trace', 'radii_m')
   end
 end

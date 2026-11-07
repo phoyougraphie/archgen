@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "materials": {
+    "road/lane": { "label": "Voirie enrobé", "srgb": "#4C5356" },
+    "road/hard": { "label": "Voirie bande d'arrêt", "srgb": "#6A7174" },
+    "road/edge": { "label": "Voirie bande dérasée", "srgb": "#666D70" },
+    "road/parking": { "label": "Voirie stationnement", "srgb": "#7B8285" },
+    "road/tram_lane": { "label": "Voirie enrobé tram", "srgb": "#4A5154" },
+    "road/tram": { "label": "Voirie plateforme tram", "srgb": "#94B57A" },
+    "road/rail": { "label": "Voirie ballast", "srgb": "#8F8D87" },
+    "road/cycle": { "label": "Voirie piste cyclable", "srgb": "#B5534A" },
+    "road/sidewalk": { "label": "Voirie trottoir", "srgb": "#C9C5BB" },
+    "road/path": { "label": "Voirie chemin stabilisé", "srgb": "#D0BD92" },
+    "road/track": { "label": "Voirie chemin empierré", "srgb": "#B9AB8C" },
+    "road/median": { "label": "Voirie terre-plein", "srgb": "#7FA268" },
+    "road/verge": { "label": "Voirie accotement", "srgb": "#86A56E" },
+    "road/plant": { "label": "Voirie bande plantée", "srgb": "#789C62" },
+    "road/ditch": { "label": "Voirie fossé", "srgb": "#6E8F5A" },
+    "road/bank": { "label": "Voirie talus", "srgb": "#8AAA72" },
+    "road/curb": { "label": "Voirie bordure", "srgb": "#B8B4AA" },
+    "road/rail_steel": { "label": "Voirie rail", "srgb": "#2A3033" },
+    "road/item/trunk": { "label": "Voirie tronc", "srgb": "#6E5339" },
+    "road/item/crown": { "label": "Voirie feuillage", "srgb": "#4F7F45" },
+    "road/item/steel": { "label": "Voirie métal", "srgb": "#353B3E" },
+    "road/item/lamp": { "label": "Voirie lanterne", "srgb": "#F2E6B8" },
+    "road/item/hedge": { "label": "Voirie haie", "srgb": "#3F7350" },
+    "road/item/wood": { "label": "Voirie bois", "srgb": "#7A5C40" },
+    "road/item/concrete": { "label": "Voirie béton", "srgb": "#AAA9A4" }
+  }
+}

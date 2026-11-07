@@ -23,7 +23,9 @@ module Archgen
         REFUSED_RGB = [200, 40, 40].freeze
 
         # on_change : le tracé a changé. overlay : contours des parcelles et état, en mètres.
-        def initialize(session:, on_change:, overlay:, host: NativeHost, on_deactivate: nil)
+        # kind : :street (rue ou îlot) ou :road (voie : jamais fermée, pas de côté bâti).
+        def initialize(session:, on_change:, overlay:, host: NativeHost, on_deactivate: nil, kind: :street)
+          @kind = kind
           @session = session
           @on_change = on_change
           @overlay = overlay
@@ -63,7 +65,7 @@ module Archgen
         def onLButtonDown(_flags, x, y, view)
           @ip.pick(view, x, y)
           return start_trace(view, x, y) if @session.empty? || @session.finished?
-          return closed(view) if near_first?(view, x, y) && @session.close
+          return closed(view) if @kind == :street && near_first?(view, x, y) && @session.close
 
           add_point(mouse_point(view, x, y), view)
         end
@@ -99,7 +101,10 @@ module Archgen
           return false unless repeat == 1
 
           case key
-          when KEY_CTRL then side_changed(view)
+          when KEY_CTRL
+            return false unless @kind == :street
+
+            side_changed(view)
           when KEY_ALT then @session.toggle_90
           else
             kind = LOCK_KEYS[key]
@@ -234,8 +239,9 @@ module Archgen
         end
 
         def status_text
-          options = "Flèches : axes. #{SIDE_LABELS.fetch(@session.side)} (Ctrl), 90° #{@session.lock_90 ? 'verrouillé' : 'libre'} (Alt)."
-          return "Cliquez le départ de la rue. #{options}" if @session.empty?
+          side = @kind == :street ? "#{SIDE_LABELS.fetch(@session.side)} (Ctrl), " : ''
+          options = "Flèches : axes. #{side}90° #{@session.lock_90 ? 'verrouillé' : 'libre'} (Alt)."
+          return "Cliquez le départ de la #{@kind == :street ? 'rue' : 'voie'}. #{options}" if @session.empty?
           return 'Tracé terminé : vérifiez le panneau, puis créez. Échap efface, un clic recommence.' if @session.finished?
 
           lock = @session.axis_lock ? "Bloqué : #{LOCK_LABELS.fetch(@session.axis_lock)}. " : ''

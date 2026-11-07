@@ -10,6 +10,7 @@ module Archgen
         unique: Limits::ROAD_MAX_UNIQUE_FACES, items: Limits::ROAD_MAX_ITEMS, expanded: Limits::ROAD_MAX_EXPANDED_FACES,
         sleepers: Limits::ROAD_MAX_SLEEPERS
       }.freeze
+      FAMILY_ORDER = %w[road_vegetation road_lighting road_furniture road_rails].freeze
 
       module_function
 
@@ -71,10 +72,13 @@ module Archgen
       end
 
       def assemble(surface, placed, stations, section, line)
-        children = [{ 'id' => 'road/surface', 'category' => 'surface', 'children' => [], 'primitive' => surface }]
-        children << { 'id' => 'road/linear', 'category' => 'linear', 'children' => placed[:linear] } unless placed[:linear].empty?
-        children << { 'id' => 'road/items', 'category' => 'item', 'children' => placed[:instances] } unless placed[:instances].empty?
-        children << { 'id' => 'road/sleepers', 'category' => 'item', 'children' => placed[:sleepers] } unless placed[:sleepers].empty?
+        # Un groupe par famille, chacun sous sa balise : on masque la végétation ou les rails d'un clic.
+        children = [{ 'id' => 'road/surface', 'category' => 'road_surface', 'children' => [], 'primitive' => surface }]
+        grouped = (placed[:linear] + placed[:instances] + placed[:sleepers]).group_by { |node| Geometry::RoadItems.family(node) }
+        FAMILY_ORDER.each do |family|
+          nodes = grouped[family]
+          children << { 'id' => "road/#{family.delete_prefix('road_')}", 'category' => family, 'children' => nodes } if nodes
+        end
         definitions = placed[:definitions].sort.to_h
         definition_faces = definitions.transform_values { |nodes| nodes.sum { |n| n['primitive']['faces'].size } }
         linear_faces = placed[:linear].sum { |n| n['primitive']['faces'].size }
@@ -109,7 +113,7 @@ module Archgen
     # Mêmes refus de maillage que le plan du bâtiment, sur la structure du plan de voie : surface,
     # éléments continus (solides fermés), instances de définitions partagées.
     class RoadPlanValidator < PlanValidator
-      CATEGORIES = %w[road surface linear item part].freeze
+      CATEGORIES = %w[road road_surface road_vegetation road_lighting road_furniture road_rails linear item part].freeze
 
       def call
         return @out unless header_ok?

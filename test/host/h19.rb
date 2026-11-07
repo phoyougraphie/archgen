@@ -92,8 +92,9 @@ module ArchgenH19Probe
   end
 
   def steps
-    out = [['Ouverture : onze préréglages, rue de ville acceptée', -> {}, lambda { |p|
-      p['presets'] == 11 && p['status'] == 'Coupe acceptée' && p['pressed'] == 'Rue de ville' && p['bands'].size == 5
+    # Le panneau rouvre sur la dernière coupe acceptée de la session : rue de ville au premier démarrage seulement.
+    out = [['Ouverture : onze préréglages, une coupe acceptée', -> {}, lambda { |p|
+      p['presets'] == 11 && p['status'] == 'Coupe acceptée' && !p['bands'].empty?
     }]]
     PRESETS.each do |id|
       out << ["Préréglage #{id} accepté, dessiné, chaque objet à l’échelle", -> { click("[data-preset=\"#{id}\"]") }, lambda { |p|
@@ -151,10 +152,12 @@ module ArchgenH19Probe
     dialog.add_action_callback('archgen_probe') { |_context, text| receive(JSON.parse(text)) }
   end
 
+  # Une réponse par étape : après la fin, une autre sonde (H20) lit le même panneau, sans nous concerner.
   def receive(panel)
     label, check_block = @current
     return unless check_block
 
+    @current = nil
     begin
       ok = check_block.call(panel)
       check(label, ok, ok ? nil : panel.to_s)

@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
-<title>ARCHGEN : coupe de voirie</title>
+<title>ARCHGEN : voirie</title>
 <link rel="stylesheet" href="panel.css">
 <link rel="stylesheet" href="road_panel.css">
 </head>
 <body>
 <header class="bar">
-  <h1>Coupe de voirie</h1>
+  <h1 id="title">Tracer une voie</h1>
   <p id="status" class="status" role="status" aria-live="polite">Chargement</p>
 </header>
 
@@ -34,6 +34,24 @@
   </div>
 
   <aside class="road-side" aria-labelledby="bands-title">
+    <section id="road-box" class="road-trace" aria-labelledby="road-title" hidden>
+      <div class="road-head"><h2 id="road-title">Tracé de la voie</h2></div>
+      <div class="road-trace-body">
+        <p id="road-hint" class="hint"></p>
+        <div class="road-fields">
+          <div class="field"><label for="r-radius">Rayon des virages (m)</label><input id="r-radius" inputmode="decimal"></div>
+          <div class="field"><label for="r-axis">Le tracé suit</label><select id="r-axis"><option value="center">le milieu de la coupe</option><option value="left">le bord gauche</option><option value="right">le bord droit</option></select></div>
+        </div>
+        <p id="road-result" class="road-result" role="status" aria-live="polite"></p>
+        <ul id="road-diag" class="road-diag"></ul>
+        <div class="actions">
+          <button type="button" id="road-create" class="primary" disabled>Créer la voie</button>
+          <button type="button" id="road-clear">Effacer le tracé</button>
+          <button type="button" id="road-reload" hidden>Recharger la sélection</button>
+          <button type="button" id="road-resume" hidden>Reprendre le tracé</button>
+        </div>
+      </div>
+    </section>
     <div class="road-head"><h2 id="bands-title">Bandes, de gauche à droite</h2><span id="n" class="road-fig"></span></div>
     <div class="road-tools">
       <label for="add-type" class="road-sr">Type de bande à ajouter</label>

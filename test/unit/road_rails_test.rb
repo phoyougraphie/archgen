@@ -85,7 +85,7 @@ class RoadRailsTest < Minitest::Test
 
   def test_ballast_track_rails_sleepers_by_hand
     p = plan([[0, 0], [100, 0]], [], preset('fer'))
-    rails = child(p, 'road/linear')['children'].select { |n| n['id'].start_with?('rail/') }
+    rails = child(p, 'road/rails')['children'].select { |n| n['id'].start_with?('rail/') }
     assert_equal 4, rails.size
     rails.each do |n|
       zs = n['primitive']['vertices'].map { |v| v[2] }.uniq.sort
@@ -95,13 +95,13 @@ class RoadRailsTest < Minitest::Test
     assert_in_delta GAUGE, ys[1] - ys[0], TOL
     assert_in_delta GAUGE, ys[3] - ys[2], TOL
     assert_in_delta 4.5, ys[2] - ys[0], TOL
-    sleepers = child(p, 'road/sleepers')['children']
+    sleepers = child(p, 'road/rails')['children'].select { |n| n['id'].start_with?('sleeper/') }
     # 0,30 m puis tous les 0,60 m jusqu'à 99,90 m : 167 par voie.
     assert_equal 334, sleepers.size
     assert_equal 334, p['metrics']['sleeper_count']
     first = sleepers.first['primitive']['matrix']
     assert_equal [0.3, 0.35], first.values_at(12, 14)
-    top = p['definitions']['sleeper'].flat_map { |n| n['primitive']['vertices'] }.map { |v| v[2] }.max
+    top = p['definitions'][Archgen::Geometry::RoadItems::SLEEPER_ID].flat_map { |n| n['primitive']['vertices'] }.map { |v| v[2] }.max
     assert_in_delta 0.02, top, 1e-9
   end
 
@@ -109,7 +109,7 @@ class RoadRailsTest < Minitest::Test
     radius = 30.0
     p = plan([[0, 0], [100, 0], [100, 100]], [radius], preset('fer'))
     center = [100 - radius, radius]
-    child(p, 'road/linear')['children'].select { |n| n['id'].start_with?('rail/') }.each_slice(2) do |a, b|
+    child(p, 'road/rails')['children'].select { |n| n['id'].start_with?('rail/') }.each_slice(2) do |a, b|
       ra = arc_radii(a, center)
       rb = arc_radii(b, center)
       assert_in_delta GAUGE, ((ra.max + ra.min) / 2 - (rb.max + rb.min) / 2).abs, TOL
@@ -144,7 +144,7 @@ class RoadRailsTest < Minitest::Test
   def test_a_lane_has_no_rail
     p = plan([[0, 0], [100, 0]], [], preset('ville'))
     assert_empty steel_faces(p)
-    assert_nil child(p, 'road/sleepers')
+    assert_nil child(p, 'road/rails')
     assert_equal 0, p['metrics']['rail_count']
   end
 

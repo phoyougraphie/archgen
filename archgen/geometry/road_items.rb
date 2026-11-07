@@ -28,6 +28,20 @@ module Archgen
       RAIL_HEAD_M = 0.07
       RAIL_HEIGHT_M = 0.17
       SLEEPER_PITCH_M = 0.6
+      # Les définitions de voirie portent la version de leur moteur : une forme changée n'est jamais
+      # confondue avec une ancienne, ni avec un détail de bâtiment, dans le modèle.
+      PREFIX = "road#{ROAD_ENGINE_VERSION}/".freeze
+      SLEEPER_ID = "#{PREFIX}sleeper".freeze
+      # Famille de chaque objet, donc sa balise dans le modèle.
+      FAMILIES = {
+        'tree' => 'road_vegetation', 'hedge' => 'road_vegetation', 'lamp' => 'road_lighting',
+        'bollard' => 'road_furniture', 'pole' => 'road_furniture', 'post' => 'road_furniture', 'fence' => 'road_furniture',
+        'guard' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
+      }.freeze
+
+      def family(node)
+        FAMILIES.fetch(node['id'].split('/').first)
+      end
 
       # Retourne { definitions:, instances:, linear:, sleepers: } en données de plan.
       # stations : RoadAxis ; section : RoadSection ; ax : x de l'axe dans la coupe ; seed : réglage de la voie.
@@ -59,11 +73,11 @@ module Archgen
                                              rect(-half, half, 0.0, RAIL_HEIGHT_M), RoadRibbons::RAIL_MATERIAL) }
         end
         section['bands'].select { |b| b['type'] == 'rail' }.each do |band|
-          definitions['sleeper'] ||= RoadItemShapes.definition('sleeper', 'concrete', 0.15)
+          definitions[SLEEPER_ID] ||= RoadItemShapes.definition('sleeper', 'concrete', 0.15)
           line = offset_line(stations, ax - ((band['x0_m'] + band['x1_m']) / 2))
           spaced_positions(polyline_length(line), SLEEPER_PITCH_M).each_with_index do |s, rank|
             point, dir = point_at(line, s)
-            sleepers << instance("sleeper/#{band['index']}/#{rank}", 'sleeper', point, dir, band['level_m'], 'left')
+            sleepers << instance("sleeper/#{band['index']}/#{rank}", SLEEPER_ID, point, dir, band['level_m'], 'left')
           end
         end
       end
@@ -97,7 +111,7 @@ module Archgen
           id = definition_id(item['kind'], item['variant'], height)
           definitions[id] ||= RoadItemShapes.definition(item['kind'], item['variant'], height, crown: crown(item, entry, height))
           point, dir = point_at(line, s)
-          instances << instance("item/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
+          instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
         end
       end
 
@@ -118,7 +132,7 @@ module Archgen
       end
 
       def definition_id(kind, variant, height)
-        "#{kind}/#{variant}/#{(height * 1000).round}"
+        "#{PREFIX}#{kind}/#{variant}/#{(height * 1000).round}"
       end
 
       def polyline_length(line)
@@ -155,13 +169,13 @@ module Archgen
       def sweep_linear(item, stations, offset, line, definitions, instances, linear)
         spec = linear_spec(item['kind'], item['variant'], item['height_m'])
         spec[:shapes].each_with_index do |polygon, k|
-          linear << { 'id' => "linear/#{item['band']}/#{item['index']}/#{k}", 'category' => 'linear', 'children' => [],
+          linear << { 'id' => "#{item['kind']}/#{item['band']}/#{item['index']}/#{k}", 'category' => 'linear', 'children' => [],
                       'primitive' => extrude(stations, offset, item['z_m'], polygon, RoadItemShapes.material(spec[:part])) }
         end
         return unless spec[:post]
 
         width, height, pitch, part = spec[:post]
-        id = "post/#{part}/#{(width * 1000).round}/#{(height * 1000).round}"
+        id = "#{PREFIX}post/#{part}/#{(width * 1000).round}/#{(height * 1000).round}"
         definitions[id] ||= RoadItemShapes.definition('post', part, height, crown: width)
         post_positions(polyline_length(line), pitch).each_with_index do |s, rank|
           point, dir = point_at(line, s)

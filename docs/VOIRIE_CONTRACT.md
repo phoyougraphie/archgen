@@ -183,11 +183,15 @@ Chaque branche garde sa coupe. Un trottoir contourne l'angle jusqu'à la branche
 
 ## Écriture et persistance
 
-- **Racine :** une instance de niveau racine, dictionnaire `archgen.road` : version, `road_json`, `road_digest`, révisions du moteur et des catalogues. Une racine n'est pas une cible de l'édition d'un bâtiment ni d'un ensemble.
-- **Transaction :** mêmes règles que `TransactionGuard` : une opération « ARCHGEN : créer une voie », pannes sans résidu, cible revalidée, géométrie partagée jamais modifiée sur place. Modifier regénère dans une définition fraîche ; une copie reste isolée.
-- **Tags :** un tag par famille (chaussée, trottoirs, cycles, rails, végétation, éclairage, clôtures), pour tout masquer en un clic.
-- **Matériaux :** catalogue `road_materials.v1.json`, matériaux unis marqués `archgen.resource`, homonymes de l'utilisateur intacts. Arêtes coplanaires masquées comme ailleurs (ADR-15).
+Livré par AG-042, recette [H20](recette/H20.md), RBZ 0.5.0.
 
+- **Racine :** une instance de niveau racine nommée « Voie ARCHGEN », placée au premier point du tracé, à son altitude. Sa définition, « ARCHGEN voie », contient un groupe par famille. Dictionnaire `archgen.road` : `road_version` (1), `revision`, `road_json` (réglages effectifs), `road_digest`, `road_engine_version`, `material_revision`. Une racine de voie n'est une cible ni pour un bâtiment ni pour un ensemble, et réciproquement (`not_a_road_root`).
+- **Transaction :** mêmes règles que `TransactionGuard` : une opération « ARCHGEN : créer une voie » ou « ARCHGEN : régénérer la voie », pannes sans résidu, cible revalidée avant d'écrire (sélection, verrou, échelle, définition, révision, empreinte), géométrie partagée jamais modifiée sur place. Modifier régénère dans une définition fraîche ; une copie garde la sienne.
+- **Modifier :** la coupe, le rayon (appliqué à tous les sommets, ou ceux enregistrés si le champ est vide) et l'axe ; jamais le tracé : pour le changer, on en trace un autre. Un moteur de voirie ou un catalogue plus récent : consultable, jamais écrasé (`newer_engine`, `newer_materials`).
+- **Balises :** une par famille, sur le groupe de premier niveau : `ARCHGEN Voirie chaussée et trottoirs` (toute la surface), `végétation` (arbres, haies), `éclairage`, `mobilier et clôtures` (potelets, poteaux, barrières, glissières et leurs poteaux), `rails` (rails sur ballast, traverses). **Écart au départ du contrat :** la surface est une seule maille à sommets partagés ; la scinder en chaussée, trottoirs et pistes casserait ce partage, d'où une seule balise pour elle.
+- **Définitions partagées :** clé `road<moteur>/<type>/<variante>/<hauteur en mm>`, ainsi qu'une forme de voirie n'est jamais confondue avec un détail de bâtiment ni réutilisée après un changement du moteur de voirie.
+- **Matériaux :** catalogue `road_materials.v1.json` (25 matières), ajouté au catalogue du bâtiment, matériaux unis marqués `archgen.resource`, homonymes de l'utilisateur intacts. Arêtes coplanaires de même matériau masquées comme ailleurs (ADR-15).
+- **Panneau :** menu **Tracer une voie** (outil actif, la coupe et le tracé) et **Modifier la voie sélectionnée**. L'outil est celui de la rue, sans fermeture de forme ni côté bâti. Le contour de l'emprise se dessine dans la vue, rouge si la voie est refusée. Créer et Remplacer renvoient l'empreinte montrée : si le résultat a changé, `E_CONFIRMATION_STALE`. Un double clic ne crée qu'une voie.
 ## Terrain
 
 Soumis à D-08. Jusqu'à cette décision, une voie est horizontale, posée au premier point du tracé, et ne regarde pas le terrain.

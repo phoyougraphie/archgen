@@ -18,7 +18,8 @@ module Archgen
     submenu.add_item('Modifier le bâtiment sélectionné') { UI::Panel.show('edit') }
     submenu.add_item('Tracer une rue') { UI::StreetPanel.show('new') }
     submenu.add_item('Modifier l’ensemble sélectionné') { UI::StreetPanel.show('edit') }
-    submenu.add_item('Composer une coupe de voirie') { UI::RoadPanel.show }
+    submenu.add_item('Tracer une voie') { UI::RoadPanel.show('trace') }
+    submenu.add_item('Modifier la voie sélectionnée') { UI::RoadPanel.show('edit') }
     @menu_installed = true
   end
 end
