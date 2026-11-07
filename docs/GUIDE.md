@@ -145,7 +145,26 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 - **Refus :** rayon trop petit pour la largeur, virages plus longs que leur segment, demi-tour, angle vif où le bord intérieur se replierait, voie qui se recouvre elle-même.
 - **Limites :** 64 points, 5 000 objets, 20 000 traverses, 60 000 faces distinctes et 600 000 faces au total.
 - **Temps :** 2 km de boulevard planté s'écrivent en moins d'une demi-seconde, 2 km de voie ferrée double en moins de 3 s.
-- **Hors de portée :** la voie est horizontale et ne suit pas un terrain ; pas de carrefour, de marquage, de passage piéton ni de fil de caténaire. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+- **Hors de portée :** la voie est horizontale et ne suit pas un terrain ; pas de fil de caténaire. Pour des carrefours, tracez un réseau de voies. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+## Tracer un réseau de voies et ses carrefours
+
+**Extensions → ARCHGEN → Tracer un réseau de voies.** Le panneau s'ouvre et l'outil de tracé est actif.
+
+1. **Tracez une voie** dans la vue, comme une voie seule : clics ou longueurs tapées, double-clic ou Échap pour finir.
+2. **Choisissez son type** (rue de ville, boulevard, route nationale, voie mixte tram et voitures…), son axe et le rayon de ses virages, puis cliquez sur **Ajouter la voie tracée**. Recommencez pour chaque voie ; la première porte l'origine du réseau.
+3. **Les carrefours naissent tout seuls** là où deux voies se croisent, où l'une finit sur l'autre (à 1 m près) ou où deux bouts se rejoignent. Chacun apparaît dans la liste et sur la vue en plan.
+4. **Choisissez le type de chaque carrefour** : simple (bordures arrondies), à feux (passages piétons, lignes d'arrêt et un feu par branche à chaussée), giratoire (rayon extérieur de 13 à 60 m, anneau de 6 à 12 m) ou double giratoire (deux carrefours voisins sur une même voie, reliés par la voie entre eux). Le rayon des bordures se règle pour chacun.
+5. **Cliquez sur Créer le réseau.** Toutes les voies et tous les carrefours s'écrivent en une fois ; une seule entrée d'Annuler retire tout.
+
+**Modifier :** sélectionnez le réseau, puis **Extensions → ARCHGEN → Modifier le réseau sélectionné**. Changez le type ou les rayons des carrefours, ou retirez une voie (sauf la première), puis cliquez sur **Remplacer ce réseau**. Une copie garde sa géométrie. Pour ajouter une voie, tracez un nouveau réseau.
+
+**À savoir**
+
+- **Tram :** une voie mixte ou à plateforme traverse un carrefour ou un giratoire tout droit, rails au ras ; une voie à rails qui tourne ou finit au carrefour, ou deux voies à rails au même carrefour, sont refusées.
+- **Refus :** autoroute à niveau (un échangeur viendra plus tard), voie ferrée sur ballast (le passage à niveau attend le profil en long), branches à moins de 30°, carrefour dans un virage, carrefours qui se touchent, voie trop courte ; chaque refus nomme son carrefour.
+- **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
+- **Hors de portée :** le réseau est horizontal ; pas d'échangeur, de passage à niveau, de courbe de rails ni de marquage de priorité.
+
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.

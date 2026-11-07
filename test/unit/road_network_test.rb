@@ -95,6 +95,14 @@ class RoadNetworkTest < Minitest::Test
     assert_equal 2 * single['metrics']['item_count'], p['metrics']['item_count']
   end
 
+  # Un premier point qui n'est pas un nombre rond (H21, grille au sixième) : ramené à l'origine de
+  # sa voie sans reste, la voie est acceptée.
+  def test_an_odd_first_point_is_brought_to_the_road_origin
+    step = 1000.0 / 6
+    p = plan(network(road('a', [[0, 0], [1000, 0]]), road('b', [[step, -100], [step, 100]])))
+    assert_equal 1, p['junctions'].size
+  end
+
   def test_two_crossings_make_two_junctions
     p = plan(network(road('a', [[0, 0], [200, 0]]), road('b', [[50, -50], [50, 50]]), road('c', [[150, -50], [150, 50]])))
     assert_equal %w[a@150.0+c@50.0 a@50.0+b@50.0], p['junctions'].map { |j| j['id'] }

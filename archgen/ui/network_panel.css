@@ -1,0 +1,20 @@
+/* Panneau de réseau de voies (AG-048). Les couleurs de base viennent de panel.css. */
+.net { display: flex; gap: 12px; padding: 0 12px 12px; align-items: flex-start; }
+.net-side { flex: 0 0 340px; display: flex; flex-direction: column; gap: 10px; }
+.net-box { border: 1px solid #c9c9c9; border-radius: 4px; padding: 8px 10px; background: #fff; }
+.net-box h2, .net-sheet h2 { font-size: 13px; margin: 0 0 6px; }
+.net-box label { display: block; font-size: 12px; margin-top: 6px; }
+.net-box select, .net-box input { width: 100%; box-sizing: border-box; }
+.net-row { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; }
+.net-row label { grid-row: 1; }
+.net-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.net-list { list-style: none; margin: 0; padding: 0; }
+.net-list li { border-top: 1px solid #eee; padding: 6px 0; font-size: 12px; }
+.net-list li:first-child { border-top: 0; }
+.net-road { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.net-junction .net-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; margin-top: 4px; }
+.net-diag { margin: 4px 0 0; padding-left: 16px; color: #a40000; font-size: 12px; }
+.net-sheet { flex: 1 1 auto; min-width: 0; }
+#plan { width: 100%; height: 640px; background: #eef1ec; border: 1px solid #c9c9c9; }
+#plan text { font: 3px sans-serif; fill: #111; }
+button.primary { font-weight: 600; }

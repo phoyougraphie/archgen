@@ -485,10 +485,11 @@ module Archgen
         faces = surface['faces']
         points = faces[from..].flat_map { |f| f['indices'] }.uniq
         touched = points.to_h { |i| [i, true] }
+        grid = points.group_by { |i| cell(vertices[i]) }
         healed = faces.each_with_index.flat_map do |face, k|
           next [face] unless k >= from || face['indices'].any? { |i| touched[i] }
 
-          ring = split_edges(face['indices'], points, vertices)
+          ring = split_edges(face['indices'], grid, vertices)
           next [face] if ring.size == face['indices'].size
 
           tris = retriangulate(ring, vertices)
@@ -519,13 +520,26 @@ module Archgen
         tris&.map { |t| t.map { |i| order[i] } }&.map { |t| flip ? t.reverse : t }
       end
 
-      def split_edges(indices, points, vertices)
+      HEAL_CELL_M = 2.0
+
+      def cell(point)
+        [(point[0] / HEAL_CELL_M).floor, (point[1] / HEAL_CELL_M).floor]
+      end
+
+      # Sommets du carrefour dans les cases que couvre l'arête (index par cases de 2 m).
+      def near(grid, pa, pb)
+        x0, x1 = [cell(pa)[0], cell(pb)[0]].minmax
+        y0, y1 = [cell(pa)[1], cell(pb)[1]].minmax
+        (x0..x1).flat_map { |x| (y0..y1).flat_map { |y| grid.fetch([x, y], []) } }
+      end
+
+      def split_edges(indices, grid, vertices)
         indices.each_with_index.flat_map do |a, i|
           b = indices[(i + 1) % indices.size]
           pa = vertices[a]
           d = (0..2).map { |c| vertices[b][c] - pa[c] }
           len2 = d.sum { |c| c * c }
-          inner = points.filter_map do |m|
+          inner = near(grid, pa, vertices[b]).filter_map do |m|
             next if m == a || m == b || len2.zero?
 
             w = (0..2).map { |c| vertices[m][c] - pa[c] }

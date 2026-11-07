@@ -8,6 +8,18 @@ module Archgen
     class RoadNetworkIntake
       SUPPORTED_VERSION = 1
 
+      # Réglages effectifs -> forme d'entrée équivalente (tracés en repère du réseau), à enregistrer :
+      # relue par settings, elle redonne les mêmes réglages effectifs.
+      def self.input(effective)
+        roads = effective['roads'].map do |entry|
+          road = entry['road']
+          ox, oy = entry['origin_m']
+          points = road['trace']['points_m'].map { |x, y| [Quant.q(x + ox), Quant.q(y + oy)] }
+          { 'id' => entry['id'], 'road' => road.merge('trace' => road['trace'].merge('points_m' => points)) }
+        end
+        { 'network_version' => effective['network_version'], 'roads' => roads, 'junctions' => effective['junctions'].map(&:dup) }
+      end
+
       def initialize(schema, roads:)
         @schema = SchemaValidator.new(schema)
         @roads = roads
@@ -79,7 +91,7 @@ module Archgen
       end
 
       def moved(points, origin)
-        points.map { |p| p.is_a?(Array) && p.size == 2 && p.all?(Numeric) ? [p[0] - origin[0], p[1] - origin[1]] : p }
+        points.map { |p| p.is_a?(Array) && p.size == 2 && p.all?(Numeric) ? [Quant.q(p[0] - origin[0]), Quant.q(p[1] - origin[1])] : p }
       end
 
       def repath(diagnostic, base)

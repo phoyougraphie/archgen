@@ -80,6 +80,8 @@ module Archgen
       adapters/sketchup/ensemble_service
       adapters/sketchup/road_repository
       adapters/sketchup/road_service
+      adapters/sketchup/network_repository
+      adapters/sketchup/network_service
       adapters/sketchup/street_tool
       ui/target_tokens
       ui/confirmation_tokens
@@ -87,6 +89,7 @@ module Archgen
       ui/dialog_controller
       ui/street_controller
       ui/road_controller
+      ui/network_controller
     ].freeze
 
     def self.load_core

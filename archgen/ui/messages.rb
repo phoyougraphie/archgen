@@ -215,6 +215,12 @@ module Archgen
         'link_too_short' => 'La liaison entre les deux anneaux ne fait que %{value} m, pour %{limit} m au moins. Écartez les carrefours ou réduisez les anneaux.',
         'tram_not_through' => 'Le tram doit traverser ce carrefour tout droit, sur une seule voie. Une seule voie à rails par carrefour ; pas de courbe de rails.',
         'tram_outside_carriageway' => 'Les rails de la voie %{road} sont hors de la chaussée : au carrefour, le tram roule dans la chaussée.',
+        'add_road_in_edit' => 'Une voie s’ajoute en traçant un réseau. Ici, on règle les carrefours ou on retire une voie.',
+        'too_many_roads' => 'Un réseau compte %{limit} voies au plus.',
+        'unknown_road' => 'Cette voie n’est plus dans le réseau.',
+        'first_road_kept' => 'La première voie porte l’origine du réseau : elle reste.',
+        'no_road' => 'Tracez et ajoutez au moins une voie.',
+        'not_a_network_root' => 'Ce composant n’est pas un réseau de voies ARCHGEN.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

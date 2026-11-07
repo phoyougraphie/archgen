@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : réseau de voies</title>
+<link rel="stylesheet" href="panel.css">
+<link rel="stylesheet" href="network_panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1 id="title">Tracer un réseau de voies</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Chargement</p>
+</header>
+
+<main class="net">
+  <aside class="net-side">
+    <section id="add-box" class="net-box" aria-labelledby="add-title">
+      <h2 id="add-title">Voie à ajouter</h2>
+      <p id="trace-hint" class="hint"></p>
+      <label for="n-preset">Type de voie</label>
+      <select id="n-preset"></select>
+      <div class="net-row">
+        <label for="n-axis">Axe</label>
+        <select id="n-axis">
+          <option value="center">Au milieu</option>
+          <option value="left">Bord gauche</option>
+          <option value="right">Bord droit</option>
+        </select>
+        <label for="n-radius">Rayon des virages, m</label>
+        <input id="n-radius" inputmode="decimal" value="20">
+      </div>
+      <div class="net-actions">
+        <button id="n-add" type="button">Ajouter la voie tracée</button>
+        <button id="n-resume" type="button" hidden>Reprendre le tracé</button>
+      </div>
+    </section>
+
+    <section class="net-box" aria-labelledby="roads-title">
+      <h2 id="roads-title">Voies du réseau</h2>
+      <ul id="roads" class="net-list"></ul>
+    </section>
+
+    <section class="net-box" aria-labelledby="junctions-title">
+      <h2 id="junctions-title">Carrefours</h2>
+      <p class="hint">Ils naissent là où les voies se croisent ou se touchent. Choisissez leur type ici.</p>
+      <ul id="junctions" class="net-list"></ul>
+    </section>
+
+    <section class="net-box" aria-labelledby="result-title">
+      <h2 id="result-title">Réseau</h2>
+      <p id="metrics"></p>
+      <ul id="diag" class="net-diag"></ul>
+      <div class="net-actions">
+        <button id="n-create" type="button" class="primary">Créer le réseau</button>
+        <button id="n-reload" type="button" hidden>Recharger la sélection</button>
+        <button id="n-regenerate" type="button" class="primary" hidden>Remplacer ce réseau</button>
+        <button id="n-clear" type="button">Tout effacer</button>
+      </div>
+    </section>
+  </aside>
+
+  <section class="net-sheet" aria-labelledby="plan-title">
+    <h2 id="plan-title">Vue en plan</h2>
+    <svg id="plan" role="img" aria-label="Vue de dessus du réseau"></svg>
+    <p class="hint">Valeurs de conception, sans vérification du code de la route ni des normes.</p>
+  </section>
+</main>
+<script src="network_panel.js"></script>
+</body>
+</html>

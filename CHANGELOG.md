@@ -1,5 +1,25 @@
 # Journal des versions
 
+## 0.6.0
+
+Réseaux de voies et carrefours : on trace plusieurs voies, les carrefours naissent là où elles se croisent ou se touchent, et chacun se règle en simple, à feux, giratoire ou double giratoire ; le tram les traverse. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles et voies seules identiques. Le rapport de recette est dans [docs/recette/V0.6.md](docs/recette/V0.6.md).
+
+**Ajouts**
+
+- **Extensions → ARCHGEN → Tracer un réseau de voies** : voies tracées une à une avec leur type, carrefours détectés tout seuls, vue en plan avant de créer.
+- Carrefour simple : bordures arrondies, onglet du côté extérieur d'un virage, trottoirs qui tournent l'angle, murets aux changements de niveau, surface sans trou ni recouvrement.
+- Carrefour à feux : passages piétons, lignes d'arrêt sur les voies qui entrent, un feu tricolore par branche à chaussée.
+- Giratoire : anneau, îlot central planté, îlots séparateurs, entrées arrondies ; double giratoire sur deux carrefours voisins.
+- Tram au carrefour : rails continus au ras à travers le carrefour, l'anneau et l'îlot central.
+- **Modifier le réseau sélectionné** : changer le type et les rayons des carrefours, retirer une voie. Une création ou un remplacement = une entrée d'Annuler.
+
+**Limites connues**
+
+- Pas d'échangeur : une autoroute ne se croise pas à niveau. Pas de passage à niveau tant que la voie ne suit pas un relief (AG-049, AG-050).
+- Une voie s'ajoute en traçant un nouveau réseau ; la modification règle les carrefours et retire des voies.
+- Pas de courbe de rails ni de marquage de priorité ; une plateforme tram s'abaisse au carrefour avec un muret de 5 cm.
+- Les largeurs et rayons sont des valeurs de conception, pas une vérification réglementaire.
+
 ## 0.5.0
 
 Voirie : composer une coupe à l'échelle humaine et tracer une voie, de l'autoroute au chemin piéton, rails compris. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 inchangé : bâtiments et ensembles identiques. Moteur de voirie 1. Le rapport de recette est dans [docs/recette/V0.5.md](docs/recette/V0.5.md).

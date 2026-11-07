@@ -54,7 +54,7 @@ module Archgen
           problem = context_problem(model) || origin_problem(origin_m)
           return Core::Result.fail([problem]) if problem
 
-          written = @guard.run(model, 'ARCHGEN : créer une voie') { write_new_root(model, computed.value, origin_m) }
+          written = @guard.run(model, labels[:create]) { write_new_root(model, computed.value, origin_m) }
           written.ok? ? Core::Result.ok(written.value, computed.diagnostics) : written
         end
 
@@ -84,7 +84,7 @@ module Archgen
           return computed unless computed.ok?
 
           record = loaded.value.record
-          written = @guard.run(model, 'ARCHGEN : régénérer la voie', instance: record.instance) do
+          written = @guard.run(model, labels[:regenerate], instance: record.instance) do
             @roots.swap(record.instance, definition: write_definition(model, computed.value))
             finish(model, record.instance, computed.value, record.metadata['revision'] + 1)
           end
@@ -92,6 +92,12 @@ module Archgen
         end
 
         private
+
+        # Libellés d'Annuler, matière d'écriture : un réseau (NetworkService) remplace ceux-ci.
+        def labels
+          { create: 'ARCHGEN : créer une voie', regenerate: 'ARCHGEN : régénérer la voie', kind: 'road', writing: 'de la voie',
+            definition: self.class::DEFINITION_NAME, root: self.class::ROOT_NAME }
+        end
 
         def merged(settings, changes)
           base = settings.reject { |k, _| changes.key?(k) }
@@ -119,19 +125,19 @@ module Archgen
         def write_new_root(model, computed, origin)
           definition = write_definition(model, computed)
           instance = @roots.insert(model, definition: definition, transform: @host.transformation(translation(origin)))
-          instance.name = ROOT_NAME
+          instance.name = labels[:root]
           finish(model, instance, computed, 1)
         end
 
         # Le writer écrit chaque famille sous sa balise ; les objets répétés sont des instances partagées.
         def write_definition(model, computed)
-          definition = model.definitions.add(DEFINITION_NAME)
+          definition = model.definitions.add(labels[:definition])
           raise WriteError, 'Création de la définition refusée' unless definition
 
-          @host.status("ARCHGEN : écriture de la voie, #{computed.plan['metrics']['item_count']} objets")
+          @host.status("ARCHGEN : écriture #{labels[:writing]}, #{computed.plan['metrics']['item_count']} objets")
           resources = Resources.new(model, catalog: @materials, revision: @material_revision, host: @host)
           @writer.write(computed.plan, entities: definition.entities, resources: resources)
-          @writer.mark_definition(definition, plan_digest: computed.road_digest, kind: 'road')
+          @writer.mark_definition(definition, plan_digest: computed.road_digest, kind: labels[:kind])
           @host.status('')
           definition
         end
