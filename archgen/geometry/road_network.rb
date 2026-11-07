@@ -161,12 +161,75 @@ module Archgen
         arms = node.arms
         return [error(node.id, 'too_many_arms', limit: MAX_ARMS, value: arms.size)] if arms.size > MAX_ARMS
         return [error(node.id, 'motorway_at_grade')] if arms.any? { |a| a.road.section['bands'].any? { |b| b['type'] == 'hard' } }
-        return [error(node.id, 'rails_at_junction')] if arms.any? { |a| a.road.section['bands'].any? { |b| RAIL_ROLES.include?(b['role']) || b['type'] == 'tram_lane' } }
+        return [error(node.id, 'rails_at_junction')] if arms.any? { |a| a.road.section['bands'].any? { |b| b['role'] == 'rail' } }
+
+        tram = tram_problem(node)
+        return [tram] if tram
 
         tight = arms.each_index.map { |k| J.ccw_delta(arms[k].dir, arms[(k + 1) % arms.size].dir) }.min
         return [error(node.id, 'arms_too_close', min_deg: 30, value_deg: (tight * 180 / Math::PI).round(1))] if arms.size > 1 && tight < MIN_ARM_RAD
 
         []
+      end
+
+      def tram?(arm)
+        arm.road.section['bands'].any? { |b| b['role'] == 'tram' || b['type'] == 'tram_lane' }
+      end
+
+      # Tram (AG-047) : une seule voie à rails, qui traverse le nœud tout droit ; ses rails dans la chaussée.
+      def tram_problem(node)
+        trams = node.arms.select { |a| tram?(a) }
+        return nil if trams.empty?
+
+        through = trams.size == 2 && trams[0].road.equal?(trams[1].road) && trams.map(&:sign).sort == [-1, 1]
+        return error(node.id, 'tram_not_through') unless through
+
+        arm = trams.first
+        rails = arm.road.section['rails'].map { |r| arm.sign.positive? ? arm.road.ax - r['x_m'] : r['x_m'] - arm.road.ax }
+        return error(node.id, 'tram_outside_carriageway', road: arm.road.id) unless rails.all? { |u| u > arm.kerb_r && u < arm.kerb_l }
+
+        trams.each { |a| a.through = true }
+        nil
+      end
+
+      # Couloir du tram, d'une coupe à l'autre : la chaussée de la voie à rails, mise à niveau 0
+      # (une plateforme s'abaisse à la coupe), rails au ras. Ligne de coupe en x de la voie.
+      def crossing_line(arm)
+        bands = arm.road.section['bands']
+        lanes = bands.select { |b| b['role'] == 'carriageway' }
+        x0 = lanes.map { |b| b['x0_m'] }.min
+        x1 = lanes.map { |b| b['x1_m'] }.max
+        rails = arm.road.section['rails'].map { |r| r['x_m'] }
+        half = RoadRibbons::RAIL_HEAD_M / 2
+        breaks = (bands.flat_map { |b| [b['x0_m'], b['x1_m']] } + rails.flat_map { |x| [x - half, x + half] } + [x0, x1])
+                 .select { |x| x >= x0 - 1e-9 && x <= x1 + 1e-9 }.map { |x| Core::Quant.q(x) }.uniq.sort
+        breaks.each_cons(2).map do |a, b|
+          mid = (a + b) / 2
+          band = bands.find { |row| mid > row['x0_m'] && mid < row['x1_m'] }
+          rail = rails.any? { |x| mid > x - half && mid < x + half }
+          [[a, 0.0], [b, 0.0], rail ? RoadRibbons::RAIL_MATERIAL : "road/#{band['type']}"]
+        end
+      end
+
+      def crossing_faces(node)
+        plus = node.arms.find { |a| a.through && a.sign.positive? }
+        minus = node.arms.find { |a| a.through && a.sign.negative? }
+        RoadSignals.sweep(plus, -minus.cut, plus.cut, crossing_line(plus))
+      end
+
+      # Cœur coupé par le couloir du tram : de la coupe de x (bord gauche) à celle de y (bord droit).
+      def chain(corners, from, to, node)
+        k = corners.index { |c| c.a.equal?(from) }
+        out = [J.point(from, nil, from.cut, from.kerb_l)]
+        loop do
+          c = corners[k]
+          out.concat(J.kerb_path(c, node.point, node.radius).drop(1))
+          break if c.b.equal?(to)
+
+          out.concat(J.cut_points(c.b, node.point, [c.b.kerb_r, c.b.kerb_l]).drop(1))
+          k = (k + 1) % corners.size
+        end
+        J.dedupe(out)
       end
 
       # La zone coupée d'une branche doit tenir dans un seul segment droit de sa voie.
@@ -280,7 +343,18 @@ module Archgen
         end
         core = J.dedupe(core)
         core.pop if core.size > 1 && Math.hypot(core[0][0] - core[-1][0], core[0][1] - core[-1][1]) < 1e-7
-        problems << error(node.id, 'junction_shape') unless add_polygon(out, core, zc, arms.any?(&:carriageway) ? 'road/lane' : 'road/path')
+        if arms.any?(&:through)
+          plus = arms.find { |a| a.through && a.sign.positive? }
+          minus = arms.find { |a| a.through && a.sign.negative? }
+          [chain(corners, plus, minus, node), chain(corners, minus, plus, node)].each do |piece|
+            next if piece.size < 3 || J.signed_area(piece) <= 1e-9
+
+            problems << error(node.id, 'junction_shape') unless add_polygon(out, piece, zc, 'road/lane')
+          end
+          out.concat(crossing_faces(node))
+        else
+          problems << error(node.id, 'junction_shape') unless add_polygon(out, core, zc, arms.any?(&:carriageway) ? 'road/lane' : 'road/path')
+        end
         corners.each { |c| problems.concat(corner_faces(out, c, node, zc)) }
         arms.each { |a| problems.concat(caps(out, a, node, zc, corners)) }
         problems.empty? ? Core::Result.ok(out) : Core::Result.fail(problems.uniq)

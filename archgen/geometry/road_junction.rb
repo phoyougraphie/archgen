@@ -17,7 +17,7 @@ module Archgen
       # road : index, section, ax ; s : abscisse du nœud sur la voie ; sign : +1 branche vers l'aval ;
       # origin : point de l'axe de la voie au nœud.
       Arm = Struct.new(:road, :s, :sign, :dir, :left, :points, :kerb_l, :kerb_r, :outer_l, :outer_r,
-                       :carriageway, :side_l, :side_r, :origin, :cut, :ext, :link, keyword_init: true) do
+                       :carriageway, :side_l, :side_r, :origin, :cut, :ext, :link, :through, keyword_init: true) do
         # Bout de la zone du carrefour sur la branche : coupe, plus le marquage d'un carrefour à feux.
         def reach
           cut + (ext || 0.0)

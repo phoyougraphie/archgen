@@ -177,7 +177,7 @@ Types de nœud, livrés ticket par ticket :
 | `signals` | Comme `simple`, plus passages piétons, lignes d'arrêt et un feu par branche à chaussée | Au moins une branche à chaussée | **AG-044, livré** |
 | `roundabout` | Anneau, îlot central, îlots séparateurs, entrées arrondies. Rayon extérieur de 13 à 60 m, anneau de 6 à 12 m | Chaque branche avec chaussée | **AG-045, livré** |
 | `double_roundabout` | Deux nœuds voisins sur une même voie, chacun un giratoire ; le bout de voie entre eux est la liaison (`link_m`), 5 m au moins (ADR-37) | Idem, aux deux nœuds | **AG-046, livré** |
-| `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route | AG-047 |
+| `level_crossing` | Voie ferrée franchissant une route, à niveau, la route en rampe | Voie ferrée × route, profil en long | AG-050 (après AG-049) |
 
 ### Carrefour simple (AG-043, U27)
 
@@ -231,12 +231,27 @@ Deux nœuds **voisins sur une même voie** (aucun autre nœud entre eux) devienn
 
 Refus : `pair_missing`, `unknown_pair` (nœud absent ou le même), `pair_already_set` (le second est réglé ou déjà jumelé), `not_neighbours` (pas de voie commune sans nœud entre eux), `link_too_short` (`value`, `limit` = 5 m), y compris quand les coupes se chevauchent.
 
+### Tram au carrefour (AG-047, U31)
+
+Une seule voie à rails par nœud, qui le **traverse tout droit** : ses deux branches sont celles d'une même voie, de part et d'autre du nœud (la zone coupée étant droite, elles sont exactement opposées). Ses rails doivent être dans sa chaussée (voie mixte `tram_lane`, ou plateforme `tram` entre des voies).
+
+- **Couloir du tram** : la chaussée de la voie à rails, d'une coupe à l'autre, balayée comme un tronçon, chaque bande à 0, rails au ras (`road/rail_steel`). Les rails sont donc continus d'un tronçon à l'autre, au ras d'une voie mixte. Une plateforme `tram` s'abaisse à 0 dans le couloir : muret de 5 cm à la coupe, rails décalés d'autant en hauteur.
+- **Carrefour simple ou à feux** : le cœur est coupé en deux morceaux le long des bords du couloir. Le marquage d'un carrefour à feux ne recouvre jamais un rail.
+- **Giratoire** : les secteurs de chaussée longent les bords du couloir ; l'îlot central est coupé en deux morceaux, chacun fermé par une corde le long du couloir, avec sa contremarche. La branche du tram n'a pas d'îlot séparateur. Ses bords de chaussée doivent couper l'îlot central (`ring_too_small` sinon).
+- Les courbes de rails, aiguillages et tramways sur deux voies d'un même nœud sont hors de cette version.
+
+Refus : `tram_not_through` (deux voies à rails, ou une voie à rails qui finit au nœud ou y tourne) ; `tram_outside_carriageway` (`road`) ; `rails_at_junction` pour une voie ferrée sur ballast, quel que soit le type.
+
+**Passage à niveau (AG-050)** : reporté. Le ballast est à 0,35 m et le dessus des rails à 0,52 m au-dessus de la chaussée ; une route ne les franchit à niveau qu'en montant par des rampes, ce qui demande le profil en long d'AG-049. D'ici là, une voie ferrée à un nœud est refusée.
+
 **Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
 
 | Raison | Quand |
 |---|---|
 | `motorway_at_grade` | Une branche porte une bande d'arrêt d'urgence (`hard`) : **une autoroute se raccorde par un échangeur, hors de ce lot** |
-| `rails_at_junction` | Une branche porte un rail, un tram ou une voie mixte : jusqu'à AG-047 |
+| `rails_at_junction` | Une branche porte une voie ferrée sur ballast : jusqu'au passage à niveau (AG-050) |
+| `tram_not_through` | Le tram ne traverse pas le nœud tout droit sur une seule voie (AG-047) |
+| `tram_outside_carriageway` | Les rails d'une voie sont hors de sa chaussée (`road`) |
 | `too_many_arms` | Plus de 6 branches |
 | `arms_too_close` | Deux branches à moins de 30° |
 | `junction_on_curve` | La zone coupée d'une branche touche un virage ou un sommet de sa voie (`road`) |
@@ -248,7 +263,6 @@ Refus : `pair_missing`, `unknown_pair` (nœud absent ou le même), `pair_already
 
 La saisie refuse aussi `duplicate_road_id` (`E_ROAD_TRACE`, `/roads/<i>/id`), `duplicate_junction`, `first_point_not_network_origin` et `unsupported_network` (`E_VERSION`). Un refus d'une voie garde son chemin dans le réseau, `/roads/<i>/road/…`.
 
-**Tram au carrefour (AG-047) :** les rails d'un tronçon passeront droit à travers le nœud et l'îlot central, si deux branches à rails sont opposées à 15° près (départ). Toute autre disposition sera refusée. Les courbes de rails d'un carrefour sont hors de cette version.
 
 ## Écriture et persistance
 

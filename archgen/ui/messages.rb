@@ -196,7 +196,7 @@ module Archgen
         'duplicate_junction' => 'Ce carrefour est réglé deux fois.',
         'unknown_junction' => 'Ce carrefour n’existe plus : les voies ne s’y croisent pas.',
         'motorway_at_grade' => 'Une autoroute ne se croise pas à niveau. Un échangeur viendra plus tard ; écartez les tracés.',
-        'rails_at_junction' => 'Une voie ferrée ou un tram ne traverse pas encore un carrefour. Écartez les tracés.',
+        'rails_at_junction' => 'Une voie ferrée ne croise pas encore une route : le passage à niveau attend le profil en long (AG-050). Écartez les tracés.',
         'too_many_arms' => 'Ce carrefour aurait %{value} branches, pour %{limit} au plus.',
         'arms_too_close' => 'Deux branches de ce carrefour font %{value_deg}°, pour %{min_deg}° au moins. Ouvrez l’angle.',
         'junction_on_curve' => 'Le carrefour touche un virage de la voie %{road}. Éloignez le sommet du croisement.',
@@ -213,6 +213,8 @@ module Archgen
         'pair_already_set' => 'Le second carrefour de ce double giratoire est déjà réglé ou déjà jumelé.',
         'not_neighbours' => 'Les deux carrefours de ce double giratoire ne se suivent pas sur une même voie.',
         'link_too_short' => 'La liaison entre les deux anneaux ne fait que %{value} m, pour %{limit} m au moins. Écartez les carrefours ou réduisez les anneaux.',
+        'tram_not_through' => 'Le tram doit traverser ce carrefour tout droit, sur une seule voie. Une seule voie à rails par carrefour ; pas de courbe de rails.',
+        'tram_outside_carriageway' => 'Les rails de la voie %{road} sont hors de la chaussée : au carrefour, le tram roule dans la chaussée.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

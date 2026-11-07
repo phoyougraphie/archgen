@@ -69,7 +69,7 @@ module Archgen
       # Ligne de coupe dont les segments compris dans les intervalles prennent la matière du marquage.
       def marked(line, intervals)
         line.flat_map do |(xa, za), (xb, zb), mat|
-          next [[[xa, za], [xb, zb], mat]] if (xa - xb).abs < 1e-12 || mat == 'road/curb'
+          next [[[xa, za], [xb, zb], mat]] if (xa - xb).abs < 1e-12 || ['road/curb', RoadRibbons::RAIL_MATERIAL].include?(mat)
 
           cuts = intervals.flatten.select { |x| x > xa + 1e-9 && x < xb - 1e-9 }.sort
           xs = [xa] + cuts + [xb]

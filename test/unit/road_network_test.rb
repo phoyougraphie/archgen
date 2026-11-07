@@ -208,10 +208,9 @@ class RoadNetworkTest < Minitest::Test
     end
   end
 
-  def test_rails_and_trams_do_not_cross_at_grade
-    %w[tram fer mixte].each do |profile|
-      assert_equal ['rails_at_junction'], reasons(network(road('a', [[0, 0], [100, 0]], profile), road('b', [[50, -50], [50, 50]]))), profile
-    end
+  # Voie ferrée sur ballast : refusée jusqu'au passage à niveau (AG-050). Le tram : U31.
+  def test_a_railway_does_not_cross_at_grade
+    assert_equal ['rails_at_junction'], reasons(network(road('a', [[0, 0], [100, 0]], 'fer'), road('b', [[50, -50], [50, 50]])))
   end
 
   def test_junctions_too_close_name_both

@@ -19,7 +19,7 @@ module Archgen
       J = RoadJunction
       N = RoadNetwork
 
-      Entry = Struct.new(:arm, :mid, :inner, :island, :ca, :t1, :t2, :cb, :t3, :t4, keyword_init: true)
+      Entry = Struct.new(:arm, :mid, :inner, :inner_l, :inner_r, :island, :ca, :t1, :t2, :cb, :t3, :t4, keyword_init: true)
 
       module_function
 
@@ -89,7 +89,14 @@ module Archgen
         t_outer = line_circle(at(arm, 0, mid), arm.dir, o, outer)
         island = nil
         # La liaison d'un double giratoire n'a pas d'îlot séparateur.
-        if !arm.link && arm.kerb_l - mid >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2) && mid - arm.kerb_r >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2)
+        # Tram (AG-047) : le couloir des rails traverse l'îlot central ; ses bords coupent l'îlot.
+        if arm.through
+          return 'ring_too_small' if arm.kerb_l >= inner - 1e-9 || arm.kerb_r <= -inner + 1e-9
+
+          edge_l = at(arm, line_circle(at(arm, 0, arm.kerb_l), arm.dir, o, inner), arm.kerb_l)
+          edge_r = at(arm, line_circle(at(arm, 0, arm.kerb_r), arm.dir, o, inner), arm.kerb_r)
+        end
+        if !arm.link && !arm.through && arm.kerb_l - mid >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2) && mid - arm.kerb_r >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2)
           t1 = t_outer + ISLAND_GAP_M
           island = [t1, t1 + ISLAND_LENGTH_M]
         end
@@ -97,7 +104,7 @@ module Archgen
         cb, t4p, t3p = fillet(arm, o, outer, radius, arm.kerb_r - radius, arm.kerb_r)
         return 'ring_too_small' unless ca && cb
 
-        Entry.new(arm: arm, mid: mid, inner: at(arm, t_inner, mid), island: island, ca: ca, t1: t1p, t2: t2p, cb: cb, t3: t3p, t4: t4p)
+        Entry.new(arm: arm, mid: mid, inner: at(arm, t_inner, mid), inner_l: edge_l, inner_r: edge_r, island: island, ca: ca, t1: t1p, t2: t2p, cb: cb, t3: t3p, t4: t4p)
       end
 
       # Arrondi tangent au bord u_kerb de la branche (côté trottoir) et, de l'extérieur, au bord de l'anneau.
@@ -215,16 +222,21 @@ module Archgen
           b = eb.arm
           corner = shape[:corners][k]
           path = kerb_path(ea, eb, o, shape[:outer], node.radius)
-          sector = median(ea, +1) + cut_line(a, ea.mid, a.kerb_l).drop(1) + path.drop(1) +
-                   cut_line(b, b.kerb_r, eb.mid).drop(1) + median(eb, -1).reverse.drop(1) +
-                   inner_angle_points(ea, eb, o, shape[:inner]).drop(1).reverse
-          sector = clean(sector)
+          # Le secteur longe la ligne médiane de chaque branche, ou le bord du couloir du tram.
+          first = a.through ? ea.inner_l : ea.inner
+          last = b.through ? eb.inner_r : eb.inner
+          head = a.through ? [first, path.first] : median(ea, +1) + cut_line(a, ea.mid, a.kerb_l).drop(1)
+          tail = b.through ? [last] : cut_line(b, b.kerb_r, eb.mid).drop(1) + median(eb, -1).reverse.drop(1)
+          ring = [first] + arc_ccw(o, first, last, shape[:inner])
+          sector = clean(head + path.drop(1) + tail + ring.drop(1).reverse)
           problems << N.error(node.id, 'junction_shape') unless N.add_polygon(out, sector, 0.0, 'road/lane')
-          island.concat(inner_angle_points(ea, eb, o, shape[:inner]))
+          island << { start: a.through, points: ring + [last], stop: b.through }
           corner_faces(out, problems, node, corner, path)
         end
-        island = clean(island)
-        problems << N.error(node.id, 'junction_shape') unless raised(out, island, 'road/plant')
+        island_pieces(island).each do |piece|
+          problems << N.error(node.id, 'junction_shape') unless raised(out, clean(piece), 'road/plant')
+        end
+        out.concat(N.crossing_faces(node)) if entries.any? { |e| e.arm.through }
         entries.each do |e|
           next unless e.island
 
@@ -234,6 +246,21 @@ module Archgen
         end
         entries.each { |e| problems.concat(N.caps(out, e.arm, node, 0.0, shape[:corners])) }
         problems.empty? ? Core::Result.ok(out) : Core::Result.fail(problems.uniq(&:to_h))
+      end
+
+      # Îlot central : un disque, ou deux morceaux de part et d'autre du couloir du tram, chacun fermé
+      # par la corde qui longe le couloir.
+      def island_pieces(chains)
+        return [chains.flat_map { |c| c[:points] }] if chains.none? { |c| c[:start] }
+
+        k = chains.index { |c| c[:start] }
+        ordered = chains.rotate(k)
+        pieces = []
+        ordered.each do |c|
+          pieces << [] if c[:start]
+          pieces.last.concat(c[:points])
+        end
+        pieces
       end
 
       def clean(poly)
