@@ -254,7 +254,7 @@ module FakeSketchUp
 
   class Instance
     include Attributes
-    attr_accessor :name, :layer, :locked, :valid, :parent, :swap_corrupts
+    attr_accessor :name, :layer, :locked, :valid, :parent, :swap_corrupts, :hidden
     attr_writer :transformation
     attr_reader :definition, :transform, :persistent_id
 

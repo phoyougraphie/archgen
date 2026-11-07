@@ -42,6 +42,14 @@
           <div class="field"><label for="r-radius">Rayon des virages (m)</label><input id="r-radius" inputmode="decimal"></div>
           <div class="field"><label for="r-axis">Le tracé suit</label><select id="r-axis"><option value="center">le milieu de la coupe</option><option value="left">le bord gauche</option><option value="right">le bord droit</option></select></div>
         </div>
+        <div class="road-ground">
+          <label for="r-ground" class="road-check"><input type="checkbox" id="r-ground"> Suivre le terrain</label>
+          <div class="actions">
+            <button type="button" id="r-retain">Retenir le terrain sélectionné</button>
+            <button type="button" id="r-survey">Relever le terrain</button>
+          </div>
+          <p id="r-ground-state" class="hint"></p>
+        </div>
         <p id="road-result" class="road-result" role="status" aria-live="polite"></p>
         <ul id="road-diag" class="road-diag"></ul>
         <div class="actions">

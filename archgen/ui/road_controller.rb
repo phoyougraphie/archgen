@@ -7,11 +7,11 @@ module Archgen
     # tout, calcule la coupe dessinée et l'aperçu ; une écriture exige l'empreinte montrée.
     class RoadController
       PROTOCOL = 1
-      ACTIONS = %w[init preview create clear load_selection regenerate].freeze
+      ACTIONS = %w[init preview create clear load_selection regenerate retain_terrain survey_ground].freeze
       MUTATIONS = %w[create regenerate].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'preview' => %w[profile road], 'create' => %w[profile road road_digest], 'clear' => [],
-        'load_selection' => [], 'regenerate' => %w[profile road road_digest]
+        'load_selection' => [], 'regenerate' => %w[profile road road_digest], 'retain_terrain' => [], 'survey_ground' => %w[profile road]
       }.freeze
       MAX_REQUEST_ID = 64
       START_PRESET = 'ville'
@@ -65,6 +65,8 @@ module Archgen
         @session.clear
         @overlay = {}
         @edit = nil
+        @terrain = nil
+        @survey = nil
         @mutations.clear
       end
 
@@ -91,6 +93,7 @@ module Archgen
         return 'invalid_envelope' unless payload.is_a?(Hash) && (payload.keys - PAYLOAD_KEYS.fetch(envelope['action'])).empty?
         return 'invalid_envelope' if PAYLOAD_KEYS.fetch(envelope['action']).include?('profile') && !payload['profile'].is_a?(Hash)
         return 'invalid_envelope' if payload.key?('road') && !payload['road'].is_a?(Hash)
+        return 'invalid_envelope' if payload['road'].is_a?(Hash) && payload['road'].key?('on_ground') && ![true, false].include?(payload['road']['on_ground'])
 
         nil
       end
@@ -107,6 +110,8 @@ module Archgen
         when 'clear' then clear
         when 'load_selection' then load_selection
         when 'regenerate' then regenerate(payload)
+        when 'retain_terrain' then retain_terrain
+        when 'survey_ground' then survey_ground(payload)
         end
       end
 
@@ -128,7 +133,7 @@ module Archgen
 
         # Un refus de la voie n'est pas un refus de la coupe : il voyage dans son propre bloc.
         road = road_preview(payload)
-        Core::Result.ok(section.value.merge('road' => road && summary(road)), section.diagnostics)
+        Core::Result.ok(section.value.merge('road' => road && summary(road), 'ground' => ground_state), section.diagnostics)
       end
 
       def section_for(profile)
@@ -147,7 +152,7 @@ module Archgen
         tree = road_tree(payload)
         return nil unless tree
 
-        result = tree.ok? ? @service.preview(tree: tree.value) : tree
+        result = tree.ok? ? @service.preview(tree: tree.value, survey: tree.value['ground'] ? @survey : nil) : tree
         @overlay = @mode == 'trace' ? outline(result) : {}
         result
       end
@@ -159,7 +164,8 @@ module Archgen
 
         metrics = result.value.plan['metrics']
         { 'ok' => true, 'road_digest' => result.value.road_digest, 'diagnostics' => own,
-          'metrics' => metrics.slice('length_m', 'width_m', 'station_count', 'item_count', 'sleeper_count', 'definition_count', 'unique_face_count', 'expanded_face_count') }
+          'metrics' => metrics.slice('length_m', 'width_m', 'station_count', 'item_count', 'sleeper_count', 'definition_count', 'unique_face_count', 'expanded_face_count',
+                                     'grade_max_percent', 'cut_max_m', 'fill_max_m', 'earthwork_reach_m') }
       end
 
       # Réglages de voie : tracé de l'outil (création) ou tracé enregistré (modification).
@@ -176,13 +182,16 @@ module Archgen
 
           trace = @edit.settings['trace']
           radii = radius.nil? ? trace['radii_m'] : Array.new(trace['radii_m'].size, radius)
+          # Une voie garde son terrain ou son absence de terrain : la case ne change rien en modification.
           return Core::Result.ok(@edit.settings.merge('profile' => payload['profile'], 'axis' => axis, 'trace' => trace.merge('radii_m' => radii)))
         end
         return nil unless @session.finished?
 
         points = @session.relative_points
         radii = Array.new([points.size - 2, 0].max, radius.nil? ? DEFAULT_RADIUS_M : radius)
-        Core::Result.ok({ 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'axis' => axis, 'profile' => payload['profile'] })
+        tree = { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'axis' => axis, 'profile' => payload['profile'] }
+        tree['ground'] = {} if road['on_ground'] == true
+        Core::Result.ok(tree)
       end
 
       # Contour de l'emprise, dans le repère du modèle, pour la vue.
@@ -216,7 +225,8 @@ module Archgen
         return computed unless computed.ok?
         return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
 
-        written = @service.create(model: model, tree: tree.value, origin_m: @session.origin_m)
+        ground = tree.value['ground'] ? { terrain: @terrain, survey_digest: @survey && Core::Canonical.digest(@survey) } : {}
+        written = @service.create(model: model, tree: tree.value, origin_m: @session.origin_m, **ground)
         return written unless written.ok?
 
         select_root(written.value.persistent_id)
@@ -238,10 +248,12 @@ module Archgen
         return loaded unless loaded.ok?
 
         @edit = loaded.value
+        @survey = nil
         settings = @edit.settings
         radii = settings['trace']['radii_m'].uniq
         Core::Result.ok({ 'profile' => settings['profile'], 'axis' => settings['axis'], 'radius_m' => radii.size == 1 ? radii.first : nil,
-                          'vertex_count' => settings['trace']['points_m'].size, 'revision' => @edit.target.revision })
+                          'vertex_count' => settings['trace']['points_m'].size, 'revision' => @edit.target.revision,
+                          'on_ground' => settings.key?('ground') })
       end
 
       def regenerate(payload)
@@ -261,6 +273,42 @@ module Archgen
         reloaded = @service.load_selection(model: model)
         @edit = reloaded.value if reloaded.ok?
         Core::Result.ok({ 'regenerated' => true, 'revision' => written.value.revision, 'metrics' => written.value.metrics }, written.diagnostics)
+      end
+
+      # Terrain : la sélection courante est retenue (TerrainSurveyor), rien n'est écrit.
+      def retain_terrain
+        return failure('E_TARGET_STALE', '/model', 'model_unavailable') unless @service
+
+        retained = Adapters::SketchUp::TerrainSurveyor.new.retain(model)
+        return retained unless retained.ok?
+
+        @terrain = retained.value
+        @survey = nil
+        Core::Result.ok('ground' => ground_state)
+      end
+
+      # Relevé du couloir sur demande : création à partir du tracé, modification à la place de la racine.
+      def survey_ground(payload)
+        tree = road_tree(payload)
+        return failure('E_TARGET_STALE', '/trace', 'trace_unfinished') unless tree
+        return tree unless tree.ok?
+
+        grid = if @mode == 'edit'
+                 @service.survey_existing(model: model, instance: @edit.record.instance, tree: tree.value)
+               else
+                 return failure('E_SITE_TERRAIN', '/site/terrain', 'terrain_missing') unless @terrain
+
+                 @service.survey(model: model, tree: tree.value, origin_m: @session.origin_m, terrain: @terrain)
+               end
+        return grid unless grid&.ok?
+
+        @survey = grid.value
+        preview(payload)
+      end
+
+      def ground_state
+        { 'terrain' => !@terrain.nil?, 'surveyed' => !@survey.nil?,
+          'points' => @survey ? @survey['s_m'].size * @survey['u_m'].size : 0 }
       end
 
       def select_root(persistent_id)

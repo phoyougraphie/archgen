@@ -80,6 +80,7 @@ module Archgen
       adapters/sketchup/building_service
       adapters/sketchup/ensemble_service
       adapters/sketchup/road_repository
+      adapters/sketchup/ground_cutter
       adapters/sketchup/road_service
       adapters/sketchup/network_repository
       adapters/sketchup/network_service

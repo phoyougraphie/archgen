@@ -228,6 +228,8 @@ module Archgen
         'grade_too_steep' => 'À %{s_m} m du départ, la pente atteint %{value} %, pour %{limit} % au plus.',
         'earthwork_too_high' => 'À %{s_m} m du départ, le terrain est à %{value} m de la voie, pour %{limit} m au plus.',
         'road_toe_not_found' => 'À %{s_m} m du départ, le talus n’atteint pas le terrain. Changez la pente du talus ou le tracé.',
+        'not_on_ground' => 'Cette voie ne suit pas de terrain.',
+        'ground_road_rotated' => 'Une voie posée sur un terrain ne doit pas être tournée. Annulez la rotation.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

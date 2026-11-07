@@ -322,9 +322,22 @@ Grille dans le repère de la voie : abscisses `s` le long de l'axe, de 0 à L, e
 
 Mêmes nœuds qu'une voie horizontale, cotes en repère de la racine : la racine est au premier point du tracé, à l'altitude du profil en long en ce point. Les objets répétés et continus suivent le profil : leur pied est à la cote de la voie à leur abscisse. Un groupe `road/earthwork` porte les talus, sous la balise `ARCHGEN Voirie chaussée et trottoirs`. Métriques ajoutées : `grade_max_percent`, `cut_max_m`, `fill_max_m`, `earthwork_reach_m`, `earthwork_face_count`.
 
-#### Copie entaillée (étape 2)
+#### Copie entaillée et écriture (étape 2)
 
-Précisée avant son code, dans ce contrat : copie du terrain retenu dans un groupe ARCHGEN, faces sous l'emprise et les talus retirées par intersection avec leur contour, original masqué ; une opération ; Annuler rend l'original visible et retire la copie ; régénérer la voie refait la copie depuis l'original, jamais depuis la copie.
+- **Terrain désigné** comme pour une assise ([relevé du terrain](TERRAIN_CONTRACT.md)) : un seul groupe ou composant de niveau racine, sélectionné puis retenu dans le panneau ; pas un bâtiment, un ensemble ni une voie ARCHGEN.
+- **Relevé sur demande** (« Relever le terrain »), jamais à chaque frappe : les points du couloir sont projetés dans le modèle par l'axe de la voie (point et normale interpolés entre les stations), à partir du premier point du tracé. Mêmes rayons et mêmes relances que l'assise. Le relevé montré dans l'aperçu porte une empreinte ; à l'écriture, le terrain est relevé de nouveau et une empreinte différente refuse l'écriture (`E_TARGET_STALE`, `terrain_changed`).
+- **Racine** au premier point du tracé, à l'altitude du profil en long en ce point (`origin_z_m`).
+- **Une opération**, « ARCHGEN : créer une voie » ou « ARCHGEN : régénérer la voie » :
+  1. le terrain d'origine est masqué, jamais modifié ;
+  2. une copie unique est posée à sa place (même transformation, définition propre), nommée « Terrain entaillé ARCHGEN », marquée `archgen.ground_copy` ;
+  3. des faces verticales temporaires suivent le contour de l'entaille (bords des pieds de talus, coupé droit aux deux bouts de la voie) ; la copie est intersectée avec elles, puis ses faces dont le centre tombe dans le contour sont effacées, avec les arêtes devenues libres ; les faces temporaires sont effacées ;
+  4. la voie est écrite.
+  Une panne à n'importe quelle étape annule tout : original visible, aucune copie, aucune voie.
+- **Attributs** de la racine, dictionnaire `archgen.road_ground` : `terrain_pid` (original), `copy_pid` (copie), `survey_digest`. Le dictionnaire `archgen.road` ne change pas.
+- **Régénérer** : la copie précédente est effacée, l'original est relevé de nouveau (masqué : le relevé le vise quand même, rayons qui voient les entités masquées ; toucher la copie entaillée de ce terrain vaut toucher le terrain, puisqu'elle le recouvre exactement hors de l'entaille, H22), une nouvelle copie est entaillée. Original disparu : refus localisé, rien n'est écrit.
+- **Annuler** rend l'original visible et retire copie et voie ensemble.
+- **Panneau :** dans **Tracer une voie**, la case **Suivre le terrain**, **Retenir le terrain sélectionné** puis **Relever le terrain** ; l'aperçu annonce la pente maximale, le déblai et le remblai. En modification, la voie garde son terrain ou son absence de terrain ; **Relever le terrain** refait le relevé à la place de la racine. Une voie posée sur un terrain ne doit pas être tournée (`ground_road_rotated`).
+- **Limites assumées :** le pied de talus suit le terrain interpolé entre les points du relevé ; le bord réel de l'entaille peut s'en écarter de quelques centimètres, au pas du relevé. Supprimer la voie à la main ne réaffiche pas l'original : on l'affiche par Édition > Afficher.
 
 ## Hors périmètre V1
 

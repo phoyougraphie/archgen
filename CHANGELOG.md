@@ -1,5 +1,9 @@
 # Journal des versions
 
+## 0.7.0-dev
+
+En cours, non publiée : voie sur un terrain (AG-049, ADR-38) — profil en long, pente bornée, talus, copie entaillée du terrain d'origine, qui reste masqué.
+
 ## 0.6.0
 
 Réseaux de voies et carrefours : on trace plusieurs voies, les carrefours naissent là où elles se croisent ou se touchent, et chacun se règle en simple, à feux, giratoire ou double giratoire ; le tram les traverse. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles et voies seules identiques. Le rapport de recette est dans [docs/recette/V0.6.md](docs/recette/V0.6.md).

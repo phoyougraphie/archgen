@@ -51,6 +51,29 @@ module Archgen
         end
       end
 
+      # Point et normale de l'axe à l'abscisse s, interpolés entre stations.
+      def frame_at(stations, s)
+        walked = 0.0
+        stations.each_cons(2) do |a, b|
+          len = Math.hypot(b.point[0] - a.point[0], b.point[1] - a.point[1])
+          if s <= walked + len + 1e-9 || b.equal?(stations.last)
+            t = len.zero? ? 0.0 : [[(s - walked) / len, 0.0].max, 1.0].min
+            n = [a.normal[0] + ((b.normal[0] - a.normal[0]) * t), a.normal[1] + ((b.normal[1] - a.normal[1]) * t)]
+            l = Math.hypot(*n)
+            return [[a.point[0] + ((b.point[0] - a.point[0]) * t), a.point[1] + ((b.point[1] - a.point[1]) * t)], [n[0] / l, n[1] / l]]
+          end
+          walked += len
+        end
+      end
+
+      # Points du relevé, ligne par ligne (s puis u), en repère du tracé (premier point à l'origine).
+      def corridor_points(stations, axes)
+        axes['s_m'].flat_map do |s|
+          point, normal = frame_at(stations, s)
+          axes['u_m'].map { |u| [point[0] + (normal[0] * u), point[1] + (normal[1] * u)] }
+        end
+      end
+
       # Altitude du terrain en (s, u), bilinéaire ; nil hors de la grille ou sur un trou.
       def terrain(grid, s, u)
         i = bracket(grid['s_m'], s)
@@ -223,7 +246,9 @@ module Archgen
             end
           end
         end
-        Core::Result.ok({ faces: faces, reach: reach })
+        # Contour de l'entaille : pieds gauches dans l'ordre, pieds droits à rebours (repère de la racine).
+        outline = rows[0].map { |st, _u, _z, f| place(st, f[0], 0)[0, 2] } + rows[1].reverse.map { |st, _u, _z, f| place(st, f[0], 0)[0, 2] }
+        Core::Result.ok({ faces: faces, reach: reach, outline: outline })
       end
 
       def place(station, u, z)

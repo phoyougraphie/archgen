@@ -20,7 +20,7 @@ module Archgen
         end
 
         # Aucune écriture, aucune trace dans l'Undo. settings : la forme d'entrée du réseau, relisible.
-        def preview(tree:)
+        def preview(tree:, survey: nil) # rubocop:disable Lint/UnusedMethodArgument -- un réseau reste horizontal
           settings = @intake.settings(tree)
           return settings unless settings.ok?
 

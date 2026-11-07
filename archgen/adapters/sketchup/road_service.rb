@@ -13,6 +13,8 @@ module Archgen
         DEFINITION_NAME = 'ARCHGEN voie'
         ROOT_NAME = 'Voie ARCHGEN'
         METERS_PER_INCH = 0.0254
+        GROUND_DICTIONARY = 'archgen.road_ground'
+        GROUND_KEYS = %w[terrain_pid copy_pid survey_digest].freeze
 
         def self.default(writer: nil)
           materials = Composition.road_catalog
@@ -20,7 +22,8 @@ module Archgen
               materials: materials, material_revision: Composition.road_materials.fetch('schema_version'), writer: writer)
         end
 
-        def initialize(intake:, bands:, items:, materials:, material_revision:, host: NativeHost, writer: nil, repository: nil, limits: {})
+        def initialize(intake:, bands:, items:, materials:, material_revision:, host: NativeHost, writer: nil, repository: nil, limits: {},
+                       surveyor: nil, cutter: nil)
           @intake = intake
           @bands = bands
           @items = items
@@ -32,29 +35,61 @@ module Archgen
           @roots = ComponentRepository.new(host: host)
           @limits = limits
           @guard = TransactionGuard.new
+          @surveyor = surveyor || TerrainSurveyor.new(host: host)
+          @cutter = cutter || GroundCutter.new
         end
 
         # Aucune écriture, aucune trace dans l'Undo.
-        def preview(tree:)
+        # survey : grille du couloir (voie à `ground`), relevée par #survey.
+        def preview(tree:, survey: nil)
           settings = @intake.settings(tree)
           return settings unless settings.ok?
 
-          plan = Core::RoadEngine.call(settings.value, bands: @bands, items: @items, limits: @limits)
+          plan = Core::RoadEngine.call(settings.value, bands: @bands, items: @items, limits: @limits, survey: survey)
           return plan unless plan.ok?
 
           Core::Result.ok(RoadPreview.new(settings: settings.value, plan: plan.value, road_digest: Core::RoadEngine.digest(plan.value)),
                           settings.diagnostics + plan.diagnostics)
         end
 
-        # origin_m : le premier point du tracé, dans le repère du modèle.
-        def create(model:, tree:, origin_m:)
-          computed = preview(tree: tree)
+        # Relevé du couloir d'une voie à `ground` (AG-049) : grille { s_m, u_m, z_m } en mètres du modèle.
+        # origin_m : premier point du tracé dans le modèle ; allow_hidden : l'original masqué par ARCHGEN.
+        def survey(model:, tree:, origin_m:, terrain:, allow_hidden: false)
+          settings = @intake.settings(tree)
+          return settings unless settings.ok?
+          return Core::Result.fail([Core::Diagnostic.error('E_ROAD_GROUND', '/ground', reason: 'not_on_ground')]) unless settings.value['ground']
+
+          axes = Core::RoadEngine.ground_axes(settings.value, bands: @bands, items: @items)
+          return axes unless axes.ok?
+
+          points = axes.value['points_m'].map { |x, y| [x + origin_m[0], y + origin_m[1]] }
+          values = @surveyor.survey_points(model, terrain, points, allow_hidden: allow_hidden)
+          return values unless values.ok?
+
+          rows = values.value.map { |z| z && Core::Quant.q(z) }.each_slice(axes.value['u_m'].size).to_a
+          Core::Result.ok({ 's_m' => axes.value['s_m'], 'u_m' => axes.value['u_m'], 'z_m' => rows })
+        end
+
+        # origin_m : le premier point du tracé, dans le repère du modèle. Voie à `ground` : terrain retenu,
+        # relevé refait ici ; survey_digest, celui de l'aperçu, doit concorder.
+        def create(model:, tree:, origin_m:, terrain: nil, survey_digest: nil)
+          ground = nil
+          if ground_tree?(tree)
+            return terrain_missing unless terrain
+
+            ground = survey(model: model, tree: tree, origin_m: origin_m, terrain: terrain)
+            return ground unless ground.ok?
+            return stale('terrain_changed') if survey_digest && Core::Canonical.digest(ground.value) != survey_digest
+          end
+          computed = preview(tree: tree, survey: ground&.value)
           return computed unless computed.ok?
 
           problem = context_problem(model) || origin_problem(origin_m)
           return Core::Result.fail([problem]) if problem
 
-          written = @guard.run(model, labels[:create]) { write_new_root(model, computed.value, origin_m) }
+          written = @guard.run(model, labels[:create]) do
+            write_new_root(model, computed.value, origin_m, ground && { terrain: terrain, grid: ground.value })
+          end
           written.ok? ? Core::Result.ok(written.value, computed.diagnostics) : written
         end
 
@@ -80,15 +115,27 @@ module Archgen
           version = version_problem(loaded.value.record.metadata)
           return Core::Result.fail([version]) if version
 
-          computed = preview(tree: merged(loaded.value.settings, changes))
+          tree = merged(loaded.value.settings, changes)
+          record = loaded.value.record
+          ground = regenerate_survey(model, record.instance, tree)
+          return ground if ground.is_a?(Core::Result) && !ground.ok?
+
+          computed = preview(tree: tree, survey: ground&.value)
           return computed unless computed.ok?
 
-          record = loaded.value.record
           written = @guard.run(model, labels[:regenerate], instance: record.instance) do
             @roots.swap(record.instance, definition: write_definition(model, computed.value))
+            if ground
+              reground(model, record.instance, computed.value, ground.value)
+            end
             finish(model, record.instance, computed.value, record.metadata['revision'] + 1)
           end
           written.ok? ? Core::Result.ok(written.value, computed.diagnostics) : written
+        end
+
+        # Relevé d'une voie déjà posée sur un terrain, à la place actuelle de sa racine (panneau, modification).
+        def survey_existing(model:, instance:, tree:)
+          regenerate_survey(model, instance, tree)
         end
 
         private
@@ -122,11 +169,65 @@ module Archgen
           Core::Diagnostic.error('E_SCHEMA', '/origin_m', reason: 'invalid_origin')
         end
 
-        def write_new_root(model, computed, origin)
+        def write_new_root(model, computed, origin, ground = nil)
+          if ground
+            origin = [origin[0], origin[1], computed.plan['metrics']['origin_z_m']]
+            copy = entaille(model, computed, origin, ground[:terrain].persistent_id)
+          end
           definition = write_definition(model, computed)
           instance = @roots.insert(model, definition: definition, transform: @host.transformation(translation(origin)))
           instance.name = labels[:root]
+          write_ground(instance, ground[:terrain].persistent_id, copy.persistent_id, ground[:grid]) if ground
           finish(model, instance, computed, 1)
+        end
+
+        def ground_tree?(tree)
+          parsed = tree.is_a?(String) ? Core::StrictJson.parse(tree) : Core::Result.ok(tree)
+          parsed.ok? && parsed.value.is_a?(Hash) && parsed.value.key?('ground')
+        end
+
+        def terrain_missing
+          Core::Result.fail([Core::Diagnostic.error('E_SITE_TERRAIN', '/site/terrain', reason: 'terrain_missing')])
+        end
+
+        # Copie entaillée le long du contour du plan, ramené dans le modèle.
+        def entaille(model, computed, origin, terrain_pid)
+          terrain = model.find_entity_by_persistent_id(terrain_pid)
+          raise WriteError, 'Terrain d’origine introuvable' unless terrain
+
+          outline = computed.plan['ground']['outline_m'].map { |x, y| [x + origin[0], y + origin[1]] }
+          @cutter.entaille(model, terrain, outline)
+        end
+
+        def write_ground(instance, terrain_pid, copy_pid, grid)
+          values = { 'terrain_pid' => terrain_pid, 'copy_pid' => copy_pid, 'survey_digest' => Core::Canonical.digest(grid) }
+          GROUND_KEYS.each { |k| instance.set_attribute(GROUND_DICTIONARY, k, values.fetch(k)) }
+        end
+
+        # Régénérer une voie posée sur un terrain : l'original masqué est relevé de nouveau, à la place
+        # actuelle de la racine. nil pour une voie horizontale.
+        def regenerate_survey(model, instance, tree)
+          return nil unless ground_tree?(tree)
+
+          matrix = instance.transformation.to_a
+          return stale('ground_road_rotated') unless (matrix[0] - 1).abs < 1e-9 && matrix[1].abs < 1e-9 && (matrix[10] - 1).abs < 1e-9
+
+          pid = instance.get_attribute(GROUND_DICTIONARY, 'terrain_pid')
+          return terrain_missing unless pid
+
+          origin = [matrix[12] * METERS_PER_INCH, matrix[13] * METERS_PER_INCH]
+          reference = TerrainRef.new(document_key: model.guid, persistent_id: pid)
+          survey(model: model, tree: tree, origin_m: origin, terrain: reference, allow_hidden: true)
+        end
+
+        def reground(model, instance, computed, grid)
+          @cutter.remove(model, instance.get_attribute(GROUND_DICTIONARY, 'copy_pid'))
+          matrix = instance.transformation.to_a
+          origin = [matrix[12] * METERS_PER_INCH, matrix[13] * METERS_PER_INCH, computed.plan['metrics']['origin_z_m']]
+          pid = instance.get_attribute(GROUND_DICTIONARY, 'terrain_pid')
+          copy = entaille(model, computed, origin, pid)
+          instance.transformation = @host.transformation(translation(origin))
+          write_ground(instance, pid, copy.persistent_id, grid)
         end
 
         # Le writer écrit chaque famille sous sa balise ; les objets répétés sont des instances partagées.

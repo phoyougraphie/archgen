@@ -82,7 +82,7 @@ class RoadControllerTest < Minitest::Test
     html = read_utf8('archgen', 'ui', 'road_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal %w[veh r-radius r-axis add-type], ids
+    assert_equal %w[veh r-radius r-axis r-ground add-type], ids
     assert_empty ids - labels
   end
 end

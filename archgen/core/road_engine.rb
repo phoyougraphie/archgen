@@ -54,6 +54,22 @@ module Archgen
         Result.ok(Canonical.deep_freeze(plan))
       end
 
+      # Axes et points du relevé du couloir d'une voie à `ground`, avant tout relevé (repère du tracé).
+      def ground_axes(settings, bands:, items:)
+        section = Geometry::RoadSection.call(settings['profile'], bands: bands, items: items)
+        width = section['width_m']
+        ax = Geometry::RoadRibbons.axis_x(width, settings['axis'])
+        trace = settings['trace']
+        axis = Geometry::RoadAxis.call(trace['points_m'], trace['radii_m'], left_m: ax, right_m: width - ax)
+        return axis unless axis.ok?
+
+        g = Geometry::RoadGround
+        axes = g.axes(length(axis.value), ax, width - ax, g.settings(settings['ground']))
+        return axes unless axes.ok?
+
+        Result.ok(axes.value.merge('points_m' => g.corridor_points(axis.value, axes.value)))
+      end
+
       # Voie sur un terrain (AG-049, étape 1) : profil en long, stations à cote (repère de la racine,
       # z = 0 au premier point), contrôle des terrassements, talus.
       def on_ground(settings, section, stations, line, ax, survey)
@@ -123,6 +139,7 @@ module Archgen
         m.merge!('earthwork_face_count' => count, 'earthwork_reach_m' => Quant.q(ground[:slopes][:reach]),
                  'grade_max_percent' => Quant.q(ground[:grade]), 'cut_max_m' => Quant.q(ground[:work][:cut]),
                  'fill_max_m' => Quant.q(ground[:work][:fill]), 'origin_z_m' => Quant.q(ground[:z0]))
+        plan['ground'] = { 'outline_m' => ground[:slopes][:outline].map { |p| p.map { |c| Quant.q(c) } } }
       end
 
       def budget(reason, limit, value)

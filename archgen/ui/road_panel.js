@@ -25,7 +25,8 @@
     bands: byId('bands'), diag: byId('diag'), veh: byId('veh'), title: byId('title'),
     roadBox: byId('road-box'), roadHint: byId('road-hint'), radius: byId('r-radius'), axis: byId('r-axis'),
     roadResult: byId('road-result'), roadDiag: byId('road-diag'), create: byId('road-create'), clear: byId('road-clear'),
-    reload: byId('road-reload'), resume: byId('road-resume')
+    reload: byId('road-reload'), resume: byId('road-resume'),
+    ground: byId('r-ground'), retain: byId('r-retain'), survey: byId('r-survey'), groundState: byId('r-ground-state')
   };
 
   // --- Pont
@@ -46,7 +47,7 @@
 
   // Rayon vide : celui de départ à la création, ceux enregistrés à la modification.
   function road() {
-    var out = { axis: el.axis.value };
+    var out = { axis: el.axis.value, on_ground: el.ground.checked };
     var text = el.radius.value.trim();
     var value = text === '' ? null : L.parseDecimal(text);
     state.radiusError = text !== '' && value === null ? 'Saisissez un rayon valide.' : null;
@@ -88,10 +89,13 @@
     if (action === 'create' || action === 'regenerate') { return written(response, action); }
     if (action === 'load_selection') { return loadedRoad(response); }
     if (action === 'clear') { requestPreview(true); }
+    if (action === 'retain_terrain') { return groundAnswer(response, false); }
+    if (action === 'survey_ground') { return groundAnswer(response, true); }
   };
 
   function previewed(response) {
     state.diagnostics = response.diagnostics || [];
+    if (response.ok) { showGround(response.result.ground); }
     if (response.ok) {
       state.section = response.result.section;
       state.stale = false;
@@ -125,6 +129,9 @@
       var m = road.metrics;
       el.roadResult.textContent = 'Voie de ' + fmt(m.length_m) + ' m sur ' + fmt(m.width_m) + ' m : ' + fmtInt(m.item_count) + ' objets' +
         (m.sleeper_count ? ' dont ' + fmtInt(m.sleeper_count) + ' traverses' : '') + ', ' + fmtInt(m.expanded_face_count) + ' faces au total.';
+      if (m.grade_max_percent !== undefined) {
+        el.roadResult.textContent += ' Pente jusqu’à ' + fmt(m.grade_max_percent) + ' %, déblai ' + fmt(m.cut_max_m) + ' m, remblai ' + fmt(m.fill_max_m) + ' m.';
+      }
       state.digest = road.road_digest;
     } else {
       el.roadResult.textContent = 'Cette voie ne peut pas être créée :';
@@ -137,6 +144,10 @@
 
   function updateButtons() {
     el.create.disabled = !state.digest || state.busy;
+    el.ground.disabled = state.mode === 'edit';
+    el.retain.hidden = state.mode === 'edit' || !el.ground.checked;
+    el.survey.hidden = !el.ground.checked;
+    el.survey.disabled = state.busy;
     el.clear.hidden = state.mode !== 'trace';
     el.reload.hidden = state.mode !== 'edit';
   }
@@ -168,11 +179,41 @@
     el.axis.value = r.axis;
     el.radius.value = r.radius_m === null ? '' : L.formatNumber(r.radius_m);
     el.radius.placeholder = r.radius_m === null ? 'rayons enregistrés' : '';
+    el.ground.checked = r.on_ground === true;
     state.notice = 'Voie chargée, révision ' + r.revision;
     el.status.textContent = state.notice;
     el.status.className = 'status';
     load(r.profile, matchPreset(r.profile));
   }
+
+  // --- Terrain (AG-049) : retenir, relever sur demande ; la voie se calcule ensuite avec ce relevé.
+
+  function showGround(g) {
+    if (!g) { return; }
+    var parts = [g.terrain ? 'Terrain retenu.' : (state.mode === 'edit' ? '' : 'Aucun terrain retenu : sélectionnez-le, puis Retenir.')];
+    parts.push(g.surveyed ? 'Relevé fait (' + fmtInt(g.points) + ' points).' : 'Pas encore relevé.');
+    el.groundState.textContent = el.ground.checked ? parts.join(' ') : '';
+  }
+
+  function groundAnswer(response, surveyed) {
+    state.busy = false;
+    if (!response.ok) {
+      el.status.textContent = response.diagnostics.map(function (d) { return d.message; }).join(' ');
+      el.status.className = 'status is-bad';
+      updateButtons();
+      return;
+    }
+    if (surveyed) { previewed(response); } else { showGround(response.result.ground); requestPreview(true); }
+  }
+
+  el.ground.addEventListener('change', function () { requestPreview(false); });
+  el.retain.addEventListener('click', function () { send('retain_terrain', {}); });
+  el.survey.addEventListener('click', function () {
+    el.status.textContent = 'Relevé du terrain…';
+    state.busy = true;
+    updateButtons();
+    send('survey_ground', { profile: profile(), road: road() });
+  });
 
   window.archgenRoadTrace = function () { requestPreview(false); };
   window.archgenRoadTool = function (active) { el.resume.hidden = active || state.mode !== 'trace'; };

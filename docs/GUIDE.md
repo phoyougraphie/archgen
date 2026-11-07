@@ -137,6 +137,8 @@ Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain,
 
 Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Gabarits de véhicules** pour masquer voitures, bus, tram et train.
 
+**Sur un terrain :** cochez **Suivre le terrain**, sélectionnez le terrain (un groupe ou un composant) et cliquez sur **Retenir le terrain sélectionné**, puis **Relever le terrain** une fois le tracé fini. La voie suit le terrain avec une pente bornée (8 %, 6 % pour un tram, 2,5 % pour une voie ferrée), et des talus la raccordent au terrain. À la création, le terrain d'origine est masqué, jamais modifié : ARCHGEN pose à sa place une copie entaillée le long de la voie. Annuler rend l'original. Pour le revoir après avoir effacé la voie à la main : **Édition → Afficher**.
+
 **Modifier :** sélectionnez la voie, puis **Extensions → ARCHGEN → Modifier la voie sélectionnée**, et cliquez sur **Recharger la sélection**. Changez la coupe, le rayon (vide : chaque sommet garde le sien) ou l'axe, puis cliquez sur **Remplacer cette voie**. Le tracé ne change pas. Une copie garde sa géométrie.
 
 **À savoir**
@@ -145,7 +147,7 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 - **Refus :** rayon trop petit pour la largeur, virages plus longs que leur segment, demi-tour, angle vif où le bord intérieur se replierait, voie qui se recouvre elle-même.
 - **Limites :** 64 points, 5 000 objets, 20 000 traverses, 60 000 faces distinctes et 600 000 faces au total.
 - **Temps :** 2 km de boulevard planté s'écrivent en moins d'une demi-seconde, 2 km de voie ferrée double en moins de 3 s.
-- **Hors de portée :** la voie est horizontale et ne suit pas un terrain ; pas de fil de caténaire. Pour des carrefours, tracez un réseau de voies. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+- **Hors de portée :** pas de fil de caténaire ; un réseau de voies reste horizontal. Pour des carrefours, tracez un réseau de voies. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
 ## Tracer un réseau de voies et ses carrefours
 
 **Extensions → ARCHGEN → Tracer un réseau de voies.** Le panneau s'ouvre et l'outil de tracé est actif.

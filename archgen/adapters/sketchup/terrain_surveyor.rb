@@ -61,9 +61,28 @@ module Archgen
           Core::Result.ok('schema_version' => 1, 'xs_m' => axes['xs_m'], 'ys_m' => axes['ys_m'], 'z_m' => rows)
         end
 
+        # Voie sur un terrain (AG-049) : altitude de chaque point [x, y] en mètres du modèle, ou nil.
+        # allow_hidden : le terrain d'origine qu'ARCHGEN a masqué derrière sa copie entaillée reste visé ;
+        # les rayons voient alors aussi les entités masquées, traversées comme tout obstacle.
+        def survey_points(model, reference, points_m, allow_hidden: false)
+          terrain = read_terrain(model, reference, allow_hidden: allow_hidden)
+          return terrain unless terrain.ok?
+
+          identity = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+          top = terrain.value.bounds.max.z.to_f + (ABOVE_M / METERS_PER_INCH)
+          overflow = []
+          @wysiwyg = !allow_hidden
+          values = points_m.map { |x, y| altitude(model, terrain.value, identity, x, y, top, overflow) }
+          return too_many_obstacles(overflow) unless overflow.empty?
+
+          Core::Result.ok(values)
+        ensure
+          @wysiwyg = nil
+        end
+
         private
 
-        def read_terrain(model, reference)
+        def read_terrain(model, reference, allow_hidden: false)
           return terrain_failure('terrain_missing') unless reference.is_a?(TerrainRef)
           return terrain_failure('terrain_other_document') unless reference.document_key == model.guid
 
@@ -71,6 +90,7 @@ module Archgen
           return terrain_failure('terrain_missing') unless entity
 
           problem = terrain_problem(model, entity)
+          problem = nil if allow_hidden && problem == 'terrain_hidden'
           problem ? terrain_failure(problem) : Core::Result.ok(entity)
         end
 
@@ -110,15 +130,23 @@ module Archgen
           ray = [@host.point(origin_x, origin_y, top), @host.vector(0.0, 0.0, -1.0)]
           crossed = false
           MAX_PASSES.times do
-            hit = model.raytest(ray, true)
+            hit = model.raytest(ray, @wysiwyg != false)
             return [nil, crossed] unless hit
-            return [hit[0].z.to_f * METERS_PER_INCH, crossed] if hit[1].first == terrain
+            return [hit[0].z.to_f * METERS_PER_INCH, crossed] if hit[1].first == terrain || copy_of?(hit[1].first, terrain)
 
             crossed = true
             ray = [hit[0], ray[1]]
           end
           overflow << [x_m, y_m]
           [nil, crossed]
+        end
+
+        # Relevé de l'original masqué (H22) : hors de l'entaille, sa copie entaillée le recouvre exactement ;
+        # un rayon qui la touche d'abord repartirait de ce point et ne verrait plus l'original, à la même
+        # cote. Toucher la copie de ce terrain vaut donc toucher le terrain.
+        def copy_of?(entity, terrain)
+          @wysiwyg == false && entity.respond_to?(:get_attribute) &&
+            entity.get_attribute(GroundCutter::DICTIONARY, 'terrain_pid') == terrain.persistent_id
         end
 
         def world_xy(matrix, x_m, y_m, offset = RAY_OFFSET_M)
