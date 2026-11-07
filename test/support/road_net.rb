@@ -72,7 +72,9 @@ module RoadNet
   end
 
   # Points d'une grille dans les emprises couverts 0 fois (trou) ou 2 fois et plus (recouvrement).
-  def coverage_defects(plan, strips, box, step: 0.37)
+  # disc : [centre, rayon] d'une zone hors emprises qui doit aussi être couverte (giratoire) ;
+  # spill : true pour exiger aussi qu'aucune face ne déborde hors des emprises et du disque.
+  def coverage_defects(plan, strips, box, step: 0.37, disc: nil, spill: false)
     polys = top_polygons(plan).map { |pts| [pts, pts.map(&:first).minmax, pts.map { |p| p[1] }.minmax] }
     out = []
     x0, y0, x1, y1 = box
@@ -80,10 +82,13 @@ module RoadNet
       x = x0 + 0.0137 + (i * step)
       (0..((y1 - y0) / step).floor).each do |j|
         y = y0 + 0.0071 + (j * step)
-        next unless inside_strip?(strips, x, y, 0.02)
+        d = disc && Math.hypot(x - disc[0][0], y - disc[0][1])
+        inside = inside_strip?(strips, x, y, 0.02) || (d && d < disc[1] - 0.06)
+        outside = spill && !inside_strip?(strips, x, y, -0.02) && !(d && d < disc[1] + 0.06)
+        next unless inside || outside
 
         n = polys.count { |pts, (ax, bx), (ay, by)| x.between?(ax, bx) && y.between?(ay, by) && in_polygon?(x, y, pts) }
-        out << [x.round(2), y.round(2), n] unless n == 1
+        out << [x.round(2), y.round(2), n] unless n == (inside ? 1 : 0)
       end
     end
     out

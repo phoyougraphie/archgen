@@ -19,7 +19,7 @@ module Archgen
           chain.last
         end
       end
-      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, keyword_init: true)
+      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, :options, keyword_init: true)
 
       module_function
 
@@ -191,6 +191,7 @@ module Archgen
         node.arms = arms_for(node, roads)
         problems = node_problems(node)
         return Core::Result.fail(problems) unless problems.empty?
+        return roundabout(node) if node.type == 'roundabout'
 
         corners = J.corners(node.arms, node.point, node.radius)
         return Core::Result.fail([error(node.id, 'junction_shape')]) if corners.any?(&:broken)
@@ -218,6 +219,18 @@ module Archgen
         return Core::Result.ok({ faces: built.value, instances: [] }) unless signals
 
         dressed(node, built.value)
+      end
+
+      # Giratoire : anneau, îlots et coins de RoadRoundabout, mêmes contrôles de virage et de murets.
+      def roundabout(node)
+        shape = RoadRoundabout.build(node)
+        return shape unless shape.ok?
+
+        straight = node.arms.filter_map { |a| straight_problem(node, a) }.uniq(&:to_h)
+        return Core::Result.fail(straight) unless straight.empty?
+
+        built = RoadRoundabout.faces(node, shape.value)
+        built.ok? ? Core::Result.ok({ faces: built.value, instances: [] }) : built
       end
 
       # Carrefour à feux : bandes de marquage au-delà des coupes et un feu par branche à chaussée.

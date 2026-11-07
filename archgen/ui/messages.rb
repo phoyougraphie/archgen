@@ -205,6 +205,9 @@ module Archgen
         'junction_shape' => 'La forme de ce carrefour ne se construit pas. Changez l’angle ou le rayon des bordures.',
         'signals_without_carriageway' => 'Un carrefour à feux demande au moins une chaussée. Gardez un carrefour simple.',
         'no_room_for_signal' => 'Aucune bande ne porte le feu à droite de la chaussée de la voie %{road}. Ajoutez un trottoir ou un accotement.',
+        'roundabout_without_carriageway' => 'Chaque branche d’un giratoire doit avoir une chaussée. Raccordez le chemin plus loin.',
+        'ring_too_small' => 'La chaussée de la voie %{road} est trop large pour cet anneau. Agrandissez le rayon extérieur ou réduisez la largeur de l’anneau.',
+        'roundabout_arms_too_close' => 'Deux entrées de ce giratoire se chevauchent. Agrandissez le rayon extérieur, réduisez le rayon d’entrée ou écartez les branches.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

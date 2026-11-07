@@ -42,8 +42,19 @@
           "type": {
             "enum": [
               "simple",
-              "signals"
+              "signals",
+              "roundabout"
             ]
+          },
+          "outer_radius_m": {
+            "type": "number",
+            "minimum": 13,
+            "maximum": 60
+          },
+          "ring_width_m": {
+            "type": "number",
+            "minimum": 6,
+            "maximum": 12
           },
           "corner_radius_m": {
             "type": "number",

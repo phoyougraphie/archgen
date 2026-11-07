@@ -38,6 +38,7 @@ module Archgen
       geometry/road_junction
       geometry/road_signals
       geometry/road_network
+      geometry/road_roundabout
       geometry/planar
       geometry/trace_rows
       geometry/parcel_layout

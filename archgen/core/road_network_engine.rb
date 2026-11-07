@@ -59,6 +59,7 @@ module Archgen
         nodes.each do |node|
           node.radius = by_id[node.id]&.fetch('corner_radius_m') || N::DEFAULT_RADIUS_M
           node.type = by_id[node.id]&.fetch('type') || 'simple'
+          node.options = by_id[node.id] || {}
         end
         known = nodes.map(&:id)
         junctions.each_with_index.reject { |j, _| known.include?(j['id']) }.map do |j, _|
@@ -101,11 +102,22 @@ module Archgen
           'junction_count' => nodes.size, 'piece_count' => pieces.sum(&:size),
           'junction_face_count' => junction_faces.sum(&:size), 'signal_count' => lights.size
         )
-        plan['junctions'] = nodes.map { |n| { 'id' => n.id, 'type' => n.type, 'arms' => n.arms.size, 'corner_radius_m' => n.radius, 'cuts_m' => n.arms.map { |a| Quant.q(a.cut) }, 'reach_m' => n.arms.map { |a| Quant.q(a.reach) } } }
+        plan['junctions'] = nodes.map do |n|
+          {
+            'id' => n.id, 'type' => n.type, 'point_m' => n.point.map { |c| Quant.q(c) }, 'arms' => n.arms.size, 'corner_radius_m' => n.radius,
+            'cuts_m' => n.arms.map { |a| Quant.q(a.cut) }, 'reach_m' => n.arms.map { |a| Quant.q(a.reach) },
+            'outer_radius_m' => roundabout_value(n, 'outer_radius_m', Geometry::RoadRoundabout::DEFAULT_OUTER_M),
+            'ring_width_m' => roundabout_value(n, 'ring_width_m', Geometry::RoadRoundabout::DEFAULT_RING_M)
+          }.compact
+        end
         problems = RoadEngine.budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
 
         Result.ok(Canonical.deep_freeze(plan))
+      end
+
+      def roundabout_value(node, key, default)
+        node.type == 'roundabout' ? node.options.fetch(key, default) : nil
       end
 
       # Éléments d'un tronçon : leurs noms prennent celui de la voie et du tronçon, les formes restent partagées.

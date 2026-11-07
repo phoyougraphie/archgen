@@ -175,7 +175,7 @@ Types de nœud, livrés ticket par ticket :
 |---|---|---|---|
 | `simple` | Plateau de chaussée, trottoirs qui tournent l'angle par une bordure arrondie, contremarches et murets. 2 à 6 branches | Toute coupe sans `hard`, sans rail ni tram | **AG-043, livré** |
 | `signals` | Comme `simple`, plus passages piétons, lignes d'arrêt et un feu par branche à chaussée | Au moins une branche à chaussée | **AG-044, livré** |
-| `roundabout` | Anneau, îlot central, îlots séparateurs. Rayon extérieur et largeur d'anneau réglables : 13 m et 6 m au minimum (départ) | Idem | AG-045 |
+| `roundabout` | Anneau, îlot central, îlots séparateurs, entrées arrondies. Rayon extérieur de 13 à 60 m, anneau de 6 à 12 m | Chaque branche avec chaussée | **AG-045, livré** |
 | `double_roundabout` | Deux anneaux reliés par un tronçon de longueur `link_m`, branches réparties par angle | Idem, au moins 3 branches | AG-046 |
 | `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route | AG-047 |
 
@@ -205,6 +205,20 @@ Types de nœud, livrés ticket par ticket :
 - Plan : `type` et `reach_m` par nœud, `signal_count` dans `metrics`.
 
 Refus : `signals_without_carriageway` (aucune branche à chaussée) ; `no_room_for_signal` (`road`) quand rien ne dépasse de 0,3 m au moins la bordure à droite des voies qui entrent.
+
+### Giratoire (AG-045, U29)
+
+`"type": "roundabout"`, réglages `outer_radius_m` (bord extérieur de l'anneau, 13 à 60 m, 15 par défaut), `ring_width_m` (6 à 12 m, 7 par défaut) et `corner_radius_m` (arrondi d'entrée, 6 m par défaut). Centre au nœud (`point_m`). `Geometry::RoadRoundabout`, circulation à droite :
+
+- **Anneau** de chaussée (`road/lane`) entre l'îlot central et le bord extérieur, à 0. La chaussée est découpée en secteurs entre branches voisines, le long de la ligne médiane de chaque chaussée : aucun polygone à trou.
+- **Îlot central** : disque du rayon intérieur (`outer − ring`), planté (`road/plant`) à 0,14 m, bordé d'une contremarche tournée vers l'anneau.
+- **Entrées** : chaque bord de chaussée d'une branche se raccorde au bord extérieur par un arrondi tangent aux deux (rayon `corner_radius_m`, centre côté trottoir).
+- **Îlot séparateur** (`road/median`, 0,14 m, contremarches) sur chaque branche dont chaque demi-chaussée fait au moins 4 m : triangle de 2 m de base à 1 m de l'anneau, pointe 8 m plus loin, sur la ligne médiane. Branche plus étroite : pas d'îlot.
+- **Trottoirs de coin** : entre la bordure (bord de A, arrondi, anneau, arrondi, bord de B) et un bord extérieur fait d'un angle vif sur chaque bord de branche et d'un arc concentrique à l'anneau, à la plus petite des deux largeurs. L'angle vif doit rester à 0,3 m derrière l'arrondi d'entrée. Coin sans rien au-delà des bordures : vide.
+- **Coupe** de chaque branche : 1 m au-delà de la pointe de l'îlot, et assez loin pour les arrondis, l'angle vif et le recouvrement des emprises voisines.
+- Plan : `outer_radius_m`, `ring_width_m` et `point_m` par nœud.
+
+Refus : `roundabout_without_carriageway` (une branche sans chaussée) ; `ring_too_small` (`road` : la demi-chaussée atteint le bord extérieur, ou la ligne médiane manque l'îlot central) ; `roundabout_arms_too_close` (les arrondis de deux entrées voisines se chevauchent) ; `junction_shape` (un seul côté d'un coin bordé, ou angle vif trop près de l'arrondi). Rayons hors bornes : `E_SCHEMA`.
 
 **Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
 
