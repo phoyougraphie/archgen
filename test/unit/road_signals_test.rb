@@ -148,7 +148,7 @@ class RoadSignalsTest < Minitest::Test
     errors = build(signals([road('a', [[0, 0], [100, 0]], bare), road('b', [[50, -50], [50, 50]], bare)], 'a@50.0+b@50.0')).errors
     assert_equal ['no_room_for_signal'], errors.map { |d| d.params['reason'] }.uniq
     assert_equal %w[a b], errors.map { |d| d.params['road'] }.uniq.sort
-    errors = build(signals(X, 'a@50.0+b@50.0').tap { |t| t['junctions'][0]['type'] = 'double_roundabout' }).errors
+    errors = build(signals(X, 'a@50.0+b@50.0').tap { |t| t['junctions'][0]['type'] = 'level_crossing' }).errors
     assert_equal ['E_SCHEMA'], errors.map(&:code).uniq
     %w[signals_without_carriageway no_room_for_signal].each { |r| assert Archgen::UI::Messages::REASONS.key?(r), r }
   end

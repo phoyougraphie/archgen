@@ -88,7 +88,8 @@ module Archgen
         t_inner = line_circle(at(arm, 0, mid), arm.dir, o, inner)
         t_outer = line_circle(at(arm, 0, mid), arm.dir, o, outer)
         island = nil
-        if arm.kerb_l - mid >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2) && mid - arm.kerb_r >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2)
+        # La liaison d'un double giratoire n'a pas d'îlot séparateur.
+        if !arm.link && arm.kerb_l - mid >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2) && mid - arm.kerb_r >= ISLAND_MIN_LANE_M + (ISLAND_BASE_M / 2)
           t1 = t_outer + ISLAND_GAP_M
           island = [t1, t1 + ISLAND_LENGTH_M]
         end

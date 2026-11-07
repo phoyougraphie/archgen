@@ -43,8 +43,14 @@
             "enum": [
               "simple",
               "signals",
-              "roundabout"
+              "roundabout",
+              "double_roundabout"
             ]
+          },
+          "pair": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
           },
           "outer_radius_m": {
             "type": "number",

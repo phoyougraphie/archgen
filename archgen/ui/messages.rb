@@ -208,6 +208,11 @@ module Archgen
         'roundabout_without_carriageway' => 'Chaque branche d’un giratoire doit avoir une chaussée. Raccordez le chemin plus loin.',
         'ring_too_small' => 'La chaussée de la voie %{road} est trop large pour cet anneau. Agrandissez le rayon extérieur ou réduisez la largeur de l’anneau.',
         'roundabout_arms_too_close' => 'Deux entrées de ce giratoire se chevauchent. Agrandissez le rayon extérieur, réduisez le rayon d’entrée ou écartez les branches.',
+        'pair_missing' => 'Un double giratoire nomme son second carrefour.',
+        'unknown_pair' => 'Le second carrefour de ce double giratoire n’existe pas ou est le même.',
+        'pair_already_set' => 'Le second carrefour de ce double giratoire est déjà réglé ou déjà jumelé.',
+        'not_neighbours' => 'Les deux carrefours de ce double giratoire ne se suivent pas sur une même voie.',
+        'link_too_short' => 'La liaison entre les deux anneaux ne fait que %{value} m, pour %{limit} m au moins. Écartez les carrefours ou réduisez les anneaux.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

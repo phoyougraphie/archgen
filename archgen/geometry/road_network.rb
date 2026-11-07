@@ -191,7 +191,8 @@ module Archgen
         node.arms = arms_for(node, roads)
         problems = node_problems(node)
         return Core::Result.fail(problems) unless problems.empty?
-        return roundabout(node) if node.type == 'roundabout'
+        mark_link(node)
+        return roundabout(node) if %w[roundabout double_roundabout].include?(node.type)
 
         corners = J.corners(node.arms, node.point, node.radius)
         return Core::Result.fail([error(node.id, 'junction_shape')]) if corners.any?(&:broken)
@@ -219,6 +220,14 @@ module Archgen
         return Core::Result.ok({ faces: built.value, instances: [] }) unless signals
 
         dressed(node, built.value)
+      end
+
+      # Double giratoire : la branche qui part vers l'autre anneau est la liaison.
+      def mark_link(node)
+        road, toward = node.options && node.options['link']
+        return unless road
+
+        node.arms.each { |a| a.link = a.road.index == road && a.sign == ((toward > a.s) ? 1 : -1) }
       end
 
       # Giratoire : anneau, îlots et coins de RoadRoundabout, mêmes contrôles de virage et de murets.

@@ -176,7 +176,7 @@ Types de nœud, livrés ticket par ticket :
 | `simple` | Plateau de chaussée, trottoirs qui tournent l'angle par une bordure arrondie, contremarches et murets. 2 à 6 branches | Toute coupe sans `hard`, sans rail ni tram | **AG-043, livré** |
 | `signals` | Comme `simple`, plus passages piétons, lignes d'arrêt et un feu par branche à chaussée | Au moins une branche à chaussée | **AG-044, livré** |
 | `roundabout` | Anneau, îlot central, îlots séparateurs, entrées arrondies. Rayon extérieur de 13 à 60 m, anneau de 6 à 12 m | Chaque branche avec chaussée | **AG-045, livré** |
-| `double_roundabout` | Deux anneaux reliés par un tronçon de longueur `link_m`, branches réparties par angle | Idem, au moins 3 branches | AG-046 |
+| `double_roundabout` | Deux nœuds voisins sur une même voie, chacun un giratoire ; le bout de voie entre eux est la liaison (`link_m`), 5 m au moins (ADR-37) | Idem, aux deux nœuds | **AG-046, livré** |
 | `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route | AG-047 |
 
 ### Carrefour simple (AG-043, U27)
@@ -219,6 +219,17 @@ Refus : `signals_without_carriageway` (aucune branche à chaussée) ; `no_room_f
 - Plan : `outer_radius_m`, `ring_width_m` et `point_m` par nœud.
 
 Refus : `roundabout_without_carriageway` (une branche sans chaussée) ; `ring_too_small` (`road` : la demi-chaussée atteint le bord extérieur, ou la ligne médiane manque l'îlot central) ; `roundabout_arms_too_close` (les arrondis de deux entrées voisines se chevauchent) ; `junction_shape` (un seul côté d'un coin bordé, ou angle vif trop près de l'arrondi). Rayons hors bornes : `E_SCHEMA`.
+
+### Double giratoire (AG-046, U30, ADR-37)
+
+Deux nœuds **voisins sur une même voie** (aucun autre nœud entre eux) deviennent deux anneaux ; le bout de voie entre eux est la **liaison**. Le premier se règle `"type": "double_roundabout"` avec `"pair": "<id du second>"` et les réglages d'un giratoire, que le second reprend ; le second n'a pas de réglage propre. Chaque anneau sert les branches de son nœud : la répartition découle du tracé, la même entrée donne la même répartition.
+
+- Chaque anneau est un giratoire d'AG-045, centré sur son nœud.
+- La branche de liaison n'a pas d'îlot séparateur : sa coupe s'arrête aux arrondis d'entrée.
+- **Liaison** (`link_m`) : longueur de voie qui reste entre les deux coupes ; 5 m au moins.
+- Plan : `type` `double_roundabout`, `pair` et `link_m` sur les deux nœuds.
+
+Refus : `pair_missing`, `unknown_pair` (nœud absent ou le même), `pair_already_set` (le second est réglé ou déjà jumelé), `not_neighbours` (pas de voie commune sans nœud entre eux), `link_too_short` (`value`, `limit` = 5 m), y compris quand les coupes se chevauchent.
 
 **Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
 

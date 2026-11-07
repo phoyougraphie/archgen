@@ -24,11 +24,15 @@ module Archgen
 
         nodes = N.detect(roads)
         problems = radius_problems(nodes, settings['junctions'])
+        problems += pair_problems(nodes, settings['junctions']) if problems.empty?
         return Result.fail(problems) unless problems.empty?
 
         built = nodes.map { |node| N.build(node, roads) }
         problems = built.flat_map(&:errors)
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
+
+        problems = link_problems(nodes)
+        return Result.fail(problems) unless problems.empty?
 
         pieces = roads.map { |road| N.pieces(road, nodes) }
         problems = pieces.flat_map(&:errors).uniq
@@ -107,7 +111,9 @@ module Archgen
             'id' => n.id, 'type' => n.type, 'point_m' => n.point.map { |c| Quant.q(c) }, 'arms' => n.arms.size, 'corner_radius_m' => n.radius,
             'cuts_m' => n.arms.map { |a| Quant.q(a.cut) }, 'reach_m' => n.arms.map { |a| Quant.q(a.reach) },
             'outer_radius_m' => roundabout_value(n, 'outer_radius_m', Geometry::RoadRoundabout::DEFAULT_OUTER_M),
-            'ring_width_m' => roundabout_value(n, 'ring_width_m', Geometry::RoadRoundabout::DEFAULT_RING_M)
+            'ring_width_m' => roundabout_value(n, 'ring_width_m', Geometry::RoadRoundabout::DEFAULT_RING_M),
+            'pair' => n.type == 'double_roundabout' ? n.options['pair'] : nil,
+            'link_m' => link_length(n, nodes)
           }.compact
         end
         problems = RoadEngine.budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
@@ -116,8 +122,74 @@ module Archgen
         Result.ok(Canonical.deep_freeze(plan))
       end
 
+      MIN_LINK_M = 5.0
+
+      # Double giratoire (ADR-37) : deux nœuds voisins sur une même voie, réglés par le premier ; le second
+      # prend ses réglages et le bout de voie entre eux devient la liaison.
+      def pair_problems(nodes, junctions)
+        set = junctions.map { |j| j['id'] }
+        paired = {}
+        nodes.select { |n| n.type == 'double_roundabout' }.filter_map do |node|
+          next error(node, 'pair_missing') unless node.options['pair']
+
+          other = nodes.find { |n| n.id == node.options['pair'] }
+          next error(node, 'unknown_pair', pair: node.options['pair'].to_s) if other.nil? || other.equal?(node)
+          next error(node, 'pair_already_set', pair: other.id) if set.include?(other.id) || paired[other.id] || paired[node.id]
+
+          road, sa, sb = shared(node, other, nodes)
+          next error(node, 'not_neighbours', pair: other.id) unless road
+
+          paired[node.id] = paired[other.id] = true
+          other.type = 'double_roundabout'
+          other.radius = node.radius
+          other.options = node.options.merge('id' => other.id, 'pair' => node.id, 'link' => [road, sa])
+          node.options = node.options.merge('link' => [road, sb])
+          nil
+        end
+      end
+
+      def error(node, reason, **params)
+        Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{node.id}", reason: reason, **params)
+      end
+
+      # Voie commune aux deux nœuds sans autre nœud entre eux : [index, abscisse du premier, du second].
+      def shared(a, b, nodes)
+        a.hits.each do |ra, sa|
+          b.hits.each do |rb, sb|
+            next unless ra == rb && (sa - sb).abs > 1e-6
+
+            lo, hi = [sa, sb].minmax
+            between = nodes.any? { |n| !n.equal?(a) && !n.equal?(b) && n.hits.any? { |r, s| r == ra && s > lo && s < hi } }
+            return [ra, sa, sb] unless between
+          end
+        end
+        nil
+      end
+
+      # Liaison : ce qui reste de la voie entre les deux anneaux, 5 m au moins.
+      def link_problems(nodes)
+        nodes.select { |n| n.type == 'double_roundabout' && n.options['pair'] && n.id < n.options['pair'] }.filter_map do |node|
+          other = nodes.find { |n| n.id == node.options['pair'] }
+          mine = node.arms.find(&:link)
+          theirs = other.arms.find(&:link)
+          gap = (mine.s - theirs.s).abs - mine.cut - theirs.cut
+          next if gap >= MIN_LINK_M - 1e-9
+
+          error(node, 'link_too_short', pair: other.id, value: Quant.q(gap), limit: MIN_LINK_M)
+        end
+      end
+
+      def link_length(node, nodes)
+        return nil unless node.type == 'double_roundabout'
+
+        other = nodes.find { |n| n.id == node.options['pair'] }
+        mine = node.arms.find(&:link)
+        theirs = other.arms.find(&:link)
+        Quant.q((mine.s - theirs.s).abs - mine.cut - theirs.cut)
+      end
+
       def roundabout_value(node, key, default)
-        node.type == 'roundabout' ? node.options.fetch(key, default) : nil
+        %w[roundabout double_roundabout].include?(node.type) ? node.options.fetch(key, default) : nil
       end
 
       # Éléments d'un tronçon : leurs noms prennent celui de la voie et du tronçon, les formes restent partagées.
