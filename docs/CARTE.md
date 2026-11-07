@@ -7,7 +7,8 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — Plus aucun ticket ouvert : EXT-07 et EXT-10 sont livrés. RBZ 0.4.0 livrable et installé dans son SketchUp 2026 (pkg/archgen-0.4.0.rbz, H01 à H18 sans échec). Restent à faire par le propriétaire : pousser sur GitHub, essayer sur un vrai terrain, contredire ADR-33 s'il ne convient pas, trancher D-01, choisir la suite. Suites possibles : accélérer le relevé, escaliers et rampes, chaussées et carrefours, EXT-08 quartier. (→ docs/recette/V0.4.md)
+  - Prochaine action — EXT-11 Voirie cadrée, à valider sur la maquette (docs/maquettes/voirie-coupe.html), puis AG-037. Aucun code de voirie écrit. Le propriétaire doit aussi trancher D-07 à D-10 ; seules D-07, D-08 et D-09 bloquent, et plus tard (AG-043, AG-049, AG-040). RBZ 0.4.0 livré, code poussé sur GitHub. Restent de son côté : essayer sur un vrai terrain, contredire ADR-33 s'il ne convient pas, trancher D-01. (→ docs/VOIRIE_CONTRACT.md)
+  - Décisions ouvertes D-07 à D-10 — Naissance des carrefours (réseau par racine recommandé) ; voie sur terrain intact, où un fossé reste enterré (copie entaillée recommandée) ; détail des arbres et lampadaires (3D simple recommandée) ; sens de « clous ». (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -48,6 +49,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-06 AG-035 — La hauteur de porche prévue, 3,5 m, ne tient sous aucun style livré : leur RDC ne laisse que 2,8 et 2,9 m. Départ ramené à 2,7 m, réglable ; un premier niveau plus haut le permet. Porche regardé à hauteur d'œil, écrit par le service dans deux styles ; le geste souris et la vraie copie restent pour H17. En sonde, la première instance du gabarit est le personnage : chercher la racine par son attribut. (→ docs/ENSEMBLE_CONTRACT.md)
     - 2026-11-06 AG-036 — La recette complète passait alors que le vrai clic sur Remplacer ne faisait rien : le change d'un champ à la perte de focus désactivait le bouton sous la souris. Un clic DOM ne perd pas le focus : toujours faire le vrai geste sur une étape importante. Trois RBZ successifs, recette complète rejouée sur le dernier. (→ docs/recette/H17.md)
     - 2026-11-07 AG-027 — Une dalle pile à l'altitude du terrain arrête le rayon, qui repart dessous et ne voit plus le terrain : relance à 1 mm puis 5 mm après un obstacle. Le vrai geste a encore montré quatre défauts d'interface invisibles au DOM. Faire le geste avant la recette complète évite de la rejouer. Une sonde qui ne lit que les sommets donne de fausses alertes : lire le bord réel. (→ docs/recette/H18.md)
+    - 2026-11-07 EXT-11 cadré — Demande du propriétaire : coupe d'abord, à l'échelle humaine, puis carrefours, rails, routes variées ; mobilier urbain renvoyé à EXT-12. Une maquette a suffi à montrer deux écueils : le terrain intact enterrerait les fossés (D-08), et une autoroute n'a pas de carrefour à niveau. Le tracé devra gagner des rayons. Dans une sonde de page, rechercher les boutons à chaque clic : un rendu les remplace. (→ docs/VOIRIE_CONTRACT.md)
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -102,7 +104,21 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-034 Accès par interruption — geometry/access_planner, catalogue ensemble_rules.v1 ; îlot fermé pour Brutaliste, écrit et tracé à la souris. U20 vert. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-035 Accès par porche — geometry/porch_solver, entrées du catalogue pour Haussmannien et Toulousain, hauteur de départ 2,7 m. U21 vert, vues regardées. (→ docs/ENSEMBLE_CONTRACT.md)
     - [fait] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier l'ensemble sélectionné, guide, journal, RBZ. H02 à H17 sans échec, vrai tracé et vraie modification à la souris. Réserves : profil non vierge, cycle H01 sur le paquet précédent. (→ docs/recette/V0.3.md)
-  - J8+ Extensions — EXT-01 à 06, 08 et 09 ; voir branche Extensions.
+  - J8 Voirie — Composer une voie en coupe à l'échelle humaine, la tracer ; carrefours ; puis sur un terrain. AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
+    - [afaire] AG-037 Format de coupe et catalogues — road_profile V1, bandes et éléments fermés, onze préréglages ; noyau pur. U23. Dép. AG-027.
+    - [afaire] AG-038 Éditeur de coupe — Panneau à l'échelle, personnage, ordre, largeurs, éléments, plan ; aucune écriture. H19. Dép. AG-037.
+    - [afaire] AG-039 Axe et rubans — Polyligne à rayons, rubans, bordures, fossés, talus, RoadPlan. U24. Dép. AG-037.
+    - [afaire] AG-040 Arbres, lampadaires, haies, clôtures — Répétition au pas, définitions partagées, plafonds. U25. Dép. AG-039, D-09.
+    - [afaire] AG-041 Rails et tram — 1,435 m, ballast, plateforme, voie mixte, caténaire. U26. Dép. AG-039.
+    - [afaire] AG-042 Écrire, tracer, modifier, RBZ 0.5.0 — Racine archgen.road, tags, outil à rayons ; première voie utilisable, sans carrefour. H20. Dép. AG-038, 040, 041.
+    - [afaire] AG-043 Réseau et carrefour simple — Nœuds, branches, angles, raccord de coupes, autoroute refusée à niveau. U27. Dép. AG-042, D-07.
+    - [afaire] AG-044 Carrefour à feux — Feux, lignes d'arrêt, passages piétons. U28. Dép. AG-043.
+    - [afaire] AG-045 Giratoire — Anneau, îlot central, îlots séparateurs. U29. Dép. AG-043.
+    - [afaire] AG-046 Double giratoire — Deux anneaux et liaison. U30. Dép. AG-045.
+    - [afaire] AG-047 Rails au carrefour et passage à niveau — Tram à travers un nœud, voie ferrée × route. U31. Dép. AG-041, AG-045.
+    - [afaire] AG-048 Panneau de carrefour, RBZ 0.6.0 — Choisir et régler un carrefour. H21. Dép. AG-044, 046, 047.
+    - [afaire] AG-049 Voie sur un terrain — Selon D-08, contrat à compléter. H22. Dép. AG-042, D-08.
+  - J9+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
@@ -152,6 +168,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - ADR-30 — D-03 : coupe d'onglet, parcelle d'angle en trapèze, racine d'ensemble.
     - ADR-31 — D-04 : forme de l'accès selon le style, catalogue séparé.
     - ADR-33 — Étagement : une plateforme par parcelle, racine immobile, assises à part, soubassement seul.
+    - ADR-34 — Voirie : la coupe est la source, format séparé, catalogues fermés, rayons au tracé, valeurs de conception sans vérification réglementaire.
     - ADR-32 — Murs mitoyens gardés, même gabarit par ensemble.
     - ADR-28 — Assise sur racine existante, plateforme au point haut par défaut, format séparé, terrain désigné.
     - ADR-09 — API minimale, géométrie locale, pas de purge globale.
@@ -287,3 +304,5 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-08 Quartier — Densité, seeds par parcelle.
   - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
   - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
+  - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
+  - EXT-12 Mobilier urbain — Arrêts de bus, attaches vélos, panneaux ; module à cadrer après EXT-11, peut-être séparé.

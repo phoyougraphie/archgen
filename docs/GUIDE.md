@@ -107,7 +107,7 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 - **Limites :** 64 points, 200 bâtiments, 120 000 faces distinctes et 600 000 faces au total.
 - **Temps :** une rue droite partage presque tout : 200 bâtiments s'écrivent en 2 à 3 s. Un tracé dont tous les segments diffèrent partage peu : 76 bâtiments en Structural LOD 1 prennent 14 à 17 s, et SketchUp se fige pendant ce temps. Attendez, ne fermez pas la fenêtre.
 - **Après coup :** on déplace ou on copie l'ensemble entier. Pour agir sur un bâtiment, il faudrait éclater l'ensemble : ses bâtiments restent, mais ne sont plus modifiables par ARCHGEN.
-- **Hors de portée :** pas de chaussée, de trottoir ni de carrefour. Le tracé est horizontal, sans adaptation au terrain, et rien ne vérifie qu'il ne traverse pas d'autres objets du modèle.
+- **Hors de portée :** pas encore de chaussée, de trottoir ni de carrefour (en préparation, tickets AG-037 à AG-049). Le tracé est horizontal, sans adaptation au terrain, et rien ne vérifie qu'il ne traverse pas d'autres objets du modèle.
 
 ## Étager une rue ou un îlot sur un terrain
 

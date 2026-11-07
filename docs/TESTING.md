@@ -26,6 +26,11 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U20 | Interruption : carré de référence avec 3 accès sur 3 côtés, jamais en angle, même placement à seed égale ; vide de la largeur exacte, voisines complètes ; nombre impossible, profil sans entrée au catalogue : refus. Aucune forme fermée sans accès. |
 | U21 | Porche : passage de part en part, parois et plafond fermés, étages au-dessus intacts, baies recouvertes retirées, en Shell et Structural ; hauteur limite acceptée, premier dépassement refusé. |
 | U22 | Étagement : un rectangle donne l'assise d'un bâtiment seul ; niveaux, partage, trapèzes et angles rentrants ; trou hors et dans les cellules ; talus, relief, porte et passage refusés sur la parcelle ; plafonds. |
+| U23 | Coupe de voirie (prévu, AG-037) : chaque type de bande et d'élément à ses limites et au premier dépassement ; clé inconnue, élément dans un fossé refusés avec chemin ; onze préréglages valides ; bâtiments et ensembles inchangés. |
+| U24 | Axe et rubans (prévu, AG-039) : largeurs exactes en droite et en courbe, sommets partagés, bordures, fossés, talus ; rayon limite et premier dépassement ; 100 tracés pseudo-aléatoires reproductibles. |
+| U25 | Éléments de voirie (prévu, AG-040) : nombre et positions au pas sur droite et courbe, définitions partagées, variation par clé, plafonds. |
+| U26 | Rails (prévu, AG-041) : écartement de 1,435 m en droite et en courbe, voie mixte au niveau de la chaussée, ballast et traverses. |
+| U27 à U31 | Carrefours (prévus, AG-043 à AG-047) : simple, à feux, giratoire, double giratoire, rails et passage à niveau ; surfaces sans trou ni recouvrement, refus localisés. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 
@@ -49,5 +54,9 @@ Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; Sketc
 | H16 | Tracer à la souris et au clavier : clics, `longueur;angle`, axes, Ctrl, Alt, fermeture au premier point, Échap. | Géométrie à 1 mm du tracé saisi ; aperçu sans écriture ni ligne d'Annuler ; aucune erreur à la console. |
 | H17 | Parcours complet sur le RBZ : rue d'un côté, rue des deux côtés, îlot avec interruption, îlot avec porche, modifier, Annuler. | Valeurs du panneau identiques au plan ; une entrée d'Annuler par validation ; vue contrôlée à l'écran. |
 | H18 | Étager rue, angles et îlots sur un vrai terrain : relevé, adapter, Annuler, Rétablir, refus, pannes, panneau, remplacer, retirer, rouvrir, copie ; charge jusqu'à 200 parcelles. | Racine immobile, terrain intact, bâtiments partagés, aucun vide entre assise et terrain, une entrée d'Annuler ; temps publiés ; vrai geste à l'écran. |
+| H19 | Prévu, AG-038 : composer une coupe à la souris dans l'éditeur, glisser une limite et le personnage, ordonner, ajouter des éléments. | Échelle mesurée à l'écran ; valeurs du noyau ; aucune entité ni ligne d'Annuler. |
+| H20 | Prévu, AG-042 : tracer une voie droite et courbe, modifier, Annuler, pannes, copie, rouvrir ; charge sur 100 m, 1 km et 2 km. | Une entrée d'Annuler, sans résidu ; cotes à 1 mm ; temps publiés ; vrai geste à l'écran. |
+| H21 | Prévu, AG-048 : écrire et rouvrir les quatre types de carrefour au panneau. | Une entrée d'Annuler par validation ; vue contrôlée à l'écran ; temps publiés. |
+| H22 | Prévu, AG-049 : voie sur un terrain réel, selon D-08. | Pente et terrain conformes à la décision ; pannes sans résidu. |
 
 Gabarit de rapport : commit et moteur ; OS, édition hôte, Ruby et matériel ; identifiant fixture ; mode/LOD ; attendu, observé, résultat, trace minimale ; motif des cas non exécutés. Cible V0.1 : Windows et SketchUp 2026 (ADR-26). Les versions non testées sont annoncées comme telles. Faire la recette dans des copies de modèles et noter les opérations reproductibles.

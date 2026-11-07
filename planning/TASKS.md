@@ -55,4 +55,24 @@ Contrat : [ENSEMBLE_CONTRACT](../docs/ENSEMBLE_CONTRACT.md). Décisions : ADR-30
 | **AG-035 — Accès par porche** | AG-034 | Capacité porche : passage, parois, plafond, étages au-dessus ; entrées Haussmannien et Toulousain. | Shell et Structural, hauteur limite et premier dépassement, baies recouvertes retirées ; fixtures inchangées hors porche. U21. |
 | **AG-036 — Panneau d'ensemble et RBZ 0.3.0** | AG-035 | Modifier un ensemble, guide, journal, RBZ. | Parcours rue et îlot complet ; H01 à H17 rejouées sur le RBZ. H17. |
 
+## J8 — Voirie (EXT-11)
+
+Contrat : [VOIRIE_CONTRACT](../docs/VOIRIE_CONTRACT.md), [maquette](../docs/maquettes/voirie-coupe.html). Décision : ADR-34. La coupe vient d'abord, à la demande du propriétaire ; une voie sans carrefour est utilisable dès AG-042.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-037 — Format de coupe et catalogues** | AG-027 | Schéma `road_profile` V1, catalogues fermés de bandes et d'éléments, onze préréglages en fixtures, diagnostics ; noyau pur. | Limites et premier dépassement pour chaque type ; clé inconnue, élément dans un fossé refusés avec chemin ; préréglages valides ; aucun bâtiment ni ensemble changé. U23. |
+| **AG-038 — Éditeur de coupe** | AG-037 | Panneau local : coupe à l'échelle, personnage, gabarits, ajouter, retirer, ordonner, largeur saisie ou glissée, éléments, vue en plan. Aucune écriture dans le modèle. | Valeurs et diagnostics issus du noyau ; échelle mesurée à l'écran ; vrai geste à la souris ; aucune entité ni ligne d'Annuler. H19. |
+| **AG-039 — Axe et rubans** | AG-037 | Polyligne à rayons, arcs discrétisés, décalages, rubans, bordures, fossés, talus, `RoadPlan`, validateur, `road_digest` ; noyau pur. | Largeurs exactes en droite et en courbe, sommets communs entre rubans, rayon limite et premier dépassement, 100 tracés pseudo-aléatoires reproductibles. U24. |
+| **AG-040 — Arbres, lampadaires, haies, clôtures** | AG-039, D-09 | Répétition au pas, lignes continues, définitions partagées par variante et hauteur, variation par clé, plafonds. | Nombre et positions exacts à la main sur droite et courbe, même empreinte à même seed, définitions partagées, plafond et premier dépassement. U25. |
+| **AG-041 — Rails et tram** | AG-039 | Rails à 1,435 m, traverses et ballast, plateforme tram, voie mixte à rails encastrés, poteaux de caténaire. | Écartement exact en droite et en courbe, rails au niveau de la chaussée en voie mixte, faces orientées. U26. |
+| **AG-042 — Écrire, tracer, modifier, RBZ 0.5.0** | AG-038, AG-040, AG-041 | Racine `archgen.road`, tags, matériaux, outil de tracé à rayons, modifier au panneau, guide, journal, RBZ. | Une entrée d'Annuler, pannes sans résidu, aller-retour SKP, copie isolée, charge publiée sur 100 m, 1 km et 2 km ; vrai geste à la souris ; H01 à H20 rejouées sur le RBZ. H20. |
+| **AG-043 — Réseau et carrefour simple** | AG-042, D-07 | Nœuds et branches, carrefour à 3 à 6 branches, angles de trottoir arrondis, raccord entre deux coupes, refus d'une autoroute à niveau. | T et X à plusieurs angles et coupes différentes, surfaces sans trou ni recouvrement, refus localisés. U27. |
+| **AG-044 — Carrefour à feux** | AG-043 | Feux aux angles, lignes d'arrêt, passages piétons déduits de la coupe. | Un feu par sens entrant, passages sur chaque branche à trottoir, refus sans chaussée. U28. |
+| **AG-045 — Giratoire** | AG-043 | Anneau, îlot central, îlots séparateurs, rayon et largeur réglables. | Géométrie exacte à la main sur 3 et 4 branches, rayon limite et premier dépassement. U29. |
+| **AG-046 — Double giratoire** | AG-045 | Deux anneaux, tronçon de liaison, répartition déterministe des branches. | Même entrée, même répartition ; liaison trop courte refusée. U30. |
+| **AG-047 — Rails au carrefour et passage à niveau** | AG-041, AG-045 | Tram à travers un nœud et un îlot, passage à niveau voie ferrée × route. | Rails continus, branches non opposées refusées, voie ferrée refusée hors passage à niveau. U31. |
+| **AG-048 — Panneau de carrefour, RBZ 0.6.0** | AG-044, AG-046, AG-047 | Choisir et régler un carrefour, aperçu en plan, guide, journal, RBZ. | Quatre types écrits et rouverts, une entrée d'Annuler, charge publiée ; vrai geste à la souris ; recettes rejouées sur le RBZ. H21. |
+| **AG-049 — Voie sur un terrain** | AG-042, D-08 | Selon D-08 : profil en long relevé, pente limitée, raccord au terrain. Contrat à compléter avant le code. | Pente mesurée, terrain conforme à la décision, pannes sans résidu, charge sur terrain réel. H22. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.
