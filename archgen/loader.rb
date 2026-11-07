@@ -32,6 +32,8 @@ module Archgen
       geometry/road_section
       geometry/road_axis
       geometry/road_ribbons
+      geometry/road_item_shapes
+      geometry/road_items
       geometry/planar
       geometry/trace_rows
       geometry/parcel_layout

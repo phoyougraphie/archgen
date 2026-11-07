@@ -181,7 +181,9 @@ module Archgen
         'arcs_too_long' => 'Les virages de ce segment demandent %{value} m, il n’en mesure que %{length}. Réduisez les rayons ou allongez le segment.',
         'inner_edge_folds' => 'À cet angle vif, le bord intérieur de la voie se replierait. Donnez un rayon à ce sommet ou allongez les segments.',
         'self_overlap' => 'La voie se recouvre elle-même ici. Les croisements viendront avec les carrefours.',
-        'road_faces' => 'Cette voie demanderait %{value} faces, pour une limite de %{limit}. Raccourcissez-la ou simplifiez la coupe.',
+        'road_items' => 'Cette voie poserait %{value} objets, pour une limite de %{limit}. Augmentez les pas ou raccourcissez-la.',
+        'road_expanded_faces' => 'Cette voie et ses objets dépasseraient %{limit} faces au total (%{value}). Augmentez les pas ou raccourcissez-la.',
+        'road_faces' =>'Cette voie demanderait %{value} faces, pour une limite de %{limit}. Raccourcissez-la ou simplifiez la coupe.',
         'ditch_next_to_carriageway' => 'Les bandes %{band_number} et %{next_number} placent un fossé contre la chaussée, sans accotement.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

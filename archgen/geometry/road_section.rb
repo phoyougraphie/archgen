@@ -117,6 +117,7 @@ module Archgen
           shape = entry['variants'].fetch(item['variant'])
           out['crown_radius_m'] = q(shape['crown_radius_ratio'] * item['height_m'])
           out['crown_base_m'] = q(shape['crown_base_ratio'] * item['height_m'])
+          out['height_variation'] = item['height_variation'].to_f
         end
         out
       end

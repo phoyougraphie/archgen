@@ -34,6 +34,8 @@ module Archgen
       ROAD_MIN_INNER_RADIUS_M = 1.0
       ROAD_CHORD_TOLERANCE_M = 0.05
       ROAD_MAX_UNIQUE_FACES = 60_000
+      ROAD_MAX_ITEMS = 5000
+      ROAD_MAX_EXPANDED_FACES = 600_000
     end
   end
 end

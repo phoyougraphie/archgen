@@ -52,7 +52,7 @@ class RoadAxisTest < Minitest::Test
     p = plan(tree([[0, 0], [100, 0]], []))
     m = p['metrics']
     # Trottoir coupé par sa bordure (2), contremarche, stationnement, deux voies, contremarche, trottoir (2).
-    assert_equal [9, 20, 2, 13.0, 100.0], m.values_at('face_count', 'vertex_count', 'station_count', 'width_m', 'length_m')
+    assert_equal [9, 20, 2, 13.0, 100.0], m.values_at('surface_face_count', 'vertex_count', 'station_count', 'width_m', 'length_m')
     ys = surface(p)['vertices'].map { |v| v[1] }.uniq.sort
     # Axe au milieu : bord gauche à y = 6,5, bord droit à −6,5 ; bordures de 0,16 m.
     assert_equal [-6.5, -4.16, -4.0, -1.0, 2.0, 4.0, 4.16, 6.5], ys
@@ -163,7 +163,7 @@ class RoadAxisTest < Minitest::Test
   end
 
   def test_face_budget
-    found = assert_refused(build(tree([[0, 0], [100, 0], [100, 100]], [40], preset('boulevard')), max_faces: 100), 'E_ROAD_BUDGET', '/trace', 'road_faces')
+    found = assert_refused(build(tree([[0, 0], [100, 0], [100, 100]], [40], preset('boulevard')), limits: { unique: 100 }), 'E_ROAD_BUDGET', '/trace', 'road_faces')
     assert_equal 100, found.params['limit']
   end
 
