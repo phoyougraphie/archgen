@@ -36,6 +36,7 @@ module Archgen
       geometry/road_item_shapes
       geometry/road_items
       geometry/road_junction
+      geometry/road_signals
       geometry/road_network
       geometry/planar
       geometry/trace_rows

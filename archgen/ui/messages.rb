@@ -203,6 +203,8 @@ module Archgen
         'arm_too_short' => 'La voie %{road} est trop courte pour entrer dans ce carrefour. Allongez-la.',
         'junctions_too_close' => 'Ce carrefour et le suivant se touchent sur la voie %{road}. Écartez les croisements.',
         'junction_shape' => 'La forme de ce carrefour ne se construit pas. Changez l’angle ou le rayon des bordures.',
+        'signals_without_carriageway' => 'Un carrefour à feux demande au moins une chaussée. Gardez un carrefour simple.',
+        'no_room_for_signal' => 'Aucune bande ne porte le feu à droite de la chaussée de la voie %{road}. Ajoutez un trottoir ou un accotement.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

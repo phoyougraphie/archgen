@@ -93,7 +93,8 @@ module Archgen
           'network_version' => SUPPORTED_VERSION,
           'roads' => roads,
           'junctions' => tree.fetch('junctions', []).map do |j|
-            { 'id' => j['id'], 'corner_radius_m' => Quant.q(j.fetch('corner_radius_m', Geometry::RoadNetwork::DEFAULT_RADIUS_M).to_f) }
+            { 'id' => j['id'], 'type' => j.fetch('type', 'simple'),
+              'corner_radius_m' => Quant.q(j.fetch('corner_radius_m', Geometry::RoadNetwork::DEFAULT_RADIUS_M).to_f) }
           end.sort_by { |j| j['id'] }
         }
       end

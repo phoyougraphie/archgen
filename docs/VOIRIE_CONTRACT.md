@@ -166,7 +166,7 @@ Livré dans le noyau par AG-039 (U24) ; l'écriture dans SketchUp et l'outil de 
 { "network_version": 1,
   "roads": [ { "id": "rue", "road": { "trace": { "points_m": [[0, 0], [100, 0]], "radii_m": [] }, "profile": { } } },
              { "id": "allee", "road": { "trace": { "points_m": [[50, 0], [50, 60]], "radii_m": [] }, "profile": { } } } ],
-  "junctions": [ { "id": "allee@0.0+rue@50.0", "corner_radius_m": 8 } ] }
+  "junctions": [ { "id": "allee@0.0+rue@50.0", "type": "signals", "corner_radius_m": 8 } ] }
 ```
 
 Types de nœud, livrés ticket par ticket :
@@ -174,7 +174,7 @@ Types de nœud, livrés ticket par ticket :
 | Type | Géométrie | Porte | Ticket |
 |---|---|---|---|
 | `simple` | Plateau de chaussée, trottoirs qui tournent l'angle par une bordure arrondie, contremarches et murets. 2 à 6 branches | Toute coupe sans `hard`, sans rail ni tram | **AG-043, livré** |
-| `signals` | Comme `simple`, plus feux aux angles, lignes d'arrêt, passages piétons, marquage de priorité | Idem, avec chaussée | AG-044 |
+| `signals` | Comme `simple`, plus passages piétons, lignes d'arrêt et un feu par branche à chaussée | Au moins une branche à chaussée | **AG-044, livré** |
 | `roundabout` | Anneau, îlot central, îlots séparateurs. Rayon extérieur et largeur d'anneau réglables : 13 m et 6 m au minimum (départ) | Idem | AG-045 |
 | `double_roundabout` | Deux anneaux reliés par un tronçon de longueur `link_m`, branches réparties par angle | Idem, au moins 3 branches | AG-046 |
 | `level_crossing` | Rails franchissant une route, à niveau | Voie ferrée × route | AG-047 |
@@ -192,7 +192,19 @@ Types de nœud, livrés ticket par ticket :
 - **Soudure.** Tronçons et carrefours partagent un maillage. Un sommet de carrefour posé au milieu d'une arête y est inséré ; la face touchée est retriangulée dans son plan. Vu de dessus, chaque point des emprises est couvert une fois et une seule ; aucune arête n'est libre dans les emprises ni portée par plus de deux faces.
 - **Tronçons.** Entre deux coupes, chaque voie donne un tronçon, balayé comme une voie seule, avec ses objets ; les objets prennent le nom de leur voie et de leur tronçon (`…@rue.2`) et partagent leurs formes. Aucun objet ne tombe dans un carrefour. Un réseau sans nœud donne exactement les voies seules.
 - **Jonction de deux coupes différentes** bout à bout, alignées : les bords se raccordent en biseau sur les deux coupes de 1 m. Plus long : hors de cette version.
-- **Plan.** Une racine `road`, la surface et les familles d'objets comme une voie seule ; `junctions` liste chaque nœud (`id`, branches, rayon, coupe de chaque branche) ; `metrics` ajoute `road_count`, `junction_count`, `piece_count`, `junction_face_count`. Mêmes plafonds qu'une voie.
+- **Plan.** Une racine `road`, la surface et les familles d'objets comme une voie seule ; `junctions` liste chaque nœud (`id`, `type`, branches, rayon, coupe de chaque branche `cuts_m`, bout de sa zone `reach_m`) ; `metrics` ajoute `road_count`, `junction_count`, `piece_count`, `junction_face_count`. Mêmes plafonds qu'une voie.
+
+### Carrefour à feux (AG-044, U28)
+
+`"type": "signals"` sur un nœud. Tout le carrefour simple, plus, sur chaque branche à chaussée, au-delà de sa coupe (`Geometry::RoadSignals`, circulation à droite) :
+
+- **Passage piéton** si la coupe porte un trottoir ou un chemin : 4 m dans le sens de la voie, bandes de 0,5 m parallèles à l'axe, tous les 1 m, à 0,25 m au moins des bords de chaque bande roulante (stationnement exclu). Sans trottoir, pas de passage.
+- **Garde** de 1 m, puis **ligne d'arrêt** de 0,5 m sur les seules voies (`lane`) qui entrent : celles à gauche de la branche vue du nœud, au-delà du milieu des voies. Bandes dérasées, arrêt d'urgence et stationnement n'en ont pas.
+- Le marquage (`road/marking`) est **taillé dans la surface**, au niveau de la chaussée : aucune face superposée, donc aucun scintillement. La zone du carrefour s'allonge d'autant (`reach_m` : coupe + 5,5 m avec passage, + 1,5 m sans) ; les tronçons et leurs objets commencent après.
+- **Un feu par branche à chaussée** (`signal/<nœud>/<rang>`, famille mobilier) : mât et boîtier de 3 m, trois optiques tournées vers ceux qui arrivent ; posé à droite de la circulation qui arrive, 0,5 m derrière la bordure (au milieu de la bande si elle est plus étroite), au droit de la ligne d'arrêt, à la cote de la bande. Une branche sans chaussée (chemin) n'a ni feu ni marquage.
+- Plan : `type` et `reach_m` par nœud, `signal_count` dans `metrics`.
+
+Refus : `signals_without_carriageway` (aucune branche à chaussée) ; `no_room_for_signal` (`road`) quand rien ne dépasse de 0,3 m au moins la bordure à droite des voies qui entrent.
 
 **Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
 

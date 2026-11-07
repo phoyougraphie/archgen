@@ -39,6 +39,12 @@
             "minLength": 1,
             "maxLength": 512
           },
+          "type": {
+            "enum": [
+              "simple",
+              "signals"
+            ]
+          },
           "corner_radius_m": {
             "type": "number",
             "minimum": 2,

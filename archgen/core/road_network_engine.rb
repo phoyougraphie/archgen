@@ -34,7 +34,7 @@ module Archgen
         problems = pieces.flat_map(&:errors).uniq
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
-        build_plan(roads, nodes, built.map(&:value), pieces.map(&:value), items, limits)
+        build_plan(roads, nodes, built.map { |b| b.value[:faces] }, pieces.map(&:value), items, limits, built.flat_map { |b| b.value[:instances] })
       end
 
       def road(entry, index, bands, items)
@@ -56,14 +56,17 @@ module Archgen
       # Rayon des bordures de chaque carrefour ; un réglage qui ne vise aucun carrefour est refusé.
       def radius_problems(nodes, junctions)
         by_id = junctions.to_h { |j| [j['id'], j] }
-        nodes.each { |node| node.radius = by_id[node.id]&.fetch('corner_radius_m') || N::DEFAULT_RADIUS_M }
+        nodes.each do |node|
+          node.radius = by_id[node.id]&.fetch('corner_radius_m') || N::DEFAULT_RADIUS_M
+          node.type = by_id[node.id]&.fetch('type') || 'simple'
+        end
         known = nodes.map(&:id)
         junctions.each_with_index.reject { |j, _| known.include?(j['id']) }.map do |j, _|
           Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{j['id']}", reason: 'unknown_junction')
         end
       end
 
-      def build_plan(roads, nodes, junction_faces, pieces, items, limits)
+      def build_plan(roads, nodes, junction_faces, pieces, items, limits, lights)
         estimate = roads.each_with_index.sum do |road, i|
           pieces[i].sum { |from, to| Geometry::RoadRibbons.face_estimate(N.piece_stations(road, from, to).size, road.line) }
         end + junction_faces.sum(&:size)
@@ -81,6 +84,11 @@ module Archgen
                         "#{road.id}.#{k + 1}")
           end
         end
+        unless lights.empty?
+          id, shape = Geometry::RoadSignals.definition
+          placed[:definitions][id] ||= shape
+          placed[:instances].concat(lights)
+        end
         from = builder.to_primitive['faces'].size
         junction_faces.each { |faces| faces.each { |points, material| builder.add_face(points, material) } }
         surface = N.heal(builder.to_primitive, from)
@@ -91,9 +99,9 @@ module Archgen
           'station_count' => station_count, 'cross_segment_count' => roads.sum { |r| r.line.size },
           'length_m' => Quant.q(roads.sum(&:length)), 'road_count' => roads.size,
           'junction_count' => nodes.size, 'piece_count' => pieces.sum(&:size),
-          'junction_face_count' => junction_faces.sum(&:size)
+          'junction_face_count' => junction_faces.sum(&:size), 'signal_count' => lights.size
         )
-        plan['junctions'] = nodes.map { |n| { 'id' => n.id, 'arms' => n.arms.size, 'corner_radius_m' => n.radius, 'cuts_m' => n.arms.map { |a| Quant.q(a.cut) } } }
+        plan['junctions'] = nodes.map { |n| { 'id' => n.id, 'type' => n.type, 'arms' => n.arms.size, 'corner_radius_m' => n.radius, 'cuts_m' => n.arms.map { |a| Quant.q(a.cut) }, 'reach_m' => n.arms.map { |a| Quant.q(a.reach) } } }
         problems = RoadEngine.budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
 

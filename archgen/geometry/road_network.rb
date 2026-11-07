@@ -19,7 +19,7 @@ module Archgen
           chain.last
         end
       end
-      Node = Struct.new(:id, :point, :hits, :arms, :radius, keyword_init: true)
+      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, keyword_init: true)
 
       module_function
 
@@ -172,7 +172,7 @@ module Archgen
       # La zone coupée d'une branche doit tenir dans un seul segment droit de sa voie.
       def straight_problem(node, arm)
         road = arm.road
-        from, to = arm.sign.positive? ? [arm.s, arm.s + arm.cut] : [arm.s - arm.cut, arm.s]
+        from, to = arm.sign.positive? ? [arm.s, arm.s + arm.reach] : [arm.s - arm.reach, arm.s]
         return error(node.id, 'arm_too_short', road: road.id) if from < -1e-6 || to > road.length + 1e-6
 
         _, _, k = point_and_dir(road, (from + to) / 2)
@@ -204,10 +204,34 @@ module Archgen
         return Core::Result.fail([error(node.id, 'junction_shape')]) if cuts.values.any? { |v| !v.finite? || v > 200 }
 
         node.arms.each { |a| a.cut = cuts[a] }
+        signals = node.type == 'signals'
+        if signals
+          return Core::Result.fail([error(node.id, 'signals_without_carriageway')]) unless node.arms.any?(&:carriageway)
+
+          node.arms.each { |a| a.ext = RoadSignals.extension(a) }
+        end
         straight = node.arms.filter_map { |a| straight_problem(node, a) }.uniq(&:to_h)
         return Core::Result.fail(straight) unless straight.empty?
 
-        faces(node, corners)
+        built = faces(node, corners)
+        return built unless built.ok?
+        return Core::Result.ok({ faces: built.value, instances: [] }) unless signals
+
+        dressed(node, built.value)
+      end
+
+      # Carrefour à feux : bandes de marquage au-delà des coupes et un feu par branche à chaussée.
+      def dressed(node, faces)
+        lights = []
+        problems = []
+        node.arms.each_with_index do |arm, k|
+          next unless arm.carriageway
+
+          faces += RoadSignals.faces(arm)
+          light = RoadSignals.light(arm, "signal/#{node.id}/#{k + 1}")
+          light ? lights << light : problems << error(node.id, 'no_room_for_signal', road: arm.road.id)
+        end
+        problems.empty? ? Core::Result.ok({ faces: faces, instances: lights }) : Core::Result.fail(problems)
       end
 
       def core_level(arms)
@@ -424,7 +448,7 @@ module Archgen
       # Intervalles d'abscisse à garder sur chaque voie, hors des zones coupées.
       def pieces(road, nodes)
         cuts = nodes.flat_map do |n|
-          n.arms.select { |a| a.road.equal?(road) }.map { |a| a.sign.positive? ? [a.s, a.s + a.cut, n.id] : [a.s - a.cut, a.s, n.id] }
+          n.arms.select { |a| a.road.equal?(road) }.map { |a| a.sign.positive? ? [a.s, a.s + a.reach, n.id] : [a.s - a.reach, a.s, n.id] }
         end.sort_by(&:first)
         problems = cuts.each_cons(2).filter_map do |(_, e1, id1), (s2, _, id2)|
           next if id1 == id2 || s2 >= e1 - 1e-6

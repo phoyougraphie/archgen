@@ -19,12 +19,14 @@
     "road/bank": { "label": "Voirie talus", "srgb": "#8AAA72" },
     "road/curb": { "label": "Voirie bordure", "srgb": "#B8B4AA" },
     "road/rail_steel": { "label": "Voirie rail", "srgb": "#2A3033" },
+    "road/marking": { "label": "Voirie marquage", "srgb": "#EEEEE8" },
     "road/item/trunk": { "label": "Voirie tronc", "srgb": "#6E5339" },
     "road/item/crown": { "label": "Voirie feuillage", "srgb": "#4F7F45" },
     "road/item/steel": { "label": "Voirie métal", "srgb": "#353B3E" },
     "road/item/lamp": { "label": "Voirie lanterne", "srgb": "#F2E6B8" },
     "road/item/hedge": { "label": "Voirie haie", "srgb": "#3F7350" },
     "road/item/wood": { "label": "Voirie bois", "srgb": "#7A5C40" },
-    "road/item/concrete": { "label": "Voirie béton", "srgb": "#AAA9A4" }
+    "road/item/concrete": { "label": "Voirie béton", "srgb": "#AAA9A4" },
+    "road/item/head": { "label": "Voirie boîtier de feu", "srgb": "#26292B" }
   }
 }
