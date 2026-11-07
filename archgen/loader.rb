@@ -28,6 +28,7 @@ module Archgen
       core/trace_session
       core/site_assise
       geometry/types
+      geometry/road_section
       geometry/planar
       geometry/trace_rows
       geometry/parcel_layout
@@ -71,6 +72,7 @@ module Archgen
       ui/messages
       ui/dialog_controller
       ui/street_controller
+      ui/road_controller
     ].freeze
 
     def self.load_core

@@ -126,6 +126,17 @@ Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain,
 
 **Limites.** Soubassement seulement, pas de talus entre voisins. Pas d'escalier ni de rampe : un seuil haut est signalé, pas résolu. Un terrain modifié n'est vu qu'au relevé suivant.
 
+## Composer une coupe de voirie (version de développement)
+
+**Extensions → ARCHGEN → Composer une coupe de voirie.** Le panneau dessine la voie en coupe, à l'échelle, avec un personnage de 1,75 m.
+
+1. Partez d'un type de voie : autoroute, route de campagne à fossés, boulevard planté, rue tram et voitures, voie ferrée double, chemin piéton…
+2. Les bandes se lisent de gauche à droite. Ajoutez-en une après la bande choisie, retirez-la, déplacez-la avec les flèches, ou inversez tout avec **Miroir**.
+3. Tapez une largeur, ou glissez la poignée bleue sous la limite de deux bandes. Une largeur hors de la plage du type est refusée : la bande passe en rouge, avec la plage à respecter.
+4. Sur la bande choisie, ajoutez des arbres, lampadaires, haies, barrières, glissières, potelets ou poteaux de caténaire, avec leur hauteur et leur pas. La vue en plan compte les objets sur 100 m.
+
+Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Gabarits de véhicules** pour masquer voitures, bus, tram et train. **Rien n'est écrit dans le modèle** pour l'instant : tracer la voie viendra dans une version suivante. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.

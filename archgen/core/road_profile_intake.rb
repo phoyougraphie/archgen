@@ -41,7 +41,7 @@ module Archgen
       def version_problem(tree)
         return nil unless tree.is_a?(Hash) && tree['road_profile_version'].is_a?(Numeric) && tree['road_profile_version'] != SUPPORTED_VERSION
 
-        Diagnostic.error('E_VERSION', '/road_profile_version', reason: 'unsupported', value: tree['road_profile_version'], supported: SUPPORTED_VERSION)
+        Diagnostic.error('E_VERSION', '/road_profile_version', reason: 'unsupported_road_profile', value: tree['road_profile_version'], supported: SUPPORTED_VERSION)
       end
 
       def band_problems(band, index)

@@ -158,6 +158,7 @@ module Archgen
         'site_faces' => 'Le terrassement est trop détaillé. Augmentez le pas du relevé.',
         'total_faces' => 'Le bâtiment et son terrassement dépassent la limite de %{limit} faces. Augmentez le pas du relevé ou réduisez le niveau de détail.',
         # Voirie : coupe (docs/VOIRIE_CONTRACT.md)
+        'unsupported_road_profile' => 'Cette coupe vient d’une version plus récente d’ARCHGEN.',
         'unknown_type' => 'Ce type de bande n’existe pas dans le catalogue.',
         'width_range' => 'Cette bande mesure %{value} m : choisissez une largeur de %{min} à %{max} m.',
         'band_accepts_no_items' => 'Rien ne se pose dans un fossé. Placez cet élément sur une bande voisine.',

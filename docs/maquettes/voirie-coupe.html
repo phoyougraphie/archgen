@@ -239,9 +239,13 @@ pre { font-family:var(--mono); font-size:12px; overflow:auto; max-height:300px; 
   }
   function itemHeight(it){return it.height_m+(it.kind==='lamp'?.2:0);}
   function drawPerson(x,z,s){
-    var h=1.75*s,hr=.115*s,t='';
-    t+='<circle cx="'+x+'" cy="'+(z-h+hr)+'" r="'+hr+'" '+fill('--person')+'/>';
-    t+='<path d="M'+(x-.21*s)+' '+(z-h+2.3*hr)+'h'+(.42*s)+'l'+(.03*s)+' '+(.62*s)+'h'+(-.09*s)+'l'+(-.03*s)+' '+(-.45*s)+'h'+(-.03*s)+'v'+(.42*s)+'l'+(.01*s)+' '+(.64*s)+'h'+(-.13*s)+'l'+(-.03*s)+' '+(-.6*s)+'l'+(-.03*s)+' '+(.6*s)+'h'+(-.13*s)+'l'+(.01*s)+' '+(-.64*s)+'v'+(-.42*s)+'h'+(-.03*s)+'l'+(-.03*s)+' '+(.45*s)+'h'+(-.09*s)+'Z" '+fill('--person')+'/>';
+    // Du sommet du crâne (1,75 m) à la plante des pieds (0), comme l'éditeur (défaut vu en H19).
+    function y(m){return z-m*s;}
+    var f=fill('--person'),t='';
+    t+='<circle cx="'+x+'" cy="'+y(1.64)+'" r="'+(.11*s)+'" '+f+'/>';
+    t+='<path d="M'+(x-.21*s)+' '+y(1.47)+'L'+(x+.21*s)+' '+y(1.47)+'L'+(x+.17*s)+' '+y(.88)+'L'+(x-.17*s)+' '+y(.88)+'Z" '+f+'/>';
+    t+='<rect x="'+(x-.29*s)+'" y="'+y(1.45)+'" width="'+(.07*s)+'" height="'+(.62*s)+'" '+f+'/><rect x="'+(x+.22*s)+'" y="'+y(1.45)+'" width="'+(.07*s)+'" height="'+(.62*s)+'" '+f+'/>';
+    t+='<rect x="'+(x-.16*s)+'" y="'+y(.9)+'" width="'+(.13*s)+'" height="'+(.9*s)+'" '+f+'/><rect x="'+(x+.03*s)+'" y="'+y(.9)+'" width="'+(.13*s)+'" height="'+(.9*s)+'" '+f+'/>';
     return t;
   }
   function drawVehicle(type,x,z,s){

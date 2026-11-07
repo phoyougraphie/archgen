@@ -36,7 +36,7 @@ class PanelAssetsTest < Minitest::Test
   end
 
   def test_panel_script_never_injects_markup_or_evaluates
-    %w[panel.js panel_logic.js street_panel.js].each do |name|
+    %w[panel.js panel_logic.js street_panel.js road_panel.js].each do |name|
       source = read_utf8(*UI_DIR, name)
       refute_match(/\.innerHTML|\.outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function/, source, name)
       refute_match(%r{https?://(?!www\.w3\.org/2000/svg)}, source, name)

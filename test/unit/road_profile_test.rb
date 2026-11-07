@@ -147,7 +147,7 @@ class RoadProfileTest < Minitest::Test
     assert_refused(profile, 'E_SCHEMA', '/bands', 'min_items')
     assert_refused(profile(*Array.new(33) { band('lane') }), 'E_SCHEMA', '/bands', 'max_items')
     assert_refused(profile(band('plant', 3, Array.new(7) { { 'kind' => 'tree' } })), 'E_SCHEMA', '/bands/0/items', 'max_items')
-    assert_refused(profile(band('lane')).merge('road_profile_version' => 2), 'E_VERSION', '/road_profile_version', 'unsupported')
+    assert_refused(profile(band('lane')).merge('road_profile_version' => 2), 'E_VERSION', '/road_profile_version', 'unsupported_road_profile')
     assert_refused(profile(band('lane')).merge('name' => ''), 'E_SCHEMA', '/name', 'min_length')
     assert_refused({ 'bands' => [{ 'type' => 'lane' }] }, 'E_SCHEMA', '/bands/0/width_m', 'required')
     accepted(profile(*Array.new(32) { band('lane') }))

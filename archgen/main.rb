@@ -7,6 +7,7 @@ Archgen::Loader.load_adapter
 Archgen::Loader.load_internal('ui/panel_observers')
 Archgen::Loader.load_internal('ui/panel')
 Archgen::Loader.load_internal('ui/street_panel')
+Archgen::Loader.load_internal('ui/road_panel')
 
 module Archgen
   # La garde empêche de dédoubler le menu en cas de double chargement.
@@ -17,6 +18,7 @@ module Archgen
     submenu.add_item('Modifier le bâtiment sélectionné') { UI::Panel.show('edit') }
     submenu.add_item('Tracer une rue') { UI::StreetPanel.show('new') }
     submenu.add_item('Modifier l’ensemble sélectionné') { UI::StreetPanel.show('edit') }
+    submenu.add_item('Composer une coupe de voirie') { UI::RoadPanel.show }
     @menu_installed = true
   end
 end

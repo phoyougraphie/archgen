@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.5.0-dev
+
+En cours, non publiée : voirie ([contrat](docs/VOIRIE_CONTRACT.md)).
+
+- Menu **Composer une coupe de voirie** : onze types de voie de départ, bandes à ajouter, retirer, ordonner et élargir, arbres, lampadaires, haies, barrières, glissières, potelets et poteaux de caténaire, à l'échelle d'un personnage de 1,75 m. Rien n'est encore écrit dans le modèle.
+
 ## 0.4.0
 
 Étagement d'une rue ou d'un îlot sur un terrain déjà présent dans le modèle. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1, inchangé : les plans des bâtiments et des ensembles restent identiques. Le rapport de recette est dans [docs/recette/V0.4.md](docs/recette/V0.4.md).

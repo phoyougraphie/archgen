@@ -80,14 +80,26 @@ Autoroute, route à deux voies, route de campagne à fossés, chemin rural, boul
 
 ## Éditeur de coupe
 
-Panneau local, modeless, sans réseau, français, mêmes règles que le panneau existant. Le noyau reste seul juge : le panneau affiche ses diagnostics et ne reproduit aucune règle.
+Menu **Extensions > ARCHGEN > Composer une coupe de voirie** (AG-038, recette [H19](recette/H19.md)). Panneau local, modeless, sans réseau, français, mêmes règles que le panneau existant. Le noyau reste seul juge : le panneau affiche ses diagnostics et ne reproduit aucune règle. **Il n'écrit rien dans le modèle** et n'ajoute aucune ligne d'Annuler.
 
-- **Combien :** ajouter, retirer, dupliquer une bande.
-- **Quelle mesure :** saisir la largeur, ou glisser la limite d'une bande dans la coupe.
+- **Combien :** ajouter une bande après la bande choisie, la retirer, changer son type (la largeur reprend alors celle du catalogue). Pas de duplication dans cette version.
+- **Quelle mesure :** saisir la largeur (virgule ou point), ou glisser la poignée bleue sous la limite de deux bandes ; le glissement règle la bande de gauche, au pas de 5 cm, dans la plage du catalogue.
 - **Quel ordre :** déplacer une bande vers la gauche ou la droite, Miroir.
-- **Quoi dessus :** pour la bande choisie, ajouter un élément, sa variante, sa hauteur, son pas.
-- **Repères :** personnage de 1,75 m qu'on déplace le long de la coupe, gabarits de voiture, bus, tram, train, cycliste, emprise totale, barre d'échelle.
+- **Quoi dessus :** pour la bande choisie, ajouter un élément, sa variante, sa hauteur, son pas, et la variation d'un arbre.
+- **Repères :** personnage de 1,75 m qu'on déplace le long de la coupe, gabarits de voiture, bus, tram, train, cycliste, emprise totale, barre d'échelle. Ils ne sont jamais écrits dans le modèle.
 - **Vue en plan** du tronçon, avec le nombre d'objets pour 100 m.
+- **Refus :** la bande en cause passe en rouge avec son message ; la coupe affichée reste la dernière acceptée, grisée. Une saisie illisible n'est jamais envoyée.
+- **Mémoire :** fermer puis rouvrir le panneau rend la dernière coupe acceptée, jusqu'à la fin de la session SketchUp. Elle n'est pas enregistrée dans le fichier : c'est la voie tracée qui la portera (AG-042).
+- **Pont :** actions `init` et `preview` (protocole 1, même enveloppe que les autres panneaux). `preview` renvoie le profil effectif et sa coupe dessinée.
+
+### Coupe dessinée (`Geometry::RoadSection`)
+
+Calcul pur, repris par le tronçon. x part du bord gauche, z du niveau 0.
+
+- **Surface :** une ligne par bande. Plane à son niveau ; fossé en trapèze, fond de 30 % de la largeur à −`depth_m` ; talus montant de `slope` × largeur vers l'extérieur, c'est-à-dire vers le bord gauche si son milieu est à gauche du milieu de l'emprise, sinon vers le droit.
+- **Bordure :** entre deux bandes planes dont le niveau diffère d'au moins 0,10 m ; 0,16 m de large, prise dans la bande haute contre la bande basse.
+- **Rails :** à ± 0,7175 m du milieu de la bande ; dessus au niveau de la bande, ou 0,17 m au-dessus du ballast.
+- **Éléments :** position en travers comme au format ; altitude prise sur la surface ; côté de la voie la plus proche (`carriageway`, `tram`, `rail`), vers lequel se tourne une crosse ; couronne des arbres d'après le catalogue ; nombre pour 100 m d'après la règle de répétition.
 
 ## Tronçon
 
