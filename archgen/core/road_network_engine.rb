@@ -23,7 +23,7 @@ module Archgen
         return Result.fail(problems) unless problems.empty?
 
         nodes = N.detect(roads)
-        problems = radius_problems(nodes, settings['junctions'])
+        problems = radius_problems(nodes, settings['junctions'], roads)
         problems += pair_problems(nodes, settings['junctions']) if problems.empty?
         return Result.fail(problems) unless problems.empty?
 
@@ -38,7 +38,8 @@ module Archgen
         problems = pieces.flat_map(&:errors).uniq
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
-        build_plan(roads, nodes, built.map { |b| b.value[:faces] }, pieces.map(&:value), items, limits, built.flat_map { |b| b.value[:instances] })
+        build_plan(roads, nodes, built.map { |b| b.value[:faces] }, pieces.map(&:value), items, limits, built.flat_map { |b| b.value[:instances] },
+                   built.flat_map { |b| b.value[:solids] || [] })
       end
 
       def road(entry, index, bands, items)
@@ -58,20 +59,28 @@ module Archgen
       end
 
       # Rayon des bordures de chaque carrefour ; un réglage qui ne vise aucun carrefour est refusé.
-      def radius_problems(nodes, junctions)
+      def radius_problems(nodes, junctions, roads)
         by_id = junctions.to_h { |j| [j['id'], j] }
         nodes.each do |node|
           node.radius = by_id[node.id]&.fetch('corner_radius_m') || N::DEFAULT_RADIUS_M
           node.type = by_id[node.id]&.fetch('type') || 'simple'
           node.options = by_id[node.id] || {}
+          # Sur l'eau, le nœud est un pont : « simple », la valeur par défaut, y devient « bridge » ; tout autre
+          # type choisi est refusé à la construction (water_crossing).
+          node.type = 'bridge' if node.type == 'simple' && node.hits.any? { |r, _| Geometry::RoadBridge.wet?(roads[r]) }
         end
         known = nodes.map(&:id)
-        junctions.each_with_index.reject { |j, _| known.include?(j['id']) }.map do |j, _|
+        unknown = junctions.each_with_index.reject { |j, _| known.include?(j['id']) }.map do |j, _|
           Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{j['id']}", reason: 'unknown_junction')
+        end
+        unknown + nodes.filter_map do |node|
+          next if node.type == 'bridge' || (node.options.keys & Geometry::RoadBridge::SETTINGS).empty?
+
+          Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{node.id}", reason: 'bridge_setting_unavailable', type: node.type)
         end
       end
 
-      def build_plan(roads, nodes, junction_faces, pieces, items, limits, lights)
+      def build_plan(roads, nodes, junction_faces, pieces, items, limits, lights, bridges = [])
         estimate = roads.each_with_index.sum do |road, i|
           pieces[i].sum { |from, to| Geometry::RoadRibbons.face_estimate(N.piece_stations(road, from, to).size, road.line) }
         end + junction_faces.sum(&:size)
@@ -79,15 +88,18 @@ module Archgen
 
         builder = Geometry::MeshBuilder.new('surface')
         placed = { definitions: {}, instances: [], linear: [], sleepers: [] }
+        water = Geometry::MeshBuilder.new('surface')
         station_count = 0
         roads.each_with_index do |road, i|
           profile = Geometry::RoadCrossing.profile(road, nodes)
           gaps = Geometry::RoadCrossing.gaps(road, nodes)
+          water_line = RoadEngine.water_line(road.section)
           pieces[i].each_with_index do |(from, to), k|
             stations = N.piece_stations(road, from, to)
             stations = Geometry::RoadCrossing.lift(stations, from, to, profile) if profile
             station_count += stations.size
             Geometry::RoadRibbons.sweep(builder, stations, road.line, road.ax)
+            Geometry::RoadRibbons.sweep(water, stations, water_line, road.ax) unless water_line.empty?
             tag = "#{road.id}.#{k + 1}"
             if gaps.empty?
               piece_items = Geometry::RoadItems.call(stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'])
@@ -110,13 +122,15 @@ module Archgen
         return Result.fail([Diagnostic.error('E_ROAD_JUNCTION', '/junctions', reason: 'junction_shape')]) unless surface
 
         plan = RoadEngine.assemble(surface, placed, [], { 'width_m' => roads.map(&:width).max }, [])
+        add_extras(plan, water.to_primitive, bridges)
         plan['metrics'].merge!(
           'station_count' => station_count, 'cross_segment_count' => roads.sum { |r| r.line.size },
           'length_m' => Quant.q(roads.sum(&:length)), 'road_count' => roads.size,
           'junction_count' => nodes.size, 'piece_count' => pieces.sum(&:size),
           'junction_face_count' => junction_faces.sum(&:size), 'signal_count' => lights.size,
-          'crossing_count' => nodes.count(&:crossing)
+          'crossing_count' => nodes.count { |n| n.type == 'level_crossing' }
         )
+        plan['metrics']['bridge_count'] = nodes.count(&:bridge) if nodes.any?(&:bridge)
         plan['junctions'] = nodes.map do |n|
           {
             'id' => n.id, 'type' => n.type, 'point_m' => n.point.map { |c| Quant.q(c) }, 'arms' => n.arms.size, 'corner_radius_m' => n.radius,
@@ -126,7 +140,7 @@ module Archgen
             'deck_m' => n.crossing && Quant.q(n.crossing.height), 'ramp_m' => n.crossing && Quant.q(n.crossing.ramp),
             'pair' => n.type == 'double_roundabout' ? n.options['pair'] : nil,
             'link_m' => link_length(n, nodes)
-          }.compact
+          }.merge(bridge_entry(n)).compact
         end
         problems = RoadEngine.budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
@@ -135,6 +149,30 @@ module Archgen
       end
 
       MIN_LINK_M = 5.0
+
+      # Surface de l'eau (cours d'eau du réseau) et ouvrages des ponts, dans leurs groupes.
+      def add_extras(plan, water, bridges)
+        children = plan['nodes'][0]['children']
+        m = plan['metrics']
+        unless water['faces'].empty?
+          children.insert(1, { 'id' => 'road/water', 'category' => 'road_surface', 'children' => [], 'primitive' => water })
+          m['water_face_count'] = water['faces'].size
+        end
+        unless bridges.empty?
+          children << { 'id' => 'road/bridges', 'category' => 'road_surface', 'children' => bridges }
+          m['linear_face_count'] += bridges.sum { |b| b['primitive']['faces'].size }
+        end
+        count = water['faces'].size + bridges.sum { |b| b['primitive']['faces'].size }
+        m['unique_face_count'] += count
+        m['expanded_face_count'] += count
+      end
+
+      def bridge_entry(node)
+        return {} unless node.bridge
+
+        b = node.bridge
+        { 'bridge_kind' => b[:kind], 'over' => node.crossing.road.id, 'span_m' => Quant.q(b[:span]), 'clearance_m' => Quant.q(b[:clearance]) }
+      end
 
       # Double giratoire (ADR-37) : deux nœuds voisins sur une même voie, réglés par le premier ; le second
       # prend ses réglages et le bout de voie entre eux devient la liaison.

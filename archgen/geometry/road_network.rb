@@ -19,7 +19,7 @@ module Archgen
           chain.last
         end
       end
-      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, :options, :crossing, keyword_init: true)
+      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, :options, :crossing, :bridge, keyword_init: true)
 
       module_function
 
@@ -252,6 +252,9 @@ module Archgen
       # Coupe, coins et géométrie d'un nœud ; Result<{ faces: [[points, matériau]], cuts: }>.
       def build(node, roads)
         node.arms = arms_for(node, roads)
+        return bridge(node) if node.type == 'bridge'
+        # Sur l'eau, seul un pont se construit (docs/PONT_CONTRACT.md).
+        return Core::Result.fail([error(node.id, 'water_crossing')]) if node.arms.any? { |a| RoadBridge.wet?(a.road) }
         return crossing(node) if node.type == 'level_crossing'
 
         problems = node_problems(node)
@@ -302,6 +305,16 @@ module Archgen
 
         node.crossing = built.value[:crossing]
         Core::Result.ok({ faces: built.value[:faces], instances: built.value[:instances] })
+      end
+
+      # Pont : comme un passage à niveau, plus le tablier, les culées et les garde-corps (RoadBridge).
+      def bridge(node)
+        built = RoadBridge.build(node)
+        return built unless built.ok?
+
+        node.crossing = built.value[:crossing]
+        node.bridge = built.value[:bridge]
+        Core::Result.ok({ faces: built.value[:faces], instances: [], solids: built.value[:solids] })
       end
 
       # Giratoire : anneau, îlots et coins de RoadRoundabout, mêmes contrôles de virage et de murets.

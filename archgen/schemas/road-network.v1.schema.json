@@ -45,8 +45,26 @@
               "signals",
               "roundabout",
               "double_roundabout",
-              "level_crossing"
+              "level_crossing",
+              "bridge"
             ]
+          },
+          "bridge_kind": {
+            "enum": [
+              "beam",
+              "arch",
+              "vault"
+            ]
+          },
+          "over": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "clearance_m": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 30
           },
           "ramp_grade_percent": {
             "type": "number",

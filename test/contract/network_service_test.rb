@@ -92,6 +92,22 @@ class NetworkServiceTest < Minitest::Test
     end
   end
 
+  # AG-057 : un pont sur une rivière s'écrit en une opération, avec ses ouvrages et l'eau dans leurs
+  # groupes, puis se relit à l'identique.
+  def test_a_bridge_over_a_river_is_written_and_reread
+    river = RoadNet.road('a', [[0, 0], [200, 0]], 'riviere')
+    river['road']['water'] = { 'mode' => 'flat' }
+    tree = RoadNet.network(river, RoadNet.road('b', [[100, -200], [100, 200]]))
+    summary = create(tree)
+    assert_equal 1, starts
+    assert_equal 1, summary.metrics['bridge_count']
+    names = root.definition.entities.to_a.select { |e| e.respond_to?(:name) }.map(&:name)
+    assert_includes names, 'road/bridges'
+    assert_includes names, 'road/water'
+    again = @service.preview(tree: root.get_attribute(DICTIONARY, 'network_json'))
+    assert_equal summary.road_digest, again.value.road_digest
+  end
+
   def test_stored_settings_keep_the_network_frame
     create
     stored = JSON.parse(root.get_attribute(DICTIONARY, 'network_json'))

@@ -26,6 +26,8 @@
     "road/dune": { "label": "Côte dune", "srgb": "#CFC196" },
     "road/beach": { "label": "Côte sable", "srgb": "#E3D3A6" },
     "road/sea": { "label": "Côte fond marin", "srgb": "#B5A67E" },
+    "road/bridge": { "label": "Pont béton", "srgb": "#C4C0B6" },
+    "road/bridge_stone": { "label": "Pont pierre", "srgb": "#B39C7D" },
     "road/curb": { "label": "Voirie bordure", "srgb": "#B8B4AA" },
     "road/rail_steel": { "label": "Voirie rail", "srgb": "#2A3033" },
     "road/marking": { "label": "Voirie marquage", "srgb": "#EEEEE8" },

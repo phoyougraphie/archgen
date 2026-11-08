@@ -152,10 +152,10 @@ class RoadCoastTest < Minitest::Test
     assert_equal 'water_mode_missing', result.errors.first.params['reason']
   end
 
-  def test_sea_is_refused_in_a_network
+  # Depuis AG-057, une côte entre dans un réseau ; ses nœuds sont des ponts (U39).
+  def test_sea_is_accepted_in_a_network
     roads = [{ 'id' => 'a', 'road' => road(preset('plage')) }]
-    result = Archgen::Composition.road_network_intake.settings({ 'network_version' => 1, 'roads' => roads })
-    assert(result.errors.any? { |d| d.params['reason'] == 'water_in_network' })
+    assert Archgen::Composition.road_network_intake.settings({ 'network_version' => 1, 'roads' => roads }).ok?
   end
 
   # --- Plan

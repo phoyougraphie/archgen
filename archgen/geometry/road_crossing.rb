@@ -106,7 +106,7 @@ module Archgen
       end
 
       # Murets le long des deux bords, sur chaque rampe, du bord jusqu'au sol.
-      def skirts(on_road, crossing)
+      def skirts(on_road, crossing, material: 'road/curb')
         faces = []
         on_road.each do |arm|
           line = arm.road.line
@@ -118,7 +118,7 @@ module Archgen
             quad = [[a[0], a[1], 0.0], [b[0], b[1], 0.0], [b[0], b[1], crossing.height + dz], [a[0], a[1], dz]]
             outward = u.positive? ? arm.left : [-arm.left[0], -arm.left[1]]
             n = RoadGround.normal(quad.first(3))
-            faces << [(n[0] * outward[0]) + (n[1] * outward[1]) >= 0 ? quad : quad.reverse, 'road/curb']
+            faces << [(n[0] * outward[0]) + (n[1] * outward[1]) >= 0 ? quad : quad.reverse, material]
           end
         end
         faces

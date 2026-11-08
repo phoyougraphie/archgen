@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.9.0-dev
+
+Ponts (AG-057 à AG-059), en cours.
+
+**Ajouts**
+
+- **Pont à poutre** dans un réseau de voies : né tout seul sur un cours d'eau, au choix sur une voie ferrée ou une route ; la voie portée monte en rampes jusqu'au tablier, avec culées et garde-corps ; les cours d'eau entrent dans un réseau (AG-057).
+
 ## 0.8.0
 
 Eau et littoral (EXT-13). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies et réseaux sans eau identiques. Le rapport de recette est dans [docs/recette/V0.8.md](docs/recette/V0.8.md).

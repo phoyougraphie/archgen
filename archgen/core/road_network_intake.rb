@@ -87,10 +87,6 @@ module Archgen
         if origin.any? { |c| c.abs > Limits::ROAD_MAX_COORDINATE_M }
           found << Diagnostic.error('E_ROAD_TRACE', "#{base}/trace/points_m/0", reason: 'coordinate_range', limit: Limits::ROAD_MAX_COORDINATE_M)
         end
-        # Pas d'eau dans un réseau tant que ponts et confluences n'existent pas (EAU_CONTRACT, AG-057).
-        if result.ok? && result.value['profile']['bands'].any? { |b| %w[water sea].include?(b['type']) }
-          found << Diagnostic.error('E_ROAD_WATER', "#{base}/profile", reason: 'water_in_network')
-        end
         [result.ok? && found.none?(&:error?) ? result.value : nil, origin, found]
       end
 
@@ -111,7 +107,7 @@ module Archgen
           'junctions' => tree.fetch('junctions', []).map do |j|
             { 'id' => j['id'], 'type' => j.fetch('type', 'simple'),
               'corner_radius_m' => Quant.q(j.fetch('corner_radius_m', Geometry::RoadNetwork::DEFAULT_RADIUS_M).to_f) }.merge(
-              j.slice('outer_radius_m', 'ring_width_m', 'ramp_grade_percent').transform_values { |v| Quant.q(v.to_f) }.merge(j.slice('pair'))
+              j.slice('outer_radius_m', 'ring_width_m', 'ramp_grade_percent', 'clearance_m').transform_values { |v| Quant.q(v.to_f) }.merge(j.slice('pair', 'bridge_kind', 'over'))
             )
           end.sort_by { |j| j['id'] }
         }

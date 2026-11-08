@@ -197,10 +197,9 @@ class RoadWaterTest < Minitest::Test
     end
   end
 
-  def test_water_is_refused_in_a_network
+  # Depuis AG-057, un cours d'eau entre dans un réseau ; ses nœuds sont des ponts (U39).
+  def test_water_is_accepted_in_a_network
     roads = [{ 'id' => 'a', 'road' => road(basin) }]
-    result = Archgen::Composition.road_network_intake.settings({ 'network_version' => 1, 'roads' => roads })
-    refute result.ok?
-    assert(result.errors.any? { |d| d.code == 'E_ROAD_WATER' && d.path == '/roads/0/road/profile' && d.params['reason'] == 'water_in_network' })
+    assert Archgen::Composition.road_network_intake.settings({ 'network_version' => 1, 'roads' => roads }).ok?
   end
 end

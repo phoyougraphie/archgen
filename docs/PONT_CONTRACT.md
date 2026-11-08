@@ -14,7 +14,7 @@ Contrat de départ, écrit avant le code. Il prolonge les [carrefours](VOIRIE_CO
 
 ## Quand naît un pont
 
-- **Sur l'eau, tout seul** : un nœud où une voie à eau ou à mer croise une autre voie est un pont, sans réglage. C'est le seul type permis à ce nœud ; un autre type y est refusé (`water_crossing`, qui propose le pont). La voie à eau passe toujours dessous.
+- **Sur l'eau, tout seul** : un nœud où une voie à eau ou à mer croise une autre voie est un pont, sans réglage ; un réglage `simple`, valeur par défaut d'un nœud réglé, y vaut aussi pont. C'est le seul type permis à ce nœud ; un autre type choisi y est refusé (`water_crossing`, qui propose le pont). La voie à eau passe toujours dessous ; `over` qui la nomme : `bridge_over_unknown`.
 - **Sur une voie ferrée ou une route, au choix** : `"type": "bridge"` sur le nœud, à la place d'un carrefour ou d'un passage à niveau. Sur une voie ferrée, la route passe dessus. Entre deux routes, le réglage `over` nomme la voie portée ; sans lui, refus `bridge_over_missing` (aucun choix implicite).
 - **Les cours d'eau entrent dans un réseau** à cette condition : chacun de leurs nœuds est un pont. Ils y restent à un seul niveau, quel que soit leur régime (pas de terrain dans un réseau). Une voie à eau qui finit sur une autre voie, ou deux voies à eau qui se croisent : `water_confluence`, hors de ce lot. Le refus `water_in_network` d'AG-051 disparaît.
 - **Deux voies, qui traversent** : exactement deux voies au nœud (`bridge_roads`), qui le traversent toutes deux (`bridge_through`), à 45° au moins l'une de l'autre (`bridge_angle`).
@@ -36,10 +36,10 @@ Notations : `U` = point le plus haut de la voie franchie sous le tablier (niveau
 
 - **Portée** : l'emprise de la voie franchie mesurée le long de la voie portée (largeur ÷ sinus de l'angle), plus 1 m de chaque côté (départ). Le tablier couvre la portée ; le reste de la coupe de la voie portée y est porté à la cote `H`.
 - **Rampes** : de 0 à `H`, droites, de pente `ramp_grade_percent`, de chaque côté du tablier ; longueur `H / pente`. Leurs bords sont fermés par des **murs** verticaux jusqu'au sol, comme les murets du passage à niveau, en matière `road/bridge`.
-- **Culées** : à chaque bout de la portée, un bloc plein de la largeur de la voie portée, du sol (0) au-dessous du tablier, 1,5 m d'épaisseur (départ), matière `road/bridge`.
-- **Tablier** : dalle fermée sous la coupe portée, d'épaisseur `e`, matière `road/bridge`, sur la portée.
-- **Garde-corps** : de chaque côté de la voie portée, sur la portée et les rampes, 1,1 m de haut (départ) : barreaudage métallique pour la poutre et l'arc, parapet maçonné de 0,3 m d'épaisseur pour la voûte. Famille mobilier.
-- **Objets** : sur la portée, les objets de la voie portée s'interrompent (pas d'arbre sur un tablier ; lampadaires gardés sur les rampes). Sous le tablier, les objets de la voie franchie dont le haut dépasse `U + clearance_m` s'interrompent sur la portée, plus 1 m de chaque côté.
+- **Culées** : à chaque bout de la portée, sous le haut de la rampe, un bloc plein de la largeur de la voie portée, 1,5 m le long de la voie (départ), du sol (0) jusqu'à 2 cm sous la rampe à son bout extérieur, matière `road/bridge` (`road/bridge_stone` pour la voûte).
+- **Tablier** : dalle fermée sous la coupe portée, de `H − e` à `H − 0,02` (2 cm sous la chaussée, pour qu'aucune face ne double la surface), sur la portée et 0,2 m dans chaque culée.
+- **Garde-corps** : de chaque côté de la voie portée, à l'extérieur de la coupe : sur la portée, une paroi de la sous-face du tablier à 1,1 m au-dessus du bord (elle sert aussi de rive) ; sur chaque rampe, du bord à 1,1 m au-dessus. Paroi métallique de 5 cm pour la poutre et l'arc (le barreaudage est simplifié ainsi, ADR-35), parapet maçonné de 0,3 m pour la voûte. Ils vont avec les autres ouvrages dans `road/bridges`.
+- **Objets** : sur la portée, les objets de la voie portée s'interrompent (pas d'arbre sur un tablier ; lampadaires gardés sur les rampes). Sous le tablier, tous les objets de la voie franchie, hors rails et traverses, s'interrompent sur la largeur de la voie portée plus 1 m de chaque côté, comme sous un passage à niveau (le tri par hauteur prévu au départ n'est pas fait : un objet bas sous un pont reste rare).
 - **Zones** : la zone de la voie portée va du pied d'une rampe au pied de l'autre ; celle de la voie franchie couvre la largeur de la voie portée, plus 1 m de chaque côté. Chacune tient dans un segment droit de sa voie (`junction_on_curve`), dans sa longueur (`arm_too_short`), et ne touche aucune autre zone de nœud (`junctions_too_close`).
 
 ## Types (AG-057, AG-058)
@@ -55,7 +55,7 @@ Notations : `U` = point le plus haut de la voie franchie sous le tablier (niveau
 
 ## Plan
 
-Sous la racine du réseau, un groupe `road/bridges` (balise de la chaussée) porte tablier, culées, murs, arcs, voûtes et piles, en solides fermés ; les garde-corps vont avec le mobilier. Par nœud : `type`, `bridge_kind`, `over`, `deck_m` (`H`), `span_m`, `ramp_m`. Métrique `bridge_count`. Matières `road/bridge` (béton clair) et `road/bridge_stone` (pierre).
+Sous la racine du réseau, un groupe `road/bridges` (balise de la chaussée) porte tablier, culées, garde-corps, arcs, voûtes et piles, en solides fermés, nommés `bridge/<nœud>/<pièce>`. Les murs des rampes sont des faces de la surface, comme les murets du passage à niveau. Les cours d'eau du réseau ont leur surface d'eau dans un groupe `road/water`. Par nœud : `type`, `bridge_kind`, `over`, `deck_m` (`H`), `span_m`, `ramp_m`. Métrique `bridge_count`, présente seulement s'il y a un pont : un réseau sans pont garde son plan et son empreinte (six réseaux types vérifiés identiques). `crossing_count` ne compte que les passages à niveau. Matières `road/bridge` (béton clair) et `road/bridge_stone` (pierre).
 
 ## Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>`
 

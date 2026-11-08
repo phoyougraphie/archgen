@@ -41,6 +41,7 @@ module Archgen
       geometry/road_network
       geometry/road_roundabout
       geometry/road_crossing
+      geometry/road_bridge
       geometry/road_locks
       geometry/planar
       geometry/trace_rows
