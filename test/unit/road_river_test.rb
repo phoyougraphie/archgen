@@ -88,7 +88,9 @@ class RoadRiverTest < Minitest::Test
   end
 
   def test_digging_through_a_high_bump_is_bounded
-    found = error(tree(water: { 'mode' => 'river', 'max_grade_percent' => 5 }), valley(4.0))
+    # Le déblai se mesure aux bords de terre, pas au lit : bosse de 7 m, berges 6,6 m sous le terrain.
+    assert build(tree(water: { 'mode' => 'river', 'max_grade_percent' => 5 }), valley(5.0)).ok?
+    found = error(tree(water: { 'mode' => 'river', 'max_grade_percent' => 5 }), valley(7.0))
     assert_equal ['E_ROAD_EARTHWORK', 'earthwork_too_high', 40.0], [found.code, found.params['reason'], found.params['s_m']]
   end
 
@@ -103,12 +105,9 @@ class RoadRiverTest < Minitest::Test
     end
   end
 
-  def test_flat_water_does_not_follow_a_terrain_yet
-    r = C.road_intake.settings(tree(water: { 'mode' => 'flat' }))
-    assert_equal ['/ground', 'water_ground_unavailable', 'flat'], [r.errors.first.path, r.errors.first.params['reason'], r.errors.first.params['mode']]
+  def test_a_canal_on_a_terrain_needs_quays
     # Un canal suit un terrain depuis AG-054, mais bordé de quais : pas cette rivière à berges.
     r = C.road_intake.settings(tree(water: { 'mode' => 'canal' }))
     assert_equal 'canal_needs_quays', r.errors.first.params['reason']
-    refute C.road_intake.settings(tree(profile: 'plage', water: { 'mode' => 'flat' })).ok?
   end
 end

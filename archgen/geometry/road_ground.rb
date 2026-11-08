@@ -117,6 +117,11 @@ module Archgen
         river = water && water['mode'] == 'river'
         # Canal : la pente n'a pas de sens, les biefs sont plats et les écluses placées ensuite (RoadLocks).
         return Core::Result.ok(samples) if water && water['mode'] == 'canal'
+        # Un seul niveau (AG-055) : le niveau saisi, sinon le plus bas des points de pente.
+        if water && water['mode'] == 'flat'
+          level = water.key?('level_m') ? water['level_m'] : samples.map(&:last).min
+          return Core::Result.ok(samples.map { |s, _| [s, q(level)] })
+        end
         if river
           samples = river_envelope(samples)
           return samples unless samples.ok?
@@ -241,14 +246,16 @@ module Archgen
       end
 
       # Faces des talus des deux bords, entre stations voisines ; repère de la racine (z − z0).
-      def slopes(grid, placed, line, ax, ground, z0)
+      # open : côté sans talus ('left' ou 'right'), celui de la mer : le bord de la voie y est le bord de l'entaille.
+      def slopes(grid, placed, line, ax, ground, z0, open: nil)
         width_left = ax
         width_right = ax - (line.last[1][0])
         sides = [[+1, width_left, line.first[0][1]], [-1, width_right, line.last[1][1]]]
         rows = sides.map do |side, u, dz|
+          bare = open == (side.positive? ? 'left' : 'right')
           placed.map do |station, s|
             edge_z = station.z + dz
-            foot = toe(grid, s, u, edge_z, side, ground)
+            foot = bare ? [u, edge_z] : toe(grid, s, u, edge_z, side, ground)
             if foot.nil? || foot == :hole || foot == :none
               return Core::Result.fail([error('E_ROAD_TOE', '/ground/slope_ratio', 'road_toe_not_found', s_m: q(s), side: side.positive? ? 'left' : 'right')])
             end

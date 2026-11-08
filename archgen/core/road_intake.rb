@@ -74,10 +74,6 @@ module Archgen
         wet = profile['bands'].any? { |b| %w[water sea].include?(b['type']) }
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_mode_missing')] if wet && !tree['water']
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_without_band')] if !wet && tree['water']
-        # Sur un terrain : la rivière (AG-053) ; canal (AG-054) et un seul niveau (AG-055) viendront ensuite.
-        if wet && tree['ground'] && tree['water'] && tree['water']['mode'] == 'flat'
-          return [Diagnostic.error('E_ROAD_WATER', '/ground', reason: 'water_ground_unavailable', mode: tree['water']['mode'])]
-        end
         if tree['ground'] && tree.dig('water', 'mode') == 'canal'
           # Chambre à murs verticaux : sur un terrain, un canal est bordé de quais (AG-054).
           bad = profile['bands'].each_index.find do |i|

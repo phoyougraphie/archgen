@@ -70,7 +70,8 @@ class RoadCoastTest < Minitest::Test
     rows = s['bands']
     assert_equal [[9.0, 0.0], [15.0, -25.0]], rows[3]['surface']
     assert_equal [[15.0, -25.0], [35.0, -25.0]], rows[4]['surface']
-    assert_equal [[35.0, -26.0], [235.0, -26.0]], rows[5]['surface']
+    # Fond marin : du pied de l'estran à 3 m de profondeur sur 10 m, puis plat.
+    assert_equal [[35.0, -25.0], [45.0, -28.0], [235.0, -28.0]], rows[5]['surface']
     assert_equal [{ 'band' => 5, 'x0_m' => 35.0, 'x1_m' => 235.0, 'z_m' => -25.0 }], s['water']
     assert_equal [0.0, 0.0, 0.0, 0.0, -25.0, -25.0], rows.map { |r| r['base_m'] }
   end
@@ -84,7 +85,7 @@ class RoadCoastTest < Minitest::Test
     assert_equal [37.5, 0.0], dune.last
     assert_equal [[37.5, 0.0], [97.5, -1.8]], s['bands'][2]['surface']
     assert_equal(-1.8, s['water'].first['z_m'])
-    assert_equal [[97.5, -2.8], [297.5, -2.8]], s['bands'][3]['surface']
+    assert_equal [[97.5, -1.8], [107.5, -4.8], [297.5, -4.8]], s['bands'][3]['surface']
     fence = s['items'].find { |i| i['band'] == 2 }
     assert_in_delta 67.5, fence['x_m'], 1e-9
     assert_in_delta(-0.9, fence['z_m'], 1e-9)
@@ -99,13 +100,13 @@ class RoadCoastTest < Minitest::Test
     assert_in_delta 0.14, wall['z_m'], 1e-9
     line = Archgen::Geometry::RoadRibbons.cross_line(s)
     assert_includes line, [[8.0, 0.14], [8.0, 0.0], 'road/sidewalk']
-    assert_includes line, [[58.0, -2.0], [58.0, -3.0], 'road/beach']
+    assert_includes line, [[58.0, -2.0], [68.0, -5.0], 'road/sea'] # le fond prolonge la plage, sans marche
   end
 
   def test_sea_on_the_left_mirrors_the_levels
     s = section(profile(band('sea', 100), band('beach', 20, slope_percent: 5), band('path', 2)))
     assert_equal [[100.0, -1.0], [120.0, 0.0]], s['bands'][1]['surface']
-    assert_equal [[0.0, -2.0], [100.0, -2.0]], s['bands'][0]['surface']
+    assert_equal [[0.0, -4.0], [90.0, -4.0], [100.0, -1.0]], s['bands'][0]['surface']
     assert_equal(-1.0, s['water'].first['z_m'])
     assert_equal [[120.0, 0.02], [122.0, 0.02]], s['bands'][2]['surface']
   end
@@ -163,7 +164,7 @@ class RoadCoastTest < Minitest::Test
     p = plan(road(preset('falaises')))
     water = p['nodes'][0]['children'].find { |n| n['id'] == 'road/water' }['primitive']
     assert(water['vertices'].all? { |v| v[2] == -25.0 })
-    assert_equal [-26.0, 0.05], p['nodes'][0]['children'][0]['primitive']['vertices'].map { |v| v[2] }.minmax
+    assert_equal [-28.0, 0.05], p['nodes'][0]['children'][0]['primitive']['vertices'].map { |v| v[2] }.minmax
     assert_empty RoadPlanValidator.call(p)
   end
 

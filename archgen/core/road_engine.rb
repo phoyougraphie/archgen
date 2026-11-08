@@ -100,8 +100,10 @@ module Archgen
           return Result.fail([Diagnostic.error('E_ROAD_GROUND', '/ground', reason: 'survey_axes')])
         end
 
-        # Une rivière se règle sur le terrain sous son eau ; une voie, sous sa chaussée ; sinon toute l'emprise.
+        # Une voie se règle sur le terrain sous sa chaussée ; un cours d'eau, sous son eau ; une côte, sous ses
+        # bandes de terre ; sinon toute l'emprise.
         lanes = section['bands'].select { |b| b['role'] == (settings['water'] ? 'water' : 'carriageway') }
+        lanes = section['bands'].reject { |b| WET_ROLES.include?(b['role']) } if lanes.empty? && settings['water']
         lanes = section['bands'] if lanes.empty?
         span = [lanes.map { |b| ax - b['x1_m'] }.min, lanes.map { |b| ax - b['x0_m'] }.max]
         samples = g.profile(survey, length, span, ground, section, water: settings['water'])
@@ -116,11 +118,12 @@ module Archgen
           samples = Result.ok(planned.value[:samples])
         end
         placed = g.stations(stations, samples.value)
-        work = g.earthwork(survey, placed, line, ax)
+        # Le lit, la mer et le rivage remplacent le terrain : seuls les bords de terre comptent (EAU_CONTRACT).
+        work = g.earthwork(survey, placed, settings['water'] ? dry_line(line, section) : line, ax)
         return work unless work.ok?
 
         z0 = placed.first[0].z
-        slopes = g.slopes(survey, placed, line, ax, ground, z0)
+        slopes = g.slopes(survey, placed, line, ax, ground, z0, open: sea_side(section))
         return slopes unless slopes.ok?
 
         relative = placed.map { |st, _| Geometry::RoadAxis::Station.new(point: st.point, normal: st.normal, vertex: st.vertex, z: Quant.q(st.z - z0)) }
@@ -128,6 +131,24 @@ module Archgen
         drop = samples.value.first[1] - samples.value.last[1]
         Result.ok({ stations: relative, z0: z0, slopes: slopes.value, work: work.value, grade: grades.max || 0.0, drop: drop,
                     locks: locks, ss: placed.map(&:last), canal: settings.dig('water', 'mode') == 'canal' })
+      end
+
+      WET_ROLES = %w[water sea coast].freeze
+
+      # Ligne de coupe sans les segments qui touchent l'eau, la mer ou le rivage.
+      def dry_line(line, section)
+        spans = section['bands'].select { |b| WET_ROLES.include?(b['role']) }.map { |b| [b['x0_m'], b['x1_m']] }
+        line.reject do |(xa, _), (xb, _), _|
+          spans.any? { |x0, x1| xa > x0 - 1e-9 && xa < x1 + 1e-9 && xb > x0 - 1e-9 && xb < x1 + 1e-9 }
+        end
+      end
+
+      # Côté de la mer, sans talus : 'left' si elle est la première bande, 'right' si la dernière.
+      def sea_side(section)
+        bands = section['bands']
+        return 'left' if bands.first['type'] == 'sea'
+
+        'right' if bands.last['type'] == 'sea'
       end
 
       # Les objets posés par RoadItems sont à la cote de la coupe : on ajoute celle du profil à leur abscisse.

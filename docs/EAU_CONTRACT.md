@@ -44,11 +44,11 @@ L'astuce du bord de mer : **la mer est la dernière (ou la première) bande de l
 | `rocks` | Estran rocheux | 15 | 2 à 200 | Plane, matière rocheuse |
 | `dune` | Dune | 30 | 8 à 200 | Bosse de `height_m` (1 à 15, 5 par défaut) à 8 facettes, même niveau des deux côtés |
 | `beach` | Plage | 40 | 5 à 300 | Pente douce de `slope_percent` (1 à 10, 4 par défaut) vers la mer ; les bandes suivantes descendent d'autant |
-| `sea` | Mer | 200 | 20 à 2 000 | Surface d'eau au niveau du bord de la bande précédente, sur un fond plat 1 m plus bas (départ) |
+| `sea` | Mer | 200 | 20 à 2 000 | Surface d'eau au niveau du bord de la bande précédente ; fond qui descend du rivage à 3 m de profondeur sur 10 m, puis plat |
 
 - **La mer au bout :** `sea` est la première ou la dernière bande, et une seule par coupe ; sinon `sea_not_outer`, sur la mer en trop (`/bands/<i>`). La falaise et la plage descendent toujours vers la mer : une coupe à falaise ou à plage sans mer est refusée (`coast_without_sea`, sur la bande). Une dune va sans mer.
 - **Réglages de bande** (ADR-41) : `height_m` sur une falaise ou une dune, `slope_percent` sur une plage ; ailleurs `band_setting_unavailable`, hors plage `setting_range`.
-- **Ligne de coupe :** la falaise est un front incliné dans sa largeur ; entre la plage (ou l'estran) et le fond marin, la contremarche de 1 m prend la matière de la bande haute. La surface de la mer rejoint le nœud `road/water`.
+- **Ligne de coupe :** la falaise est un front incliné dans sa largeur ; le fond marin prolonge la plage, l'estran ou la falaise sans marche : il part du rivage au niveau de l'eau et atteint 3 m de profondeur à 10 m du bord (valeurs du propriétaire, 2026-11-08 ; la mer mesure au moins 20 m). La surface de la mer rejoint le nœud `road/water`.
 - **Éléments nouveaux** (`road_items.v1.json`) :
   - `sand_fence`, **ganivelle** : hauteur de 0,8 à 1,5 m (1,2 par défaut) ; continue ; sur une dune ou une plage seulement. Forme simple (ADR-35) : les lattes jointives sont une paroi de bois de 2 cm, de 0,05 m au-dessus du sol jusqu'en haut, avec des poteaux de 0,08 m tous les 2 m qui la dépassent de 5 cm.
   - `low_wall`, **muret** : maçonné (`road/item/stone`), 0,30 m d'épaisseur, hauteur de 0,3 à 1,2 m (0,6 par défaut) ; continu ; sur un trottoir, un chemin, un chemin empierré, un accotement, un quai ou une plage.
@@ -72,6 +72,10 @@ Clé facultative et fermée, à côté de `ground` (`mode` obligatoire ; réglag
 
 Sans terrain (`ground` absent), les trois régimes donnent une voie horizontale, à un seul niveau : un canal sans terrain n'a pas d'écluse. Une coupe à mer n'accepte que `flat` (`sea_needs_flat`).
 
+## Terrassements d'une voie à eau
+
+Pour toute voie qui porte de l'eau ou une mer, `RELIEF_MAX` se mesure sur les **bandes de terre** seulement (quais, berges, chemins, trottoirs…) : le lit, la mer et les bandes de rivage (falaise, estran, dune, plage) remplacent le terrain, ils ne le raccordent pas. Les métriques `cut_max_m` et `fill_max_m` d'une telle voie se lisent donc aux bords de terre (AG-055 ; avant, le lit comptait, ce qui refusait tout fleuve à quais sur un terrain, son lit étant 8 m sous les quais).
+
 ## Rivière sur un terrain (AG-053)
 
 Mêmes relevé, points de pente et talus que la [voie sur un terrain](VOIRIE_CONTRACT.md#voie-sur-un-terrain-ag-049-adr-38), avec trois différences :
@@ -93,7 +97,7 @@ Le canal avance par **biefs** horizontaux. Les écluses sont placées par une r�
 1. Le premier bief prend le niveau du profil du terrain au début du tracé (moyenne sous l'eau, comme la rivière).
 2. On suit les points de pente du profil du terrain p(s), sans borne de pente : les biefs sont plats. Dès que p(s) s'écarte du niveau du bief courant de plus de `lock_drop_m`, une écluse est posée **avant** ce point : la chambre finit au point de pente précédent. Le bief suivant est plus bas, ou plus haut, de `lock_drop_m` exactement.
 3. Une écluse occupe `lock_length_m` le long de l'axe, plus 10 m (départ) d'approche de chaque côté, sur **un segment droit**, sans sommet ni arc. Sinon `E_ROAD_WATER` sur `/trace`, avec l'abscisse du début de la chambre : `lock_on_curve` ; `locks_too_close` quand ses approches touchent la chambre précédente (un saut de terrain de plus de deux chutes entre deux points de pente en est un cas) ; `lock_outside_trace` quand une approche sort du tracé. Le conseil est de changer la chute ou d'allonger la ligne droite.
-4. Entre deux écluses, déblai et remblai restent bornés par `RELIEF_MAX`, contrôlés comme pour une voie sur la coupe du bief ; dans la chambre, le lit plus bas n'entre pas dans ce contrôle (limite connue, jusqu'à la chute de plus).
+4. Entre deux écluses, déblai et remblai restent bornés par `RELIEF_MAX`.
 
 **Forme d'une écluse :** sur un terrain, un canal est bordé de quais (`canal_needs_quays` sinon, sur la bande d'eau) : les murs de quai deviennent les bajoyers de la chambre. Le lit et l'eau de la chambre sont au niveau du bief bas ; un mur de chute (`road/quay`) ferme le lit au bout haut, du lit du bief haut à celui de la chambre. Les bandes de terre passent d'un niveau à l'autre en rampe droite le long de la chambre. Une porte à chaque bout : un battant droit sur toute la largeur de l'eau, épais de 0,4 m, du lit de la chambre à 0,2 m au-dessus du quai (`road/item/wood`) ; les portes busquées à deux vantaux et leur passerelle sont simplifiées ainsi (ADR-35). La largeur de l'eau est celle de la chambre : 40 m au plus (`lock_too_wide`, sur sa largeur).
 
@@ -101,9 +105,9 @@ Le canal avance par **biefs** horizontaux. Les écluses sont placées par une r�
 
 ## Fleuve et côte : un seul niveau (AG-055)
 
-Mode `flat` : tout le tracé à une altitude, `level_m` ou, sans valeur, le plus bas des points de pente du terrain. Le terrain entaillé descend jusqu'au lit ; un terrain trop accidenté le long du tracé est refusé par `RELIEF_MAX`, le terrain doit donc être à peu près plat.
+Mode `flat` : tout le tracé à une altitude, `level_m` (altitude du niveau 0 de la coupe, dans le repère du modèle) ou, sans valeur, le plus bas des points de pente du terrain. Les moyennes se prennent sous l'eau pour un fleuve, sous les bandes de terre pour une côte. Pas de borne de pente : le profil est plat. Un terrain trop accidenté le long du tracé est refusé par `RELIEF_MAX` aux bords de terre, le terrain doit donc être à peu près plat. Métriques : `water_drop_m` vaut 0.
 
-**Côté mer :** pas de talus au bord extérieur de la mer ; la copie du terrain est entaillée jusqu'à ce bord, et le terrain au-delà reste tel qu'il est. Côté terre, le talus raccorde la coupe au terrain comme pour une voie.
+**Côté mer :** pas de talus au bord extérieur de la mer ; le contour de l'entaille suit ce bord, la copie du terrain est entaillée jusque-là et le terrain au-delà reste tel qu'il est : s'il est plus haut que la mer, il forme un mur au large (vu en recette H23 sur un terrain plat). Le terrain doit donc s'arrêter au bord de la mer, ou être déjà bas au large. Côté terre, le talus raccorde la coupe au terrain comme pour une voie. Vu dans SketchUp : [recette H23](recette/H23.md).
 
 ## Réseaux et ponts
 

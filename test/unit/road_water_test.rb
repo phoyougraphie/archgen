@@ -154,7 +154,7 @@ class RoadWaterTest < Minitest::Test
   def test_water_setting_is_required_by_water_and_refused_without
     water_error(road(basin, water: nil), '/water', 'water_mode_missing')
     water_error(road(preset('ville')), '/water', 'water_without_band')
-    water_error(road(basin, ground: {}), '/ground', 'water_ground_unavailable')
+    assert settings(road(basin, ground: {})).ok?, 'un seul niveau suit un terrain depuis AG-055'
     result = settings(road(basin, water: { 'mode' => 'lake' }))
     assert_equal 'E_SCHEMA', result.errors.first.code
   end

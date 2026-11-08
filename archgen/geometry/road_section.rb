@@ -103,8 +103,10 @@ module Archgen
 
       # Littoral (EAU_CONTRACT, AG-052) : niveaux cumulés. De la terre vers la mer, chaque bande part du
       # niveau où la précédente s'arrête ; une falaise descend de sa hauteur, une plage de sa pente, une dune
-      # revient à son niveau. La mer est une surface au niveau de son bord, sur un fond plat à 1 m dessous.
-      SEA_BED_M = 1.0
+      # revient à son niveau. La mer est une surface au niveau de son bord ; son fond descend du rivage à 3 m
+      # de profondeur sur 10 m, puis reste plat (demande du propriétaire, 2026-11-08).
+      SEA_DEPTH_M = 3.0
+      SEA_SHELF_M = 10.0
       DUNE_FACETS = 8
 
       def shape_coast(rows)
@@ -122,7 +124,12 @@ module Archgen
           local = case row['type']
                   when 'cliff', 'beach' then toward_right ? [[row['x0_m'], 0.0], [row['x1_m'], -drop]] : [[row['x0_m'], -drop], [row['x1_m'], 0.0]]
                   when 'dune' then (0..DUNE_FACETS).map { |k| [row['x0_m'] + (w * k / DUNE_FACETS), row['height_m'] * Math.sin(Math::PI * k / DUNE_FACETS)] }
-                  when 'sea' then [[row['x0_m'], -SEA_BED_M], [row['x1_m'], -SEA_BED_M]]
+                  when 'sea'
+                    if toward_right
+                      [[row['x0_m'], 0.0], [row['x0_m'] + SEA_SHELF_M, -SEA_DEPTH_M], [row['x1_m'], -SEA_DEPTH_M]]
+                    else
+                      [[row['x0_m'], -SEA_DEPTH_M], [row['x1_m'] - SEA_SHELF_M, -SEA_DEPTH_M], [row['x1_m'], 0.0]]
+                    end
                   end
           row['surface'] = local if local
           row['base_m'] = q(base)

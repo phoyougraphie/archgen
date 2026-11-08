@@ -21,6 +21,9 @@ module ArchgenH23Probe
   # Second terrain pour le canal (AG-054) : pente de 5 % en x, de y = 200 à 260 m.
   CANAL_HEIGHT = ->(x, _y) { 15.0 - (0.05 * x) }
   CANAL_ORIGIN = [10.0, 230.0, 0.0].freeze
+  # Terrains du fleuve (pente de 0,5 %) et de la plage (plat à 5 m), AG-055.
+  RIVER_FLAT_HEIGHT = ->(x, _y) { 8.0 - (0.005 * x) }
+  BEACH_HEIGHT = ->(_x, _y) { 5.0 }
 
   module_function
 
@@ -200,7 +203,36 @@ module ArchgenH23Probe
         !@canal_terrain.hidden? && roads.size == 3
       }],
       ['Rétablir le canal', -> { Sketchup.redo }, -> { @canal_terrain.hidden? && roads.size == 4 }],
-      ['Enregistrer', -> { model.save(SKP) }, -> { File.exist?(SKP) && roads.size == 4 }]
+      ['Fleuve à un seul niveau sur un terrain : faces égales au plan, eau à un niveau', lambda {
+        reference = SP::TerrainRef.new(document_key: model.guid, persistent_id: @flat_terrain.persistent_id)
+        tree = { 'trace' => { 'points_m' => [[0, 0], [100, 0]], 'radii_m' => [] }, 'profile' => preset('fleuve'), 'ground' => {}, 'water' => { 'mode' => 'flat' } }
+        result = service.create(model: model, tree: tree, origin_m: [10.0, -192.0, 0.0], terrain: reference)
+        return false.tap { @last = result.errors.map(&:to_h).inspect } unless result.ok?
+
+        road = roads.find { |r| (r.transformation.to_a[13] * INCH + 192).abs < 1e-6 }
+        faces, expected = written(result, road)
+        zs = water_points(road).map { |p| p[2].round(4) }.uniq
+        @last = "faces #{faces}/#{expected}, racine #{(road.transformation.to_a[14] * INCH).round(3)} m, eau #{zs.inspect}, terrain masqué #{@flat_terrain.hidden?}"
+        faces == expected && zs.size == 1 && @flat_terrain.hidden?
+      }],
+      ['Plage sur un terrain plat : pas de talus côté mer, mer à 3 m', lambda {
+        reference = SP::TerrainRef.new(document_key: model.guid, persistent_id: @beach_terrain.persistent_id)
+        tree = { 'trace' => { 'points_m' => [[0, 0], [100, 0]], 'radii_m' => [] }, 'profile' => preset('plage'), 'ground' => {}, 'water' => { 'mode' => 'flat', 'level_m' => 5 } }
+        grid = service.survey(model: model, tree: tree, origin_m: [10.0, 450.0, 0.0], terrain: reference).value
+        shown = service.preview(tree: tree, survey: grid).value.plan
+        result = service.create(model: model, tree: tree, origin_m: [10.0, 450.0, 0.0], terrain: reference)
+        return false.tap { @last = result.errors.map(&:to_h).inspect } unless result.ok?
+
+        road = roads.find { |r| (r.transformation.to_a[13] * INCH - 450).abs < 1e-6 }
+        faces, expected = written(result, road)
+        zs = water_points(road).map { |p| p[2].round(4) }.uniq
+        outline = shown['ground']['outline_m']
+        half = shown['metrics']['width_m'] / 2
+        open = outline.select { |_x, y| y.negative? }.all? { |_x, y| (y + half).abs < 1e-6 }
+        @last = "faces #{faces}/#{expected}, mer #{zs.inspect}, côté mer sans talus #{open}"
+        faces == expected && zs == [3.0] && open
+      }],
+      ['Enregistrer', -> { model.save(SKP) }, -> { File.exist?(SKP) && roads.size == 6 }]
     ]
   end
 
@@ -249,6 +281,8 @@ module ArchgenH23Probe
     @terrain = build_terrain
     @original_faces = @terrain.entities.grep(Sketchup::Face).size
     @canal_terrain = build_terrain('Terrain H23 canal', CANAL_HEIGHT, 80, 15, -20, 200)
+    @flat_terrain = build_terrain('Terrain H23 fleuve', RIVER_FLAT_HEIGHT, 40, 44, -20, -280)
+    @beach_terrain = build_terrain('Terrain H23 plage', BEACH_HEIGHT, 40, 75, -20, 300)
     log("Terrain de test : #{@original_faces} faces")
     @queue = steps
     UI.start_timer(0.5, false) { advance }

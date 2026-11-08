@@ -201,7 +201,6 @@ module Archgen
         'sea_needs_flat' => 'Une côte reste à un seul niveau : choisissez ce régime pour l’eau.',
         'water_mode_missing' => 'Cette voie porte de l’eau : choisissez son régime (rivière, canal ou un seul niveau).',
         'water_without_band' => 'Cette voie n’a pas de plan d’eau : retirez le régime de l’eau.',
-        'water_ground_unavailable' => 'Un fleuve ou une côte ne suit pas encore un terrain : posez-le à plat pour l’instant.',
         'lock_too_wide' => 'Une écluse mesure %{limit} m de large au plus : réduisez la largeur du canal.',
         'canal_needs_quays' => 'Sur un terrain, un canal est bordé de quais : les écluses ont des murs droits. Remplacez la berge par un quai.',
         'lock_on_curve' => 'L’écluse à %{s_m} m du départ tomberait dans un virage : elle demande une ligne droite, approches comprises. Réduisez la chute ou allongez la ligne droite.',

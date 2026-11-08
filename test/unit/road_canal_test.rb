@@ -134,7 +134,7 @@ class RoadCanalTest < Minitest::Test
     refute node(p, 'road/locks')
   end
 
-  def test_canal_on_ground_needs_quays_and_flat_still_waits
+  def test_canal_on_ground_needs_quays_and_a_narrow_lock
     r = C.road_intake.settings(tree(profile: 'riviere'))
     assert_equal ['/profile/bands/2', 'canal_needs_quays'], [r.errors.first.path, r.errors.first.params['reason']]
     wide = tree
@@ -142,8 +142,6 @@ class RoadCanalTest < Minitest::Test
     wide['profile']['bands'][3]['width_m'] = 40.001
     r = C.road_intake.settings(wide)
     assert_equal ['/profile/bands/3/width_m', 'lock_too_wide', 40.0], [r.errors.first.path, r.errors.first.params['reason'], r.errors.first.params['limit']]
-    r = C.road_intake.settings(tree.merge('water' => { 'mode' => 'flat' }))
-    assert_equal 'water_ground_unavailable', r.errors.first.params['reason']
   end
 
   def test_lock_drop_and_chamber_length_follow_the_settings
