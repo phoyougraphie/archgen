@@ -196,7 +196,7 @@ module Archgen
         'duplicate_junction' => 'Ce carrefour est réglé deux fois.',
         'unknown_junction' => 'Ce carrefour n’existe plus : les voies ne s’y croisent pas.',
         'motorway_at_grade' => 'Une autoroute ne se croise pas à niveau. Un échangeur viendra plus tard ; écartez les tracés.',
-        'rails_at_junction' => 'Une voie ferrée ne croise pas encore une route : le passage à niveau attend le profil en long (AG-050). Écartez les tracés.',
+        'rails_at_junction' => 'Une voie ferrée ne croise une route qu’en passage à niveau : choisissez ce type pour ce carrefour, ou écartez les tracés.',
         'too_many_arms' => 'Ce carrefour aurait %{value} branches, pour %{limit} au plus.',
         'arms_too_close' => 'Deux branches de ce carrefour font %{value_deg}°, pour %{min_deg}° au moins. Ouvrez l’angle.',
         'junction_on_curve' => 'Le carrefour touche un virage de la voie %{road}. Éloignez le sommet du croisement.',
@@ -230,6 +230,9 @@ module Archgen
         'road_toe_not_found' => 'À %{s_m} m du départ, le talus n’atteint pas le terrain. Changez la pente du talus ou le tracé.',
         'not_on_ground' => 'Cette voie ne suit pas de terrain.',
         'ground_road_rotated' => 'Une voie posée sur un terrain ne doit pas être tournée. Annulez la rotation.',
+        'crossing_roads' => 'Un passage à niveau réunit exactement une voie ferrée et une route sans rail.',
+        'crossing_through' => 'La route et la voie ferrée doivent traverser le passage à niveau, sans y finir.',
+        'crossing_angle' => 'La route croise la voie ferrée à %{value_deg}°, pour %{min_deg}° au moins.',
         'junction_levels' => 'Les niveaux de la voie %{road} ne se raccordent pas dans ce carrefour.',
         # Cible
         'target_not_found' => 'Le bâtiment sélectionné a changé. Rechargez la sélection.',

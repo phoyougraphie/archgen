@@ -44,8 +44,14 @@
               "simple",
               "signals",
               "roundabout",
-              "double_roundabout"
+              "double_roundabout",
+              "level_crossing"
             ]
+          },
+          "ramp_grade_percent": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 8
           },
           "pair": {
             "type": "string",

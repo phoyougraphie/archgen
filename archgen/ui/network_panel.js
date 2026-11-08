@@ -4,7 +4,7 @@
   'use strict';
 
   var SVG = 'http://www.w3.org/2000/svg';
-  var TYPES = [['simple', 'Simple'], ['signals', 'À feux'], ['roundabout', 'Giratoire'], ['double_roundabout', 'Double giratoire']];
+  var TYPES = [['simple', 'Simple'], ['signals', 'À feux'], ['roundabout', 'Giratoire'], ['double_roundabout', 'Double giratoire'], ['level_crossing', 'Passage à niveau']];
   var state = { counter: 0, mode: 'trace', writes: false, digest: null, busy: false, network: null, roads: [], settings: [], trace: null, notice: null };
 
   function byId(id) { return document.getElementById(id); }
@@ -157,16 +157,21 @@
       var draft = JSON.parse(JSON.stringify(s));
       var apply = function () {
         var out = { id: j.id, type: type.value };
-        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair'].forEach(function (k) {
+        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair', 'ramp_grade_percent'].forEach(function (k) {
           if (draft[k] !== undefined && draft[k] !== null && draft[k] !== '') { out[k] = draft[k]; }
         });
         if (out.type !== 'roundabout' && out.type !== 'double_roundabout') { delete out.outer_radius_m; delete out.ring_width_m; }
         if (out.type !== 'double_roundabout') { delete out.pair; }
+        if (out.type !== 'level_crossing') { delete out.ramp_grade_percent; } else { delete out.corner_radius_m; }
         state.notice = null;
         send('set_junction', { junction: out });
       };
       type.addEventListener('change', apply);
-      numberField(fields, 'Rayon des bordures, m', draft.corner_radius_m, function (v) { draft.corner_radius_m = v; apply(); });
+      if (type.value === 'level_crossing') {
+        numberField(fields, 'Pente des rampes, %', draft.ramp_grade_percent, function (v) { draft.ramp_grade_percent = v; apply(); });
+      } else {
+        numberField(fields, 'Rayon des bordures, m', draft.corner_radius_m, function (v) { draft.corner_radius_m = v; apply(); });
+      }
       var round = type.value === 'roundabout' || type.value === 'double_roundabout';
       if (round) {
         numberField(fields, 'Rayon extérieur, m', draft.outer_radius_m, function (v) { draft.outer_radius_m = v; apply(); });

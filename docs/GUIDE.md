@@ -155,7 +155,7 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 1. **Tracez une voie** dans la vue, comme une voie seule : clics ou longueurs tapées, double-clic ou Échap pour finir.
 2. **Choisissez son type** (rue de ville, boulevard, route nationale, voie mixte tram et voitures…), son axe et le rayon de ses virages, puis cliquez sur **Ajouter la voie tracée**. Recommencez pour chaque voie ; la première porte l'origine du réseau.
 3. **Les carrefours naissent tout seuls** là où deux voies se croisent, où l'une finit sur l'autre (à 1 m près) ou où deux bouts se rejoignent. Chacun apparaît dans la liste et sur la vue en plan.
-4. **Choisissez le type de chaque carrefour** : simple (bordures arrondies), à feux (passages piétons, lignes d'arrêt et un feu par branche à chaussée), giratoire (rayon extérieur de 13 à 60 m, anneau de 6 à 12 m) ou double giratoire (deux carrefours voisins sur une même voie, reliés par la voie entre eux). Le rayon des bordures se règle pour chacun.
+4. **Choisissez le type de chaque carrefour** : simple (bordures arrondies), à feux (passages piétons, lignes d'arrêt et un feu par branche à chaussée), giratoire (rayon extérieur de 13 à 60 m, anneau de 6 à 12 m), double giratoire (deux carrefours voisins sur une même voie, reliés par la voie entre eux) ou passage à niveau (une route qui traverse une voie ferrée : la route monte par deux rampes, de 4 % par défaut, jusqu'au ras des rails, avec feux et barrières). Le rayon des bordures se règle pour chacun.
 5. **Cliquez sur Créer le réseau.** Toutes les voies et tous les carrefours s'écrivent en une fois ; une seule entrée d'Annuler retire tout.
 
 **Modifier :** sélectionnez le réseau, puis **Extensions → ARCHGEN → Modifier le réseau sélectionné**. Changez le type ou les rayons des carrefours, ou retirez une voie (sauf la première), puis cliquez sur **Remplacer ce réseau**. Une copie garde sa géométrie. Pour ajouter une voie, tracez un nouveau réseau.
@@ -163,7 +163,7 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 **À savoir**
 
 - **Tram :** une voie mixte ou à plateforme traverse un carrefour ou un giratoire tout droit, rails au ras ; une voie à rails qui tourne ou finit au carrefour, ou deux voies à rails au même carrefour, sont refusées.
-- **Refus :** autoroute à niveau (un échangeur viendra plus tard), voie ferrée sur ballast (le passage à niveau attend le profil en long), branches à moins de 30°, carrefour dans un virage, carrefours qui se touchent, voie trop courte ; chaque refus nomme son carrefour.
+- **Refus :** autoroute à niveau (un échangeur viendra plus tard), voie ferrée sur ballast hors passage à niveau, passage à niveau à moins de 45°, branches à moins de 30°, carrefour dans un virage, carrefours qui se touchent, voie trop courte ; chaque refus nomme son carrefour.
 - **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
 - **Hors de portée :** le réseau est horizontal ; pas d'échangeur, de passage à niveau, de courbe de rails ni de marquage de priorité.
 

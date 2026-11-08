@@ -81,17 +81,27 @@ module Archgen
         placed = { definitions: {}, instances: [], linear: [], sleepers: [] }
         station_count = 0
         roads.each_with_index do |road, i|
+          profile = Geometry::RoadCrossing.profile(road, nodes)
+          gaps = Geometry::RoadCrossing.gaps(road, nodes)
           pieces[i].each_with_index do |(from, to), k|
             stations = N.piece_stations(road, from, to)
+            stations = Geometry::RoadCrossing.lift(stations, from, to, profile) if profile
             station_count += stations.size
             Geometry::RoadRibbons.sweep(builder, stations, road.line, road.ax)
-            merge_items(placed, Geometry::RoadItems.call(stations, road.section, items: items, ax: road.ax, seed: road.settings['seed']),
-                        "#{road.id}.#{k + 1}")
+            tag = "#{road.id}.#{k + 1}"
+            if gaps.empty?
+              piece_items = Geometry::RoadItems.call(stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+              RoadEngine.lift_instances(piece_items, stations) if profile
+              merge_items(placed, piece_items, tag)
+            else
+              crossing_items(placed, road, from, to, gaps, items, tag)
+            end
           end
         end
         unless lights.empty?
           id, shape = Geometry::RoadSignals.definition
-          placed[:definitions][id] ||= shape
+          placed[:definitions][id] ||= shape if lights.any? { |l| l['primitive']['definition_id'] == id }
+          Geometry::RoadCrossing.definitions.each { |cid, cshape| placed[:definitions][cid] ||= cshape if lights.any? { |l| l['primitive']['definition_id'] == cid } }
           placed[:instances].concat(lights)
         end
         from = builder.to_primitive['faces'].size
@@ -104,7 +114,8 @@ module Archgen
           'station_count' => station_count, 'cross_segment_count' => roads.sum { |r| r.line.size },
           'length_m' => Quant.q(roads.sum(&:length)), 'road_count' => roads.size,
           'junction_count' => nodes.size, 'piece_count' => pieces.sum(&:size),
-          'junction_face_count' => junction_faces.sum(&:size), 'signal_count' => lights.size
+          'junction_face_count' => junction_faces.sum(&:size), 'signal_count' => lights.size,
+          'crossing_count' => nodes.count(&:crossing)
         )
         plan['junctions'] = nodes.map do |n|
           {
@@ -112,6 +123,7 @@ module Archgen
             'cuts_m' => n.arms.map { |a| Quant.q(a.cut) }, 'reach_m' => n.arms.map { |a| Quant.q(a.reach) },
             'outer_radius_m' => roundabout_value(n, 'outer_radius_m', Geometry::RoadRoundabout::DEFAULT_OUTER_M),
             'ring_width_m' => roundabout_value(n, 'ring_width_m', Geometry::RoadRoundabout::DEFAULT_RING_M),
+            'deck_m' => n.crossing && Quant.q(n.crossing.height), 'ramp_m' => n.crossing && Quant.q(n.crossing.ramp),
             'pair' => n.type == 'double_roundabout' ? n.options['pair'] : nil,
             'link_m' => link_length(n, nodes)
           }.compact
@@ -190,6 +202,24 @@ module Archgen
 
       def roundabout_value(node, key, default)
         %w[roundabout double_roundabout].include?(node.type) ? node.options.fetch(key, default) : nil
+      end
+
+      # Voie ferrée d'un passage à niveau : rails et traverses continus ; les autres objets s'interrompent
+      # sur l'emprise de la route (intervalles `gaps`).
+      def crossing_items(placed, road, from, to, gaps, items, tag)
+        full = Geometry::RoadItems.call(N.piece_stations(road, from, to), road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+        rails = { definitions: full[:definitions], instances: [], sleepers: full[:sleepers],
+                  linear: full[:linear].select { |n| n['id'].start_with?('rail/') } }
+        merge_items(placed, rails, tag)
+        bounds = [from] + gaps.flatten.sort + [to]
+        bounds.each_slice(2).with_index do |(a, b), k|
+          next if b - a < 0.5
+
+          part = Geometry::RoadItems.call(N.piece_stations(road, a, b), road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+          others = { definitions: part[:definitions], instances: part[:instances], sleepers: [],
+                     linear: part[:linear].reject { |n| n['id'].start_with?('rail/') } }
+          merge_items(placed, others, "#{tag}.#{k + 1}")
+        end
       end
 
       # Éléments d'un tronçon : leurs noms prennent celui de la voie et du tronçon, les formes restent partagées.

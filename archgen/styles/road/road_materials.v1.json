@@ -27,6 +27,8 @@
     "road/item/hedge": { "label": "Voirie haie", "srgb": "#3F7350" },
     "road/item/wood": { "label": "Voirie bois", "srgb": "#7A5C40" },
     "road/item/concrete": { "label": "Voirie béton", "srgb": "#AAA9A4" },
-    "road/item/head": { "label": "Voirie boîtier de feu", "srgb": "#26292B" }
+    "road/item/head": { "label": "Voirie boîtier de feu", "srgb": "#26292B" },
+    "road/item/red": { "label": "Voirie rouge de signalisation", "srgb": "#C0392B" },
+    "road/item/white": { "label": "Voirie blanc de signalisation", "srgb": "#F2F2EE" }
   }
 }

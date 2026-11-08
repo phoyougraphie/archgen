@@ -2,7 +2,7 @@
 
 ## 0.7.0-dev
 
-En cours, non publiée : voie sur un terrain (AG-049, ADR-38) — profil en long, pente bornée, talus, copie entaillée du terrain d'origine, qui reste masqué.
+En cours, non publiée : voie sur un terrain (AG-049, ADR-38) — profil en long, pente bornée, talus, copie entaillée du terrain d'origine, qui reste masqué ; passage à niveau (AG-050) — la route monte en rampe au ras des rails, feux et barrières, la voie ferrée reste entière.
 
 ## 0.6.0
 

@@ -19,7 +19,7 @@ module Archgen
           chain.last
         end
       end
-      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, :options, keyword_init: true)
+      Node = Struct.new(:id, :point, :hits, :arms, :radius, :type, :options, :crossing, keyword_init: true)
 
       module_function
 
@@ -252,6 +252,8 @@ module Archgen
       # Coupe, coins et géométrie d'un nœud ; Result<{ faces: [[points, matériau]], cuts: }>.
       def build(node, roads)
         node.arms = arms_for(node, roads)
+        return crossing(node) if node.type == 'level_crossing'
+
         problems = node_problems(node)
         return Core::Result.fail(problems) unless problems.empty?
         mark_link(node)
@@ -291,6 +293,15 @@ module Archgen
         return unless road
 
         node.arms.each { |a| a.link = a.road.index == road && a.sign == ((toward > a.s) ? 1 : -1) }
+      end
+
+      # Passage à niveau : les deux voies traversent ; RoadCrossing donne murets, feux et le profil.
+      def crossing(node)
+        built = RoadCrossing.build(node)
+        return built unless built.ok?
+
+        node.crossing = built.value[:crossing]
+        Core::Result.ok({ faces: built.value[:faces], instances: built.value[:instances] })
       end
 
       # Giratoire : anneau, îlots et coins de RoadRoundabout, mêmes contrôles de virage et de murets.
@@ -557,10 +568,13 @@ module Archgen
 
       # Intervalles d'abscisse à garder sur chaque voie, hors des zones coupées.
       def pieces(road, nodes)
+        # Un passage à niveau ne coupe pas ses voies : sa zone compte seulement pour les nœuds trop proches.
         cuts = nodes.flat_map do |n|
-          n.arms.select { |a| a.road.equal?(road) }.map { |a| a.sign.positive? ? [a.s, a.s + a.reach, n.id] : [a.s - a.reach, a.s, n.id] }
+          n.arms.select { |a| a.road.equal?(road) }.map do |a|
+            (a.sign.positive? ? [a.s, a.s + a.reach] : [a.s - a.reach, a.s]) + [n.id, !n.crossing.nil?]
+          end
         end.sort_by(&:first)
-        problems = cuts.each_cons(2).filter_map do |(_, e1, id1), (s2, _, id2)|
+        problems = cuts.each_cons(2).filter_map do |(_, e1, id1, _), (s2, _, id2, _)|
           next if id1 == id2 || s2 >= e1 - 1e-6
 
           error(id1, 'junctions_too_close', other: id2, road: road.id)
@@ -569,7 +583,7 @@ module Archgen
 
         out = []
         start = 0.0
-        cuts.each do |s0, s1, _|
+        cuts.reject(&:last).each do |s0, s1, _|
           out << [start, s0] if s0 - start > 1e-6
           start = [start, s1].max
         end

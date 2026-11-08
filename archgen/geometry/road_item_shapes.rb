@@ -7,7 +7,7 @@ module Archgen
     # voie, Y vers la chaussée la plus proche (côté d'une crosse), Z vers le haut.
     module RoadItemShapes
       SIDES = 8
-      PARTS = %w[trunk crown steel lamp hedge wood concrete head].freeze
+      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white].freeze
 
       module_function
 
@@ -23,6 +23,8 @@ module Archgen
                  when 'bollard' then [lathe([[0, 0], [0.05, 0], [0.05, height], [0, height]], 'steel')]
                  when 'pole' then catenary_pole(height)
                  when 'signal' then signal(height)
+                 when 'crossing_light' then crossing_light(height)
+                 when 'crossing_gate' then crossing_gate(height)
                  when 'post' then [box(-crown / 2, crown / 2, -crown / 2, crown / 2, 0, height, variant)]
                  # Traverse : 2,60 m en travers, 0,25 m le long, 0,15 m d'épaisseur dont 2 cm hors du ballast.
                  when 'sleeper' then [box(-0.125, 0.125, -1.3, 1.3, -height + 0.02, 0.02, variant)]
@@ -38,6 +40,20 @@ module Archgen
       def signal(h)
         lenses = [0.0, 0.3, 0.6].map { |k| box(-0.145, -0.125, -0.1, 0.1, h - 0.8 + k, h - 0.6 + k, 'lamp') }
         [pole(0.06, h - 0.9), box(-0.125, 0.125, -0.15, 0.15, h - 0.9, h, 'head')] + lenses
+      end
+
+      # Feu de passage à niveau (AG-050) : mât, croix de Saint-André (deux planches blanches croisées,
+      # simplifiées en deux lames à plat), deux feux rouges côte à côte, côté −X.
+      def crossing_light(h)
+        [pole(0.06, h), box(-0.04, -0.02, -0.6, 0.6, h - 0.62, h - 0.48, 'white'), box(-0.04, -0.02, -0.07, 0.07, h - 1.15, h + 0.05, 'white'),
+         box(-0.08, -0.06, -0.35, -0.12, h - 1.6, h - 1.37, 'red'), box(-0.08, -0.06, 0.12, 0.35, h - 1.6, h - 1.37, 'red'),
+         box(-0.06, 0.06, -0.4, 0.4, h - 1.65, h - 1.32, 'head')]
+      end
+
+      # Barrière : poteau et lisse relevée, rayée en blanc et rouge, 4 m.
+      def crossing_gate(h)
+        stripes = (0...4).map { |k| box(-0.05, 0.05, -0.05, 0.05, h + (k * 1.0), h + ((k + 1) * 1.0), k.even? ? 'red' : 'white') }
+        [box(-0.15, 0.15, -0.15, 0.15, 0, h, 'steel')] + stripes
       end
 
       # crown : { 'radius' => r, 'base' => hauteur du bas de la couronne }.

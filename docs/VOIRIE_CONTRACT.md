@@ -177,7 +177,7 @@ Types de nœud, livrés ticket par ticket :
 | `signals` | Comme `simple`, plus passages piétons, lignes d'arrêt et un feu par branche à chaussée | Au moins une branche à chaussée | **AG-044, livré** |
 | `roundabout` | Anneau, îlot central, îlots séparateurs, entrées arrondies. Rayon extérieur de 13 à 60 m, anneau de 6 à 12 m | Chaque branche avec chaussée | **AG-045, livré** |
 | `double_roundabout` | Deux nœuds voisins sur une même voie, chacun un giratoire ; le bout de voie entre eux est la liaison (`link_m`), 5 m au moins (ADR-37) | Idem, aux deux nœuds | **AG-046, livré** |
-| `level_crossing` | Voie ferrée franchissant une route, à niveau, la route en rampe | Voie ferrée × route, profil en long | AG-050 (après AG-049) |
+| `level_crossing` | Route franchissant une voie ferrée à niveau, en rampe, platelage au ras des rails, feux et barrières | Une voie ferrée et une route qui traversent | **AG-050, livré** |
 
 ### Carrefour simple (AG-043, U27)
 
@@ -242,14 +242,26 @@ Une seule voie à rails par nœud, qui le **traverse tout droit** : ses deux bra
 
 Refus : `tram_not_through` (deux voies à rails, ou une voie à rails qui finit au nœud ou y tourne) ; `tram_outside_carriageway` (`road`) ; `rails_at_junction` pour une voie ferrée sur ballast, quel que soit le type.
 
-**Passage à niveau (AG-050)** : reporté. Le ballast est à 0,35 m et le dessus des rails à 0,52 m au-dessus de la chaussée ; une route ne les franchit à niveau qu'en montant par des rampes, ce qui demande le profil en long d'AG-049. D'ici là, une voie ferrée à un nœud est refusée.
+### Passage à niveau (AG-050, U33)
+
+`"type": "level_crossing"`, réglage `ramp_grade_percent` (2 à 8 %, 4 % par défaut). Un nœud où **une route traverse une voie ferrée** sur ballast : exactement deux voies, l'une avec des bandes `rail`, l'autre avec une chaussée et sans rail ni tram, et les deux traversent le nœud (quatre branches).
+
+- **La voie ferrée ne change pas** : surface, ballast, traverses et rails continus d'un bout à l'autre. Ses autres objets (clôtures, poteaux, arbres…) s'interrompent sur l'emprise de la route plus 1 m de chaque côté.
+- **La route monte** : son profil en long passe de 0 à la cote du platelage `H` = dessus des rails − 5 mm, par une rampe droite de pente `ramp_grade_percent`, de chaque côté. Le platelage couvre toute l'emprise de la voie ferrée, élargie pour un croisement en biais (demi-largeur de la route × cotan de l'angle) et de 0,5 m de chaque côté. Les rails dépassent donc de 5 mm : visibles, sans faces superposées. Le reste de la coupe de la route (trottoirs, bordures) suit la même cote.
+- **Murets** le long des deux bords de la route sur les rampes, du bord jusqu'au sol (0), en matière `road/curb`, tournés vers l'extérieur. Au-dessus de l'emprise de la voie ferrée, le bord du platelage reste ouvert.
+- **Signalisation** pour chaque sens de la route, à droite de ceux qui arrivent, sur la bande au-delà de la bordure (0,5 m derrière, ou au milieu de la bande si elle est plus étroite) : un feu de passage (mât de 3,2 m, croix de Saint-André, deux feux rouges) à 3 m avant le platelage, une barrière (poteau et lisse relevée) à 1,5 m avant. Famille mobilier.
+- **Zone de la route** : du début de la rampe d'un côté à la fin de l'autre. Elle doit tenir dans un segment droit de la route (`junction_on_curve`) et dans sa longueur (`arm_too_short`) ; la zone de la voie ferrée (son emprise sous la route, plus 1 m) aussi. Une autre zone de carrefour qui la touche : `junctions_too_close`.
+- Plan : `type`, `deck_m` (cote du platelage), `ramp_m` (longueur d'une rampe) par nœud ; métrique `crossing_count`.
+
+Refus : `crossing_roads` (pas exactement une voie ferrée et une route) ; `crossing_through` (une des deux voies finit au nœud) ; `crossing_angle` (moins de 45° entre les deux voies) ; `rails_at_junction` reste le refus d'une voie ferrée à tout autre nœud, et son message propose le passage à niveau.
+
 
 **Refus, `E_ROAD_JUNCTION`, sur `/junctions/<id du nœud>` :**
 
 | Raison | Quand |
 |---|---|
 | `motorway_at_grade` | Une branche porte une bande d'arrêt d'urgence (`hard`) : **une autoroute se raccorde par un échangeur, hors de ce lot** |
-| `rails_at_junction` | Une branche porte une voie ferrée sur ballast : jusqu'au passage à niveau (AG-050) |
+| `rails_at_junction` | Une branche porte une voie ferrée sur ballast, hors passage à niveau |
 | `tram_not_through` | Le tram ne traverse pas le nœud tout droit sur une seule voie (AG-047) |
 | `tram_outside_carriageway` | Les rails d'une voie sont hors de sa chaussée (`road`) |
 | `too_many_arms` | Plus de 6 branches |
