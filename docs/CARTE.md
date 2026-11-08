@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-061 fait (tirage par parcelle, U42, noyau). Lancer AG-062 : jointures à hauteurs différentes, à voir dans SketchUp. Commits non poussés depuis f033338. (→ docs/RUE_VARIEE_CONTRACT.md)
+  - Prochaine action — AG-062 fait (jointures, U43, vu dans SketchUp). Lancer AG-063 : panneau de rue variée, RBZ 0.10.0. Commits non poussés depuis f033338. (→ docs/RUE_VARIEE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - D-01 tranchée — Variation des baies arrondie à 5 mm (ADR-43) : 100 % des graines acceptées de 1 à 30 cm, contre 1 % à 2 cm avant. (→ docs/DECISIONS.md)
@@ -85,6 +85,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-08 Rues variées cadrées — Demande du propriétaire : hauteurs et toits variés à la génération d'une rue. La géométrie s'y prête déjà : murs latéraux toujours émis et aveugles (ADR-32), toits coupés aux plans latéraux. Reste un tirage par parcelle, ses contrôles contre les règles du style (Haussmannien : 5 à 7 niveaux, mansarde) et les jointures. Fenêtres et portes : déjà là sur chaque bâtiment ; pas de vitrage ni de menuiserie.
     - 2026-11-08 D-13 à D-16 — Tranchées par le propriétaire, les quatre options A (ADR-44).
     - 2026-11-08 AG-061 — Le tirage se fait directement dans la fenêtre permise (fourchette ∩ ± écart autour de la voisine) : plus simple que tirer puis retirer, et sans coupe. Les règles du style se jugent sur une parcelle témoin par la résolution d'un bâtiment, pour garder exactement la sémantique des modes de fidélité. Limite notée : dans un îlot, la fermeture du tour n'est pas contrôlée. Quatre ensembles d'avant identiques.
+    - 2026-11-08 AG-062 — Aucune géométrie nouvelle : murs latéraux toujours émis (ADR-32) et toits coupés aux plans latéraux suffisent. Vérifié par invariants (U43) et à l'écran sur une rue en coude des deux côtés, copie 0.10.0-dev.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -167,7 +168,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-059 Panneau de pont, RBZ 0.9.0 — ui/network_controller et network_panel : type Pont, genre, voie portée, hauteur libre, rampes ; eau dans le réseau et en plan. H24 9/9, vrai geste ; rapport docs/recette/V0.9.md.
   - J10 Rues variées — Hauteurs et toits tirés par parcelle. AG-061 à 063. (→ docs/RUE_VARIEE_CONTRACT.md)
     - [fait] AG-061 Tirage par parcelle — core/ensemble_variety (contrôles, tirage, répartition), réglage variety du format ensemble V1, E_STREET_VARIETY. U42 vert ; noyau, pas encore vu dans SketchUp.
-    - [afaire] AG-062 Jointures à hauteurs différentes — toits contre un mur plus haut, pignons, corniches ; murs découverts aveugles. U43.
+    - [fait] AG-062 Jointures à hauteurs différentes — invariants U43 (toits entre les plans latéraux, murs à pleine hauteur, étagement inchangé) ; vu dans SketchUp (docs/recette/img/ag062-rue-variee.jpg).
     - [afaire] AG-063 Panneau de rue variée, RBZ 0.10.0 — case, fourchette, toits, répartition annoncée. H25.
   - J11+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)

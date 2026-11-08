@@ -46,6 +46,8 @@ Les règles du style se jugent sur une parcelle témoin, la première du plan, a
 
 ## Jointures à hauteurs différentes (AG-062)
 
+Vérifié (U43) : sur une rue en coude et un îlot, trois graines, chaque sommet de toit reste entre les deux plans latéraux de sa parcelle, onglets compris ; chaque mur monte à sa propre hauteur ; l'étagement donne les mêmes plateformes avec ou sans variété. Vu dans SketchUp sur une rue en coude bâtie des deux côtés (22 parcelles, 20 définitions) : aucun recouvrement, pignons et murs découverts aveugles ([image](recette/img/ag062-rue-variee.jpg)). Aucune géométrie nouvelle n'a été nécessaire : ADR-32 et la coupe des toits aux plans latéraux suffisent.
+
 | Situation | Règle |
 |---|---|
 | **Mur mitoyen découvert** (D-16) | Reste aveugle, de la matière des murs (option A). Le percer de baies au-dessus du toit du voisin serait un ticket à part |
