@@ -103,4 +103,17 @@ Contrat : [RUE_VARIEE_CONTRACT](../docs/RUE_VARIEE_CONTRACT.md). Décisions : D-
 | **AG-062 — Jointures à hauteurs différentes** | AG-061, ADR-44 | Toits contre un mur plus haut, pignons de types différents, corniches, étagement et porches inchangés. | Aucune face d'un toit dans le volume du voisin, murs mitoyens découverts aveugles, étagement sur un terrain ; vu dans SketchUp. U43. |
 | **AG-063 — Panneau de rue variée, RBZ 0.10.0** | AG-062 | Case Varier les bâtiments, fourchette, écart, toits, répartition annoncée ; guide, journal, RBZ. | Rue variée créée et modifiée au vrai geste, une entrée d'Annuler ; recettes rejouées sur le RBZ. H25. |
 
+## J11 — Détails et personnalisation (EXT-01, EXT-08)
+
+Contrat : [DETAILS_CONTRACT](../docs/DETAILS_CONTRACT.md), à valider. Décisions : D-17 à D-22, ouvertes. Chaque réglage est une clé facultative : un bâtiment ou un ensemble existant ne change pas.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-064 — Menuiseries et vitrage** | AG-063, D-17 | `features.glazing` : vitre par fenêtre, vantail plein par porte, imposte, au LOD 1 ; rôle de matière `glass` ; révision des profils. | Comptes par baie, vitre dans le jour du cadre, empreintes d'avant inchangées. U44. |
+| **AG-065 — Rez-de-chaussée commerçant** | AG-064, D-18 | `ground_floor: shop`, `shop.height_m` ; vitrines `shopfront` entre trumeaux, bandeau, entrée gardée, porte vitrée ; porche et balcons compatibles. | Vitrines sur la trame, trumeau trop étroit refusé, rue entière en commerce. U45. |
+| **AG-066 — Cheminées** | AG-064, D-20 | `features.chimneys` : 1 ou 2 souches contre les murs latéraux, couronnement, sur chaque type de toit, jamais chez le voisin. | Hauteur au-dessus du faîtage, tirage reproductible, aucune face hors parcelle. U46. |
+| **AG-067 — Section Détails aux panneaux, RBZ 0.11.0** | AG-065, AG-066, D-19 | Cases Vitrage, Commerce et sa hauteur, Cheminées au panneau du bâtiment et de la rue ; guide, journal, RBZ. | Bâtiment et rue créés et modifiés au vrai geste, une entrée d'Annuler ; recettes rejouées. H26. |
+| **AG-068 — Réglages propres d'une parcelle** | AG-067, D-21 | Clé `parcels` du format ensemble : niveaux, toit, commerce, cheminées, vitrage, largeur ; priorité sur la variété ; ids inconnus refusés. | Priorité vérifiée à la main, voisine qui absorbe la largeur, refus localisés, ensembles d'avant inchangés. U47. |
+| **AG-069 — Clic droit « Personnaliser ce bâtiment », RBZ 0.12.0** | AG-068, D-22 | Menu contextuel sur une parcelle dans l'ensemble ouvert, panneau de parcelle, retour au réglage de la rue, régénération en une opération. | Vrai geste au clic droit, une entrée d'Annuler, refus sans résidu, réouverture. H27. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

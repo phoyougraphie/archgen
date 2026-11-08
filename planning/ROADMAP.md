@@ -15,7 +15,8 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J8 — Voirie | J7, ADR-34, D-07 à D-10 | AG-037–049 | Composer une voie en coupe à l'échelle humaine, la tracer, RBZ 0.5.0 ; carrefours, RBZ 0.6.0 ; puis sur un terrain. |
 | J9 — Eau et littoral | J8, ADR-39, ADR-40 | AG-051–059 | Rivière, canal à écluses, fleuve et côtes (falaise, dune, plage) tracés comme des voies, RBZ 0.8.0 ; puis les ponts. |
 | J10 — Rues variées | J7, ADR-44 | AG-061–063 | Hauteurs et toits tirés par parcelle dans une rue ou un îlot, RBZ 0.10.0. |
-| J11+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
+| J11 — Détails et personnalisation | J10, D-17 à D-22 | AG-064–069 | Vitrage, commerces au rez-de-chaussée et cheminées, RBZ 0.11.0 ; personnaliser un bâtiment d'une rue au clic droit, RBZ 0.12.0. |
+| J12+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
 
 Les branches AG-004/005, AG-007/009 et AG-018/019 sont indépendantes une fois leurs prérequis satisfaits. Les dépendances dans [TASKS](TASKS.md) priment sur les numéros et permettent de commencer du Ruby pur avant de fermer J0 ; la table fixe l'ordre de validation des jalons. Attacher les éléments de preuve au ticket et garder une démo neutre de référence. Sans hôte disponible, continuer sur les tests purs ; ne pas franchir un jalon qui requiert la recette native.
 

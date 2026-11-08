@@ -51,5 +51,11 @@
 
 | ID | Question | Constat et options |
 |---|---|---|
+| D-17 | Menuiseries : quel détail poser dans les baies ? | Demande du propriétaire (2026-11-08) : « poser des portes et des fenêtres ». Les baies et leurs cadres existent déjà ; il manque vitre et porte pleine. **Option A** : une vitre par fenêtre et un vantail plein par porte, au LOD 1, nouveau rôle de matière `glass` ; nouvelle révision des profils avec le vitrage activé (recommandée). **Option B** : ajouter aussi des petits bois selon le style. [Contrat](DETAILS_CONTRACT.md). |
+| D-18 | Commerce au rez-de-chaussée : quelle devanture ? | **Option A** : une vitrine par travée entre trumeaux maçonnés, bandeau d'enseigne sans texte, rez-de-chaussée rehaussé, entrée de l'immeuble gardée (recommandée). **Option B** : devanture continue en applique, d'une marge à l'autre. |
+| D-19 | Commerces dans une rue : où ? | **Option A** : toute la rue par une case, puis bâtiment par bâtiment au clic droit (recommandée). **Option B** : en plus, une proportion tirée par parcelle. |
+| D-20 | Cheminées : où et sur quels toits ? | **Option A** : 1 ou 2 souches adossées aux murs latéraux, sur tous les types de toit (recommandée). **Option B** : toits en pente seulement, avertissement sur un toit plat. |
+| D-21 | Personnaliser une parcelle : que fait un changement de largeur ? | **Option A** : la limite mitoyenne se déplace aux dépens de la voisine suivante ; nombre de parcelles et ids inchangés, parcelle d'angle verrouillée (recommandée). **Option B** : largeur fixée et reste du segment redécoupé ; les réglages des autres parcelles peuvent changer de bâtiment. |
+| D-22 | Personnaliser une parcelle : quel geste ? | **Option A** : entrer dans la rue, clic droit sur un bâtiment, ARCHGEN → Personnaliser ce bâtiment, petit panneau de parcelle, une entrée d'Annuler (recommandée). **Option B** : clic droit sur la rue, choix du bâtiment dans une liste. |
 
 ADR-03 à 10 précisent les points laissés ouverts dans le fil, avec des choix de départ révisables par décision écrite. Au démarrage, AG-001 consigne les versions hôtes réellement accessibles. Les seuils de performance sont des cibles de livraison à mesurer, et les plages historiques des réglages de conception à calibrer.

@@ -7,8 +7,9 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.10.0 recettée (AG-063 fait, H02 à H25 : 0 échec, rapport docs/recette/V0.10.md). EXT-08 première partie close. Suite d'EXT-08 à cadrer (densité, mixité, styles mêlés) ou autre extension, au choix du propriétaire. Commits non poussés depuis f033338. (→ docs/FUTURE.md)
+  - Prochaine action — J11 cadré (contrat à valider) : trancher D-17 à D-22, puis AG-064 menuiseries et vitrage. Branche poussée sur origin/dev/v0.1 jusqu'à 9bc192d. (→ docs/DETAILS_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
+  - Décisions ouvertes D-17 à D-22 — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte ; options A recommandées. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - D-01 tranchée — Variation des baies arrondie à 5 mm (ADR-43) : 100 % des graines acceptées de 1 à 30 cm, contre 1 % à 2 cm avant. (→ docs/DECISIONS.md)
   - D-13 à D-16 tranchées — Rues variées : niveaux tirés dans une fourchette avec écart borné, toits tirés dans une liste, un seul style par rue, murs mitoyens découverts aveugles (ADR-44). Aucune décision ouverte. (→ docs/DECISIONS.md)
@@ -87,6 +88,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-08 AG-061 — Le tirage se fait directement dans la fenêtre permise (fourchette ∩ ± écart autour de la voisine) : plus simple que tirer puis retirer, et sans coupe. Les règles du style se jugent sur une parcelle témoin par la résolution d'un bâtiment, pour garder exactement la sémantique des modes de fidélité. Limite notée : dans un îlot, la fermeture du tour n'est pas contrôlée. Quatre ensembles d'avant identiques.
     - 2026-11-08 AG-062 — Aucune géométrie nouvelle : murs latéraux toujours émis (ADR-32) et toits coupés aux plans latéraux suffisent. Vérifié par invariants (U43) et à l'écran sur une rue en coude des deux côtés, copie 0.10.0-dev.
     - 2026-11-08 AG-063 et recette 0.10.0 — Section Variété au panneau de rue : case, fourchette, écart, toits, graine ; tirage annoncé avant d'écrire. Les toits hors style restent proposés, marqués, sinon un style d'un seul toit n'aurait aucune variété. Case décochée : variety null, qui retire la variété en modification. Le vrai geste a trouvé un défaut ancien (AG-031) : les avertissements de style d'un ensemble se perdaient (lus sur le Result vide de la préparation) ; corrigé, U42, empreintes identiques. D-01 touchant les bâtiments seuls, toute la recette H02 à H25 rejouée sur le RBZ final : 0 échec.
+    - 2026-11-08 J11 cadré — Demande du propriétaire : portes et fenêtres, commerces au rez-de-chaussée, cheminées, personnaliser un bâtiment d'une rue au clic droit. Constat : baies et cadres existent, sans vitre ni porte pleine. Chaque réglage est une clé facultative, pour que rien d'existant ne bouge. Point délicat : la largeur d'une parcelle ; recommandé, déplacer la limite mitoyenne pour garder les ids, où s'attachent les réglages propres. Carrefour en T et boucle de plusieurs voies : déjà possibles (vérifié au noyau) ; une voie seule refermée reste refusée (self_overlap).
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -171,7 +173,14 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-061 Tirage par parcelle — core/ensemble_variety (contrôles, tirage, répartition), réglage variety du format ensemble V1, E_STREET_VARIETY. U42 vert ; noyau, pas encore vu dans SketchUp.
     - [fait] AG-062 Jointures à hauteurs différentes — invariants U43 (toits entre les plans latéraux, murs à pleine hauteur, étagement inchangé) ; vu dans SketchUp (docs/recette/img/ag062-rue-variee.jpg).
     - [fait] AG-063 Panneau de rue variée, RBZ 0.10.0 — ui/street_controller et street_panel : section Variété, variety_hints par style, répartition dans les corps ; correctif des avertissements d'ensemble. H25 30/30, vrai geste ; rapport docs/recette/V0.10.md.
-  - J11+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
+  - J11 Détails et personnalisation — Vitrage, commerces, cheminées, réglages propres d'une parcelle au clic droit. AG-064 à 069. (→ docs/DETAILS_CONTRACT.md)
+    - [bloque] AG-064 Menuiseries et vitrage — attend D-17. U44.
+    - [bloque] AG-065 Rez-de-chaussée commerçant — attend D-18. U45.
+    - [bloque] AG-066 Cheminées — attend D-20. U46.
+    - [afaire] AG-067 Section Détails aux panneaux, RBZ 0.11.0 — D-19. H26.
+    - [bloque] AG-068 Réglages propres d'une parcelle — attend D-21. U47.
+    - [afaire] AG-069 Clic droit « Personnaliser ce bâtiment », RBZ 0.12.0 — D-22. H27.
+  - J12+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
@@ -355,14 +364,14 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - H20 — Écrire une voie : service, faces écrites égales au plan, balises, Annuler, panne, copie, panneau, rouvrir, charge jusqu'à 2 km. Réussi sur Windows / 26.2.243. (→ docs/recette/H20.md)
   - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
 - Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
-  - EXT-01 Richesse régionale — Volets, lucarnes, débords ; Provençal, Breton.
+  - EXT-01 Richesse régionale — Vitrage et cheminées cadrés (J11) ; volets, lucarnes, débords ; Provençal, Breton. (→ docs/DETAILS_CONTRACT.md)
   - EXT-02 Bois — TimberFrameSolver ; Basque, Colombages, Normand, Alsacien.
   - EXT-03 Courbes et décor — Arcs, reliefs, ordres ; Art déco, Art nouveau, Baroque, Néoclassique, Renaissance.
   - EXT-04 Volumes et technique — Retraits, trame, sheds, façade rideau ; modernes, Industriel, High-tech.
   - EXT-05 Interior — Cloisons, escaliers, trémies.
   - EXT-06 Décor de jeu — Exporteur, UV, PBR, collisions, LOD 2.
   - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. Détail en AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
-  - EXT-08 Quartier — Première partie cadrée : rues variées (AG-061 à 063, D-13 à D-16) ; ensuite densité, mixité, styles mêlés. (→ docs/RUE_VARIEE_CONTRACT.md)
+  - EXT-08 Quartier — Première partie cadrée : rues variées (AG-061 à 063, D-13 à D-16) ; commerces et personnalisation d'une parcelle cadrés (J11) ; ensuite densité, styles mêlés. (→ docs/RUE_VARIEE_CONTRACT.md)
   - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
   - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
   - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
