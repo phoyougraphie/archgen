@@ -221,7 +221,8 @@ module Archgen
         tree = road_tree(payload)
         return tree unless tree&.ok?
 
-        computed = @service.preview(tree: tree.value)
+        # Voie sur un terrain : l'empreinte montrée a été calculée avec le relevé.
+        computed = @service.preview(tree: tree.value, survey: tree.value['ground'] ? @survey : nil)
         return computed unless computed.ok?
         return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
 
@@ -262,7 +263,8 @@ module Archgen
         tree = road_tree(payload)
         return tree unless tree&.ok?
 
-        computed = @service.preview(tree: tree.value)
+        # Voie sur un terrain : l'empreinte montrée a été calculée avec le relevé.
+        computed = @service.preview(tree: tree.value, survey: tree.value['ground'] ? @survey : nil)
         return computed unless computed.ok?
         return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
 

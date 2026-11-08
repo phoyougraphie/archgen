@@ -160,7 +160,9 @@
       el.status.textContent = state.notice;
       el.status.className = 'status';
     } else {
-      el.status.textContent = response.diagnostics.map(function (d) { return d.message; }).join(' ');
+      // Le refus reste affiché après le recalcul qui suit, jusqu'à la saisie suivante.
+      state.notice = response.diagnostics.map(function (d) { return d.message; }).join(' ');
+      el.status.textContent = state.notice;
       el.status.className = 'status is-bad';
     }
     requestPreview(true);

@@ -138,3 +138,53 @@ class RoadGroundServiceTest < Minitest::Test
     assert_equal 2, @cutter.outlines.size
   end
 end
+
+# Parcours du panneau sur un terrain (défaut vu au vrai geste, H22 : la création recalculait
+# l'aperçu sans le relevé et refusait en silence).
+class RoadGroundPanelTest < Minitest::Test
+  include Archgen::Adapters::SketchUp
+
+  def setup
+    @model = FakeSketchUp::ServiceModel.new
+    @terrain = @model.add_instance(@model.add_definition('terrain'), FakeSketchUp::Host.identity)
+    @cutter = RoadGroundServiceTest::FakeCutter.new
+    service = RoadService.new(intake: Archgen::Composition.road_intake, bands: Archgen::Composition.road_bands,
+                              items: Archgen::Composition.road_items, materials: Archgen::Composition.road_catalog,
+                              material_revision: 1, host: FakeSketchUp::Host,
+                              surveyor: RoadGroundServiceTest::FakeSurveyor.new(RoadGroundServiceTest::PLANE), cutter: @cutter)
+    @session = Archgen::Core::TraceSession.new
+    @controller = Archgen::UI::RoadController.new(
+      intake: Archgen::Composition.road_profile_intake, bands: Archgen::Composition.road_bands, items: Archgen::Composition.road_items,
+      presets: Archgen::Composition.road_presets, service: service, session: @session, model_provider: -> { @model }
+    )
+    @controller.instance_variable_set(:@terrain, TerrainRef.new(document_key: @model.guid, persistent_id: @terrain.persistent_id))
+    @counter = 0
+  end
+
+  def call(action, payload = {})
+    @counter += 1
+    @controller.dispatch(JSON.generate('v' => 1, 'request_id' => "g#{@counter}", 'action' => action, 'payload' => payload))
+  end
+
+  def payload
+    profile = Archgen::Composition.road_presets.fetch('presets').find { |p| p['id'] == 'ville' }.fetch('profile')
+    { 'profile' => profile, 'road' => { 'radius_m' => 20, 'axis' => 'center', 'on_ground' => true } }
+  end
+
+  def test_survey_then_create_writes_the_road_on_the_ground
+    @session.start(10.0, 20.0, 0.0)
+    @session.add([110.0, 20.0])
+    @session.finish
+    before = call('preview', payload)
+    refute before['result']['road']['ok'], 'sans relevé, la voie attend'
+    surveyed = call('survey_ground', payload)
+    assert surveyed['ok'], surveyed['diagnostics'].inspect
+    road = surveyed['result']['road']
+    assert road['ok'], road['diagnostics'].inspect
+    assert_in_delta 5.0, road['metrics']['grade_max_percent'], 1e-6
+    created = call('create', payload.merge('road_digest' => road['road_digest']))
+    assert created['ok'], created['diagnostics'].inspect
+    assert_equal 1, @cutter.outlines.size
+    assert @terrain.hidden
+  end
+end
