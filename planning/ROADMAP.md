@@ -13,7 +13,8 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J6 — Terrain d'un bâtiment | J5, ADR-27 | AG-021–026 | Assise sur un terrain réel, terrain intact, une entrée d'Annuler ; RBZ 0.2.0. |
 | J7 — Rue et îlots au tracé | J6, ADR-30 à 32 | AG-028–036, puis AG-027 | Tracer une rue ou un îlot, une entrée d'Annuler ; RBZ 0.3.0 ; puis l'étager sur un terrain, RBZ 0.4.0. |
 | J8 — Voirie | J7, ADR-34, D-07 à D-10 | AG-037–049 | Composer une voie en coupe à l'échelle humaine, la tracer, RBZ 0.5.0 ; carrefours, RBZ 0.6.0 ; puis sur un terrain. |
-| J9+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
+| J9 — Eau et littoral | J8, ADR-39, D-12 pour les ponts | AG-051–057 | Rivière, canal à écluses, fleuve et côtes (falaise, dune, plage) tracés comme des voies, RBZ 0.8.0 ; puis les ponts. |
+| J10+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
 
 Les branches AG-004/005, AG-007/009 et AG-018/019 sont indépendantes une fois leurs prérequis satisfaits. Les dépendances dans [TASKS](TASKS.md) priment sur les numéros et permettent de commencer du Ruby pur avant de fermer J0 ; la table fixe l'ordre de validation des jalons. Attacher les éléments de preuve au ticket et garder une démo neutre de référence. Sans hôte disponible, continuer sur les tests purs ; ne pas franchir un jalon qui requiert la recette native.
 

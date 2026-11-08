@@ -353,4 +353,4 @@ Mêmes nœuds qu'une voie horizontale, cotes en repère de la racine : la racine
 
 ## Hors périmètre V1
 
-Échangeurs et ponts ; tunnels ; dévers et pentes en travers ; marquage détaillé des directions ; plans de feux ; aiguillages et courbes de rails en carrefour ; écartements non standard ; vérification réglementaire ; raccord automatique avec un ensemble bâti (à ouvrir après AG-048) ; mobilier urbain pur : arrêts de bus, attaches vélos, panneaux de signalisation (EXT-12).
+Échangeurs ; ponts (EXT-13, D-12) ; cours d'eau et littoral, prolongés par le [contrat de l'eau](EAU_CONTRACT.md) ; tunnels ; dévers et pentes en travers ; marquage détaillé des directions ; plans de feux ; aiguillages et courbes de rails en carrefour ; écartements non standard ; vérification réglementaire ; raccord automatique avec un ensemble bâti (à ouvrir après AG-048) ; mobilier urbain pur : arrêts de bus, attaches vélos, panneaux de signalisation (EXT-12).
