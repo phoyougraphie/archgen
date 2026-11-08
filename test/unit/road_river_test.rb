@@ -103,11 +103,12 @@ class RoadRiverTest < Minitest::Test
     end
   end
 
-  def test_only_the_river_follows_a_terrain_for_now
-    %w[canal flat].each do |mode|
-      r = C.road_intake.settings(tree(water: { 'mode' => mode }))
-      assert_equal ['/ground', 'water_ground_unavailable', mode], [r.errors.first.path, r.errors.first.params['reason'], r.errors.first.params['mode']]
-    end
+  def test_flat_water_does_not_follow_a_terrain_yet
+    r = C.road_intake.settings(tree(water: { 'mode' => 'flat' }))
+    assert_equal ['/ground', 'water_ground_unavailable', 'flat'], [r.errors.first.path, r.errors.first.params['reason'], r.errors.first.params['mode']]
+    # Un canal suit un terrain depuis AG-054, mais bordé de quais : pas cette rivière à berges.
+    r = C.road_intake.settings(tree(water: { 'mode' => 'canal' }))
+    assert_equal 'canal_needs_quays', r.errors.first.params['reason']
     refute C.road_intake.settings(tree(profile: 'plage', water: { 'mode' => 'flat' })).ok?
   end
 end

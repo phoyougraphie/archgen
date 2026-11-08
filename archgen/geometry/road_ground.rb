@@ -115,6 +115,8 @@ module Archgen
           samples << [s, q(zs.sum / zs.size)]
         end
         river = water && water['mode'] == 'river'
+        # Canal : la pente n'a pas de sens, les biefs sont plats et les écluses placées ensuite (RoadLocks).
+        return Core::Result.ok(samples) if water && water['mode'] == 'canal'
         if river
           samples = river_envelope(samples)
           return samples unless samples.ok?

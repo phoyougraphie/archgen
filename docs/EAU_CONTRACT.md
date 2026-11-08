@@ -82,7 +82,7 @@ Les moyennes du terrain sont prises sous la largeur de l'eau (bandes `water`), e
 2. **Enveloppe descendante :** l'altitude du niveau 0 à un point de pente est le plus bas entre la moyenne du terrain sous l'eau en ce point et l'altitude du point précédent. L'eau ne remonte donc jamais ; là où le terrain remonte, la rivière creuse, et le déblai reste borné par `RELIEF_MAX` (`E_ROAD_EARTHWORK`).
 3. **Pente :** au-delà de `max_grade_percent`, `E_ROAD_GRADE` comme une voie, borne prise dans `water`, sur `/water/max_grade_percent`.
 
-Seule la rivière suit un terrain dans cette étape : un canal ou un régime à un seul niveau sur un terrain reste refusé (`water_ground_unavailable`, avec le régime) jusqu'à AG-054 et AG-055. Comme pour une voie, une seconde voie ne se pose pas sur un terrain déjà masqué par une première (`terrain_hidden`) : limite existante d'ADR-38, vue en recette H23.
+Un régime à un seul niveau sur un terrain reste refusé (`water_ground_unavailable`, avec le régime) jusqu'à AG-055. Comme pour une voie, une seconde voie ne se pose pas sur un terrain déjà masqué par une première (`terrain_hidden`) : limite existante d'ADR-38, vue en recette H23.
 
 La copie entaillée du terrain (ADR-38) creuse le lit : l'eau se voit dans l'entaille ([recette H23](recette/H23.md)). Métriques : `water_drop_m` (chute totale, du premier au dernier point de pente), `grade_max_percent`, `cut_max_m`, `fill_max_m`.
 
@@ -90,14 +90,14 @@ La copie entaillée du terrain (ADR-38) creuse le lit : l'eau se voit dans l'ent
 
 Le canal avance par **biefs** horizontaux. Les écluses sont placées par une règle fixe :
 
-1. Le premier bief prend le niveau du profil du terrain au début du tracé.
-2. On suit les points de pente du profil du terrain p(s). Dès que p(s) s'écarte du niveau du bief courant de plus de `lock_drop_m`, une écluse est posée **avant** ce point : la chambre finit au point de pente précédent. Le bief suivant est plus bas, ou plus haut, de `lock_drop_m` exactement.
-3. Une écluse occupe `lock_length_m` le long de l'axe, plus 10 m (départ) d'approche de chaque côté, sur **un segment droit**. Sinon `E_ROAD_WATER`, `lock_on_curve`, avec l'abscisse ; deux écluses dont les approches se recouvrent : `locks_too_close`. Le conseil est de réduire la chute ou d'allonger la ligne droite.
-4. Entre deux écluses, déblai et remblai restent bornés par `RELIEF_MAX`.
+1. Le premier bief prend le niveau du profil du terrain au début du tracé (moyenne sous l'eau, comme la rivière).
+2. On suit les points de pente du profil du terrain p(s), sans borne de pente : les biefs sont plats. Dès que p(s) s'écarte du niveau du bief courant de plus de `lock_drop_m`, une écluse est posée **avant** ce point : la chambre finit au point de pente précédent. Le bief suivant est plus bas, ou plus haut, de `lock_drop_m` exactement.
+3. Une écluse occupe `lock_length_m` le long de l'axe, plus 10 m (départ) d'approche de chaque côté, sur **un segment droit**, sans sommet ni arc. Sinon `E_ROAD_WATER` sur `/trace`, avec l'abscisse du début de la chambre : `lock_on_curve` ; `locks_too_close` quand ses approches touchent la chambre précédente (un saut de terrain de plus de deux chutes entre deux points de pente en est un cas) ; `lock_outside_trace` quand une approche sort du tracé. Le conseil est de changer la chute ou d'allonger la ligne droite.
+4. Entre deux écluses, déblai et remblai restent bornés par `RELIEF_MAX`, contrôlés comme pour une voie sur la coupe du bief ; dans la chambre, le lit plus bas n'entre pas dans ce contrôle (limite connue, jusqu'à la chute de plus).
 
-**Forme d'une écluse :** chambre à murs verticaux (bajoyers, matière `water/quay`) quelle que soit la berge du bief ; deux paires de portes busquées, solides fermés, avec passerelle à leur tête ; mur de chute au fond, à l'amont ; eau de la chambre au niveau aval. Les bandes de terre (quai, chemin, berge) passent d'un niveau à l'autre en rampe droite le long de la chambre. La largeur de l'eau est celle de la chambre, de 3 à 40 m (`lock_too_wide` au-delà).
+**Forme d'une écluse :** sur un terrain, un canal est bordé de quais (`canal_needs_quays` sinon, sur la bande d'eau) : les murs de quai deviennent les bajoyers de la chambre. Le lit et l'eau de la chambre sont au niveau du bief bas ; un mur de chute (`road/quay`) ferme le lit au bout haut, du lit du bief haut à celui de la chambre. Les bandes de terre passent d'un niveau à l'autre en rampe droite le long de la chambre. Une porte à chaque bout : un battant droit sur toute la largeur de l'eau, épais de 0,4 m, du lit de la chambre à 0,2 m au-dessus du quai (`road/item/wood`) ; les portes busquées à deux vantaux et leur passerelle sont simplifiées ainsi (ADR-35). La largeur de l'eau est celle de la chambre : 40 m au plus (`lock_too_wide`, sur sa largeur).
 
-**Plan :** un groupe `water/locks` sous la racine, une définition partagée de porte par largeur au millimètre. Métriques : `lock_count`, `water_drop_m`, et pour chaque écluse son abscisse et sa chute.
+**Plan :** les portes sont des solides fermés sous un groupe `road/locks` (balise du mobilier), propres à chaque écluse puisque leur hauteur dépend de la chute ; la surface de l'eau reste dans `road/water`. `plan['water']['locks']` donne pour chaque écluse le début de sa chambre (`s_m`), sa longueur et sa chute (négative en descendant). Métriques : `lock_count` (0 sans écluse), `water_drop_m`. Sans terrain, un canal reste un seul bief, sans écluse. Vu dans SketchUp : [recette H23](recette/H23.md).
 
 ## Fleuve et côte : un seul niveau (AG-055)
 

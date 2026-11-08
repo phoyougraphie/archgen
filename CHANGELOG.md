@@ -8,12 +8,13 @@ Eau et littoral (EXT-13), en cours. Testée sur Windows 11 avec SketchUp 2026 (2
 
 - **Bandes d'eau** : plan d'eau (revanche et profondeur réglables), quai, berge naturelle ; surface de l'eau transparente au-dessus du lit. Préréglages canal, rivière et fleuve (AG-051).
 - **Littoral** : falaise, estran rocheux, dune, plage et mer, à niveaux cumulés de la terre vers la mer ; ganivelles et murets. Préréglages côte à falaises, côte à dunes, plage et promenade (AG-052).
+- **Canal à écluses sur un terrain** : biefs plats, écluse posée par règle dès que le terrain s'écarte de plus de la chute (3 m par défaut) ; chambre au niveau bas, mur de chute, portes, chemin de halage en rampe (AG-054).
 - **Rivière sur un terrain** : tracée de l'amont vers l'aval, l'eau ne remonte jamais ; là où le terrain remonte, la rivière creuse, dans la limite de 6 m (AG-053).
 
 **Limites connues**
 
 - Le régime de l'eau et les réglages des bandes d'eau et de littoral ne se règlent pas encore au panneau (AG-056).
-- Canal, fleuve et côte restent à plat, sans terrain (AG-054, AG-055) ; un cours d'eau n'entre pas dans un réseau (ponts : AG-057).
+- Fleuve et côte restent à plat, sans terrain (AG-055) ; un canal sur un terrain est bordé de quais, et ses portes sont des battants droits ; un cours d'eau n'entre pas dans un réseau (ponts : AG-057).
 
 ## 0.7.0
 

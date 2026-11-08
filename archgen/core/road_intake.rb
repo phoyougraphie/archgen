@@ -67,6 +67,7 @@ module Archgen
 
       # Réglage `water` (EAU_CONTRACT) : exigé par une coupe à eau, refusé sans eau. Une voie à eau sur un
       # terrain attend AG-053 (rivière) et AG-055 (fleuve) : refusée plutôt que posée à plat en silence.
+      LOCK_MAX_WIDTH_M = 40.0
       WATER_DEFAULTS = { 'max_grade_percent' => 3, 'lock_drop_m' => 3, 'lock_length_m' => 40 }.freeze
 
       def water_problems(tree, profile)
@@ -74,10 +75,20 @@ module Archgen
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_mode_missing')] if wet && !tree['water']
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_without_band')] if !wet && tree['water']
         # Sur un terrain : la rivière (AG-053) ; canal (AG-054) et un seul niveau (AG-055) viendront ensuite.
-        if wet && tree['ground'] && tree['water'] && tree['water']['mode'] != 'river'
+        if wet && tree['ground'] && tree['water'] && tree['water']['mode'] == 'flat'
           return [Diagnostic.error('E_ROAD_WATER', '/ground', reason: 'water_ground_unavailable', mode: tree['water']['mode'])]
         end
-        if profile['bands'].any? { |b| b['type'] == 'sea' } && tree['water']['mode'] != 'flat'
+        if tree['ground'] && tree.dig('water', 'mode') == 'canal'
+          # Chambre à murs verticaux : sur un terrain, un canal est bordé de quais (AG-054).
+          bad = profile['bands'].each_index.find do |i|
+            profile['bands'][i]['type'] == 'water' && [profile['bands'][i - 1], profile['bands'][i + 1]].any? { |b| b && b['type'] == 'riverbank' }
+          end
+          return [Diagnostic.error('E_ROAD_WATER', "/profile/bands/#{bad}", reason: 'canal_needs_quays')] if bad
+
+          wide = profile['bands'].each_index.find { |i| profile['bands'][i]['type'] == 'water' && profile['bands'][i]['width_m'] > LOCK_MAX_WIDTH_M }
+          return [Diagnostic.error('E_ROAD_WATER', "/profile/bands/#{wide}/width_m", reason: 'lock_too_wide', limit: LOCK_MAX_WIDTH_M)] if wide
+        end
+        if profile['bands'].any? { |b| b['type'] == 'sea' } && tree.dig('water', 'mode') != 'flat'
           return [Diagnostic.error('E_ROAD_WATER', '/water/mode', reason: 'sea_needs_flat', value: tree['water']['mode'])]
         end
 

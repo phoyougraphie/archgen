@@ -18,6 +18,9 @@ module ArchgenH23Probe
   # Vallée le long de x, fond en y = 20, pente de 1,5 % vers +x, bosse de 0,6 m en x = 70.
   HEIGHT = ->(x, y) { 12.0 - (0.015 * x) + (0.04 * (y - 20).abs) + (0.6 * Math.exp(-((x - 70)**2) / 200.0)) }
   RIVER_ORIGIN = [10.0, 20.0, 0.0].freeze
+  # Second terrain pour le canal (AG-054) : pente de 5 % en x, de y = 200 à 260 m.
+  CANAL_HEIGHT = ->(x, _y) { 15.0 - (0.05 * x) }
+  CANAL_ORIGIN = [10.0, 230.0, 0.0].freeze
 
   module_function
 
@@ -55,15 +58,15 @@ module ArchgenH23Probe
   end
 
   # Terrain de test : grille triangulée de 200 × 140 m au pas de 4 m, dans un groupe.
-  def build_terrain
-    model.start_operation('H23 terrain', true)
+  def build_terrain(name = 'Terrain H23', height = HEIGHT, nx = 50, ny = 35, x0 = -20, y0 = -50)
+    model.start_operation(name, true)
     group = model.entities.add_group
-    group.name = 'Terrain H23'
+    group.name = name
     mesh = Geom::PolygonMesh.new
     step = 4.0
-    (0...50).each do |i|
-      (0...35).each do |j|
-        p = lambda { |a, b| x = -20 + (a * step); y = -50 + (b * step); Geom::Point3d.new(x.m, y.m, HEIGHT.call(x, y).m) }
+    (0...nx).each do |i|
+      (0...ny).each do |j|
+        p = lambda { |a, b| x = x0 + (a * step); y = y0 + (b * step); Geom::Point3d.new(x.m, y.m, height.call(x, y).m) }
         mesh.add_polygon(p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1))
         mesh.add_polygon(p.call(i, j), p.call(i + 1, j + 1), p.call(i, j + 1))
       end
@@ -166,16 +169,38 @@ module ArchgenH23Probe
         faces == expected && zs == [-0.8]
       }],
       ['Côte à falaises : mer à −25 m, faces égales au plan', lambda {
-        @coast = service.create(model: model, tree: flat('falaises', [[0, 0], [100, 0]]), origin_m: [10.0, 160.0, 0.0])
+        @coast = service.create(model: model, tree: flat('falaises', [[0, 0], [100, 0]]), origin_m: [10.0, -400.0, 0.0])
         return false.tap { @last = @coast.errors.map(&:to_h).inspect } unless @coast.ok?
 
-        road = roads.find { |r| (r.transformation.to_a[13] * INCH - 160).abs < 1e-6 }
+        road = roads.find { |r| (r.transformation.to_a[13] * INCH + 400).abs < 1e-6 }
         faces, expected = written(@coast, road)
         zs = water_points(road).map { |p| p[2].round(4) }.uniq
         @last = "faces #{faces}/#{expected}, mer #{zs.inspect}"
         faces == expected && zs == [-25.0]
       }],
-      ['Enregistrer', -> { model.save(SKP) }, -> { File.exist?(SKP) && roads.size == 3 }]
+      ['Canal à écluses sur un second terrain : une opération, faces égales au plan, quatre écluses', lambda {
+        reference = SP::TerrainRef.new(document_key: model.guid, persistent_id: @canal_terrain.persistent_id)
+        tree = { 'trace' => { 'points_m' => [[0, 0], [260, 0]], 'radii_m' => [] }, 'profile' => preset('canal'), 'ground' => {}, 'water' => { 'mode' => 'canal' } }
+        t = Time.now
+        @canal_ground = service.create(model: model, tree: tree, origin_m: CANAL_ORIGIN, terrain: reference)
+        seconds = Time.now - t
+        return false.tap { @last = @canal_ground.errors.map(&:to_h).inspect } unless @canal_ground.ok?
+
+        road = roads.find { |r| (r.transformation.to_a[13] * INCH - 230).abs < 1e-6 }
+        faces, expected = written(@canal_ground, road)
+        m = @canal_ground.value.metrics
+        pts = water_points(road)
+        by_x = pts.group_by { |x, _y, _z| x.round(3) }.sort.map { |_x, list| list.map { |p| p[2] }.min }
+        gates = road.definition.entities.grep(Sketchup::Group).find { |g| g.name == 'road/locks' }
+        gate_count = gates ? gates.entities.grep(Sketchup::Group).size : 0
+        @last = format('%.2f s, faces %d/%d, écluses %d, chute %.2f m, portes %d, eau %.2f → %.2f m', seconds, faces, expected, m['lock_count'], m['water_drop_m'], gate_count, by_x.first, by_x.last)
+        faces == expected && m['lock_count'] == 4 && gate_count == 8 && by_x.each_cons(2).all? { |a, b| b <= a + 1e-6 }
+      }],
+      ['Annuler le canal : son terrain réapparaît, les autres voies restent', -> { Sketchup.undo }, lambda {
+        !@canal_terrain.hidden? && roads.size == 3
+      }],
+      ['Rétablir le canal', -> { Sketchup.redo }, -> { @canal_terrain.hidden? && roads.size == 4 }],
+      ['Enregistrer', -> { model.save(SKP) }, -> { File.exist?(SKP) && roads.size == 4 }]
     ]
   end
 
@@ -223,6 +248,7 @@ module ArchgenH23Probe
     log("H23 départ #{Time.now}, ARCHGEN #{Archgen::VERSION}")
     @terrain = build_terrain
     @original_faces = @terrain.entities.grep(Sketchup::Face).size
+    @canal_terrain = build_terrain('Terrain H23 canal', CANAL_HEIGHT, 80, 15, -20, 200)
     log("Terrain de test : #{@original_faces} faces")
     @queue = steps
     UI.start_timer(0.5, false) { advance }
