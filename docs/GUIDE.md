@@ -169,6 +169,8 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 4. **Choisissez le type de chaque carrefour** : simple (bordures arrondies), à feux (passages piétons, lignes d'arrêt et un feu par branche à chaussée), giratoire (rayon extérieur de 13 à 60 m, anneau de 6 à 12 m), double giratoire (deux carrefours voisins sur une même voie, reliés par la voie entre eux) ou passage à niveau (une route qui traverse une voie ferrée : la route monte par deux rampes, de 4 % par défaut, jusqu'au ras des rails, avec feux et barrières). Le rayon des bordures se règle pour chacun.
 5. **Cliquez sur Créer le réseau.** Toutes les voies et tous les carrefours s'écrivent en une fois ; une seule entrée d'Annuler retire tout.
 
+**Ponts.** Ajoutez une rivière, un canal, un fleuve ou une côte comme une autre voie : là où une voie la croise, **un pont naît tout seul**, la voie passant dessus. Sur une voie ferrée ou entre deux routes, choisissez le type **Pont** pour le carrefour ; entre deux routes, indiquez la **voie portée**. Réglez le **genre** (poutre jusqu'à 40 m de portée, arc jusqu'à 120 m, voûte de pierre à arches de 20 m au plus), la **hauteur libre** sous le tablier (4,75 m au-dessus d'une route, 5,5 m d'une voie ferrée, 4 m de l'eau par défaut) et la **pente des rampes** (5 %). La voie portée monte par deux rampes jusqu'au tablier, avec culées, murs et garde-corps ; la voie franchie reste entière. Si un arc ou une voûte entre dans le gabarit d'une voie ou de l'eau, le message donne la hauteur libre qui suffit. Sous le tablier, les arbres et lampadaires de la voie franchie sont retirés. Dans un réseau, l'eau reste à un seul niveau ; deux cours d'eau ne se rejoignent pas encore.
+
 **Modifier :** sélectionnez le réseau, puis **Extensions → ARCHGEN → Modifier le réseau sélectionné**. Changez le type ou les rayons des carrefours, ou retirez une voie (sauf la première), puis cliquez sur **Remplacer ce réseau**. Une copie garde sa géométrie. Pour ajouter une voie, tracez un nouveau réseau.
 
 **À savoir**
@@ -176,7 +178,7 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 - **Tram :** une voie mixte ou à plateforme traverse un carrefour ou un giratoire tout droit, rails au ras ; une voie à rails qui tourne ou finit au carrefour, ou deux voies à rails au même carrefour, sont refusées.
 - **Refus :** autoroute à niveau (un échangeur viendra plus tard), voie ferrée sur ballast hors passage à niveau, passage à niveau à moins de 45°, branches à moins de 30°, carrefour dans un virage, carrefours qui se touchent, voie trop courte ; chaque refus nomme son carrefour.
 - **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
-- **Hors de portée :** le réseau est horizontal ; pas d'échangeur, de passage à niveau, de courbe de rails ni de marquage de priorité.
+- **Hors de portée :** le réseau est horizontal (pas de pont sur un terrain) ; pas d'échangeur à bretelles, de courbe de rails ni de marquage de priorité ; pas de calcul de structure : un pont est une maquette.
 
 ## Reproduire
 

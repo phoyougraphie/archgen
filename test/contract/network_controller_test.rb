@@ -113,6 +113,36 @@ class NetworkControllerTest < Minitest::Test
     assert_equal 'add_road_in_edit', call('add_road', 'preset' => 'ville')['diagnostics'].first['params']['reason']
   end
 
+  # AG-059 : une rivière tracée au panneau reçoit le régime à un seul niveau ; le pont naît d'office,
+  # l'eau se dessine en plan ; un pont choisi entre deux rues demande sa voie portée.
+  def test_a_river_gets_its_bridge_and_its_water_in_plan
+    draw([10, 20], [210, 20])
+    call('add_road', 'preset' => 'riviere')
+    draw([110, -180], [110, 220])
+    r = call('add_road', 'preset' => 'ville')
+    network = r['result']['network']
+    assert network['ok'], network.inspect
+    assert_equal ['bridge', 'beam', 'v2'], network['junctions'].first.values_at('type', 'bridge_kind', 'over')
+    assert_equal 1, network['metrics']['bridge_count']
+    colors = network['plan']['faces'].map(&:last).uniq
+    assert_includes colors, Archgen::Composition.road_catalog['road/water_surface']['srgb']
+    j = network['junctions'].first['id']
+    arch = call('set_junction', 'junction' => { 'id' => j, 'type' => 'bridge', 'bridge_kind' => 'arch' })['result']['network']
+    assert arch['ok'], arch.inspect
+    assert_equal 'arch', arch['junctions'].first['bridge_kind']
+  end
+
+  def test_a_bridge_between_two_streets_names_its_carried_road
+    cross
+    j = call('preview')['result']['network']['junctions'].first['id']
+    refused = call('set_junction', 'junction' => { 'id' => j, 'type' => 'bridge' })['result']['network']
+    refute refused['ok']
+    assert_equal 'bridge_over_missing', refused['diagnostics'].first['params']['reason']
+    assert_equal 'Choisissez la voie qui passe sur le pont.', refused['diagnostics'].first['message']
+    unknown = call('set_junction', 'junction' => { 'id' => j, 'type' => 'bridge', 'over' => 'v1', 'colour' => 1 })
+    assert_equal 'unknown_key', unknown['diagnostics'].first['params']['reason']
+  end
+
   def test_removing_a_road_drops_its_junction_settings
     cross
     call('set_junction', 'junction' => { 'id' => 'v1@50.0+v2@50.0', 'type' => 'signals' })

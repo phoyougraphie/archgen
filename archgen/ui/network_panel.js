@@ -4,8 +4,9 @@
   'use strict';
 
   var SVG = 'http://www.w3.org/2000/svg';
-  var TYPES = [['simple', 'Simple'], ['signals', 'À feux'], ['roundabout', 'Giratoire'], ['double_roundabout', 'Double giratoire'], ['level_crossing', 'Passage à niveau']];
-  var state = { counter: 0, mode: 'trace', writes: false, digest: null, busy: false, network: null, roads: [], settings: [], trace: null, notice: null };
+  var TYPES = [['simple', 'Simple'], ['signals', 'À feux'], ['roundabout', 'Giratoire'], ['double_roundabout', 'Double giratoire'], ['level_crossing', 'Passage à niveau'], ['bridge', 'Pont']];
+  var KINDS = [['beam', 'Poutre'], ['arch', 'Arc'], ['vault', 'Voûte']];
+  var state = { counter: 0, mode: 'trace', writes: false, digest: null, busy: false, network: null, roads: [], settings: [], trace: null, notice: null, lastJunctions: [] };
 
   function byId(id) { return document.getElementById(id); }
   var el = {
@@ -157,17 +158,34 @@
       var draft = JSON.parse(JSON.stringify(s));
       var apply = function () {
         var out = { id: j.id, type: type.value };
-        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair', 'ramp_grade_percent'].forEach(function (k) {
+        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair', 'ramp_grade_percent', 'bridge_kind', 'over', 'clearance_m'].forEach(function (k) {
           if (draft[k] !== undefined && draft[k] !== null && draft[k] !== '') { out[k] = draft[k]; }
         });
         if (out.type !== 'roundabout' && out.type !== 'double_roundabout') { delete out.outer_radius_m; delete out.ring_width_m; }
         if (out.type !== 'double_roundabout') { delete out.pair; }
-        if (out.type !== 'level_crossing') { delete out.ramp_grade_percent; } else { delete out.corner_radius_m; }
+        var ramped = out.type === 'level_crossing' || out.type === 'bridge';
+        if (!ramped) { delete out.ramp_grade_percent; } else { delete out.corner_radius_m; }
+        if (out.type !== 'bridge') { delete out.bridge_kind; delete out.over; delete out.clearance_m; }
         state.notice = null;
         send('set_junction', { junction: out });
       };
       type.addEventListener('change', apply);
-      if (type.value === 'level_crossing') {
+      if (type.value === 'bridge') {
+        // Pont (AG-059) : genre, voie portée (entre deux routes), hauteur libre, pente des rampes.
+        var kindWrap = node('label', {}, fields, 'Genre');
+        var kind = node('select', { 'aria-label': 'Genre du pont ' + j.id }, kindWrap);
+        KINDS.forEach(function (k) { node('option', { value: k[0] }, kind, k[1]); });
+        kind.value = draft.bridge_kind || j.bridge_kind || 'beam';
+        kind.addEventListener('change', function () { draft.bridge_kind = kind.value; apply(); });
+        var overWrap = node('label', {}, fields, 'Voie portée');
+        var over = node('select', { 'aria-label': 'Voie portée par le pont ' + j.id }, overWrap);
+        node('option', { value: '' }, over, 'selon les voies');
+        j.id.split('+').forEach(function (part) { var id = part.split('@')[0]; node('option', { value: id }, over, id); });
+        over.value = draft.over || '';
+        over.addEventListener('change', function () { draft.over = over.value || null; apply(); });
+        numberField(fields, 'Hauteur libre, m', draft.clearance_m, function (v) { draft.clearance_m = v; apply(); });
+        numberField(fields, 'Pente des rampes, %', draft.ramp_grade_percent, function (v) { draft.ramp_grade_percent = v; apply(); });
+      } else if (type.value === 'level_crossing') {
         numberField(fields, 'Pente des rampes, %', draft.ramp_grade_percent, function (v) { draft.ramp_grade_percent = v; apply(); });
       } else {
         numberField(fields, 'Rayon des bordures, m', draft.corner_radius_m, function (v) { draft.corner_radius_m = v; apply(); });
@@ -195,11 +213,14 @@
     state.digest = network && network.ok ? network.road_digest : null;
     el.diag.textContent = '';
     el.metrics.textContent = '';
-    if (!network) { renderJunctions([]); drawPlan(null); return; }
+    if (!network) { state.lastJunctions = []; renderJunctions([]); drawPlan(null); return; }
     messages(network.diagnostics).forEach(function (m) { node('li', {}, el.diag, m); });
-    if (!network.ok) { el.metrics.textContent = 'Réseau refusé : rien ne sera écrit.'; drawPlan(null); return; }
+    // Un refus garde la liste des carrefours : on corrige un pont refusé là où on l'a réglé.
+    if (!network.ok) { el.metrics.textContent = 'Réseau refusé : rien ne sera écrit.'; renderJunctions(state.lastJunctions); drawPlan(null); return; }
+    state.lastJunctions = network.junctions || [];
     var m = network.metrics;
     el.metrics.textContent = m.road_count + (m.road_count > 1 ? ' voies, ' : ' voie, ') + fmt(m.length_m.toFixed(1)) + ' m ; ' + m.junction_count + (m.junction_count > 1 ? ' carrefours ; ' : ' carrefour ; ') +
+      (m.bridge_count ? m.bridge_count + (m.bridge_count > 1 ? ' ponts ; ' : ' pont ; ') : '') +
       fmt(m.item_count) + ' objets, ' + fmt(m.expanded_face_count) + ' faces au total.';
     renderJunctions(network.junctions);
     drawPlan(network);

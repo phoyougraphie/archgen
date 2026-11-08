@@ -1,13 +1,18 @@
 # Journal des versions
 
-## 0.9.0-dev
+## 0.9.0
 
-Ponts (AG-057 à AG-059), en cours.
+Ponts (AG-057 à AG-059). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies et réseaux sans pont identiques. Le rapport de recette est dans [docs/recette/V0.9.md](docs/recette/V0.9.md).
 
 **Ajouts**
 
 - **Pont à poutre** dans un réseau de voies : né tout seul sur un cours d'eau, au choix sur une voie ferrée ou une route ; la voie portée monte en rampes jusqu'au tablier, avec culées et garde-corps ; les cours d'eau entrent dans un réseau (AG-057).
 - **Arc et voûte** : arc parabolique à montants, voûte de pierre à arches de 20 m au plus et piles ; le gabarit sous l'ouvrage est contrôlé, et un refus donne la hauteur libre qui suffit (AG-058).
+- **Panneau de réseau** : type Pont, genre, voie portée, hauteur libre et pente des rampes ; rivières, canaux et côtes s'ajoutent au réseau, l'eau se voit en plan ; un réseau refusé garde sa liste de carrefours pour corriger (AG-059).
+
+**Limites connues**
+
+- Réseau horizontal : pas de pont sur un terrain. Deux cours d'eau ne se rejoignent pas. Sous le tablier, tous les objets de la voie franchie sont retirés. Garde-corps en parois pleines, portes et montants simplifiés.
 
 ## 0.8.0
 

@@ -79,7 +79,7 @@ Plus les refus de zone existants (`junction_on_curve`, `arm_too_short`, `junctio
 
 ## Panneau (AG-059)
 
-Dans **Tracer un réseau** : le type **Pont** et ses réglages (genre, voie portée, hauteur libre, pente des rampes) ; un nœud sur l'eau s'affiche d'office en pont ; les préréglages d'eau et de littoral s'ajoutent au réseau. Guide, journal, RBZ 0.9.0, recette H24, recettes rejouées.
+Livré en 0.9.0 ([rapport](recette/V0.9.md)). Dans **Tracer un réseau** : le type **Pont** et ses réglages (genre, voie portée — « selon les voies » ou l'une des deux —, hauteur libre, pente des rampes) ; un nœud sur l'eau s'affiche d'office en pont ; les préréglages d'eau et de littoral s'ajoutent au réseau, avec le régime à un seul niveau (le seul possible dans un réseau, posé par le panneau) ; l'eau se dessine dans la vue en plan. Un réseau refusé garde la liste de ses carrefours, pour corriger un pont là où on l'a réglé.
 
 ## Hors de ce lot
 

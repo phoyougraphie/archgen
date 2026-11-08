@@ -13,7 +13,7 @@ module Archgen
         'init' => [], 'add_road' => %w[preset axis radius_m], 'remove_road' => %w[id], 'set_junction' => %w[junction],
         'preview' => [], 'create' => %w[road_digest], 'clear' => [], 'load_selection' => [], 'regenerate' => %w[road_digest]
       }.freeze
-      JUNCTION_KEYS = %w[id type corner_radius_m outer_radius_m ring_width_m pair ramp_grade_percent].freeze
+      JUNCTION_KEYS = %w[id type corner_radius_m outer_radius_m ring_width_m pair ramp_grade_percent bridge_kind over clearance_m].freeze
       MAX_REQUEST_ID = 64
       MAX_ROADS = 24
       DEFAULT_RADIUS_M = 20.0
@@ -144,8 +144,11 @@ module Archgen
 
         origin = @session.origin_m
         points = @session.relative_points.map { |x, y| [x + origin[0], y + origin[1]] }
+        # Dans un réseau, l'eau reste à un seul niveau (docs/PONT_CONTRACT.md) : une coupe à eau ou à mer reçoit
+        # ce régime, le seul possible ici.
+        wet = preset['profile']['bands'].any? { |b| %w[water sea].include?(b['type']) }
         @roads << { 'id' => "v#{@next}", 'preset' => preset['id'], 'name' => preset.dig('profile', 'name'), 'profile' => preset['profile'],
-                    'axis' => axis, 'radius_m' => radius, 'points' => points, 'z' => origin[2] }
+                    'axis' => axis, 'radius_m' => radius, 'points' => points, 'z' => origin[2] }.merge(wet ? { 'settings' => { 'water' => { 'mode' => 'flat' } } } : {})
         @next += 1
         @session.clear
         preview
@@ -207,21 +210,26 @@ module Archgen
         {
           'ok' => true, 'road_digest' => result.value.road_digest, 'diagnostics' => diagnostics,
           'metrics' => metrics.slice('length_m', 'road_count', 'junction_count', 'piece_count', 'item_count', 'signal_count',
-                                     'unique_face_count', 'expanded_face_count'),
+                                     'unique_face_count', 'expanded_face_count', 'bridge_count'),
           'junctions' => plan['junctions'], 'plan' => plan_view(plan)
         }
       end
 
       # Vue en plan : faces vues de dessus, couleur de leur matière, en mètres du repère du réseau.
       def plan_view(plan)
-        surface = plan['nodes'][0]['children'].find { |c| c['id'] == 'road/surface' }['primitive']
-        v = surface['vertices']
-        faces = surface['faces'].filter_map do |f|
-          pts = f['indices'].map { |i| v[i] }
-          area = pts.each_index.sum { |i| (pts[i][0] * pts[(i + 1) % pts.size][1]) - (pts[(i + 1) % pts.size][0] * pts[i][1]) }
-          next unless area > 1e-9
+        # L'eau d'abord, la surface ensuite : un pont se dessine sur la rivière.
+        faces = %w[road/water road/surface].flat_map do |id|
+          node = plan['nodes'][0]['children'].find { |c| c['id'] == id }
+          next [] unless node
 
-          [pts.map { |p| [p[0].round(2), p[1].round(2)] }, @colors.fetch(f['material'], '#999999')]
+          v = node['primitive']['vertices']
+          node['primitive']['faces'].filter_map do |f|
+            pts = f['indices'].map { |i| v[i] }
+            area = pts.each_index.sum { |i| (pts[i][0] * pts[(i + 1) % pts.size][1]) - (pts[(i + 1) % pts.size][0] * pts[i][1]) }
+            next unless area > 1e-9
+
+            [pts.map { |p| [p[0].round(2), p[1].round(2)] }, @colors.fetch(f['material'], '#999999')]
+          end
         end
         { 'faces' => faces.first(MAX_PLAN_FACES), 'truncated' => faces.size > MAX_PLAN_FACES }
       end
