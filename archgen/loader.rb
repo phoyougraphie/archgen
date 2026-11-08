@@ -62,6 +62,7 @@ module Archgen
       core/site_plan_validator
       core/plan_projection
       core/geometry_engine
+      core/ensemble_variety
       core/parcel_building
       core/ensemble_engine
       core/ensemble_site

@@ -158,6 +158,12 @@ module Archgen
         'site_faces' => 'Le terrassement est trop détaillé. Augmentez le pas du relevé.',
         'total_faces' => 'Le bâtiment et son terrassement dépassent la limite de %{limit} faces. Augmentez le pas du relevé ou réduisez le niveau de détail.',
         # Voirie : coupe (docs/VOIRIE_CONTRACT.md)
+        # Rues variées (docs/RUE_VARIEE_CONTRACT.md)
+        'variety_levels_order' => 'Le nombre de niveaux minimal (%{min}) dépasse le maximal (%{max}).',
+        'variety_with_levels' => 'Une rue variée tire le nombre de niveaux : retirez la liste des hauteurs par niveau.',
+        'variety_style_levels' => 'Ce style demande de %{min} à %{max} niveaux : resserrez la fourchette, ou passez en fidélité plausible.',
+        'variety_style_roof' => 'Ce style ne permet pas ce toit. Toits permis : %{allowed}.',
+        'variety_hip_roof' => 'Un toit en croupe n’a pas de sens dans une rangée : retirez-le de la liste.',
         'unsupported_road_profile' => 'Cette coupe vient d’une version plus récente d’ARCHGEN.',
         'unknown_type' => 'Ce type de bande n’existe pas dans le catalogue.',
         'width_range' => 'Cette bande mesure %{value} m : choisissez une largeur de %{min} à %{max} m.',

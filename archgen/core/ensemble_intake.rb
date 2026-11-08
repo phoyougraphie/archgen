@@ -36,7 +36,7 @@ module Archgen
         problems = @settings.validate(tree)
         return Result.fail(problems) unless problems.empty?
 
-        problems = building_problems(tree.fetch('building', {})) + shape_problems(tree)
+        problems = building_problems(tree.fetch('building', {})) + shape_problems(tree) + variety_problems(tree)
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
         Result.ok(Canonical.deep_freeze(effective(tree)))
@@ -64,6 +64,21 @@ module Archgen
         parent.is_a?(Hash) && parent.key?(keys.last)
       end
 
+      # Rues variées (AG-061) : forme du réglage ; les règles du style se jugent ensuite, dans le moteur.
+      def variety_problems(tree)
+        levels = tree.dig('variety', 'levels')
+        return [] unless levels
+
+        out = []
+        if levels['min'] > levels['max']
+          out << Diagnostic.error('E_STREET_VARIETY', '/variety/levels/min', reason: 'variety_levels_order', min: levels['min'], max: levels['max'])
+        end
+        if tree.dig('building', 'levels', 'heights_m')
+          out << Diagnostic.error('E_STREET_VARIETY', '/building/levels/heights_m', reason: 'variety_with_levels')
+        end
+        out
+      end
+
       def shape_problems(tree)
         return closed_problems(tree) if tree.dig('trace', 'closed')
 
@@ -89,6 +104,10 @@ module Archgen
       def effective(tree)
         merged = Merge.leaves(DEFAULTS, tree)
         merged = tree.dig('trace', 'closed') ? closed_defaults(merged) : open_defaults(merged)
+        if merged.dig('variety', 'levels')
+          levels = { 'max_step' => EnsembleVariety::DEFAULT_STEP }.merge(merged['variety']['levels'])
+          merged = merged.merge('variety' => merged['variety'].merge('levels' => levels))
+        end
         normalized = @settings.normalize(merged)
         normalized.merge('trace' => normalized['trace'].merge('points_m' => normalized.dig('trace', 'points_m').map { |p| Quant.q3(p) }))
       end

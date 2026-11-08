@@ -20,11 +20,17 @@ module Archgen
         return layout unless layout.ok?
 
         parcels = layout.value['parcels']
+        if settings['variety']
+          checked = EnsembleVariety.problems(settings, parcels.first, registry: registry, intake: intake)
+          return Result.fail(checked) unless checked.empty?
+
+          parcels = EnsembleVariety.assign(settings, parcels)
+        end
         prepared = parcels.map { |parcel| ParcelBuilding.prepare(settings, parcel, registry: registry, intake: intake) }
         errors = prepared.flat_map(&:errors)
         return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
 
-        assemble(parcels, prepared, layout.value, materials, limits, progress)
+        assemble(parcels, prepared, layout.value, materials, limits, progress, variety: settings['variety'] ? EnsembleVariety.summary(parcels) : nil)
       end
 
       # Les parcelles définitives, accès de cour compris. Une forme fermée n'en sort jamais sans accès.
@@ -59,7 +65,7 @@ module Archgen
       end
       private_class_method :access_form
 
-      def assemble(parcels, prepared, layout, materials, limits, progress)
+      def assemble(parcels, prepared, layout, materials, limits, progress, variety: nil)
         definitions = {}
         placed = []
         diagnostics = []
@@ -79,10 +85,12 @@ module Archgen
           budget = budget_problem(unique, expanded, limits)
           return Result.fail([budget]) if budget
 
-          placed << { 'id' => parcel['id'], 'definition_id' => id, 'matrix' => matrix(parcel) }
+          entry = { 'id' => parcel['id'], 'definition_id' => id, 'matrix' => matrix(parcel) }
+          entry['variety'] = parcel['variety'] if parcel['variety']
+          placed << entry
           progress&.call(index + 1, parcels.size)
         end
-        finish(definitions, placed, layout, unique, expanded, diagnostics)
+        finish(definitions, placed, layout, unique, expanded, diagnostics, variety)
       end
       private_class_method :assemble
 
@@ -120,7 +128,7 @@ module Archgen
       end
       private_class_method :matrix
 
-      def finish(definitions, placed, layout, unique, expanded, diagnostics)
+      def finish(definitions, placed, layout, unique, expanded, diagnostics, variety = nil)
         plan = {
           'schema_version' => SCHEMA_VERSION,
           'engine_version' => ENGINE_VERSION,
@@ -137,6 +145,7 @@ module Archgen
             'access_count' => layout['accesses'].size
           }
         }
+        plan['variety'] = variety if variety
         problems = EnsemblePlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
 

@@ -53,6 +53,7 @@ module Archgen
         diagnostic.error? ? Diagnostic.error(diagnostic.code, path, **params) : Diagnostic.warning(diagnostic.code, path, **params)
       end
 
+      # Publique : EnsembleVariety y juge un tirage contre les règles du style.
       def config_for(settings, parcel, registry:, intake:)
         resolved = ConfigResolver.resolve(request(settings, parcel), registry: registry, intake: intake)
         resolved.ok? ? resolved : localized(resolved, parcel)
@@ -70,6 +71,10 @@ module Archgen
       def request(settings, parcel)
         building = settings['building']
         front = bays(parcel['width_m'], settings.dig('parcel', 'bay_width_m'), 1)
+        # Rues variées (AG-061) : niveaux et toit tirés pour cette parcelle.
+        pick = parcel['variety'] || {}
+        building = Merge.leaves(building, 'levels' => { 'count' => pick['levels'] }) if pick['levels']
+        building = Merge.leaves(building, 'roof' => { 'type' => pick['roof'] }) if pick['roof']
         Merge.leaves(
           building,
           'footprint' => { 'width_m' => parcel['width_m'], 'depth_m' => parcel['depth_m'] },

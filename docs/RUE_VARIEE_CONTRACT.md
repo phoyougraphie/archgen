@@ -24,7 +24,7 @@ Clé facultative et fermée, ajoutée sans changer la version du format (comme A
 | `levels.max_step` | [1 ; 14] | 2 | Écart maximal entre deux voisines (D-13) |
 | `roofs` | liste de 1 à 3 types parmi `flat`, `gable`, `mansard` | le toit du bâtiment | Toits tirés par parcelle (D-14) ; `hip` reste refusé en rangée (`E_STREET_ROOF`) |
 
-**Tirage (D-13, D-14) :** pour chaque parcelle, dans l'ordre des rangées puis des parcelles, `levels = min + ⌊unit(seed, "parcel/<id>/levels") × (max − min + 1)⌋`, puis ramené dans `[voisine − max_step ; voisine + max_step]` par **un nouveau tirage dans la fenêtre permise**, jamais par une coupe silencieuse : la fenêtre permise est l'intersection de la fourchette et de ± `max_step` autour de la parcelle précédente de la rangée. Le toit est `roofs[⌊unit(seed, "parcel/<id>/roof") × n⌋]`. Mêmes réglages et même seed : même rue.
+**Tirage (D-13, D-14 ; AG-061) :** les parcelles sont prises dans l'ordre du plan (rangée par rangée, le long du tracé). Pour chacune, la **fenêtre permise** est la fourchette, réduite à ± `max_step` autour du nombre de niveaux de la parcelle précédente de la même rangée ; elle n'est jamais vide. Le nombre de niveaux est `bas + ⌊unit(seed, "parcel/<id>/levels") × (haut − bas + 1)⌋` dans cette fenêtre : le tirage se fait directement dans la fenêtre, aucune valeur n'est coupée après coup. Le toit est `roofs[⌊unit(seed, "parcel/<id>/roof") × n⌋]`. `seed` est celle de l'ensemble. Mêmes réglages et même seed : même rue. **Limite :** dans un îlot, la dernière parcelle du tour n'est comparée qu'à sa précédente, pas à la première : l'écart entre ces deux-là peut dépasser `max_step`.
 
 **Contrôles, refus `E_STREET_VARIETY` :**
 
@@ -33,10 +33,14 @@ Clé facultative et fermée, ajoutée sans changer la version du format (comme A
 | `variety_levels_order` | `min` > `max` |
 | `variety_style_levels` | La fourchette sort de la règle de niveaux du style en fidélité historique (par exemple 5 à 7 pour Haussmannien) ; le message donne la fourchette permise |
 | `variety_style_roof` | Un toit de la liste n'est pas permis par le style en fidélité historique (Haussmannien : mansarde seulement) |
-| `variety_hip_roof` | `hip` dans la liste |
+| `variety_hip_roof` | `hip` dans la liste, sur `/variety/roofs` |
 | `variety_with_levels` | `building.levels.heights_m` saisi : une liste de hauteurs par niveau ne se tire pas |
 
 En fidélité libre, les règles du style deviennent des avertissements, comme pour un bâtiment seul.
+
+Les règles du style se jugent sur une parcelle témoin, la première du plan, avec chaque bout de la fourchette puis chaque toit de la liste, par la même résolution qu'un bâtiment : `variety_style_levels` sur `/variety/levels`, avec la fourchette permise ; `variety_style_roof` sur `/variety/roofs/<i>`, avec les toits permis. Les autres refus portent sur `/variety/levels/min` (`variety_levels_order`) et `/building/levels/heights_m` (`variety_with_levels`).
+
+**Plan :** chaque parcelle porte son tirage (`variety` : `levels`, `roof`), et le plan d'ensemble la répartition (`variety` : niveaux et toits comptés). Deux parcelles de même tirage et de même forme partagent toujours leur définition.
 
 **Budget :** des parcelles différentes partagent moins de définitions ; le plafond de faces de l'ensemble s'applique tel quel (`E_STREET_BUDGET`), estimé avant l'écriture.
 
