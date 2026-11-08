@@ -158,7 +158,7 @@
       var draft = JSON.parse(JSON.stringify(s));
       var apply = function () {
         var out = { id: j.id, type: type.value };
-        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair', 'ramp_grade_percent', 'bridge_kind', 'over', 'clearance_m'].forEach(function (k) {
+        ['corner_radius_m', 'outer_radius_m', 'ring_width_m', 'pair', 'ramp_grade_percent', 'bridge_kind', 'over', 'clearance_m', 'crossing_studs'].forEach(function (k) {
           if (draft[k] !== undefined && draft[k] !== null && draft[k] !== '') { out[k] = draft[k]; }
         });
         if (out.type !== 'roundabout' && out.type !== 'double_roundabout') { delete out.outer_radius_m; delete out.ring_width_m; }
@@ -166,6 +166,7 @@
         var ramped = out.type === 'level_crossing' || out.type === 'bridge';
         if (!ramped) { delete out.ramp_grade_percent; } else { delete out.corner_radius_m; }
         if (out.type !== 'bridge') { delete out.bridge_kind; delete out.over; delete out.clearance_m; }
+        if (out.type !== 'signals' || !out.crossing_studs) { delete out.crossing_studs; }
         state.notice = null;
         send('set_junction', { junction: out });
       };
@@ -189,6 +190,14 @@
         numberField(fields, 'Pente des rampes, %', draft.ramp_grade_percent, function (v) { draft.ramp_grade_percent = v; apply(); });
       } else {
         numberField(fields, 'Rayon des bordures, m', draft.corner_radius_m, function (v) { draft.corner_radius_m = v; apply(); });
+      }
+      if (type.value === 'signals') {
+        // Clous de passage piéton (D-10, ADR-42).
+        var studWrap = node('label', { 'class': 'net-check' }, fields);
+        var stud = node('input', { type: 'checkbox', 'aria-label': 'Clous aux passages piétons de ' + j.id }, studWrap);
+        studWrap.appendChild(document.createTextNode(' Clous aux passages piétons'));
+        stud.checked = draft.crossing_studs === true;
+        stud.addEventListener('change', function () { draft.crossing_studs = stud.checked; apply(); });
       }
       var round = type.value === 'roundabout' || type.value === 'double_roundabout';
       if (round) {

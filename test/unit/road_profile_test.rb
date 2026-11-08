@@ -7,7 +7,7 @@ class RoadProfileTest < Minitest::Test
   include Archgen::Core
 
   BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank cliff rocks dune beach sea].freeze
-  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall].freeze
+  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud].freeze
   PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
   STEP = 0.001
 
@@ -118,7 +118,7 @@ class RoadProfileTest < Minitest::Test
     ITEM_KINDS.each do |kind|
       entry = items.fetch(kind)
       # Ganivelle et muret ne vont que sur certaines bandes (EAU_CONTRACT) : la première qu'ils acceptent.
-      host = entry.key?('bands') ? (entry['bands'] & %w[dune sidewalk]).first : 'plant'
+      host = entry.key?('bands') ? entry['bands'].first : 'plant'
       [entry['min_height_m'], entry['max_height_m']].each do |h|
         accepted(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }])))
       end

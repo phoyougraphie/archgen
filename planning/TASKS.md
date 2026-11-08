@@ -75,6 +75,7 @@ Contrat : [VOIRIE_CONTRACT](../docs/VOIRIE_CONTRACT.md), [maquette](../docs/maqu
 | **AG-048 — Panneau de carrefour, RBZ 0.6.0** | AG-044, AG-046, AG-047 | Choisir et régler un carrefour, aperçu en plan, guide, journal, RBZ. | Quatre types écrits et rouverts, une entrée d'Annuler, charge publiée ; vrai geste à la souris ; recettes rejouées sur le RBZ. H21. |
 | **AG-049 — Voie sur un terrain** | AG-042, ADR-38 | Selon ADR-38 : profil en long relevé, pente bornée, talus raccordés au terrain (étape 1, noyau), puis copie entaillée du terrain et écriture (étape 2). | Pentes et talus à la main, refus localisés, plan inchangé sans `ground` (U32) ; copie entaillée, original intact et masqué, une opération, pannes sans résidu (H22). |
 | **AG-050 — Passage à niveau** | AG-047, AG-049 | Voie ferrée × route à niveau : la route monte en rampe au dessus des rails, platelage, rails au ras, barrières et feux de passage. Contrat à compléter avant le code. | Rampes de pente bornée, rails continus, voie ferrée hors passage à niveau toujours refusée. U33. |
+| **AG-060 — Clous et plots (D-10)** | AG-044, ADR-42 | Plot de chaussée, élément d'une bande roulante sur sa limite gauche ; clous de passage piéton en option d'un carrefour à feux ; panneaux. | Positions à la main, refus localisés, voies et réseaux d'avant inchangés. U41. |
 
 ## J9 — Eau et littoral (EXT-13)
 

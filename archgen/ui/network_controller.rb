@@ -13,7 +13,7 @@ module Archgen
         'init' => [], 'add_road' => %w[preset axis radius_m], 'remove_road' => %w[id], 'set_junction' => %w[junction],
         'preview' => [], 'create' => %w[road_digest], 'clear' => [], 'load_selection' => [], 'regenerate' => %w[road_digest]
       }.freeze
-      JUNCTION_KEYS = %w[id type corner_radius_m outer_radius_m ring_width_m pair ramp_grade_percent bridge_kind over clearance_m].freeze
+      JUNCTION_KEYS = %w[id type corner_radius_m outer_radius_m ring_width_m pair ramp_grade_percent bridge_kind over clearance_m crossing_studs].freeze
       MAX_REQUEST_ID = 64
       MAX_ROADS = 24
       DEFAULT_RADIUS_M = 20.0

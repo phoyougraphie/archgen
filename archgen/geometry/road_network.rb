@@ -337,6 +337,7 @@ module Archgen
           next unless arm.carriageway
 
           faces += RoadSignals.faces(arm)
+          lights.concat(RoadSignals.studs(arm, "crossing_stud/#{node.id}/#{k + 1}")) if node.options && node.options['crossing_studs']
           light = RoadSignals.light(arm, "signal/#{node.id}/#{k + 1}")
           light ? lights << light : problems << error(node.id, 'no_room_for_signal', road: arm.road.id)
         end

@@ -61,6 +61,9 @@
             "minLength": 1,
             "maxLength": 64
           },
+          "crossing_studs": {
+            "type": "boolean"
+          },
           "clearance_m": {
             "type": "number",
             "minimum": 2,

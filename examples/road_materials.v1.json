@@ -41,6 +41,8 @@
     "road/item/head": { "label": "Voirie boîtier de feu", "srgb": "#26292B" },
     "road/item/red": { "label": "Voirie rouge de signalisation", "srgb": "#C0392B" },
     "road/item/white": { "label": "Voirie blanc de signalisation", "srgb": "#F2F2EE" },
-    "road/item/stone": { "label": "Voirie pierre", "srgb": "#B7AE9C" }
+    "road/item/stone": { "label": "Voirie pierre", "srgb": "#B7AE9C" },
+    "road/item/metal": { "label": "Voirie métal clair", "srgb": "#C9CDD0" },
+    "road/item/reflector": { "label": "Voirie catadioptre", "srgb": "#E8A33D" }
   }
 }

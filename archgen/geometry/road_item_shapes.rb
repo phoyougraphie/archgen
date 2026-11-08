@@ -7,7 +7,7 @@ module Archgen
     # voie, Y vers la chaussée la plus proche (côté d'une crosse), Z vers le haut.
     module RoadItemShapes
       SIDES = 8
-      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white stone].freeze
+      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white stone metal reflector].freeze
 
       module_function
 
@@ -21,6 +21,9 @@ module Archgen
                  when 'tree' then tree(variant, height, crown)
                  when 'lamp' then lamp(variant, height)
                  when 'bollard' then [lathe([[0, 0], [0.05, 0], [0.05, height], [0, height]], 'steel')]
+                 # Plot de chaussée et clou de passage piéton (D-10, ADR-42) : galet à huit pans.
+                 when 'road_stud' then [lathe([[0, 0], [0.05, 0], [0.05, height], [0, height]], variant == 'reflective' ? 'reflector' : 'white')]
+                 when 'crossing_stud' then [lathe([[0, 0], [0.06, 0], [0.06, height], [0, height]], 'metal')]
                  when 'pole' then catenary_pole(height)
                  when 'signal' then signal(height)
                  when 'crossing_light' then crossing_light(height)

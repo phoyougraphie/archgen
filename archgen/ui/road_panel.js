@@ -701,6 +701,9 @@
         svg('line', { x1: x, y1: z, x2: x, y2: z - h, class: 's-pole', 'stroke-width': 2 }, g);
         svg('rect', { x: x - 0.08 * s, y: z - h, width: 0.16 * s, height: 0.31 * s, class: 's-steel' }, g);
       }
+    } else if (it.kind === 'road_stud') {
+      // Plot de chaussée (D-10) : galet de 10 cm sur la limite gauche de sa bande.
+      svg('rect', { x: x - 0.05 * s, y: z - h, width: 0.1 * s, height: h, class: it.variant === 'reflective' ? 's-reflector' : 's-stud' }, g);
     } else if (it.kind === 'sand_fence') {
       // Ganivelle (AG-052) : paroi de lattes vue en bout, comme une barrière.
       svg('rect', { x: x - 1.5, y: z - h, width: 3, height: h, class: 's-trunk' }, g);

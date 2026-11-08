@@ -39,7 +39,7 @@ module Archgen
       FAMILIES = {
         'tree' => 'road_vegetation', 'hedge' => 'road_vegetation', 'lamp' => 'road_lighting',
         'bollard' => 'road_furniture', 'pole' => 'road_furniture', 'post' => 'road_furniture', 'fence' => 'road_furniture',
-        'guard' => 'road_furniture', 'sand_fence' => 'road_furniture', 'low_wall' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
+        'guard' => 'road_furniture', 'road_stud' => 'road_furniture', 'crossing_stud' => 'road_furniture', 'sand_fence' => 'road_furniture', 'low_wall' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
       }.freeze
 
       def family(node)

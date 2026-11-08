@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.10.0-dev
+
+**Ajouts**
+
+- **Plots de chaussée** : nouvel élément d'une voie, d'une bande d'arrêt ou dérasée, posé sur la limite gauche de sa bande, blanc ou rétroréfléchissant, tous les 12 m par défaut (D-10).
+- **Clous de passage piéton** : case d'un carrefour à feux ; deux rangées de clous de part et d'autre de chaque passage (D-10).
+
 ## 0.9.0
 
 Ponts (AG-057 à AG-059). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies et réseaux sans pont identiques. Le rapport de recette est dans [docs/recette/V0.9.md](docs/recette/V0.9.md).

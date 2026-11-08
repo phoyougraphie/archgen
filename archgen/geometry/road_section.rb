@@ -182,8 +182,10 @@ module Archgen
         profile['bands'].each_with_index.flat_map do |band, i|
           count = band['items'].size
           band['items'].each_with_index.map do |item, j|
-            x = rows[i]['x0_m'] + (band['width_m'] * (j + 1) / (count + 1))
-            placed(item, catalogue.fetch(item['kind']), rows, i, j, x)
+            entry = catalogue.fetch(item['kind'])
+            # Un plot de chaussée marque la limite gauche de sa bande (D-10, ADR-42).
+            x = entry['placement'] == 'band_left' ? rows[i]['x0_m'] : rows[i]['x0_m'] + (band['width_m'] * (j + 1) / (count + 1))
+            placed(item, entry, rows, i, j, x)
           end
         end
       end

@@ -75,6 +75,7 @@ Un élément appartient à une bande. Ses positions en travers se répartissent 
 | `hedge` | `hedge` | 0,5 à 5 | Continu | Extrusion le long de l'axe |
 | `fence` | `fence`, `mesh` | 0,6 à 3 | Continu | Extrusion simple |
 | `guard` | `guard`, `concrete` | 0,6 à 1,5 | Continu | Extrusion simple |
+| `road_stud` | `plain`, `reflective` | 0,01 à 0,05 (0,02) | Pas de 1 m au moins, 12 m par défaut | Plot de chaussée (D-10, ADR-42) : galet à huit pans de 0,10 m, blanc ou catadioptre ambre ; **posé sur la limite gauche de sa bande**, sur une voie, une bande d'arrêt, une bande dérasée, une voie mixte ou un stationnement seulement (`item_band_mismatch` ailleurs) |
 
 - **Répétition :** le premier objet est à `spacing_m / 2` de l'origine du tronçon, puis tous les `spacing_m` mesurés le long de la ligne de pose. Un objet qui tomberait hors du tronçon n'est pas posé.
 - **Variation :** `height_variation` optionnel, de 0 à 0,3, arbres seulement. Pour une hauteur h et une variation v, chaque arbre prend l'une des trois hauteurs h(1 − v), h, h(1 + v), tirée par `unit(seed, "road/item/<bande>/<élément>/<rang>")`. Les trois doivent rester dans la plage de hauteur. Chaque hauteur reste une définition partagée. Sans variation, tous les arbres ont la même hauteur.
@@ -201,6 +202,7 @@ Types de nœud, livrés ticket par ticket :
 - **Passage piéton** si la coupe porte un trottoir ou un chemin : 4 m dans le sens de la voie, bandes de 0,5 m parallèles à l'axe, tous les 1 m, à 0,25 m au moins des bords de chaque bande roulante (stationnement exclu). Sans trottoir, pas de passage.
 - **Garde** de 1 m, puis **ligne d'arrêt** de 0,5 m sur les seules voies (`lane`) qui entrent : celles à gauche de la branche vue du nœud, au-delà du milieu des voies. Bandes dérasées, arrêt d'urgence et stationnement n'en ont pas.
 - Le marquage (`road/marking`) est **taillé dans la surface**, au niveau de la chaussée : aucune face superposée, donc aucun scintillement. La zone du carrefour s'allonge d'autant (`reach_m` : coupe + 5,5 m avec passage, + 1,5 m sans) ; les tronçons et leurs objets commencent après.
+- **Clous de passage piéton** (D-10, ADR-42), sur demande : réglage `crossing_studs: true` du nœud, refusé sur un autre type (`crossing_studs_unavailable`). Deux rangées par passage, à 0,15 m en deçà de ses bords, en travers des bandes roulantes (stationnement exclu) : un clou à 0,25 m du bord de chaque bande puis tous les 0,5 m jusqu'à 0,25 m de l'autre bord. Galet de métal clair de 0,12 m de diamètre et 2 cm de haut, posé sur la chaussée (instances `crossing_stud/<nœud>/<branche>/<rangée>/<rang>`, famille mobilier). Sans le réglage, rien ne change.
 - **Un feu par branche à chaussée** (`signal/<nœud>/<rang>`, famille mobilier) : mât et boîtier de 3 m, trois optiques tournées vers ceux qui arrivent ; posé à droite de la circulation qui arrive, 0,5 m derrière la bordure (au milieu de la bande si elle est plus étroite), au droit de la ligne d'arrêt, à la cote de la bande. Une branche sans chaussée (chemin) n'a ni feu ni marquage.
 - Plan : `type` et `reach_m` par nœud, `signal_count` dans `metrics`.
 

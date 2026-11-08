@@ -85,6 +85,16 @@
       "repeat": "continuous",
       "height_variation": false,
       "bands": ["sidewalk", "path", "track", "verge", "quay", "beach"]
+    },
+    "road_stud": {
+      "label": "Plot de chaussée",
+      "variants": { "plain": { "label": "Blanc" }, "reflective": { "label": "Rétroréfléchissant" } },
+      "default_variant": "plain",
+      "default_height_m": 0.02, "min_height_m": 0.01, "max_height_m": 0.05,
+      "repeat": "spaced", "default_spacing_m": 12, "min_spacing_m": 1,
+      "height_variation": false,
+      "bands": ["lane", "hard", "edge", "tram_lane", "parking"],
+      "placement": "band_left"
     }
   }
 }

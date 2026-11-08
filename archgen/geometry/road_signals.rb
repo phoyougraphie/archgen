@@ -121,6 +121,47 @@ module Archgen
         RoadItems.instance(id, definition, point, arm.dir, level_at(arm, u), 'right')
       end
 
+      # Clous de passage piéton (D-10, ADR-42) : de part et d'autre du passage, en travers des bandes
+      # roulantes, un clou tous les 0,5 m à partir de 0,25 m du bord, 0,15 m en deçà du bord du passage.
+      STUD_PITCH_M = 0.5
+      STUD_INSET_M = 0.15
+      STUD_HEIGHT_M = 0.02
+
+      def studs(arm, prefix)
+        return [] unless carriageway?(arm) && crossing?(arm)
+
+        normal = arm.sign.positive? ? arm.left : [-arm.left[0], -arm.left[1]]
+        line = arm.road.line
+        id = stud_definition.first
+        out = []
+        [arm.cut + STUD_INSET_M, arm.cut + CROSSING_M - STUD_INSET_M].each_with_index do |along, side|
+          base = J.point(arm, nil, along, 0)
+          xs = lanes(arm).flat_map do |x0, x1|
+            n = (((x1 - x0) - (2 * STRIPE_EDGE_M)) / STUD_PITCH_M).floor
+            (0..n).map { |k| x0 + STRIPE_EDGE_M + (k * STUD_PITCH_M) }
+          end
+          xs.each_with_index do |x, k|
+            offset = arm.road.ax - x
+            point = [base[0] + (normal[0] * offset), base[1] + (normal[1] * offset)]
+            out << RoadItems.instance("#{prefix}/#{side + 1}/#{k + 1}", id, point, arm.dir, line_z(line, x), 'left')
+          end
+        end
+        out
+      end
+
+      def line_z(line, x)
+        line.each do |(xa, za), (xb, zb), _|
+          next if (xb - xa).abs < 1e-12 || x < xa - 1e-9 || x > xb + 1e-9
+
+          return za + ((zb - za) * (x - xa) / (xb - xa))
+        end
+        0.0
+      end
+
+      def stud_definition
+        [RoadItems.definition_id('crossing_stud', 'metal', STUD_HEIGHT_M), RoadItemShapes.definition('crossing_stud', 'metal', STUD_HEIGHT_M)]
+      end
+
       def definition
         [RoadItems.definition_id('signal', 'tricolor', SIGNAL_HEIGHT_M), RoadItemShapes.definition('signal', 'tricolor', SIGNAL_HEIGHT_M)]
       end

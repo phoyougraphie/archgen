@@ -74,6 +74,9 @@ module Archgen
           Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{j['id']}", reason: 'unknown_junction')
         end
         unknown + nodes.filter_map do |node|
+          if node.options['crossing_studs'] && node.type != 'signals'
+            next Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{node.id}", reason: 'crossing_studs_unavailable', type: node.type)
+          end
           next if node.type == 'bridge' || (node.options.keys & Geometry::RoadBridge::SETTINGS).empty?
 
           Diagnostic.error('E_ROAD_JUNCTION', "/junctions/#{node.id}", reason: 'bridge_setting_unavailable', type: node.type)
@@ -113,6 +116,8 @@ module Archgen
         unless lights.empty?
           id, shape = Geometry::RoadSignals.definition
           placed[:definitions][id] ||= shape if lights.any? { |l| l['primitive']['definition_id'] == id }
+          sid, sshape = Geometry::RoadSignals.stud_definition
+          placed[:definitions][sid] ||= sshape if lights.any? { |l| l['primitive']['definition_id'] == sid }
           Geometry::RoadCrossing.definitions.each { |cid, cshape| placed[:definitions][cid] ||= cshape if lights.any? { |l| l['primitive']['definition_id'] == cid } }
           placed[:instances].concat(lights)
         end
