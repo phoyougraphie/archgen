@@ -1,8 +1,22 @@
 # Journal des versions
 
-## 0.7.0-dev
+## 0.7.0
 
-En cours, non publiée : voie sur un terrain (AG-049, ADR-38) — profil en long, pente bornée, talus, copie entaillée du terrain d'origine, qui reste masqué ; passage à niveau (AG-050) — la route monte en rampe au ras des rails, feux et barrières, la voie ferrée reste entière.
+Voies sur un terrain et passages à niveau. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies horizontales et réseaux sans passage à niveau identiques. Le rapport de recette est dans [docs/recette/V0.7.md](docs/recette/V0.7.md).
+
+**Ajouts**
+
+- **Tracer une voie → Suivre le terrain** : retenir un terrain, le relever, poser la voie dessus. Profil en long à pente bornée (8 % ; 6 % pour un tram, 2,5 % pour une voie ferrée), talus jusqu'au terrain, objets à la cote de la voie ; pente, déblai et remblai annoncés avant de créer.
+- **Le terrain d'origine n'est jamais modifié** : il est masqué, et une copie entaillée le long de la voie le remplace à l'écran (ADR-38). Annuler rend l'original ; modifier la voie refait la copie depuis l'original.
+- **Passage à niveau** dans le panneau de réseau : la route monte par deux rampes (4 % par défaut, 2 à 8 %) jusqu'au ras des rails, avec murets, feux de passage et barrières ; la voie ferrée reste entière.
+
+**Limites connues**
+
+- Un réseau de voies reste horizontal ; seule une voie seule suit un terrain.
+- Le bord de l'entaille suit le terrain au pas du relevé (4 m) : quelques centimètres d'écart possibles ; aux deux bouts de la voie, l'entaille est coupée droit.
+- Une voie posée sur un terrain garde ce terrain : la case ne change rien en modification ; une telle voie ne doit pas être tournée.
+- Effacer la voie à la main ne réaffiche pas le terrain d'origine : **Édition → Afficher**.
+- Au passage à niveau, le bord du platelage reste ouvert au-dessus de la voie ferrée.
 
 ## 0.6.0
 

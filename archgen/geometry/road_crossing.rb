@@ -90,9 +90,12 @@ module Archgen
         points.sort_by(&:first).uniq { |s, _| Core::Quant.q(s) }
       end
 
-      # Intervalles de la voie ferrée où ses objets (hors rails et traverses) s'interrompent.
+      # Intervalles où les objets d'une voie (hors rails et traverses) s'interrompent : la voie ferrée sous
+      # l'emprise de la route, la route sur son platelage (pas de lampadaire entre les rails, vu en recette).
       def gaps(road, nodes)
-        nodes.filter_map { |n| n.crossing if n.crossing && n.crossing.rail.equal?(road) }.map { |c| [c.rail_s - c.rail_half, c.rail_s + c.rail_half] }
+        rail = nodes.filter_map { |n| n.crossing if n.crossing && n.crossing.rail.equal?(road) }.map { |c| [c.rail_s - c.rail_half, c.rail_s + c.rail_half] }
+        deck = nodes.filter_map { |n| n.crossing if n.crossing && n.crossing.road.equal?(road) }.map { |c| [c.s - c.deck_half, c.s + c.deck_half] }
+        (rail + deck).sort
       end
 
       # Stations d'un tronçon de route, plus une à chaque point du profil, avec leur cote.

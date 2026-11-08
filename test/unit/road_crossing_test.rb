@@ -87,6 +87,28 @@ class RoadCrossingTest < Minitest::Test
     assert(poles.none? { |x| (x - 50).abs < 7.5 - TOL })
   end
 
+  # Vu en recette : un lampadaire de la rue se dressait entre les rails. Rien de la rue sur le platelage.
+  def test_no_road_item_stands_on_the_deck
+    p = straight
+    lamps = nodes(p, 'lamp/').map { |n| n['primitive']['matrix'].values_at(12, 13) }
+    refute_empty lamps
+    assert(lamps.select { |x, _| (x - 50).abs < 7 }.none? { |_, y| y.abs < 8 - TOL }, lamps.inspect)
+    bollards = nodes(p, 'bollard/').map { |n| n['primitive']['matrix'].values_at(12, 13) }
+    assert(bollards.select { |x, _| (x - 50).abs < 7 }.none? { |_, y| y.abs < 8 - TOL })
+  end
+
+  # Croix de Saint-André : deux lames inclinées à ±45°, aucune lame horizontale ni verticale.
+  def test_the_crossing_sign_is_an_x
+    shape = Archgen::Geometry::RoadItemShapes.definition('crossing_light', 'standard', 3.2)
+    white = shape.map { |n| n['primitive'] }.select { |prim| prim['faces'].all? { |f| f['material'] == 'road/item/white' } }
+    assert_equal 2, white.size
+    white.each do |prim|
+      ys = prim['vertices'].map { |v| v[1] }
+      zs = prim['vertices'].map { |v| v[2] }
+      assert_in_delta ys.max - ys.min, zs.max - zs.min, 1e-6, 'lame à 45°'
+    end
+  end
+
   def test_skirts_and_signs
     p = straight
     s = surface(p)

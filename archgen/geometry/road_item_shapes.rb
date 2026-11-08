@@ -42,12 +42,50 @@ module Archgen
         [pole(0.06, h - 0.9), box(-0.125, 0.125, -0.15, 0.15, h - 0.9, h, 'head')] + lenses
       end
 
-      # Feu de passage à niveau (AG-050) : mât, croix de Saint-André (deux planches blanches croisées,
-      # simplifiées en deux lames à plat), deux feux rouges côte à côte, côté −X.
+      # Feu de passage à niveau (AG-050) : mât, croix de Saint-André (deux lames blanches croisées à 45°),
+      # deux feux rouges côte à côte, côté −X.
       def crossing_light(h)
-        [pole(0.06, h), box(-0.04, -0.02, -0.6, 0.6, h - 0.62, h - 0.48, 'white'), box(-0.04, -0.02, -0.07, 0.07, h - 1.15, h + 0.05, 'white'),
+        [pole(0.06, h), board(h - 0.55, 1), board(h - 0.55, -1),
          box(-0.08, -0.06, -0.35, -0.12, h - 1.6, h - 1.37, 'red'), box(-0.08, -0.06, 0.12, 0.35, h - 1.6, h - 1.37, 'red'),
          box(-0.06, 0.06, -0.4, 0.4, h - 1.65, h - 1.32, 'head')]
+      end
+
+      # Lame de la croix : 1,2 × 0,14 m, 2 cm d'épaisseur, dans le plan YZ côté −X, inclinée à ±45° autour
+      # du point (y = 0, z = zc). Les deux lames se croisent ; chacune est un solide fermé.
+      def board(zc, sign)
+        c = Math.sqrt(0.5)
+        corners = [[-0.6, -0.07], [0.6, -0.07], [0.6, 0.07], [-0.6, 0.07]].map do |a, b|
+          [(a * c) - (sign * b * c), zc + (sign * a * c) + (b * c)]
+        end
+        builder = MeshBuilder.new('solid')
+        front = corners.map { |y, z| [-0.04, y, z] }
+        back = corners.map { |y, z| [-0.02, y, z] }
+        builder.add_face(front.reverse, material('white'))
+        builder.add_face(back, material('white'))
+        4.times do |i|
+          j = (i + 1) % 4
+          builder.add_face([front[i], front[j], back[j], back[i]], material('white'))
+        end
+        primitive = builder.to_primitive
+        normal_out?(primitive) ? primitive : flip(primitive)
+      end
+
+      # Solide orienté vers l'extérieur ? (volume signé positif)
+      def normal_out?(primitive)
+        v = primitive['vertices']
+        primitive['faces'].sum do |f|
+          pts = f['indices'].map { |i| v[i] }
+          (1...(pts.size - 1)).sum do |k|
+            a = pts[0]
+            b = pts[k]
+            d = pts[k + 1]
+            ((a[0] * ((b[1] * d[2]) - (b[2] * d[1]))) - (a[1] * ((b[0] * d[2]) - (b[2] * d[0]))) + (a[2] * ((b[0] * d[1]) - (b[1] * d[0])))) / 6.0
+          end
+        end.positive?
+      end
+
+      def flip(primitive)
+        primitive.merge('faces' => primitive['faces'].map { |f| f.merge('indices' => f['indices'].reverse) })
       end
 
       # Barrière : poteau et lisse relevée, rayée en blanc et rouge, 4 m.

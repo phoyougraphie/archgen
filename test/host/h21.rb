@@ -142,6 +142,16 @@ module ArchgenH21Probe
         r, = create(tree, [0.0, 150.0, 0.0])
         written_ok?(r, [0.0, 150.0, 0.0])
       }],
+      ['Passage à niveau : rue × voie ferrée double, rails continus, platelage sous les rails', lambda {
+        roads = [road('a', [[0, 0], [120, 0]], 'fer'), road('b', [[60, -60], [60, 60]])]
+        tree = { 'roads' => roads, 'junctions' => [{ 'id' => 'a@60.0+b@60.0', 'type' => 'level_crossing' }] }
+        r, = create(tree, [0.0, -150.0, 0.0])
+        root = r.value && roots.find { |x| x.persistent_id == r.value.persistent_id }
+        rails = root ? root.definition.entities.grep(Sketchup::Group).find { |g| g.name == 'road/rails' } : nil
+        ok = written_ok?(r, [0.0, -150.0, 0.0])
+        @last = r.ok? ? "#{@last} ; rails : #{rails ? rails.entities.count { true } : 0} éléments" : r.errors.map(&:to_h).inspect[0, 300]
+        ok && r.value.metrics['crossing_count'] == 1
+      }],
       ['Refus : autoroute à niveau, rien n’est écrit', lambda {
         before = counts
         r, = create(cross(a: 'autoroute'), [0.0, 400.0, 0.0])

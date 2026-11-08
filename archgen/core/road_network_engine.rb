@@ -94,7 +94,7 @@ module Archgen
               RoadEngine.lift_instances(piece_items, stations) if profile
               merge_items(placed, piece_items, tag)
             else
-              crossing_items(placed, road, from, to, gaps, items, tag)
+              crossing_items(placed, road, from, to, gaps, items, tag, profile)
             end
           end
         end
@@ -206,16 +206,22 @@ module Archgen
 
       # Voie ferrée d'un passage à niveau : rails et traverses continus ; les autres objets s'interrompent
       # sur l'emprise de la route (intervalles `gaps`).
-      def crossing_items(placed, road, from, to, gaps, items, tag)
-        full = Geometry::RoadItems.call(N.piece_stations(road, from, to), road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+      def crossing_items(placed, road, from, to, gaps, items, tag, profile = nil)
+        stations_for = lambda do |a, b|
+          st = N.piece_stations(road, a, b)
+          profile ? Geometry::RoadCrossing.lift(st, a, b, profile) : st
+        end
+        full = Geometry::RoadItems.call(stations_for.call(from, to), road.section, items: items, ax: road.ax, seed: road.settings['seed'])
         rails = { definitions: full[:definitions], instances: [], sleepers: full[:sleepers],
                   linear: full[:linear].select { |n| n['id'].start_with?('rail/') } }
         merge_items(placed, rails, tag)
-        bounds = [from] + gaps.flatten.sort + [to]
+        bounds = [from] + gaps.flatten.map { |g| g.clamp(from, to) }.sort + [to]
         bounds.each_slice(2).with_index do |(a, b), k|
           next if b - a < 0.5
 
-          part = Geometry::RoadItems.call(N.piece_stations(road, a, b), road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+          part_stations = stations_for.call(a, b)
+          part = Geometry::RoadItems.call(part_stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+          RoadEngine.lift_instances(part, part_stations) if profile
           others = { definitions: part[:definitions], instances: part[:instances], sleepers: [],
                      linear: part[:linear].reject { |n| n['id'].start_with?('rail/') } }
           merge_items(placed, others, "#{tag}.#{k + 1}")

@@ -304,6 +304,14 @@ module ArchgenFinalProbe
     start(%w[h19 h20]) { rest.select { |stage| %w[H19 H20].include?(stage.first) } }
   end
 
+  # Rejeu de ce que touche le relevé du terrain et la voirie (0.7.0) : H13, H15 à H18 sans la copie
+  # à la main de H17, H19 et H20, sur le même RBZ.
+  def run_terrain
+    start(%w[h13-releve h13-ecriture h15 h16 h17 h18 h19 h20]) do
+      rest.select { |stage| stage.first.start_with?('H13', 'H18', 'H19', 'H20') || %w[H15 H16 H17].include?(stage.first) }
+    end
+  end
+
   # Rejeu de H14 seule, sur le même RBZ. La charge bloque SketchUp plusieurs minutes :
   # Windows peut l'annoncer « ne répond pas », ne pas fermer la fenêtre.
   def run_h14
