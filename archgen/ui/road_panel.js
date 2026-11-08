@@ -489,7 +489,9 @@
     var margin = 46;
     var s = Math.min(48, (VW - 2 * margin) / Math.max(W, 1));
     var top = topOf();
+    // Sous le niveau 0 : 1,4 m, ou le lit d'un plan d'eau et 0,6 m de plus (EAU_CONTRACT).
     var below = 1.4;
+    sec.bands.forEach(function (b) { b.surface.forEach(function (p) { below = Math.max(below, 0.6 - p[1]); }); });
     var head = 24;
     var base = head + top * s;
     var ox = (VW - W * s) / 2;
@@ -508,6 +510,15 @@
     var last = sec.bands[sec.bands.length - 1].surface;
     d += ' L' + VW + ' ' + Z(last[last.length - 1][1]) + ' L' + VW + ' ' + (base + below * s) + ' L0 ' + (base + below * s) + ' Z';
     svg('path', { d: d, class: 's-earth' }, root);
+
+    // Surface de l'eau, transparente, au-dessus du lit.
+    (sec.water || []).forEach(function (w) {
+      var band = sec.bands[w.band];
+      var d2 = 'M' + X(w.x0_m) + ' ' + Z(w.z_m);
+      band.surface.forEach(function (p) { d2 += ' L' + X(p[0]) + ' ' + Z(Math.min(p[1], w.z_m)); });
+      d2 += ' L' + X(w.x1_m) + ' ' + Z(w.z_m) + ' Z';
+      svg('path', { d: d2, class: 's-water' }, root);
+    });
 
     var thick = Math.max(5, 0.22 * s);
     sec.bands.forEach(function (b) {

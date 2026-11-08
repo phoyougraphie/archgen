@@ -87,7 +87,11 @@ module Archgen
         if origin.any? { |c| c.abs > Limits::ROAD_MAX_COORDINATE_M }
           found << Diagnostic.error('E_ROAD_TRACE', "#{base}/trace/points_m/0", reason: 'coordinate_range', limit: Limits::ROAD_MAX_COORDINATE_M)
         end
-        [result.ok? ? result.value : nil, origin, found]
+        # Pas d'eau dans un réseau tant que ponts et confluences n'existent pas (EAU_CONTRACT, AG-057).
+        if result.ok? && result.value['profile']['bands'].any? { |b| b['type'] == 'water' }
+          found << Diagnostic.error('E_ROAD_WATER', "#{base}/profile", reason: 'water_in_network')
+        end
+        [result.ok? && found.none?(&:error?) ? result.value : nil, origin, found]
       end
 
       def moved(points, origin)

@@ -188,6 +188,17 @@ module Archgen
         'trace_unfinished' => 'Terminez d’abord le tracé dans la vue : double-clic ou Échap.',
         'road_sleepers' => 'Cette voie ferrée poserait %{value} traverses, pour une limite de %{limit}. Raccourcissez-la ou réduisez le nombre de voies.',
         'road_faces' => 'Cette voie demanderait %{value} faces, pour une limite de %{limit}. Raccourcissez-la ou simplifiez la coupe.',
+        # Eau (docs/EAU_CONTRACT.md)
+        'band_setting_unavailable' => 'Ce réglage n’existe pas pour ce type de bande.',
+        'setting_range' => 'Valeur %{value} : choisissez de %{min} à %{max}.',
+        'water_unbounded' => 'Ce plan d’eau n’a ni quai ni berge de ce côté. Ajoutez-en un contre lui.',
+        'water_too_narrow' => 'Ce plan d’eau est trop étroit pour les pentes de ses berges : %{min} m au moins. Élargissez-le ou réduisez la profondeur.',
+        'bank_without_water' => 'Une berge borde un seul plan d’eau, placé juste à côté d’elle.',
+        'bank_too_steep' => 'Cette berge est trop raide : %{min} m de large au moins pour cette revanche.',
+        'water_mode_missing' => 'Cette voie porte de l’eau : choisissez son régime (rivière, canal ou un seul niveau).',
+        'water_without_band' => 'Cette voie n’a pas de plan d’eau : retirez le régime de l’eau.',
+        'water_ground_unavailable' => 'Un cours d’eau ne suit pas encore un terrain : posez-le à plat pour l’instant.',
+        'water_in_network' => 'Un cours d’eau n’entre pas dans un réseau tant que les ponts n’existent pas. Tracez-le comme une voie seule.',
         'ditch_next_to_carriageway' => 'Les bandes %{band_number} et %{next_number} placent un fossé contre la chaussée, sans accotement.',
         # Voirie : réseau et carrefours (ADR-36)
         'unsupported_network' => 'Ce réseau vient d’une version plus récente d’ARCHGEN.',

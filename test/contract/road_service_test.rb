@@ -19,7 +19,12 @@ class RoadServiceTest < Minitest::Test
   end
 
   def tree(profile = preset('ville'), points: [[0, 0], [80, 0], [80, 60]], radii: [20])
-    { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'profile' => profile }
+    { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'profile' => profile }.merge(wet(profile))
+  end
+
+  # Une coupe à eau exige son régime (EAU_CONTRACT) ; les tests de voirie la posent à un seul niveau.
+  def wet(profile)
+    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && b['type'] == 'water' } ? { 'water' => { 'mode' => 'flat' } } : {}
   end
 
   def service(**ports)
@@ -115,7 +120,7 @@ class RoadServiceTest < Minitest::Test
   def test_every_material_of_every_preset_is_in_the_catalog
     catalog = Archgen::Composition.road_catalog
     Archgen::Composition.road_presets.fetch('presets').each do |p|
-      plan = @service.preview(tree: tree(p['profile'], points: [[0, 0], [60, 0], [60, 60]], radii: [40])).value.plan
+      plan = @service.preview(tree: tree(p['profile'], points: [[0, 0], [200, 0], [200, 200]], radii: [100])).value.plan
       used = []
       walk = lambda do |node|
         node['primitive']['faces'].each { |f| used << f['material'] } if node['primitive'] && node['primitive']['faces']

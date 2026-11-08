@@ -23,8 +23,8 @@ class RoadControllerTest < Minitest::Test
   def test_init_gives_catalogues_presets_and_the_starting_profile
     r = call('init')
     assert r['ok']
-    assert_equal 11, r['result']['presets'].size
-    assert_equal 16, r['result']['bands'].size
+    assert_equal 14, r['result']['presets'].size
+    assert_equal 19, r['result']['bands'].size
     assert_equal 7, r['result']['items'].size
     assert_equal 'Rue de ville', r['result']['profile']['name']
     lane = r['result']['bands'].find { |b| b['type'] == 'lane' }

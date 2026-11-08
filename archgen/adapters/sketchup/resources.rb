@@ -100,6 +100,8 @@ module Archgen
           return false unless material.get_attribute(DICTIONARY, 'revision') == @revision
 
           color = material.color
+          return false if entry(id).key?('alpha') && (material.alpha - entry(id)['alpha']).abs > 1e-6
+
           [color.red, color.green, color.blue] == rgb(id)
         end
 
@@ -109,6 +111,7 @@ module Archgen
           raise WriteError, "Création du matériau refusée : #{id}" unless material
 
           material.color = @host.color(*rgb(id))
+          material.alpha = entry(id)['alpha'] if entry(id).key?('alpha')
           material.set_attribute(DICTIONARY, 'kind', 'material')
           material.set_attribute(DICTIONARY, 'id', id)
           material.set_attribute(DICTIONARY, 'revision', @revision)

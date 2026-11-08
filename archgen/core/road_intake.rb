@@ -28,6 +28,7 @@ module Archgen
         profile = @profiles.profile(tree['profile'])
         diagnostics = profile.diagnostics.map { |d| repath(d) }
         problems = diagnostics.select(&:error?) + trace_problems(tree['trace'])
+        problems += water_problems(tree, profile.value) if profile.ok?
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
         Result.ok(Canonical.deep_freeze(effective(tree, profile.value)), diagnostics)
@@ -64,6 +65,19 @@ module Archgen
         out
       end
 
+      # Réglage `water` (EAU_CONTRACT) : exigé par une coupe à eau, refusé sans eau. Une voie à eau sur un
+      # terrain attend AG-053 (rivière) et AG-055 (fleuve) : refusée plutôt que posée à plat en silence.
+      WATER_DEFAULTS = { 'max_grade_percent' => 3, 'lock_drop_m' => 3, 'lock_length_m' => 40 }.freeze
+
+      def water_problems(tree, profile)
+        wet = profile['bands'].any? { |b| b['type'] == 'water' }
+        return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_mode_missing')] if wet && !tree['water']
+        return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_without_band')] if !wet && tree['water']
+        return [Diagnostic.error('E_ROAD_WATER', '/ground', reason: 'water_ground_unavailable')] if wet && tree['ground']
+
+        []
+      end
+
       def error(path, reason, **params)
         Diagnostic.error('E_ROAD_TRACE', path, reason: reason, **params)
       end
@@ -79,6 +93,14 @@ module Archgen
           },
           'profile' => profile
         }.merge(tree['ground'] ? { 'ground' => Geometry::RoadGround.settings(tree['ground'].transform_values { |v| Quant.q(v.to_f) }) } : {})
+         .merge(tree['water'] ? { 'water' => water(tree['water']) } : {})
+      end
+
+      def water(input)
+        out = { 'mode' => input['mode'] }
+        WATER_DEFAULTS.each { |key, value| out[key] = Quant.q(input.fetch(key, value).to_f) }
+        out['level_m'] = Quant.q(input['level_m'].to_f) if input.key?('level_m')
+        out
       end
     end
   end

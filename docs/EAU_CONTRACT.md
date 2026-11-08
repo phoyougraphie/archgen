@@ -1,6 +1,6 @@
 # Contrat de l'eau et du littoral — EXT-13
 
-Contrat de départ, écrit avant le code. Il prolonge le [contrat de voirie](VOIRIE_CONTRACT.md) sans rien changer à une voie existante : une coupe sans bande d'eau ni de littoral garde son plan et son empreinte. Décision : ADR-39 (D-11). Question encore ouverte : D-12 (ponts). Les valeurs marquées « départ » sont à calibrer à la recette, par une décision écrite.
+Contrat de départ, écrit avant le code. Il prolonge le [contrat de voirie](VOIRIE_CONTRACT.md) sans rien changer à une voie existante : une coupe sans bande d'eau ni de littoral garde son plan et son empreinte. Décisions : ADR-39 (D-11), ADR-40 (D-12, ponts), ADR-41 (réglages de bande). Les valeurs marquées « départ » sont à calibrer à la recette, par une décision écrite.
 
 **Besoin du propriétaire (2026-11-08).** Commencer par l'eau et les ponts. Une rivière peut suivre un terrain ; un canal monte et descend par des écluses ; un fleuve se pose sur un terrain plat. Pour le bord de mer, une astuce : des voies « falaises » puis la mer, « dunes », « plage », avec des murets et les clôtures qui retiennent le sable (ganivelles).
 
@@ -22,13 +22,16 @@ Ajoutées au catalogue `road_bands.v1.json` (révision du catalogue, pas du form
 | `quay` | Quai | 3 | 1 à 20 | Plane au niveau 0, mur vertical côté eau jusqu'au lit |
 | `riverbank` | Berge naturelle | 4 | 1 à 30 | Pente droite du niveau 0 à la surface de l'eau, côté eau |
 
-Réglages de bande, propres à `water` : `freeboard_m` (revanche, hauteur du niveau 0 au-dessus de l'eau), de 0,3 à 5 m, 1 m par défaut ; `depth_m` (profondeur), de 0,5 à 15 m, 2 m par défaut. Le chemin de halage est un `track` ou un `path` existant, posé sur la berge ou le quai.
+Réglages de bande, propres à `water` : `freeboard_m` (revanche, hauteur du niveau 0 au-dessus de l'eau), de 0,3 à 5 m, 1 m par défaut ; `depth_m` (profondeur), de 0,5 à 15 m, 2 m par défaut. Ce sont deux champs facultatifs de la bande dans `road_profile` V1 (ADR-41) : le catalogue dit quelle bande les accepte (`settings`), une autre bande les refuse (`band_setting_unavailable`), une valeur hors plage aussi (`setting_range`). Le profil effectif d'un plan d'eau porte toujours les deux ; celui d'une autre bande n'en porte aucun, si bien qu'une coupe d'avant garde son empreinte. Le chemin de halage est un `track` ou un `path` existant, posé sur la berge ou le quai.
 
 - **Bords de l'eau :** chaque côté d'une bande `water` touche un `quay`, une `riverbank`, ou une bande de littoral (ci-dessous) ; sinon `E_ROAD_BAND`, `water_unbounded`, sur la bande d'eau.
-- **Lit :** contre un quai, le lit va jusqu'au pied du mur ; contre une berge, il remonte en pente de 1 pour 2 dans la largeur de l'eau. Une eau trop étroite pour ses deux pentes (largeur < 4 × `depth_m` entre deux berges) : `water_too_narrow`.
-- **Berge trop raide :** pente `freeboard_m / largeur` au-delà de 100 % : `bank_too_steep`, sur la berge.
-- **Éléments :** aucun dans `water` (`band_accepts_no_items`) ; un quai accepte lampadaires, potelets, barrières, garde-corps et murets.
-- **Matières :** `water/surface` (bleu, transparence de 40 %, départ), `water/bed`, `water/quay`.
+- **Lit :** contre un quai, le lit va jusqu'au pied du mur ; contre une berge, il part de la ligne d'eau et descend en pente de 1 pour 2 (2 × `depth_m` en largeur). Une eau trop étroite pour ses pentes (largeur < 2 × `depth_m` par berge) : `water_too_narrow`, sur `/bands/<i>/width_m`, avec le minimum.
+- **Berge :** elle touche un seul plan d'eau, juste à côté (`bank_without_water` sinon) ; pente `freeboard_m / largeur` au-delà de 100 % : `bank_too_steep`, sur sa largeur.
+- **Ligne de coupe :** le lit fait partie de la ligne de coupe ; le mur d'un quai est la contremarche entre le quai et le lit, en matière `road/quay`. La surface de l'eau est un ruban à part, à la ligne d'eau, de bord à bord du plan d'eau, dans un nœud `road/water` (balise de la chaussée) : séparée, elle ne coupe pas les murs de quai dans SketchUp. Métrique `water_face_count`.
+- **Éléments :** aucun dans `water` (`band_accepts_no_items`) ; un quai et une berge les acceptent comme un trottoir, posés à la cote de leur surface (sur la pente pour une berge).
+- **Matières :** `road/water` (lit), `road/quay`, `road/riverbank`, `road/water_surface` (bleu, opacité de 0,6, départ ; le writer règle l'opacité de la matière).
+- **Réseau :** une voie à eau n'entre pas encore dans un réseau (`E_ROAD_WATER`, `water_in_network`, sur le profil de la voie).
+- **Terrain :** jusqu'à AG-053 et AG-055, une voie à eau sur un terrain est refusée (`water_ground_unavailable`, sur `/ground`) plutôt que posée à plat en silence.
 - **Préréglages :** canal à chemin de halage, rivière à berges, fleuve à quais.
 
 ## Bandes de littoral (AG-052)
@@ -54,7 +57,7 @@ L'astuce du bord de mer : **la mer est la dernière bande de la coupe**, côté 
 
 ## Réglage `water`, dans les réglages de voie V1
 
-Clé facultative et fermée, à côté de `ground`. Une coupe qui porte une bande `water` ou `sea` l'exige (`E_ROAD_WATER`, `water_mode_missing`) ; une coupe sans eau la refuse (`water_without_band`).
+Clé facultative et fermée, à côté de `ground` (`mode` obligatoire ; réglages effectifs complets : `max_grade_percent`, `lock_drop_m`, `lock_length_m` toujours, `level_m` s'il est saisi, entre −10 000 et 10 000 m). Une coupe qui porte une bande `water` ou `sea` l'exige (`E_ROAD_WATER`, `water_mode_missing`) ; une coupe sans eau la refuse (`water_without_band`).
 
 | Champ | Valeurs | Défaut (départ) | Sens |
 |---|---|---|---|
@@ -97,9 +100,9 @@ Mode `flat` : tout le tracé à une altitude, `level_m` ou, sans valeur, le plus
 
 ## Réseaux et ponts
 
-- Dans un réseau, une voie à eau ou à mer qui croise une autre voie ou finit sur elle est refusée (`E_ROAD_JUNCTION`, `water_crossing`) tant que les ponts n'existent pas. Deux cours d'eau qui se rejoignent : `water_confluence`, hors de cette version.
+- Une voie à eau ou à mer n'entre pas dans un réseau (`water_in_network`) tant que les ponts n'existent pas. Deux cours d'eau qui se rejoignent : hors de cette version.
 - Deux racines séparées, une rue et une rivière, ne sont pas comparées entre elles : rien n'empêche de les superposer à la main.
-- **Ponts (AG-057) :** comment ils naissent et lesquels, c'est D-12. Le ticket attend la décision, puis son propre contrat.
+- **Ponts (AG-057, ADR-40) :** un pont naît tout seul là où une voie d'un réseau franchit un cours d'eau, une voie ferrée ou une autre voie, comme un carrefour (ADR-36), avec un type au choix (poutre, voûte, arc) ; la voie monte et redescend par des rampes de pente bornée. Le détail viendra dans le contrat du ticket, écrit avant son code.
 
 ## Panneau (AG-056)
 

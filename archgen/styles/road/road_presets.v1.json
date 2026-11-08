@@ -130,6 +130,38 @@
         { "type": "path", "width_m": 2 },
         { "type": "verge", "width_m": 1, "items": [{ "kind": "lamp", "variant": "ped", "height_m": 3.5, "spacing_m": 18 }] }
       ] }
+    },
+    {
+      "id": "canal",
+      "profile": { "road_profile_version": 1, "name": "Canal à chemin de halage", "bands": [
+        { "type": "plant", "width_m": 2, "items": [{ "kind": "tree", "variant": "columnar", "height_m": 14, "spacing_m": 10 }] },
+        { "type": "track", "width_m": 3 },
+        { "type": "quay", "width_m": 1.5, "items": [{ "kind": "bollard", "variant": "bollard", "height_m": 0.6, "spacing_m": 25 }] },
+        { "type": "water", "width_m": 14, "freeboard_m": 0.8, "depth_m": 2.5 },
+        { "type": "quay", "width_m": 1.5 },
+        { "type": "path", "width_m": 2.5 },
+        { "type": "plant", "width_m": 2, "items": [{ "kind": "tree", "variant": "columnar", "height_m": 14, "spacing_m": 10 }] }
+      ] }
+    },
+    {
+      "id": "riviere",
+      "profile": { "road_profile_version": 1, "name": "Rivière à berges", "bands": [
+        { "type": "path", "width_m": 2 },
+        { "type": "riverbank", "width_m": 5, "items": [{ "kind": "tree", "variant": "wide", "height_m": 12, "spacing_m": 15, "height_variation": 0.2 }] },
+        { "type": "water", "width_m": 18, "freeboard_m": 1.2, "depth_m": 2 },
+        { "type": "riverbank", "width_m": 5 },
+        { "type": "verge", "width_m": 2 }
+      ] }
+    },
+    {
+      "id": "fleuve",
+      "profile": { "road_profile_version": 1, "name": "Fleuve à quais", "bands": [
+        { "type": "sidewalk", "width_m": 4, "items": [{ "kind": "lamp", "variant": "heritage", "height_m": 5, "spacing_m": 25 }] },
+        { "type": "quay", "width_m": 8, "items": [{ "kind": "guard", "variant": "guard", "height_m": 1 }] },
+        { "type": "water", "width_m": 120, "freeboard_m": 3, "depth_m": 5 },
+        { "type": "quay", "width_m": 8, "items": [{ "kind": "guard", "variant": "guard", "height_m": 1 }] },
+        { "type": "sidewalk", "width_m": 4, "items": [{ "kind": "lamp", "variant": "heritage", "height_m": 5, "spacing_m": 25 }] }
+      ] }
     }
   ]
 }

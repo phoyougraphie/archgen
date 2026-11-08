@@ -17,6 +17,10 @@
     "verge": { "label": "Accotement", "default_width_m": 1.5, "min_width_m": 0.3, "max_width_m": 6, "level_m": 0, "shape": "flat", "role": "verge", "rails": "none", "accepts_items": true },
     "plant": { "label": "Bande plantée", "default_width_m": 1.5, "min_width_m": 0.5, "max_width_m": 15, "level_m": 0.05, "shape": "flat", "role": "planting", "rails": "none", "accepts_items": true },
     "ditch": { "label": "Fossé", "default_width_m": 1.5, "min_width_m": 0.6, "max_width_m": 5, "level_m": 0, "shape": "ditch", "depth_m": 0.6, "role": "ditch", "rails": "none", "accepts_items": false },
-    "bank": { "label": "Talus", "default_width_m": 2.5, "min_width_m": 1, "max_width_m": 12, "level_m": 0, "shape": "bank", "slope": 0.4, "role": "bank", "rails": "none", "accepts_items": true }
+    "bank": { "label": "Talus", "default_width_m": 2.5, "min_width_m": 1, "max_width_m": 12, "level_m": 0, "shape": "bank", "slope": 0.4, "role": "bank", "rails": "none", "accepts_items": true },
+    "water": { "label": "Plan d'eau", "default_width_m": 12, "min_width_m": 2, "max_width_m": 400, "level_m": 0, "shape": "water", "role": "water", "rails": "none", "accepts_items": false,
+               "settings": { "freeboard_m": { "min": 0.3, "max": 5, "default": 1 }, "depth_m": { "min": 0.5, "max": 15, "default": 2 } } },
+    "quay": { "label": "Quai", "default_width_m": 3, "min_width_m": 1, "max_width_m": 20, "level_m": 0, "shape": "flat", "role": "quay", "rails": "none", "accepts_items": true },
+    "riverbank": { "label": "Berge naturelle", "default_width_m": 4, "min_width_m": 1, "max_width_m": 30, "level_m": 0, "shape": "riverbank", "role": "riverbank", "rails": "none", "accepts_items": true }
   }
 }

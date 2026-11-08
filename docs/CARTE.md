@@ -7,8 +7,8 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — EXT-13 cadré (eau et littoral, ADR-39) : lancer AG-051, bandes d'eau et de berge. Restent au propriétaire : pousser, trancher D-12 (ponts, avant AG-057) et D-10. (→ docs/EAU_CONTRACT.md)
-  - Décisions ouvertes D-10, D-12 — Sens de « clous » ; ponts nés au croisement (recommandé) ou posés à la main. D-11 tranchée : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée du terrain (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
+  - Prochaine action — AG-051 fait (bandes d'eau, U34, noyau). Lancer AG-052 : falaise, dune, plage et mer. Restent au propriétaire : pousser, trancher D-10. (→ docs/EAU_CONTRACT.md)
+  - Décision ouverte D-10 — Sens de « clous ». D-12 tranchée : un pont naît au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée du terrain (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - Décision ouverte D-01 — Jitter : refus quasi systématique de coupes < 2 mm (1 % des graines acceptées à 2 cm). Aucun profil livré n'en utilise. Options : grille de 5 mm (recommandée), jitter par travée, ou masquer en V0.1. (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
@@ -69,6 +69,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-08 AG-050 — Pas de cœur de carrefour : les deux voies traversent. La route reçoit un profil en long (stations ajoutées, comme sur un terrain) ; la voie ferrée garde rails et traverses continus, ses autres objets sont calculés par morceaux autour de la route. Platelage 5 mm sous le dessus des rails pour éviter des faces superposées. U28 se servait de level_crossing comme type inconnu : interchange désormais.
     - 2026-11-08 Recette 0.7.0 — TerrainSurveyor ayant changé, H13 et H15 à H18 rejouées avec la voirie (nouvel enchaînement run_terrain) : 0 échec. Vu dans SketchUp au passage à niveau : un lampadaire de la rue entre les rails et une croix en « + » ; corrigés, paquet reconstruit, toutes les recettes rejouées sur le final.
     - 2026-11-08 EXT-13 cadré — Demande du propriétaire : l'eau et les ponts d'abord ; rivière qui suit le terrain, canal à écluses, fleuve sur terrain plat, et une astuce pour le bord de mer. Retenu : la mer est la dernière bande de la coupe, falaise et plage abaissent les bandes qui suivent (niveaux cumulés) ; écluses placées par une règle fixe, rivière en enveloppe descendante. D-11 tranchée (ADR-39) ; ponts en AG-057, après D-12.
+    - 2026-11-08 AG-051 — D-12 tranchée : pont né au croisement (ADR-40). Revanche et profondeur deviennent des réglages de bande, champs facultatifs du format V1 (ADR-41) : les 22 plans des anciens préréglages sont identiques avant et après. Le lit est dans la ligne de coupe, mur de quai compris ; la surface de l'eau est un ruban à part, pour ne pas couper les murs dans SketchUp. Eau sur un terrain et eau dans un réseau refusées en attendant AG-053, AG-055 et AG-057. Le dessin du panneau descend jusqu'au lit ; pas encore vu dans SketchUp.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -139,13 +140,13 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-049 Voie sur un terrain — ADR-38 : geometry/road_ground, adapters/sketchup/ground_cutter, relevé du couloir (TerrainSurveyor), RoadService posé sur terrain, case Suivre le terrain du panneau. U32, contrats sur doubles, H22 11/11 par le service et vrai geste au panneau (retenir, relever, créer, Annuler) sur copie de développement 0.7.0-dev. Dép. AG-042, ADR-38.
     - [fait] AG-050 Passage à niveau — geometry/road_crossing ; type level_crossing, rampes de pente bornée, platelage 5 mm sous les rails, murets, feux et barrières, voie ferrée entière (objets interrompus) ; choix dans le panneau de réseau. U33 ; vu dans SketchUp et écrit par H21 à la recette 0.7.0. Dép. AG-047, AG-049.
   - J9 Eau et littoral — Rivière, canal à écluses, fleuve, côtes à falaises, dunes et plage, tracés comme des voies ; puis les ponts. AG-051 à 057. (→ docs/EAU_CONTRACT.md)
-    - [afaire] AG-051 Bandes d'eau et de berge — water, quay, riverbank, revanche et profondeur, réglage water ; préréglages canal, rivière, fleuve. U34.
+    - [fait] AG-051 Bandes d'eau et de berge — water, quay, riverbank, revanche et profondeur (ADR-41), réglage water, nœud road/water ; préréglages canal, rivière, fleuve. U34 vert, noyau ; pas encore vu dans SketchUp.
     - [afaire] AG-052 Littoral : falaise, dune, plage, mer — niveaux cumulés, mer au bout de la coupe, ganivelles et murets. U35.
     - [afaire] AG-053 Rivière sur un terrain — enveloppe descendante, amont vers aval, lit dans la copie entaillée. U36.
     - [afaire] AG-054 Canal à écluses — biefs, écluses placées par règle, portes busquées. U37.
     - [afaire] AG-055 Fleuve et côte à un seul niveau — niveau saisi ou plus bas, côté mer sans talus. U38.
     - [afaire] AG-056 Panneau de l'eau, RBZ 0.8.0 — coupe à niveaux cumulés, aperçu des écluses. H23.
-    - [bloque] AG-057 Ponts — attend D-12, puis son contrat.
+    - [afaire] AG-057 Ponts — ADR-40 : nés au croisement, poutre, voûte ou arc, rampes ; contrat à écrire avant le code.
   - J10+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
@@ -342,4 +343,4 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
   - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
   - EXT-12 Mobilier urbain — Arrêts de bus, attaches vélos, panneaux ; module à cadrer après EXT-11, peut-être séparé.
-  - EXT-13 Eau et ponts — Cadré le 2026-11-08 : cours d'eau et côtes comme des voies (ADR-39), ponts après D-12. Détail en AG-051 à 057. (→ docs/EAU_CONTRACT.md)
+  - EXT-13 Eau et ponts — Cadré le 2026-11-08 : cours d'eau et côtes comme des voies (ADR-39), ponts nés au croisement (ADR-40). Détail en AG-051 à 057. (→ docs/EAU_CONTRACT.md)

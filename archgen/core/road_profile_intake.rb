@@ -32,6 +32,9 @@ module Archgen
         problems = tree['bands'].each_with_index.flat_map { |band, i| band_problems(band, i) }
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
+        problems = water_problems(effective(tree))
+        return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
+
         value = Canonical.deep_freeze(effective(tree))
         Result.ok(value, (clearance_warnings(value) + composition_warnings(value)).sort_by(&:sort_key))
       end
@@ -55,6 +58,7 @@ module Archgen
           out << Diagnostic.error('E_ROAD_BAND', "#{path}/width_m", reason: 'width_range', value: width,
                                                                      min: entry['min_width_m'], max: entry['max_width_m'])
         end
+        out.concat(setting_problems(band, entry, path))
         band.fetch('items', []).each_with_index do |item, j|
           item_path = "#{path}/items/#{j}"
           out << if entry['accepts_items']
@@ -64,6 +68,54 @@ module Archgen
                  end
         end
         out.flatten
+      end
+
+      # Réglages propres à un type de bande (EAU_CONTRACT : revanche et profondeur de l'eau).
+      SETTING_KEYS = %w[freeboard_m depth_m].freeze
+
+      def setting_problems(band, entry, path)
+        allowed = entry.fetch('settings', {})
+        (band.keys & SETTING_KEYS).filter_map do |key|
+          range = allowed[key]
+          next Diagnostic.error('E_ROAD_BAND', "#{path}/#{key}", reason: 'band_setting_unavailable', band: band['type']) unless range
+          next if band[key].between?(range['min'], range['max'])
+
+          Diagnostic.error('E_ROAD_BAND', "#{path}/#{key}", reason: 'setting_range', value: band[key], min: range['min'], max: range['max'])
+        end
+      end
+
+      # Bords de l'eau (EAU_CONTRACT, AG-051) : chaque côté d'un plan d'eau touche un quai ou une berge ;
+      # une berge touche un seul plan d'eau ; les pentes du lit et de la berge tiennent dans leur largeur.
+      WATER_EDGES = %w[quay riverbank].freeze
+
+      def water_problems(profile)
+        bands = profile['bands']
+        out = []
+        bands.each_with_index do |band, i|
+          left = i.positive? ? bands[i - 1] : nil
+          right = bands[i + 1]
+          case band['type']
+          when 'water'
+            { 'left' => left, 'right' => right }.each do |side, other|
+              next if other && WATER_EDGES.include?(other['type'])
+
+              out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}", reason: 'water_unbounded', side: side, band_number: i + 1)
+            end
+            slopes = [left, right].compact.count { |b| b['type'] == 'riverbank' }
+            need = Quant.q(2 * band['depth_m'] * slopes)
+            if slopes.positive? && band['width_m'] < need
+              out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}/width_m", reason: 'water_too_narrow', value: band['width_m'], min: need)
+            end
+          when 'riverbank'
+            waters = [left, right].compact.select { |b| b['type'] == 'water' }
+            if waters.size != 1
+              out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}", reason: 'bank_without_water', band_number: i + 1)
+            elsif band['width_m'] < waters.first['freeboard_m']
+              out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}/width_m", reason: 'bank_too_steep', value: band['width_m'], min: waters.first['freeboard_m'])
+            end
+          end
+        end
+        out
       end
 
       def item_problems(item, path)
@@ -105,8 +157,11 @@ module Archgen
         out = { 'road_profile_version' => SUPPORTED_VERSION }
         out['name'] = tree['name'] if tree.key?('name')
         out['bands'] = tree['bands'].map do |band|
-          { 'type' => band['type'], 'width_m' => Quant.q(band['width_m'].to_f),
-            'items' => band.fetch('items', []).map { |item| effective_item(item) } }
+          out_band = { 'type' => band['type'], 'width_m' => Quant.q(band['width_m'].to_f) }
+          @bands.fetch(band['type']).fetch('settings', {}).sort.each do |key, range|
+            out_band[key] = Quant.q(band.fetch(key, range['default']).to_f)
+          end
+          out_band.merge('items' => band.fetch('items', []).map { |item| effective_item(item) })
         end
         out
       end

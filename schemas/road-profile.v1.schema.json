@@ -25,6 +25,12 @@
           "width_m": {
             "type": "number"
           },
+          "freeboard_m": {
+            "type": "number"
+          },
+          "depth_m": {
+            "type": "number"
+          },
           "items": {
             "type": "array",
             "maxItems": 6,

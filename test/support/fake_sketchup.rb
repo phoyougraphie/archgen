@@ -180,6 +180,11 @@ module FakeSketchUp
   class Material
     include Attributes
     attr_accessor :name, :color
+    attr_writer :alpha
+
+    def alpha
+      @alpha || 1.0
+    end
 
     def initialize(name)
       @name = name

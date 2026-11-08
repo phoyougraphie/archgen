@@ -6,9 +6,9 @@ require_relative '../test_helper'
 class RoadProfileTest < Minitest::Test
   include Archgen::Core
 
-  BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank].freeze
+  BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank].freeze
   ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard].freeze
-  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton].freeze
+  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve].freeze
   STEP = 0.001
 
   def intake
@@ -55,7 +55,7 @@ class RoadProfileTest < Minitest::Test
     bands.each do |type, entry|
       assert entry['min_width_m'].positive?, type
       assert entry['default_width_m'].between?(entry['min_width_m'], entry['max_width_m']), type
-      assert_includes %w[flat ditch bank], entry['shape'], type
+      assert_includes %w[flat ditch bank water riverbank], entry['shape'], type
       assert_includes %w[none embedded platform ballast], entry['rails'], type
       assert_includes [true, false], entry['accepts_items'], type
     end
@@ -75,7 +75,7 @@ class RoadProfileTest < Minitest::Test
 
   # --- Préréglages
 
-  def test_the_eleven_presets_are_valid_without_warning
+  def test_the_fourteen_presets_are_valid_without_warning
     presets = Archgen::Composition.road_presets.fetch('presets')
     assert_equal PRESETS, presets.map { |p| p['id'] }
     presets.each do |preset|
@@ -94,13 +94,21 @@ class RoadProfileTest < Minitest::Test
   # --- Limites et premier dépassement
 
   def test_each_band_type_accepts_its_limits_and_refuses_the_first_step_beyond
+    # Une bande d'eau a besoin de ses bords, une berge de son eau (EAU_CONTRACT) : on les pose autour.
+    around = {
+      'water' => [[band('quay')], [band('quay')]],
+      'riverbank' => [[], [band('water', 40), band('quay')]]
+    }
     BAND_TYPES.each do |type|
       entry = bands.fetch(type)
-      accepted(profile(band(type, entry['min_width_m'])))
-      accepted(profile(band(type, entry['max_width_m'])))
-      low = assert_refused(profile(band(type, entry['min_width_m'] - STEP)), 'E_ROAD_BAND', '/bands/0/width_m', 'width_range')
+      before, after = around.fetch(type, [[], []])
+      at = "/bands/#{before.size}/width_m"
+      within = ->(w) { profile(*before, band(type, w), *after) }
+      accepted(within.call(entry['min_width_m']))
+      accepted(within.call(entry['max_width_m']))
+      low = assert_refused(within.call(entry['min_width_m'] - STEP), 'E_ROAD_BAND', at, 'width_range')
       assert_equal entry['min_width_m'], low.params['min']
-      assert_refused(profile(band(type, entry['max_width_m'] + STEP)), 'E_ROAD_BAND', '/bands/0/width_m', 'width_range')
+      assert_refused(within.call(entry['max_width_m'] + STEP), 'E_ROAD_BAND', at, 'width_range')
     end
   end
 

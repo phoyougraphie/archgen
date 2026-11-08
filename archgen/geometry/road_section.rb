@@ -25,14 +25,16 @@ module Archgen
         rows = profile['bands'].each_with_index.map do |band, i|
           entry = catalogue.fetch(band['type'])
           { 'index' => i, 'type' => band['type'], 'role' => entry['role'], 'x0_m' => q(spans[i][0]), 'x1_m' => q(spans[i][1]),
-            'level_m' => entry['level_m'].to_f, 'surface' => surface(entry, spans[i], width) }
+            'level_m' => entry['level_m'].to_f, 'surface' => surface(entry, spans[i], width) }.merge(band.slice('freeboard_m', 'depth_m'))
         end
+        shape_water(rows)
         {
           'width_m' => q(width),
           'bands' => rows,
           'curbs' => curbs(rows, catalogue),
           'rails' => rails(rows, catalogue, bands.fetch('rail_gauge_m')),
-          'items' => placed_items(profile, rows, items.fetch('items'))
+          'items' => placed_items(profile, rows, items.fetch('items')),
+          'water' => water_lines(rows)
         }
       end
 
@@ -65,6 +67,44 @@ module Archgen
         else
           [[x0, z], [x1, z]]
         end.map { |x, zz| [q(x), q(zz)] }
+      end
+
+      # Eau (EAU_CONTRACT, AG-051) : le lit d'un plan d'eau est à −(revanche + profondeur) ; contre une berge
+      # il remonte en pente de 1 pour 2 jusqu'à la ligne d'eau, contre un quai il va jusqu'au pied du mur.
+      # Une berge descend en pente droite du niveau 0 à la ligne d'eau, côté eau.
+      BED_SLOPE_RUN = 2.0
+
+      def shape_water(rows)
+        rows.each_with_index do |row, i|
+          next unless row['type'] == 'water'
+
+          line = -row['freeboard_m']
+          bed = -(row['freeboard_m'] + row['depth_m'])
+          run = BED_SLOPE_RUN * row['depth_m']
+          left = rows[i - 1] if i.positive?
+          right = rows[i + 1]
+          points = []
+          if left && left['type'] == 'riverbank'
+            points << [row['x0_m'], line] << [row['x0_m'] + run, bed]
+            left['surface'] = [[left['x0_m'], 0.0], [left['x1_m'], line]].map { |x, z| [q(x), q(z)] }
+          else
+            points << [row['x0_m'], bed]
+          end
+          if right && right['type'] == 'riverbank'
+            points << [row['x1_m'] - run, bed] << [row['x1_m'], line]
+            right['surface'] = [[right['x0_m'], line], [right['x1_m'], 0.0]].map { |x, z| [q(x), q(z)] }
+          else
+            points << [row['x1_m'], bed]
+          end
+          row['surface'] = points.map { |x, z| [q(x), q(z)] }.chunk_while { |a, b| a == b }.map(&:first)
+        end
+      end
+
+      # Surfaces de l'eau, à part de la ligne de coupe : de bord à bord du plan d'eau, à la ligne d'eau.
+      def water_lines(rows)
+        rows.select { |r| r['type'] == 'water' }.map do |r|
+          { 'band' => r['index'], 'x0_m' => r['x0_m'], 'x1_m' => r['x1_m'], 'z_m' => q(-r['freeboard_m']) }
+        end
       end
 
       # Une bordure de 0,16 m entre deux bandes planes dont le niveau diffère d'au moins 0,10 m,

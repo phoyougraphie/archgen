@@ -19,7 +19,12 @@ class RoadAxisTest < Minitest::Test
   end
 
   def tree(points, radii, profile = preset('ville'), **rest)
-    { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'profile' => profile }.merge(rest.transform_keys(&:to_s))
+    { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'profile' => profile }.merge(wet(profile)).merge(rest.transform_keys(&:to_s))
+  end
+
+  # Une coupe à eau exige son régime (EAU_CONTRACT) ; les tests de voirie la posent à un seul niveau.
+  def wet(profile)
+    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && b['type'] == 'water' } ? { 'water' => { 'mode' => 'flat' } } : {}
   end
 
   def build(input, **opts)

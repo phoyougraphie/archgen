@@ -34,7 +34,8 @@ module Archgen
 
           stations = ground.value[:stations]
         end
-        estimate = Geometry::RoadRibbons.face_estimate(stations.size, line)
+        water_line = water_line(section)
+        estimate = Geometry::RoadRibbons.face_estimate(stations.size, line + water_line)
         return Result.fail([budget('road_faces', limits[:unique], estimate)]) if estimate > limits[:unique]
 
         count = item_estimate(stations, section, ax)
@@ -47,6 +48,7 @@ module Archgen
         placed = Geometry::RoadItems.call(stations, section, items: items, ax: ax, seed: settings['seed'])
         lift_instances(placed, stations) if ground
         plan = assemble(surface, placed, stations, section, line)
+        add_water(plan, stations, water_line, width, settings['axis']) unless water_line.empty?
         add_earthwork(plan, ground.value) if ground
         problems = budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
@@ -124,6 +126,22 @@ module Archgen
           best = [dist, a.z + ((b.z - a.z) * t)] if best.nil? || dist < best[0]
         end
         best ? best[1] : 0.0
+      end
+
+      # Surface de l'eau (EAU_CONTRACT, AG-051) : un ruban à la ligne d'eau, dans un groupe à part pour que
+      # ses bords ne coupent pas les murs de quai dans SketchUp.
+      def water_line(section)
+        section.fetch('water', []).map { |w| [[w['x0_m'], w['z_m']], [w['x1_m'], w['z_m']], 'road/water_surface'] }
+      end
+
+      def add_water(plan, stations, line, width, axis)
+        primitive = Geometry::RoadRibbons.mesh(stations, line, width: width, axis: axis)
+        plan['nodes'][0]['children'].insert(1, { 'id' => 'road/water', 'category' => 'road_surface', 'children' => [], 'primitive' => primitive })
+        count = primitive['faces'].size
+        m = plan['metrics']
+        m['unique_face_count'] += count
+        m['expanded_face_count'] += count
+        m['water_face_count'] = count
       end
 
       def add_earthwork(plan, ground)

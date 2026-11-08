@@ -85,8 +85,13 @@ line.s-hedge-line { stroke: var(--hedge); }
 .c-track { stroke: var(--gravel); fill: var(--gravel); }
 .c-median, .c-verge, .c-plant, .c-bank { stroke: var(--grass); fill: var(--grass); }
 .c-ditch { stroke: var(--water); fill: var(--water); }
+.c-water { stroke: #6b6450; fill: #6b6450; }
+.c-quay { stroke: #a39c8c; fill: #a39c8c; }
+.c-riverbank { stroke: var(--grass); fill: var(--grass); }
+.s-water { fill: var(--water); opacity: 0.55; }
 .road-sw.c-lane, .road-sw.c-tram_lane, .road-sw.c-hard, .road-sw.c-edge, .road-sw.c-parking, .road-sw.c-tram, .road-sw.c-rail, .road-sw.c-cycle,
-.road-sw.c-sidewalk, .road-sw.c-path, .road-sw.c-track, .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank, .road-sw.c-ditch { background: currentColor; }
+.road-sw.c-sidewalk, .road-sw.c-path, .road-sw.c-track, .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank, .road-sw.c-ditch,
+.road-sw.c-water, .road-sw.c-quay, .road-sw.c-riverbank { background: currentColor; }
 .road-sw.c-lane, .road-sw.c-tram_lane { color: var(--asphalt); }
 .road-sw.c-hard, .road-sw.c-edge { color: var(--asphalt2); }
 .road-sw.c-parking { color: var(--park); }
@@ -97,7 +102,9 @@ line.s-hedge-line { stroke: var(--hedge); }
 .road-sw.c-path { color: var(--stab); }
 .road-sw.c-track { color: var(--gravel); }
 .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank { color: var(--grass); }
-.road-sw.c-ditch { color: var(--water); }
+.road-sw.c-ditch, .road-sw.c-water { color: var(--water); }
+.road-sw.c-quay { color: #a39c8c; }
+.road-sw.c-riverbank { color: var(--grass); }
 
 /* Tracé de la voie (AG-042) */
 .road-trace { border-bottom: 2px solid var(--accent); }
