@@ -95,12 +95,12 @@ Contrat : [EAU_CONTRACT](../docs/EAU_CONTRACT.md). Décision : ADR-39. Les cours
 
 ## J10 — Rues variées (EXT-08, première partie)
 
-Contrat : [RUE_VARIEE_CONTRACT](../docs/RUE_VARIEE_CONTRACT.md), à valider. Décisions : D-13 à D-16, ouvertes. Un ensemble sans réglage `variety` ne change pas.
+Contrat : [RUE_VARIEE_CONTRACT](../docs/RUE_VARIEE_CONTRACT.md). Décisions : D-13 à D-16, tranchées (ADR-44). Un ensemble sans réglage `variety` ne change pas.
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
-| **AG-061 — Tirage par parcelle** | AG-036, D-13, D-14 | Réglage `variety` du format ensemble V1 ; niveaux et toit tirés par parcelle, écart entre voisines, contrôles contre les règles du style ; noyau. | Tirage reproductible à la main sur une rue de 6 parcelles, fenêtre entre voisines, refus localisés, ensembles d'avant inchangés (mêmes empreintes). U42. |
-| **AG-062 — Jointures à hauteurs différentes** | AG-061, D-16 | Toits contre un mur plus haut, pignons de types différents, corniches, étagement et porches inchangés. | Aucune face d'un toit dans le volume du voisin, murs mitoyens découverts aveugles, étagement sur un terrain ; vu dans SketchUp. U43. |
+| **AG-061 — Tirage par parcelle** | AG-036, ADR-44 | Réglage `variety` du format ensemble V1 ; niveaux et toit tirés par parcelle, écart entre voisines, contrôles contre les règles du style ; noyau. | Tirage reproductible à la main sur une rue de 6 parcelles, fenêtre entre voisines, refus localisés, ensembles d'avant inchangés (mêmes empreintes). U42. |
+| **AG-062 — Jointures à hauteurs différentes** | AG-061, ADR-44 | Toits contre un mur plus haut, pignons de types différents, corniches, étagement et porches inchangés. | Aucune face d'un toit dans le volume du voisin, murs mitoyens découverts aveugles, étagement sur un terrain ; vu dans SketchUp. U43. |
 | **AG-063 — Panneau de rue variée, RBZ 0.10.0** | AG-062 | Case Varier les bâtiments, fourchette, écart, toits, répartition annoncée ; guide, journal, RBZ. | Rue variée créée et modifiée au vrai geste, une entrée d'Annuler ; recettes rejouées sur le RBZ. H25. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

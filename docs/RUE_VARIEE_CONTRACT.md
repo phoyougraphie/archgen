@@ -1,6 +1,6 @@
 # Contrat des rues variées — EXT-08, première partie (AG-061 à AG-063)
 
-Contrat de départ, écrit avant le code, **à valider par le propriétaire** : les choix marqués « proposé » dépendent des décisions ouvertes D-13 à D-16. Il prolonge le [contrat d'ensemble](ENSEMBLE_CONTRACT.md) sans rien changer à un ensemble existant : un ensemble sans réglage `variety` garde son plan et son empreinte. Les valeurs marquées « départ » sont à calibrer à la recette.
+Contrat de départ, écrit avant le code. Décisions D-13 à D-16 tranchées par le propriétaire (options A, ADR-44). Il prolonge le [contrat d'ensemble](ENSEMBLE_CONTRACT.md) sans rien changer à un ensemble existant : un ensemble sans réglage `variety` garde son plan et son empreinte. Les valeurs marquées « départ » sont à calibrer à la recette.
 
 **Besoin du propriétaire (2026-11-08).** Choisir, à la génération d'une rue, d'avoir des hauteurs de bâtiment et des toitures variées. (Les fenêtres et les portes existent déjà sur chaque bâtiment ; la « Variation des baies », utilisable depuis D-01, varie déjà leur position d'une parcelle à l'autre.)
 
@@ -21,10 +21,10 @@ Clé facultative et fermée, ajoutée sans changer la version du format (comme A
 | Champ | Valeurs | Défaut (départ) | Sens |
 |---|---|---|---|
 | `levels.min`, `levels.max` | entiers [1 ; 15], min ≤ max | les niveaux du bâtiment | Fourchette du nombre de niveaux, tiré par parcelle |
-| `levels.max_step` | [1 ; 14] | 2 | Écart maximal entre deux voisines (proposé, D-13) |
-| `roofs` | liste de 1 à 4 types parmi `flat`, `gable`, `mansard` | le toit du bâtiment | Toits tirés par parcelle (proposé, D-14) ; `hip` reste refusé en rangée (`E_STREET_ROOF`) |
+| `levels.max_step` | [1 ; 14] | 2 | Écart maximal entre deux voisines (D-13) |
+| `roofs` | liste de 1 à 3 types parmi `flat`, `gable`, `mansard` | le toit du bâtiment | Toits tirés par parcelle (D-14) ; `hip` reste refusé en rangée (`E_STREET_ROOF`) |
 
-**Tirage, proposé (D-13, D-14) :** pour chaque parcelle, dans l'ordre des rangées puis des parcelles, `levels = min + ⌊unit(seed, "parcel/<id>/levels") × (max − min + 1)⌋`, puis ramené dans `[voisine − max_step ; voisine + max_step]` par **un nouveau tirage dans la fenêtre permise**, jamais par une coupe silencieuse : la fenêtre permise est l'intersection de la fourchette et de ± `max_step` autour de la parcelle précédente de la rangée. Le toit est `roofs[⌊unit(seed, "parcel/<id>/roof") × n⌋]`. Mêmes réglages et même seed : même rue.
+**Tirage (D-13, D-14) :** pour chaque parcelle, dans l'ordre des rangées puis des parcelles, `levels = min + ⌊unit(seed, "parcel/<id>/levels") × (max − min + 1)⌋`, puis ramené dans `[voisine − max_step ; voisine + max_step]` par **un nouveau tirage dans la fenêtre permise**, jamais par une coupe silencieuse : la fenêtre permise est l'intersection de la fourchette et de ± `max_step` autour de la parcelle précédente de la rangée. Le toit est `roofs[⌊unit(seed, "parcel/<id>/roof") × n⌋]`. Mêmes réglages et même seed : même rue.
 
 **Contrôles, refus `E_STREET_VARIETY` :**
 
@@ -42,9 +42,9 @@ En fidélité libre, les règles du style deviennent des avertissements, comme p
 
 ## Jointures à hauteurs différentes (AG-062)
 
-| Situation | Règle proposée |
+| Situation | Règle |
 |---|---|
-| **Mur mitoyen découvert** (D-16) | Reste aveugle, enduit de la matière des murs : proposé (option A). Option B : le percer de baies au-dessus du toit du voisin, ticket à part |
+| **Mur mitoyen découvert** (D-16) | Reste aveugle, de la matière des murs (option A). Le percer de baies au-dessus du toit du voisin serait un ticket à part |
 | **Corniche** | S'arrête au mur latéral de sa parcelle, comme aujourd'hui ; sur la plus haute, elle ne retourne pas sur le mur mitoyen découvert |
 | **Toit contre un mur plus haut** | Le toit bas bute contre le mur du voisin, déjà émis ; aucune face de toit n'entre dans le volume du voisin (contrôle de recouvrement par parcelle) |
 | **Deux pans contre mansarde ou toit plat** | Chaque toit garde son pignon aveugle ; les deux pignons se touchent sans se recouvrir |
@@ -54,7 +54,7 @@ En fidélité libre, les règles du style deviennent des avertissements, comme p
 
 ## Styles mêlés (D-15)
 
-Proposé : **un seul style par ensemble** dans ce lot (option A) ; mêler les styles d'une parcelle à l'autre (option B) demande d'accorder les hauteurs de rez-de-chaussée, les corniches et les matières entre styles, et ferait l'objet d'un ticket suivant.
+**Un seul style par ensemble** dans ce lot (option A) ; mêler les styles d'une parcelle à l'autre demanderait d'accorder les hauteurs de rez-de-chaussée, les corniches et les matières entre styles, et ferait l'objet d'un ticket suivant.
 
 ## Panneau (AG-063)
 
@@ -62,4 +62,4 @@ Dans **Tracer une rue ou un îlot** et **Modifier l'ensemble sélectionné** : u
 
 ## Hors de ce lot
 
-Styles mêlés (si D-15 = B) ; baies sur les murs mitoyens découverts (si D-16 = B) ; profondeur et largeur variées par parcelle ; réglage d'une parcelle à la main ; retraits d'attique ; densité et mixité à l'échelle d'un quartier (suite d'EXT-08).
+Styles mêlés ; baies sur les murs mitoyens découverts ; profondeur et largeur variées par parcelle ; réglage d'une parcelle à la main ; retraits d'attique ; densité et mixité à l'échelle d'un quartier (suite d'EXT-08).
