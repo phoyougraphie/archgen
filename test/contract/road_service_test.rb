@@ -24,7 +24,7 @@ class RoadServiceTest < Minitest::Test
 
   # Une coupe à eau exige son régime (EAU_CONTRACT) ; les tests de voirie la posent à un seul niveau.
   def wet(profile)
-    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && b['type'] == 'water' } ? { 'water' => { 'mode' => 'flat' } } : {}
+    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && %w[water sea].include?(b['type']) } ? { 'water' => { 'mode' => 'flat' } } : {}
   end
 
   def service(**ports)
@@ -120,7 +120,7 @@ class RoadServiceTest < Minitest::Test
   def test_every_material_of_every_preset_is_in_the_catalog
     catalog = Archgen::Composition.road_catalog
     Archgen::Composition.road_presets.fetch('presets').each do |p|
-      plan = @service.preview(tree: tree(p['profile'], points: [[0, 0], [200, 0], [200, 200]], radii: [100])).value.plan
+      plan = @service.preview(tree: tree(p['profile'], points: [[0, 0], [600, 0], [600, 600]], radii: [300])).value.plan
       used = []
       walk = lambda do |node|
         node['primitive']['faces'].each { |f| used << f['material'] } if node['primitive'] && node['primitive']['faces']

@@ -15,6 +15,9 @@ module Archgen
         in ['fence', _] then { shapes: [rect(-0.03, 0.03, 0.35 * h, 0.45 * h), rect(-0.03, 0.03, 0.85 * h, 0.95 * h)], part: 'wood', post: [0.1, h, 2.0, 'wood'] }
         in ['guard', 'concrete'] then { shapes: [[[-0.3, 0.0], [0.3, 0.0], [0.08, h], [-0.08, h]]], part: 'concrete', post: nil }
         in ['guard', _] then { shapes: [rect(-0.05, 0.05, h - 0.31, h)], part: 'steel', post: [0.1, h - 0.05, 2.0, 'steel'] }
+        # Ganivelle (AG-052, ADR-35) : les lattes jointives simplifiées en une paroi de bois de 2 cm, poteaux tous les 2 m.
+        in ['sand_fence', _] then { shapes: [rect(-0.01, 0.01, 0.05, h)], part: 'wood', post: [0.08, h + 0.05, 2.0, 'wood'] }
+        in ['low_wall', _] then { shapes: [rect(-0.15, 0.15, 0, h)], part: 'stone', post: nil }
         end
       end
 
@@ -36,7 +39,7 @@ module Archgen
       FAMILIES = {
         'tree' => 'road_vegetation', 'hedge' => 'road_vegetation', 'lamp' => 'road_lighting',
         'bollard' => 'road_furniture', 'pole' => 'road_furniture', 'post' => 'road_furniture', 'fence' => 'road_furniture',
-        'guard' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
+        'guard' => 'road_furniture', 'sand_fence' => 'road_furniture', 'low_wall' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
       }.freeze
 
       def family(node)

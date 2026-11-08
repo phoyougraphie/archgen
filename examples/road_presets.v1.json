@@ -162,6 +162,35 @@
         { "type": "quay", "width_m": 8, "items": [{ "kind": "guard", "variant": "guard", "height_m": 1 }] },
         { "type": "sidewalk", "width_m": 4, "items": [{ "kind": "lamp", "variant": "heritage", "height_m": 5, "spacing_m": 25 }] }
       ] }
+    },
+    {
+      "id": "falaises",
+      "profile": { "road_profile_version": 1, "name": "Côte à falaises", "bands": [
+        { "type": "plant", "width_m": 3 },
+        { "type": "path", "width_m": 2, "items": [{ "kind": "fence", "variant": "fence", "height_m": 1.1 }] },
+        { "type": "verge", "width_m": 4 },
+        { "type": "cliff", "width_m": 6, "height_m": 25 },
+        { "type": "rocks", "width_m": 20 },
+        { "type": "sea", "width_m": 200 }
+      ] }
+    },
+    {
+      "id": "dunes",
+      "profile": { "road_profile_version": 1, "name": "Côte à dunes", "bands": [
+        { "type": "path", "width_m": 2.5 },
+        { "type": "dune", "width_m": 35, "height_m": 6, "items": [{ "kind": "sand_fence", "height_m": 1.2 }, { "kind": "sand_fence", "height_m": 1.2 }] },
+        { "type": "beach", "width_m": 60, "slope_percent": 3, "items": [{ "kind": "sand_fence", "height_m": 1 }] },
+        { "type": "sea", "width_m": 200 }
+      ] }
+    },
+    {
+      "id": "plage",
+      "profile": { "road_profile_version": 1, "name": "Plage et promenade", "bands": [
+        { "type": "sidewalk", "width_m": 3 },
+        { "type": "sidewalk", "width_m": 5, "items": [{ "kind": "lamp", "variant": "ped", "height_m": 4.5, "spacing_m": 20 }, { "kind": "low_wall", "height_m": 0.6 }] },
+        { "type": "beach", "width_m": 50, "slope_percent": 4 },
+        { "type": "sea", "width_m": 200 }
+      ] }
     }
   ]
 }

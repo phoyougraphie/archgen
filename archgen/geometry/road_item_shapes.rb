@@ -7,7 +7,7 @@ module Archgen
     # voie, Y vers la chaussée la plus proche (côté d'une crosse), Z vers le haut.
     module RoadItemShapes
       SIDES = 8
-      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white].freeze
+      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white stone].freeze
 
       module_function
 

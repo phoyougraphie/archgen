@@ -21,6 +21,11 @@
     "road/quay": { "label": "Eau quai", "srgb": "#A39C8C" },
     "road/riverbank": { "label": "Eau berge", "srgb": "#7E9B5E" },
     "road/water_surface": { "label": "Eau surface", "srgb": "#3F7FA6", "alpha": 0.6 },
+    "road/cliff": { "label": "Côte falaise", "srgb": "#9C8F7A" },
+    "road/rocks": { "label": "Côte estran rocheux", "srgb": "#7D7A72" },
+    "road/dune": { "label": "Côte dune", "srgb": "#CFC196" },
+    "road/beach": { "label": "Côte sable", "srgb": "#E3D3A6" },
+    "road/sea": { "label": "Côte fond marin", "srgb": "#B5A67E" },
     "road/curb": { "label": "Voirie bordure", "srgb": "#B8B4AA" },
     "road/rail_steel": { "label": "Voirie rail", "srgb": "#2A3033" },
     "road/marking": { "label": "Voirie marquage", "srgb": "#EEEEE8" },
@@ -33,6 +38,7 @@
     "road/item/concrete": { "label": "Voirie béton", "srgb": "#AAA9A4" },
     "road/item/head": { "label": "Voirie boîtier de feu", "srgb": "#26292B" },
     "road/item/red": { "label": "Voirie rouge de signalisation", "srgb": "#C0392B" },
-    "road/item/white": { "label": "Voirie blanc de signalisation", "srgb": "#F2F2EE" }
+    "road/item/white": { "label": "Voirie blanc de signalisation", "srgb": "#F2F2EE" },
+    "road/item/stone": { "label": "Voirie pierre", "srgb": "#B7AE9C" }
   }
 }

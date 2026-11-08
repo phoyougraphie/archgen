@@ -6,9 +6,9 @@ require_relative '../test_helper'
 class RoadProfileTest < Minitest::Test
   include Archgen::Core
 
-  BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank].freeze
-  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard].freeze
-  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve].freeze
+  BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank cliff rocks dune beach sea].freeze
+  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall].freeze
+  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
   STEP = 0.001
 
   def intake
@@ -55,7 +55,7 @@ class RoadProfileTest < Minitest::Test
     bands.each do |type, entry|
       assert entry['min_width_m'].positive?, type
       assert entry['default_width_m'].between?(entry['min_width_m'], entry['max_width_m']), type
-      assert_includes %w[flat ditch bank water riverbank], entry['shape'], type
+      assert_includes %w[flat ditch bank water riverbank cliff dune beach sea], entry['shape'], type
       assert_includes %w[none embedded platform ballast], entry['rails'], type
       assert_includes [true, false], entry['accepts_items'], type
     end
@@ -75,7 +75,7 @@ class RoadProfileTest < Minitest::Test
 
   # --- Préréglages
 
-  def test_the_fourteen_presets_are_valid_without_warning
+  def test_the_seventeen_presets_are_valid_without_warning
     presets = Archgen::Composition.road_presets.fetch('presets')
     assert_equal PRESETS, presets.map { |p| p['id'] }
     presets.each do |preset|
@@ -97,7 +97,9 @@ class RoadProfileTest < Minitest::Test
     # Une bande d'eau a besoin de ses bords, une berge de son eau (EAU_CONTRACT) : on les pose autour.
     around = {
       'water' => [[band('quay')], [band('quay')]],
-      'riverbank' => [[], [band('water', 40), band('quay')]]
+      'riverbank' => [[], [band('water', 40), band('quay')]],
+      'cliff' => [[], [band('sea')]],
+      'beach' => [[], [band('sea')]]
     }
     BAND_TYPES.each do |type|
       entry = bands.fetch(type)
@@ -115,11 +117,13 @@ class RoadProfileTest < Minitest::Test
   def test_each_item_kind_accepts_its_height_limits_and_refuses_beyond
     ITEM_KINDS.each do |kind|
       entry = items.fetch(kind)
+      # Ganivelle et muret ne vont que sur certaines bandes (EAU_CONTRACT) : la première qu'ils acceptent.
+      host = entry.key?('bands') ? (entry['bands'] & %w[dune sidewalk]).first : 'plant'
       [entry['min_height_m'], entry['max_height_m']].each do |h|
-        accepted(profile(band('plant', 2, [{ 'kind' => kind, 'height_m' => h }])))
+        accepted(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }])))
       end
       [entry['min_height_m'] - STEP, entry['max_height_m'] + STEP].each do |h|
-        assert_refused(profile(band('plant', 2, [{ 'kind' => kind, 'height_m' => h }])), 'E_ROAD_ITEM', '/bands/0/items/0/height_m', 'height_range')
+        assert_refused(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }])), 'E_ROAD_ITEM', '/bands/0/items/0/height_m', 'height_range')
       end
     end
   end

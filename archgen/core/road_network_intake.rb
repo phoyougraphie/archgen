@@ -88,7 +88,7 @@ module Archgen
           found << Diagnostic.error('E_ROAD_TRACE', "#{base}/trace/points_m/0", reason: 'coordinate_range', limit: Limits::ROAD_MAX_COORDINATE_M)
         end
         # Pas d'eau dans un réseau tant que ponts et confluences n'existent pas (EAU_CONTRACT, AG-057).
-        if result.ok? && result.value['profile']['bands'].any? { |b| b['type'] == 'water' }
+        if result.ok? && result.value['profile']['bands'].any? { |b| %w[water sea].include?(b['type']) }
           found << Diagnostic.error('E_ROAD_WATER', "#{base}/profile", reason: 'water_in_network')
         end
         [result.ok? && found.none?(&:error?) ? result.value : nil, origin, found]

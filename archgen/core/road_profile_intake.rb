@@ -61,6 +61,11 @@ module Archgen
         out.concat(setting_problems(band, entry, path))
         band.fetch('items', []).each_with_index do |item, j|
           item_path = "#{path}/items/#{j}"
+          allowed = entry['accepts_items'] && @items.dig(item['kind'], 'bands')
+          if allowed && !allowed.include?(band['type'])
+            out << Diagnostic.error('E_ROAD_ITEM', "#{item_path}/kind", reason: 'item_band_mismatch', kind: item['kind'], band: band['type'], allowed: allowed)
+            next
+          end
           out << if entry['accepts_items']
                    item_problems(item, item_path)
                  else
@@ -71,7 +76,7 @@ module Archgen
       end
 
       # Réglages propres à un type de bande (EAU_CONTRACT : revanche et profondeur de l'eau).
-      SETTING_KEYS = %w[freeboard_m depth_m].freeze
+      SETTING_KEYS = %w[freeboard_m depth_m height_m slope_percent].freeze
 
       def setting_problems(band, entry, path)
         allowed = entry.fetch('settings', {})
@@ -90,7 +95,7 @@ module Archgen
 
       def water_problems(profile)
         bands = profile['bands']
-        out = []
+        out = coast_problems(bands)
         bands.each_with_index do |band, i|
           left = i.positive? ? bands[i - 1] : nil
           right = bands[i + 1]
@@ -114,6 +119,25 @@ module Archgen
               out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}/width_m", reason: 'bank_too_steep', value: band['width_m'], min: waters.first['freeboard_m'])
             end
           end
+        end
+        out
+      end
+
+      # Littoral (EAU_CONTRACT, AG-052) : une seule mer, première ou dernière bande ; falaise et plage
+      # descendent vers elle, donc ne vont pas sans mer.
+      def coast_problems(bands)
+        seas = bands.each_index.select { |i| bands[i]['type'] == 'sea' }
+        out = seas.each_with_index.filter_map do |i, k|
+          next if k.zero? && (i.zero? || i == bands.size - 1)
+
+          Diagnostic.error('E_ROAD_BAND', "/bands/#{i}", reason: 'sea_not_outer', band_number: i + 1)
+        end
+        return out unless seas.empty?
+
+        bands.each_with_index do |band, i|
+          next unless %w[cliff beach].include?(band['type'])
+
+          out << Diagnostic.error('E_ROAD_BAND', "/bands/#{i}", reason: 'coast_without_sea', band_number: i + 1)
         end
         out
       end

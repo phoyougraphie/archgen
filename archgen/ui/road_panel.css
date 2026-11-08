@@ -88,10 +88,16 @@ line.s-hedge-line { stroke: var(--hedge); }
 .c-water { stroke: #6b6450; fill: #6b6450; }
 .c-quay { stroke: #a39c8c; fill: #a39c8c; }
 .c-riverbank { stroke: var(--grass); fill: var(--grass); }
+.c-cliff { stroke: #9c8f7a; fill: #9c8f7a; }
+.c-rocks { stroke: #7d7a72; fill: #7d7a72; }
+.c-dune { stroke: #cfc196; fill: #cfc196; }
+.c-beach { stroke: #e3d3a6; fill: #e3d3a6; }
+.c-sea { stroke: #b5a67e; fill: #b5a67e; }
 .s-water { fill: var(--water); opacity: 0.55; }
 .road-sw.c-lane, .road-sw.c-tram_lane, .road-sw.c-hard, .road-sw.c-edge, .road-sw.c-parking, .road-sw.c-tram, .road-sw.c-rail, .road-sw.c-cycle,
 .road-sw.c-sidewalk, .road-sw.c-path, .road-sw.c-track, .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank, .road-sw.c-ditch,
-.road-sw.c-water, .road-sw.c-quay, .road-sw.c-riverbank { background: currentColor; }
+.road-sw.c-water, .road-sw.c-quay, .road-sw.c-riverbank,
+.road-sw.c-cliff, .road-sw.c-rocks, .road-sw.c-dune, .road-sw.c-beach, .road-sw.c-sea { background: currentColor; }
 .road-sw.c-lane, .road-sw.c-tram_lane { color: var(--asphalt); }
 .road-sw.c-hard, .road-sw.c-edge { color: var(--asphalt2); }
 .road-sw.c-parking { color: var(--park); }
@@ -105,6 +111,11 @@ line.s-hedge-line { stroke: var(--hedge); }
 .road-sw.c-ditch, .road-sw.c-water { color: var(--water); }
 .road-sw.c-quay { color: #a39c8c; }
 .road-sw.c-riverbank { color: var(--grass); }
+.road-sw.c-cliff { color: #9c8f7a; }
+.road-sw.c-rocks { color: #7d7a72; }
+.road-sw.c-dune { color: #cfc196; }
+.road-sw.c-beach { color: #e3d3a6; }
+.road-sw.c-sea { color: var(--water); }
 
 /* Tracé de la voie (AG-042) */
 .road-trace { border-bottom: 2px solid var(--accent); }

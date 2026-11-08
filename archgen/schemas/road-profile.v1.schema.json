@@ -31,6 +31,12 @@
           "depth_m": {
             "type": "number"
           },
+          "height_m": {
+            "type": "number"
+          },
+          "slope_percent": {
+            "type": "number"
+          },
           "items": {
             "type": "array",
             "maxItems": 6,

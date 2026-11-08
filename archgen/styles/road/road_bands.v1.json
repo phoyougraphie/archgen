@@ -21,6 +21,14 @@
     "water": { "label": "Plan d'eau", "default_width_m": 12, "min_width_m": 2, "max_width_m": 400, "level_m": 0, "shape": "water", "role": "water", "rails": "none", "accepts_items": false,
                "settings": { "freeboard_m": { "min": 0.3, "max": 5, "default": 1 }, "depth_m": { "min": 0.5, "max": 15, "default": 2 } } },
     "quay": { "label": "Quai", "default_width_m": 3, "min_width_m": 1, "max_width_m": 20, "level_m": 0, "shape": "flat", "role": "quay", "rails": "none", "accepts_items": true },
-    "riverbank": { "label": "Berge naturelle", "default_width_m": 4, "min_width_m": 1, "max_width_m": 30, "level_m": 0, "shape": "riverbank", "role": "riverbank", "rails": "none", "accepts_items": true }
+    "riverbank": { "label": "Berge naturelle", "default_width_m": 4, "min_width_m": 1, "max_width_m": 30, "level_m": 0, "shape": "riverbank", "role": "riverbank", "rails": "none", "accepts_items": true },
+    "cliff": { "label": "Falaise", "default_width_m": 6, "min_width_m": 2, "max_width_m": 40, "level_m": 0, "shape": "cliff", "role": "coast", "rails": "none", "accepts_items": false,
+               "settings": { "height_m": { "min": 5, "max": 80, "default": 20 } } },
+    "rocks": { "label": "Estran rocheux", "default_width_m": 15, "min_width_m": 2, "max_width_m": 200, "level_m": 0, "shape": "flat", "role": "coast", "rails": "none", "accepts_items": false },
+    "dune": { "label": "Dune", "default_width_m": 30, "min_width_m": 8, "max_width_m": 200, "level_m": 0, "shape": "dune", "role": "coast", "rails": "none", "accepts_items": true,
+              "settings": { "height_m": { "min": 1, "max": 15, "default": 5 } } },
+    "beach": { "label": "Plage", "default_width_m": 40, "min_width_m": 5, "max_width_m": 300, "level_m": 0, "shape": "beach", "role": "coast", "rails": "none", "accepts_items": true,
+               "settings": { "slope_percent": { "min": 1, "max": 10, "default": 4 } } },
+    "sea": { "label": "Mer", "default_width_m": 200, "min_width_m": 20, "max_width_m": 2000, "level_m": 0, "shape": "sea", "role": "sea", "rails": "none", "accepts_items": false }
   }
 }

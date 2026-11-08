@@ -67,6 +67,24 @@
       "default_height_m": 0.8, "min_height_m": 0.6, "max_height_m": 1.5,
       "repeat": "continuous",
       "height_variation": false
+    },
+    "sand_fence": {
+      "label": "Ganivelle",
+      "variants": { "sand_fence": { "label": "Lattes de châtaignier" } },
+      "default_variant": "sand_fence",
+      "default_height_m": 1.2, "min_height_m": 0.8, "max_height_m": 1.5,
+      "repeat": "continuous",
+      "height_variation": false,
+      "bands": ["dune", "beach"]
+    },
+    "low_wall": {
+      "label": "Muret",
+      "variants": { "low_wall": { "label": "Maçonné" } },
+      "default_variant": "low_wall",
+      "default_height_m": 0.6, "min_height_m": 0.3, "max_height_m": 1.2,
+      "repeat": "continuous",
+      "height_variation": false,
+      "bands": ["sidewalk", "path", "track", "verge", "quay", "beach"]
     }
   }
 }

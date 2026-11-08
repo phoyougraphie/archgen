@@ -70,10 +70,13 @@ module Archgen
       WATER_DEFAULTS = { 'max_grade_percent' => 3, 'lock_drop_m' => 3, 'lock_length_m' => 40 }.freeze
 
       def water_problems(tree, profile)
-        wet = profile['bands'].any? { |b| b['type'] == 'water' }
+        wet = profile['bands'].any? { |b| %w[water sea].include?(b['type']) }
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_mode_missing')] if wet && !tree['water']
         return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_without_band')] if !wet && tree['water']
         return [Diagnostic.error('E_ROAD_WATER', '/ground', reason: 'water_ground_unavailable')] if wet && tree['ground']
+        if profile['bands'].any? { |b| b['type'] == 'sea' } && tree['water']['mode'] != 'flat'
+          return [Diagnostic.error('E_ROAD_WATER', '/water/mode', reason: 'sea_needs_flat', value: tree['water']['mode'])]
+        end
 
         []
       end

@@ -24,7 +24,7 @@ class RoadAxisTest < Minitest::Test
 
   # Une coupe à eau exige son régime (EAU_CONTRACT) ; les tests de voirie la posent à un seul niveau.
   def wet(profile)
-    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && b['type'] == 'water' } ? { 'water' => { 'mode' => 'flat' } } : {}
+    profile.is_a?(Hash) && profile['bands'].is_a?(Array) && profile['bands'].any? { |b| b.is_a?(Hash) && %w[water sea].include?(b['type']) } ? { 'water' => { 'mode' => 'flat' } } : {}
   end
 
   def build(input, **opts)

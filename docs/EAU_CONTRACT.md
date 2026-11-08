@@ -24,7 +24,7 @@ Ajoutées au catalogue `road_bands.v1.json` (révision du catalogue, pas du form
 
 Réglages de bande, propres à `water` : `freeboard_m` (revanche, hauteur du niveau 0 au-dessus de l'eau), de 0,3 à 5 m, 1 m par défaut ; `depth_m` (profondeur), de 0,5 à 15 m, 2 m par défaut. Ce sont deux champs facultatifs de la bande dans `road_profile` V1 (ADR-41) : le catalogue dit quelle bande les accepte (`settings`), une autre bande les refuse (`band_setting_unavailable`), une valeur hors plage aussi (`setting_range`). Le profil effectif d'un plan d'eau porte toujours les deux ; celui d'une autre bande n'en porte aucun, si bien qu'une coupe d'avant garde son empreinte. Le chemin de halage est un `track` ou un `path` existant, posé sur la berge ou le quai.
 
-- **Bords de l'eau :** chaque côté d'une bande `water` touche un `quay`, une `riverbank`, ou une bande de littoral (ci-dessous) ; sinon `E_ROAD_BAND`, `water_unbounded`, sur la bande d'eau.
+- **Bords de l'eau :** chaque côté d'une bande `water` touche un `quay` ou une `riverbank` ; sinon `E_ROAD_BAND`, `water_unbounded`, sur la bande d'eau.
 - **Lit :** contre un quai, le lit va jusqu'au pied du mur ; contre une berge, il part de la ligne d'eau et descend en pente de 1 pour 2 (2 × `depth_m` en largeur). Une eau trop étroite pour ses pentes (largeur < 2 × `depth_m` par berge) : `water_too_narrow`, sur `/bands/<i>/width_m`, avec le minimum.
 - **Berge :** elle touche un seul plan d'eau, juste à côté (`bank_without_water` sinon) ; pente `freeboard_m / largeur` au-delà de 100 % : `bank_too_steep`, sur sa largeur.
 - **Ligne de coupe :** le lit fait partie de la ligne de coupe ; le mur d'un quai est la contremarche entre le quai et le lit, en matière `road/quay`. La surface de l'eau est un ruban à part, à la ligne d'eau, de bord à bord du plan d'eau, dans un nœud `road/water` (balise de la chaussée) : séparée, elle ne coupe pas les murs de quai dans SketchUp. Métrique `water_face_count`.
@@ -36,7 +36,7 @@ Réglages de bande, propres à `water` : `freeboard_m` (revanche, hauteur du niv
 
 ## Bandes de littoral (AG-052)
 
-L'astuce du bord de mer : **la mer est la dernière bande de la coupe**, côté extérieur, et certaines bandes changent le niveau de toutes celles qui sont après elles, du côté de la mer. La coupe a donc des niveaux cumulés : la terre en haut, la mer en bas.
+L'astuce du bord de mer : **la mer est la dernière (ou la première) bande de la coupe**, et certaines bandes changent le niveau de toutes celles qui sont après elles, du côté de la mer. La coupe a donc des niveaux cumulés : la terre en haut, la mer en bas. De la terre vers la mer, chaque bande part du niveau où s'arrête la précédente (`base_m` dans la coupe dessinée) ; sa propre forme et son niveau de catalogue s'y ajoutent. Une coupe sans mer garde tous ses niveaux.
 
 | Clé | Libellé | Défaut (m) | Plage (m) | Forme |
 |---|---|---|---|---|
@@ -44,16 +44,19 @@ L'astuce du bord de mer : **la mer est la dernière bande de la coupe**, côté 
 | `rocks` | Estran rocheux | 15 | 2 à 200 | Plane, matière rocheuse |
 | `dune` | Dune | 30 | 8 à 200 | Bosse de `height_m` (1 à 15, 5 par défaut) à 8 facettes, même niveau des deux côtés |
 | `beach` | Plage | 40 | 5 à 300 | Pente douce de `slope_percent` (1 à 10, 4 par défaut) vers la mer ; les bandes suivantes descendent d'autant |
-| `sea` | Mer | 200 | 20 à 2 000 | Surface d'eau au niveau du bord de la bande précédente, sans lit |
+| `sea` | Mer | 200 | 20 à 2 000 | Surface d'eau au niveau du bord de la bande précédente, sur un fond plat 1 m plus bas (départ) |
 
-- **La mer au bout :** `sea` est la première ou la dernière bande, et une seule par coupe ; sinon `sea_not_outer`. La falaise et la plage descendent toujours vers la mer : une coupe à falaise ou à plage sans mer est refusée (`coast_without_sea`).
+- **La mer au bout :** `sea` est la première ou la dernière bande, et une seule par coupe ; sinon `sea_not_outer`, sur la mer en trop (`/bands/<i>`). La falaise et la plage descendent toujours vers la mer : une coupe à falaise ou à plage sans mer est refusée (`coast_without_sea`, sur la bande). Une dune va sans mer.
+- **Réglages de bande** (ADR-41) : `height_m` sur une falaise ou une dune, `slope_percent` sur une plage ; ailleurs `band_setting_unavailable`, hors plage `setting_range`.
+- **Ligne de coupe :** la falaise est un front incliné dans sa largeur ; entre la plage (ou l'estran) et le fond marin, la contremarche de 1 m prend la matière de la bande haute. La surface de la mer rejoint le nœud `road/water`.
 - **Éléments nouveaux** (`road_items.v1.json`) :
-  - `sand_fence`, **ganivelle** : lattes de châtaignier verticales de 0,08 m, jointives à 0,05 m près, sur deux fils, poteaux tous les 2 m ; hauteur de 0,8 à 1,5 m ; continue ; sur une dune ou une plage seulement (`item_band_mismatch`).
-  - `low_wall`, **muret** : maçonné, 0,30 m d'épaisseur, hauteur de 0,3 à 1,2 m ; continu ; sur un trottoir, un chemin, un quai, une plage ou en tête de falaise.
+  - `sand_fence`, **ganivelle** : hauteur de 0,8 à 1,5 m (1,2 par défaut) ; continue ; sur une dune ou une plage seulement. Forme simple (ADR-35) : les lattes jointives sont une paroi de bois de 2 cm, de 0,05 m au-dessus du sol jusqu'en haut, avec des poteaux de 0,08 m tous les 2 m qui la dépassent de 5 cm.
+  - `low_wall`, **muret** : maçonné (`road/item/stone`), 0,30 m d'épaisseur, hauteur de 0,3 à 1,2 m (0,6 par défaut) ; continu ; sur un trottoir, un chemin, un chemin empierré, un accotement, un quai ou une plage.
+  - Ailleurs : `E_ROAD_ITEM`, `item_band_mismatch`, sur `/bands/<i>/items/<j>/kind`, avec les bandes permises. La liste est une clé `bands` de l'élément dans le catalogue. Falaise, estran et mer n'acceptent aucun élément (`band_accepts_no_items`).
 - **Pose sur une bande en pente ou en bosse :** la position en travers suit la règle de la voirie ; le pied se pose à la cote de la coupe à cette position.
-- **Matières :** `coast/sand`, `coast/dune` (sable et oyats), `coast/rock`, `coast/cliff` ; la mer prend `water/surface`.
-- **Préréglages :** côte à falaises (sentier côtier, garde-corps, falaise, estran, mer), côte à dunes (chemin, dune à ganivelles, plage, mer), plage et promenade (trottoir, lampadaires, muret, plage, mer).
-- **Rayon :** une mer de 2 000 m de large est un ruban décalé comme les autres. Du côté concave d'un virage, le rayon doit dépasser la largeur, sinon le refus existant de rayon s'applique, sur le segment, avec le conseil de réduire la largeur de la mer.
+- **Matières :** `road/cliff`, `road/rocks`, `road/dune`, `road/beach`, `road/sea` (fond marin) ; la surface de la mer prend `road/water_surface`.
+- **Préréglages :** côte à falaises (bande plantée, sentier à barrière, accotement, falaise de 25 m, estran de 20 m, mer de 200 m), côte à dunes (chemin, dune de 6 m à deux ganivelles, plage à 3 % et sa ganivelle, mer), plage et promenade (trottoir, promenade à lampadaires et muret, plage à 4 %, mer).
+- **Rayon :** une mer de 2 000 m de large est un ruban décalé comme les autres. Du côté intérieur d'un virage, le rayon doit dépasser la largeur de ce côté de l'axe (plus 1 m), sinon le refus existant `radius_too_small` s'applique, sur le rayon. Placer l'axe côté terre (`axis` à gauche ou à droite) laisse virer librement du côté de la terre.
 
 ## Réglage `water`, dans les réglages de voie V1
 

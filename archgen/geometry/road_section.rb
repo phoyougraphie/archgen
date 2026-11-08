@@ -25,9 +25,10 @@ module Archgen
         rows = profile['bands'].each_with_index.map do |band, i|
           entry = catalogue.fetch(band['type'])
           { 'index' => i, 'type' => band['type'], 'role' => entry['role'], 'x0_m' => q(spans[i][0]), 'x1_m' => q(spans[i][1]),
-            'level_m' => entry['level_m'].to_f, 'surface' => surface(entry, spans[i], width) }.merge(band.slice('freeboard_m', 'depth_m'))
+            'level_m' => entry['level_m'].to_f, 'surface' => surface(entry, spans[i], width) }.merge(band.slice('freeboard_m', 'depth_m', 'height_m', 'slope_percent'))
         end
         shape_water(rows)
+        shape_coast(rows)
         {
           'width_m' => q(width),
           'bands' => rows,
@@ -100,10 +101,45 @@ module Archgen
         end
       end
 
+      # Littoral (EAU_CONTRACT, AG-052) : niveaux cumulés. De la terre vers la mer, chaque bande part du
+      # niveau où la précédente s'arrête ; une falaise descend de sa hauteur, une plage de sa pente, une dune
+      # revient à son niveau. La mer est une surface au niveau de son bord, sur un fond plat à 1 m dessous.
+      SEA_BED_M = 1.0
+      DUNE_FACETS = 8
+
+      def shape_coast(rows)
+        sea = rows.index { |r| r['type'] == 'sea' }
+        toward_right = sea.nil? || sea == rows.size - 1
+        order = toward_right ? rows : rows.reverse
+        base = 0.0
+        order.each do |row|
+          w = row['x1_m'] - row['x0_m']
+          drop = case row['type']
+                 when 'cliff' then row['height_m']
+                 when 'beach' then w * row['slope_percent'] / 100.0
+                 else 0.0
+                 end
+          local = case row['type']
+                  when 'cliff', 'beach' then toward_right ? [[row['x0_m'], 0.0], [row['x1_m'], -drop]] : [[row['x0_m'], -drop], [row['x1_m'], 0.0]]
+                  when 'dune' then (0..DUNE_FACETS).map { |k| [row['x0_m'] + (w * k / DUNE_FACETS), row['height_m'] * Math.sin(Math::PI * k / DUNE_FACETS)] }
+                  when 'sea' then [[row['x0_m'], -SEA_BED_M], [row['x1_m'], -SEA_BED_M]]
+                  end
+          row['surface'] = local if local
+          row['base_m'] = q(base)
+          unless base.zero?
+            row['surface'] = row['surface'].map { |x, z| [x, z + base] }
+            row['level_m'] = row['level_m'] + base
+          end
+          row['surface'] = row['surface'].map { |x, z| [q(x), q(z)] }
+          base -= drop
+        end
+      end
+
       # Surfaces de l'eau, à part de la ligne de coupe : de bord à bord du plan d'eau, à la ligne d'eau.
       def water_lines(rows)
-        rows.select { |r| r['type'] == 'water' }.map do |r|
-          { 'band' => r['index'], 'x0_m' => r['x0_m'], 'x1_m' => r['x1_m'], 'z_m' => q(-r['freeboard_m']) }
+        rows.select { |r| %w[water sea].include?(r['type']) }.map do |r|
+          z = r['base_m'] - (r['type'] == 'water' ? r['freeboard_m'] : 0.0)
+          { 'band' => r['index'], 'x0_m' => r['x0_m'], 'x1_m' => r['x1_m'], 'z_m' => q(z) }
         end
       end
 
