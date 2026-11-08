@@ -481,6 +481,64 @@ class StreetControllerTest < Minitest::Test
     assert_equal 1, call('edit_preview', 'settings' => { 'access' => { 'count' => 1 } })['result']['metrics']['access_count']
   end
 
+  # --- Rues variées (AG-063)
+
+  VARIED = { 'levels' => { 'min' => 3, 'max' => 7 }, 'roofs' => %w[flat gable mansard] }.freeze
+
+  def test_init_tells_each_style_its_roofs_and_levels
+    profiles = call('init')['result']['profiles'].to_h { |p| [p['id'], p] }
+    assert_equal %w[flat], profiles['brutalist']['roofs']
+    assert_equal %w[mansard], profiles['haussmann']['roofs']
+    assert_equal({ 'min' => 5, 'max' => 7 }, profiles['haussmann']['levels'])
+    assert_equal %w[gable], profiles['toulousain']['roofs'], 'la croupe ne se propose pas en rangée'
+    refute profiles['brutalist'].key?('levels')
+  end
+
+  def test_preview_announces_the_draw_and_a_new_seed_gives_another_street
+    draw([0.0, 0.0], [72.0, 0.0])
+    plain = preview['result']
+    refute plain.key?('variety')
+    assert_equal plain['ensemble_digest'], preview(SETTINGS.merge('variety' => nil))['result']['ensemble_digest'], 'case décochée : rien ne change'
+    varied = preview(SETTINGS.merge('variety' => VARIED))['result']
+    assert_equal 6, varied['variety']['levels'].values.sum
+    assert_equal 6, varied['variety']['roofs'].values.sum
+    other = preview(SETTINGS.merge('variety' => VARIED, 'seed' => 2))['result']
+    refute_equal varied['ensemble_digest'], other['ensemble_digest']
+  end
+
+  def test_preview_explains_a_variety_refusal
+    draw([0.0, 0.0], [72.0, 0.0])
+    result = preview(SETTINGS.merge('variety' => { 'levels' => { 'min' => 6, 'max' => 3 } }))['result']
+    assert result['refused']
+    assert_equal '/variety/levels/min', result['problems'].first['path']
+  end
+
+  def test_edit_keeps_replaces_or_removes_the_variety
+    draw([5.0, 7.0], [77.0, 7.0])
+    varied = SETTINGS.merge('variety' => VARIED, 'seed' => 3)
+    assert create(preview(varied)['result']['ensemble_digest'], varied)['ok']
+    root = @model.instances.first
+    @model.selection.replace([root])
+    loaded = call('load_selection')['result']
+    assert_equal VARIED['roofs'], loaded['settings']['variety']['roofs']
+    assert_equal 3, loaded['settings']['seed']
+    assert loaded['variety']
+    kept = call('edit_preview', 'settings' => SETTINGS)['result']
+    assert_equal false, kept['changed'], 'sans clé variety, la variété enregistrée reste'
+    reseeded = call('edit_preview', 'settings' => SETTINGS.merge('seed' => 4))['result']
+    assert_equal true, reseeded['changed']
+    narrowed = SETTINGS.merge('variety' => { 'levels' => { 'min' => 4, 'max' => 4 }, 'roofs' => %w[gable] })
+    result = call('edit_preview', 'settings' => narrowed)['result']
+    assert_equal({ '4' => 6 }, result['variety']['levels'])
+    assert_equal({ 'gable' => 6 }, result['variety']['roofs'], 'la liste remplace, elle ne fusionne pas')
+    removed = SETTINGS.merge('variety' => nil)
+    gone = call('edit_preview', 'settings' => removed)['result']
+    refute gone.key?('variety')
+    response = call('regenerate', 'settings' => removed, 'ensemble_digest' => gone['ensemble_digest'])
+    assert response['ok'], response.inspect
+    refute JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json')).key?('variety')
+  end
+
   def test_changing_document_forgets_the_edit
     root = created_root([5.0, 7.0], [65.0, 7.0])
     @model.selection.replace([root])

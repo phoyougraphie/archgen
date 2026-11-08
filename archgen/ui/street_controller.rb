@@ -14,6 +14,8 @@ module Archgen
         'retain_terrain' => [], 'site_preview' => %w[site], 'adapt_site' => %w[site site_digest], 'remove_site' => []
       }.freeze
       MAX_REQUEST_ID = 64
+      # Toits qu'une rangée peut tirer (D-14) ; la croupe reste refusée en rangée.
+      VARIETY_ROOFS = %w[flat gable mansard].freeze
       MAX_REMEMBERED = 32
       DEFAULT_SETTINGS = {
         'building' => { 'profile' => { 'id' => 'haussmann' }, 'mode' => 'shell', 'lod' => 0 },
@@ -124,7 +126,7 @@ module Archgen
         @mutations.clear
         Core::Result.ok(
           'version' => VERSION,
-          'profiles' => @registry.active_profiles.map { |p| { 'id' => p.id, 'label' => p.label } },
+          'profiles' => @registry.active_profiles.map { |p| { 'id' => p.id, 'label' => p.label }.merge(variety_hints(p)) },
           'defaults' => DEFAULT_SETTINGS,
           'side' => @session.side,
           'tool_active' => @tool_active == true,
@@ -132,6 +134,15 @@ module Archgen
           'site_materials' => Composition.materials.fetch('materials').map { |id, entry| { 'id' => id, 'label' => entry['label'] } },
           'mode' => @mode
         )
+      end
+
+      # Ce que le style dit des rues variées : ses toits, et sa fourchette de niveaux s'il en a une.
+      # Le panneau coche ces toits par défaut ; les autres restent proposés, marqués hors style.
+      def variety_hints(profile)
+        roofs = profile.rules.find { |r| r['rule'] == 'roof_type' }&.dig('params', 'values')
+        levels = profile.rules.find { |r| r['rule'] == 'level_count' }&.fetch('params')
+        out = { 'roofs' => roofs ? VARIETY_ROOFS & roofs : VARIETY_ROOFS }
+        levels ? out.merge('levels' => { 'min' => levels['min'], 'max' => levels['max'] }) : out
       end
 
       def preview(payload)
@@ -171,11 +182,13 @@ module Archgen
           # Le tracé reste affiché : un Result en erreur perdrait sa valeur.
           return Core::Result.ok(body('refused' => true, 'problems' => computed.errors.map { |d| Messages.to_h(d) }))
         end
-        Core::Result.ok(body('metrics' => computed.value.plan['metrics'], 'ensemble_digest' => computed.value.ensemble_digest), computed.diagnostics)
+        Core::Result.ok(body({ 'metrics' => computed.value.plan['metrics'], 'variety' => computed.value.plan['variety'],
+                               'ensemble_digest' => computed.value.ensemble_digest }.compact), computed.diagnostics)
       end
 
       def tree_for(settings)
-        tree = settings.reject { |key, _| %w[layout access].include?(key) }.merge('trace' => @session.trace)
+        # Une case Varier décochée envoie `variety: null` : la rue garde alors un seul gabarit.
+        tree = settings.reject { |key, value| %w[layout access].include?(key) || (key == 'variety' && value.nil?) }.merge('trace' => @session.trace)
         return settings.key?('access') ? tree.merge('access' => settings['access']) : tree if @session.closed?
 
         tree.merge('layout' => layout_for(settings))
@@ -361,17 +374,23 @@ module Archgen
       end
 
       def edit_body(computed, extra = {})
-        { 'metrics' => computed.plan['metrics'], 'ensemble_digest' => computed.ensemble_digest,
-          'changed' => computed.ensemble_digest != @edit_target.ensemble_digest }.merge(extra)
+        { 'metrics' => computed.plan['metrics'], 'variety' => computed.plan['variety'], 'ensemble_digest' => computed.ensemble_digest,
+          'changed' => computed.ensemble_digest != @edit_target.ensemble_digest }.compact.merge(extra)
       end
 
-      # Les réglages du panneau sur les réglages enregistrés. Le tracé et la seed ne changent pas.
+      # Les réglages du panneau sur les réglages enregistrés. Le tracé ne change pas. La variété envoyée
+      # remplace l'enregistrée en entier (sa liste de toits ne se fusionne pas) ; null la retire.
+      # La graine ne change que si le panneau en envoie une.
       def edit_tree(settings)
         stored = @edit_settings
         tree = stored.reject { |key, _| %w[layout access].include?(key) }.merge(
           'building' => Core::Merge.leaves(stored['building'], settings.fetch('building', {})),
           'parcel' => Core::Merge.leaves(stored['parcel'], settings.fetch('parcel', {}))
         )
+        tree['seed'] = settings['seed'] if settings.key?('seed')
+        if settings.key?('variety')
+          settings['variety'].nil? ? tree.delete('variety') : tree['variety'] = settings['variety']
+        end
         return tree.merge('access' => Core::Merge.leaves(stored['access'], settings.fetch('access', {}))) if stored.dig('trace', 'closed')
 
         tree.merge('layout' => edit_layout(stored['layout'], settings.fetch('layout', {})))

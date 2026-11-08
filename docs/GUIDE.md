@@ -98,7 +98,9 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 
 **Le porche fait 2,7 m de haut par défaut**, car le rez-de-chaussée des styles livrés ne laisse que 2,8 à 2,9 m. Ce n'est pas une règle d'accès pompiers ni d'urbanisme.
 
-**Modifier :** sélectionnez l'ensemble, puis **Extensions → ARCHGEN → Modifier l'ensemble sélectionné**. Changez les réglages, puis cliquez sur **Remplacer cet ensemble**. Toute sa géométrie est remplacée, ses bâtiments compris. Le tracé ne change pas : pour le changer, tracez-en un autre. Une copie garde sa géométrie jusqu'à sa propre modification.
+**Rue variée :** cochez **Varier les bâtiments** dans la section Variété. Chaque parcelle tire alors son nombre de niveaux dans la fourchette (**Niveaux, au moins** et **au plus**), à un **écart** au plus de sa voisine (2 niveaux par défaut), et son toit parmi les cases cochées : **Toit plat**, **Deux pans**, **Mansarde**. Le panneau propose la fourchette et les toits du style ; un toit marqué « hors style » reste possible, le style le signale alors (et le refuse en fidélité stricte). Sans toit coché, chaque parcelle garde le toit du style. Le résultat annonce le tirage avant d'écrire, par exemple « de 3 à 7 niveaux, 2 toits plats, 4 mansardes ». **Une autre graine donne une autre rue** ; même graine et mêmes réglages, même rue. Les murs mitoyens découverts au-dessus d'un voisin plus bas restent aveugles. Quand la case est cochée, le champ Niveaux de la section Bâtiments est ignoré : le nombre de niveaux vient du tirage ; la Hauteur courante reste celle de chaque étage.
+
+**Modifier :** sélectionnez l'ensemble, puis **Extensions → ARCHGEN → Modifier l'ensemble sélectionné**. Changez les réglages (la variété et sa graine comprises ; décocher Varier rend un seul gabarit), puis cliquez sur **Remplacer cet ensemble**. Toute sa géométrie est remplacée, ses bâtiments compris. Le tracé ne change pas : pour le changer, tracez-en un autre. Une copie garde sa géométrie jusqu'à sa propre modification.
 
 **À savoir**
 

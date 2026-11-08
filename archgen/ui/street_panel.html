@@ -37,6 +37,17 @@
     <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
     <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
   </fieldset>
+  <fieldset>
+    <legend>Variété</legend>
+    <div class="field wide check"><input type="checkbox" id="s-variety"><label for="s-variety">Varier les bâtiments (niveaux et toits tirés par parcelle)</label></div>
+    <div class="field"><label for="s-vmin">Niveaux, au moins</label><input id="s-vmin" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-vmax">Niveaux, au plus</label><input id="s-vmax" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-vstep">Écart entre voisines (niveaux)</label><input id="s-vstep" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-seed">Graine du tirage</label><input id="s-seed" inputmode="numeric"></div>
+    <div class="field check"><input type="checkbox" id="s-roof-flat" data-variety="1" data-roof="flat"><label for="s-roof-flat" id="s-roof-flat-label">Toit plat</label></div>
+    <div class="field check"><input type="checkbox" id="s-roof-gable" data-variety="1" data-roof="gable"><label for="s-roof-gable" id="s-roof-gable-label">Deux pans</label></div>
+    <div class="field check"><input type="checkbox" id="s-roof-mansard" data-variety="1" data-roof="mansard"><label for="s-roof-mansard" id="s-roof-mansard-label">Mansarde</label></div>
+  </fieldset>
   <fieldset id="s-access-fields" hidden>
     <legend>Accès à la cour</legend>
     <div class="field"><label for="s-access-count">Nombre</label><select id="s-access-count"><option value="auto">Selon le périmètre</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>

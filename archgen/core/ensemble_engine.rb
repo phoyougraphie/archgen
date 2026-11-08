@@ -102,7 +102,8 @@ module Archgen
 
       # Un avertissement de définition partagée vaut pour chaque parcelle qui l'utilise.
       def relocated_warnings(built, ready, parcel)
-        own = ready.warnings + built.value.plan_warnings
+        # `ready` est un Result : les avertissements du style sont ceux du bâtiment préparé (AG-063).
+        own = ready.value.warnings + built.value.plan_warnings
         own.uniq(&:to_h).map { |d| ParcelBuilding.relocate(d, parcel) }
       end
       private_class_method :relocated_warnings

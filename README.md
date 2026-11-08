@@ -1,6 +1,6 @@
 # ARCHGEN — dossier de développement V0.1
 
-ARCHGEN est une extension SketchUp Desktop, ciblant Windows et SketchUp 2026 en V0.1, qui génère des bâtiments paramétriques pour la maquette architecturale et la création de décors. Ce dépôt contient la spécification et le code en cours de développement. La version 0.9.0, qui ajoute les ponts (poutre, arc, voûte) aux réseaux de voies et y fait entrer les cours d'eau, est recettée sur Windows 11 et SketchUp 26.2.243 ([rapport](docs/recette/V0.9.md)). Pour l'utiliser : [guide](docs/GUIDE.md) et [journal des versions](CHANGELOG.md). Le paquet se construit avec `bundle exec rake package`.
+ARCHGEN est une extension SketchUp Desktop, ciblant Windows et SketchUp 2026 en V0.1, qui génère des bâtiments paramétriques pour la maquette architecturale et la création de décors. Ce dépôt contient la spécification et le code en cours de développement. La version 0.10.0, qui permet de varier les hauteurs et les toits d'une rue ou d'un îlot, est recettée sur Windows 11 et SketchUp 26.2.243 ([rapport](docs/recette/V0.10.md)). Pour l'utiliser : [guide](docs/GUIDE.md) et [journal des versions](CHANGELOG.md). Le paquet se construit avec `bundle exec rake package`.
 
 **Pour commencer :** lire [la carte mentale](docs/CARTE.md) (résumé à jour, version graphique dans [docs/carte/index.html](docs/carte/index.html)), [AGENTS.md](AGENTS.md), puis prendre le prochain ticket indiqué sur la carte. Tests : `bundle exec rake test`. Le premier démonstrateur est un rectangle neutre. Les styles arrivent après le noyau.
 

@@ -64,7 +64,9 @@ Vérifié (U43) : sur une rue en coude et un îlot, trois graines, chaque sommet
 
 ## Panneau (AG-063)
 
-Dans **Tracer une rue ou un îlot** et **Modifier l'ensemble sélectionné** : une case **Varier les bâtiments**, la fourchette de niveaux, l'écart entre voisines, les toits à tirer (cases parmi ceux du style) ; l'aperçu annonce la répartition (« 4 à 7 niveaux, 3 toits à deux pans, 2 mansardes… »). Une nouvelle graine redonne une autre rue. Guide, journal, RBZ 0.10.0, recette H25 et recettes rejouées.
+Dans **Tracer une rue ou un îlot** et **Modifier l'ensemble sélectionné** : une case **Varier les bâtiments**, la fourchette de niveaux, l'écart entre voisines, les toits à tirer et la **graine** de l'ensemble ; l'aperçu annonce la répartition (« de 4 à 7 niveaux, 3 toits à deux pans, 2 mansardes »). Une nouvelle graine redonne une autre rue. Guide, journal, RBZ 0.10.0, recette H25 et recettes rejouées.
+
+**Fait (AG-063).** `init` donne pour chaque style ses toits de rangée (règle `roof_type` ∩ plat, deux pans, mansarde ; les trois sans règle) et sa fourchette (règle `level_count`, sinon 3 à 6 proposés). Les toits du style sont cochés par défaut ; les autres restent proposés, marqués « hors style » : en fidélité plausible le style les signale, en stricte il les refuse (`variety_style_roof`). Ce choix précise « cases parmi ceux du style » : un style d'un seul toit n'aurait sinon aucune variété de toits. Case décochée, le panneau envoie `variety: null` : en création rien n'est ajouté, en modification la variété enregistrée est retirée ; une variété envoyée remplace l'enregistrée en entier. La graine n'est envoyée que saisie. Les corps `preview`, `load_selection`, `edit_preview` et `regenerate` portent `variety`, la répartition du plan. Contrat vérifié par quatre tests du contrôleur (C : test/contract/street_controller_test.rb).
 
 ## Hors de ce lot
 

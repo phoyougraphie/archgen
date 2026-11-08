@@ -5,6 +5,19 @@ require File.expand_path('../../archgen/ui/messages', __dir__)
 
 # U42 : rues variées, tirage par parcelle (docs/RUE_VARIEE_CONTRACT.md ; AG-061, ADR-44).
 class EnsembleVarietyTest < Minitest::Test
+  # Défaut trouvé au vrai geste (AG-063) : un toit hors style n'était pas signalé, les avertissements
+  # du bâtiment préparé se perdaient dans l'ensemble.
+  def test_a_roof_outside_the_style_is_reported_per_parcel
+    tree = { 'seed' => 2, 'trace' => { 'points_m' => [[0, 0], [72, 0]], 'closed' => false }, 'building' => { 'profile' => { 'id' => 'haussmann' } },
+             'variety' => { 'levels' => { 'min' => 5, 'max' => 7 }, 'roofs' => %w[flat] } }
+    settings = Archgen::Composition.ensemble_intake.settings(tree).value
+    result = Archgen::Core::EnsembleEngine.call(settings, registry: Archgen::Composition.registry.value, intake: Archgen::Composition.intake,
+                                                         materials: Archgen::Composition.materials.fetch('materials'))
+    assert result.ok?
+    roofs = result.diagnostics.select { |d| d.code == 'W_HISTORICAL' && d.path.end_with?('/roof/type') }
+    assert_equal 6, roofs.size, result.diagnostics.map(&:to_h).inspect
+  end
+
   include Archgen::Core
 
   STREET = [[0, 0], [72, 0]].freeze # six parcelles de 12 m

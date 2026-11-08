@@ -16,6 +16,8 @@
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
+    variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
+    roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
   };
 
@@ -39,8 +41,12 @@
     var levels = {};
     var count = number(el.count);
     var height = number(el.height);
-    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth), number(el.accessHeight)];
+    var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth), number(el.accessHeight),
+      number(el.vmin), number(el.vmax), number(el.vstep), number(el.seed)];
     state.localError = values.some(function (v) { return v !== null && isNaN(v); }) ? 'Saisissez un nombre valide.' : null;
+    if (!state.localError && el.variety.checked && (number(el.vmin) === null || number(el.vmax) === null)) {
+      state.localError = 'Saisissez la fourchette de niveaux.';
+    }
     if (state.localError) { return null; }
     if (count !== null) { levels.count = count; }
     if (height !== null) { levels.height_m = height; }
@@ -54,7 +60,58 @@
     var access = { count: el.accessCount.value === 'auto' ? 'auto' : Number(el.accessCount.value) };
     if (number(el.accessWidth) !== null) { access.width_m = number(el.accessWidth); }
     if (number(el.accessHeight) !== null) { access.height_m = number(el.accessHeight); }
-    return { building: building, parcel: parcel, layout: layout, access: access };
+    var out = { building: building, parcel: parcel, layout: layout, access: access, variety: variety() };
+    if (number(el.seed) !== null) { out.seed = number(el.seed); }
+    return out;
+  }
+
+  // Case décochée : null, la rue garde un seul gabarit (et la variété enregistrée est retirée).
+  function variety() {
+    if (!el.variety.checked) { return null; }
+    var levels = { min: number(el.vmin), max: number(el.vmax) };
+    if (number(el.vstep) !== null) { levels.max_step = number(el.vstep); }
+    var roofs = el.roofs.filter(function (box) { return box.checked; }).map(function (box) { return box.getAttribute('data-roof'); });
+    return roofs.length ? { levels: levels, roofs: roofs } : { levels: levels };
+  }
+
+  var ROOF_WORDS = { flat: ['toit plat', 'toits plats'], gable: ['toit à deux pans', 'toits à deux pans'], mansard: ['mansarde', 'mansardes'] };
+
+  // La répartition tirée, annoncée avant d'écrire : « de 3 à 7 niveaux, 2 toits plats, 4 mansardes ».
+  function varietyText(drawn) {
+    if (!drawn) { return ''; }
+    var levels = Object.keys(drawn.levels || {}).map(Number).sort(function (a, b) { return a - b; });
+    var parts = [];
+    if (levels.length === 1) { parts.push(levels[0] + (levels[0] > 1 ? ' niveaux partout' : ' niveau partout')); }
+    if (levels.length > 1) { parts.push('de ' + levels[0] + ' à ' + levels[levels.length - 1] + ' niveaux'); }
+    Object.keys(drawn.roofs || {}).forEach(function (roof) {
+      var n = drawn.roofs[roof];
+      var words = ROOF_WORDS[roof] || [roof, roof];
+      parts.push(n + ' ' + (n > 1 ? words[1] : words[0]));
+    });
+    return parts.length ? ' Tirage : ' + parts.join(', ') + '.' : '';
+  }
+
+  function toggleVariety() {
+    Array.prototype.slice.call(document.querySelectorAll('input[data-variety]')).forEach(function (input) { input.disabled = !el.variety.checked; });
+  }
+
+  // Le style dit ses toits et sa fourchette : ce sont les valeurs proposées ; un toit hors style
+  // reste possible, signalé par le style au moment de l'aperçu.
+  function applyStyle(reset) {
+    var profile = state.profiles[el.profile.value] || { roofs: ['flat', 'gable', 'mansard'] };
+    el.roofs.forEach(function (box) {
+      var roof = box.getAttribute('data-roof');
+      var inStyle = profile.roofs.indexOf(roof) !== -1;
+      var label = byId(box.id + '-label');
+      label.textContent = label.textContent.replace(' (hors style)', '') + (inStyle ? '' : ' (hors style)');
+      if (reset) { box.checked = inStyle; }
+    });
+    if (reset) {
+      var levels = profile.levels || { min: 3, max: 6 };
+      el.vmin.value = String(levels.min);
+      el.vmax.value = String(levels.max);
+      el.vstep.value = '2';
+    }
   }
 
   function requestPreview() {
@@ -153,7 +210,7 @@ el.siteRemove.disabled = state.busy || state.cooling || !state.hasSite;
       el.result.textContent = metrics.parcel_count + ' bâtiments, dont ' + metrics.definition_count + ' différents ; ' +
         (metrics.access_count ? metrics.access_count + ' accès à la cour ; ' : '') +
         thousands(metrics.expanded_face_count) + ' faces ; façades de ' + decimal(metrics.facade_length_m) + ' m.' +
-        (finished ? '' : ' Tracé en cours.');
+        varietyText(result.variety) + (finished ? '' : ' Tracé en cours.');
       el.create.textContent = 'Créer ces ' + metrics.parcel_count + ' bâtiments';
     } else {
       el.result.textContent = trace.points < 2 ? 'Tracé en cours.' : 'Ce tracé ne peut pas être construit.';
@@ -197,7 +254,9 @@ if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(respons
     if (!response.ok) { el.status.textContent = 'Panneau indisponible'; return; }
     var result = response.result;
     el.profile.textContent = '';
+    state.profiles = {};
     result.profiles.forEach(function (profile) {
+      state.profiles[profile.id] = profile;
       var option = document.createElement('option');
       option.value = profile.id;
       option.textContent = profile.label;
@@ -207,6 +266,10 @@ if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(respons
     el.profile.value = defaults.building.profile.id;
     el.mode.value = defaults.building.mode;
     el.lod.value = String(defaults.building.lod);
+    el.seed.value = '1';
+    el.variety.checked = false;
+    applyStyle(true);
+    toggleVariety();
     el.target.value = decimal(defaults.parcel.target_width_m);
     el.depth.value = decimal(defaults.parcel.depth_m);
     el.bay.value = decimal(defaults.parcel.bay_width_m);
@@ -335,6 +398,18 @@ function runSite(message, action, payload) {
     setOptional(el.target, values.parcel.target_width_m);
     setOptional(el.depth, values.parcel.depth_m);
     setOptional(el.bay, values.parcel.bay_width_m);
+    el.seed.value = values.seed === undefined ? '1' : String(values.seed);
+    var drawn = values.variety;
+    el.variety.checked = Boolean(drawn);
+    applyStyle(!drawn);
+    if (drawn) {
+      el.vmin.value = String(drawn.levels.min);
+      el.vmax.value = String(drawn.levels.max);
+      el.vstep.value = drawn.levels.max_step === undefined ? '2' : String(drawn.levels.max_step);
+      // Sans liste, chaque parcelle garde le toit du bâtiment : aucune case cochée.
+      el.roofs.forEach(function (box) { box.checked = Boolean(drawn.roofs) && drawn.roofs.indexOf(box.getAttribute('data-roof')) !== -1; });
+    }
+    toggleVariety();
     var closed = values.trace.closed;
     el.accessFields.hidden = !closed;
     el.side.disabled = closed;
@@ -379,7 +454,7 @@ function runSite(message, action, payload) {
     if (metrics) {
       el.result.textContent = metrics.parcel_count + ' bâtiments, dont ' + metrics.definition_count + ' différents ; ' +
         (metrics.access_count ? metrics.access_count + ' accès à la cour ; ' : '') +
-        thousands(metrics.expanded_face_count) + ' faces.' + (result.changed ? '' : ' Aucun changement.');
+        thousands(metrics.expanded_face_count) + ' faces.' + varietyText(result.variety) + (result.changed ? '' : ' Aucun changement.');
     } else {
       el.result.textContent = 'Ces réglages ne peuvent pas être construits.';
     }
@@ -430,6 +505,11 @@ function runSite(message, action, payload) {
   Array.prototype.slice.call(document.querySelectorAll('select[data-site]')).forEach(function (select) {
     select.addEventListener('change', resetSitePreview);
   });
+
+  el.variety.addEventListener('change', function () { toggleVariety(); requestPreview(); });
+  el.roofs.forEach(function (box) { box.addEventListener('change', requestPreview); });
+  // Un autre style propose ses toits et sa fourchette, tant que la variété n'est pas choisie.
+  el.profile.addEventListener('change', function () { applyStyle(!el.variety.checked); });
 
   el.create.addEventListener('click', function () {
     var values = settings();

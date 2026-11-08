@@ -1,13 +1,24 @@
 # Journal des versions
 
-## 0.10.0-dev
+## 0.10.0
+
+Rues variées (AG-061 à AG-063), clous et plots (AG-060), variation des baies (D-01). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de voirie 1 inchangé ; un ensemble sans réglage `variety` garde son plan. Le rapport de recette est dans [docs/recette/V0.10.md](docs/recette/V0.10.md).
 
 **Ajouts**
 
+- **Panneau de rue variée** : dans Tracer une rue et Modifier l'ensemble sélectionné, case Varier les bâtiments, fourchette de niveaux, écart entre voisines, toits à tirer (ceux du style proposés, les autres marqués hors style) et graine ; le résultat annonce le tirage avant d'écrire (AG-063).
 - **Rues variées, tirage** : réglage `variety` d'une rue ou d'un îlot ; nombre de niveaux tiré par parcelle dans une fourchette, à 2 niveaux au plus de sa voisine, toit tiré dans une liste ; règles du style respectées (AG-061 ; panneau en AG-063). Toits contre un voisin plus haut, pignons de toits différents et murs mitoyens découverts vérifiés (AG-062).
 - **Plots de chaussée** : nouvel élément d'une voie, d'une bande d'arrêt ou dérasée, posé sur la limite gauche de sa bande, blanc ou rétroréfléchissant, tous les 12 m par défaut (D-10).
 - **Variation des baies utilisable** : le décalage des fenêtres est arrondi à 5 mm, et n'est plus refusé (avant, 1 % des graines passaient à 2 cm) ; seules les configurations qui s'en servent changent (D-01).
 - **Clous de passage piéton** : case d'un carrefour à feux ; deux rangées de clous de part et d'autre de chaque passage (D-10).
+
+**Corrections**
+
+- Les avertissements de style d'une rue ou d'un îlot (toit ou nombre de niveaux qui s'écartent du style, en fidélité plausible) n'étaient jamais affichés ; ils le sont, une fois par message.
+
+**Limites connues**
+
+- Un style par rue. Dans un îlot, la dernière parcelle du tour n'est comparée qu'à sa précédente : l'écart avec la première peut dépasser l'écart choisi. Pas de baie sur un mur mitoyen découvert.
 
 ## 0.9.0
 
