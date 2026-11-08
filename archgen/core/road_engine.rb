@@ -50,6 +50,7 @@ module Archgen
         plan = assemble(surface, placed, stations, section, line)
         add_water(plan, stations, water_line, width, settings['axis']) unless water_line.empty?
         add_earthwork(plan, ground.value) if ground
+        plan['metrics']['water_drop_m'] = Quant.q(ground.value[:drop]) if ground && settings['water']
         problems = budget_problems(plan['metrics'], limits) + RoadPlanValidator.call(plan)
         return Result.fail(problems) unless problems.empty?
 
@@ -86,10 +87,11 @@ module Archgen
           return Result.fail([Diagnostic.error('E_ROAD_GROUND', '/ground', reason: 'survey_axes')])
         end
 
-        lanes = section['bands'].select { |b| b['role'] == 'carriageway' }
+        # Une rivière se règle sur le terrain sous son eau ; une voie, sous sa chaussée ; sinon toute l'emprise.
+        lanes = section['bands'].select { |b| b['role'] == (settings['water'] ? 'water' : 'carriageway') }
         lanes = section['bands'] if lanes.empty?
         span = [lanes.map { |b| ax - b['x1_m'] }.min, lanes.map { |b| ax - b['x0_m'] }.max]
-        samples = g.profile(survey, length, span, ground, section)
+        samples = g.profile(survey, length, span, ground, section, water: settings['water'])
         return samples unless samples.ok?
 
         placed = g.stations(stations, samples.value)
@@ -102,7 +104,8 @@ module Archgen
 
         relative = placed.map { |st, _| Geometry::RoadAxis::Station.new(point: st.point, normal: st.normal, vertex: st.vertex, z: Quant.q(st.z - z0)) }
         grades = samples.value.each_cons(2).map { |(s0, z0a), (s1, z1)| ((z1 - z0a) / (s1 - s0)).abs * 100 }
-        Result.ok({ stations: relative, z0: z0, slopes: slopes.value, work: work.value, grade: grades.max || 0.0 })
+        drop = samples.value.first[1] - samples.value.last[1]
+        Result.ok({ stations: relative, z0: z0, slopes: slopes.value, work: work.value, grade: grades.max || 0.0, drop: drop })
       end
 
       # Les objets posés par RoadItems sont à la cote de la coupe : on ajoute celle du profil à leur abscisse.

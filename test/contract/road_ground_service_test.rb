@@ -137,6 +137,24 @@ class RoadGroundServiceTest < Minitest::Test
     refute_equal old_copy, road.get_attribute(RoadService::GROUND_DICTIONARY, 'copy_pid')
     assert_equal 2, @cutter.outlines.size
   end
+
+  # AG-053 : une rivière sur un terrain qui descend vers l'aval, par le même service : une opération,
+  # copie entaillée, surface de l'eau dans son groupe, sous la cote de la racine.
+  def test_a_river_is_written_on_a_terrain_like_a_road
+    @surveyor.terrain = ->(x, _y) { 30 - (0.01 * (x - 10)) }
+    river = { 'trace' => { 'points_m' => [[0, 0], [100, 0]], 'radii_m' => [] }, 'profile' => preset('riviere'),
+              'ground' => {}, 'water' => { 'mode' => 'river' } }
+    result = @service.create(model: @model, tree: river, origin_m: ORIGIN, terrain: @reference)
+    assert result.ok?, result.errors.map(&:to_h).inspect
+    assert_equal 1, @model.operations.count { |op| op.first == :start }
+    assert @terrain.hidden
+    assert_equal 1, @cutter.outlines.size
+    road = roads.first
+    assert_in_delta 30.0, road.transform.to_a[14] * 0.0254, 1e-9
+    names = road.definition.entities.to_a.select { |e| e.respond_to?(:name) }.map(&:name)
+    assert_includes names, 'road/water'
+    assert_includes names, 'road/earthwork'
+  end
 end
 
 # Parcours du panneau sur un terrain (défaut vu au vrai geste, H22 : la création recalculait

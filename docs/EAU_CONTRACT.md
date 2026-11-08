@@ -76,11 +76,15 @@ Sans terrain (`ground` absent), les trois régimes donnent une voie horizontale,
 
 Mêmes relevé, points de pente et talus que la [voie sur un terrain](VOIRIE_CONTRACT.md#voie-sur-un-terrain-ag-049-adr-38), avec trois différences :
 
-1. **Le tracé va de l'amont vers l'aval.** Terrain plus haut d'au moins 1 m à la fin qu'au début (moyennes sur l'emprise) : `E_ROAD_WATER`, `river_upstream`, avec le conseil d'inverser le tracé, avant tout autre calcul.
-2. **Enveloppe descendante :** l'altitude du niveau 0 à un point de pente est le plus bas entre la moyenne du terrain sur l'emprise en ce point et l'altitude du point précédent. L'eau ne remonte donc jamais ; là où le terrain remonte, la rivière creuse, et le déblai reste borné par `RELIEF_MAX` (`E_ROAD_EARTHWORK`).
-3. **Pente :** au-delà de `max_grade_percent`, `E_ROAD_GRADE` comme une voie, borne prise dans `water`.
+Les moyennes du terrain sont prises sous la largeur de l'eau (bandes `water`), et non sous toute l'emprise : le lit se règle sur le fond de la vallée.
 
-La copie entaillée du terrain (ADR-38) creuse le lit : l'eau se voit dans l'entaille. Métriques : `water_drop_m` (chute totale), `grade_max_percent`, `cut_max_m`, `fill_max_m`.
+1. **Le tracé va de l'amont vers l'aval.** Terrain plus haut d'au moins 1 m au dernier point de pente qu'au premier : `E_ROAD_WATER`, `river_upstream`, sur `/trace`, avec la montée et le conseil d'inverser le tracé ; contrôlé dès le relevé, avant la pente et les terrassements.
+2. **Enveloppe descendante :** l'altitude du niveau 0 à un point de pente est le plus bas entre la moyenne du terrain sous l'eau en ce point et l'altitude du point précédent. L'eau ne remonte donc jamais ; là où le terrain remonte, la rivière creuse, et le déblai reste borné par `RELIEF_MAX` (`E_ROAD_EARTHWORK`).
+3. **Pente :** au-delà de `max_grade_percent`, `E_ROAD_GRADE` comme une voie, borne prise dans `water`, sur `/water/max_grade_percent`.
+
+Seule la rivière suit un terrain dans cette étape : un canal ou un régime à un seul niveau sur un terrain reste refusé (`water_ground_unavailable`, avec le régime) jusqu'à AG-054 et AG-055. Comme pour une voie, une seconde voie ne se pose pas sur un terrain déjà masqué par une première (`terrain_hidden`) : limite existante d'ADR-38, vue en recette H23.
+
+La copie entaillée du terrain (ADR-38) creuse le lit : l'eau se voit dans l'entaille ([recette H23](recette/H23.md)). Métriques : `water_drop_m` (chute totale, du premier au dernier point de pente), `grade_max_percent`, `cut_max_m`, `fill_max_m`.
 
 ## Canal à écluses (AG-054)
 

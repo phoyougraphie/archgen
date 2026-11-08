@@ -1,5 +1,20 @@
 # Journal des versions
 
+## 0.8.0-dev
+
+Eau et littoral (EXT-13), en cours. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement.
+
+**Ajouts**
+
+- **Bandes d'eau** : plan d'eau (revanche et profondeur réglables), quai, berge naturelle ; surface de l'eau transparente au-dessus du lit. Préréglages canal, rivière et fleuve (AG-051).
+- **Littoral** : falaise, estran rocheux, dune, plage et mer, à niveaux cumulés de la terre vers la mer ; ganivelles et murets. Préréglages côte à falaises, côte à dunes, plage et promenade (AG-052).
+- **Rivière sur un terrain** : tracée de l'amont vers l'aval, l'eau ne remonte jamais ; là où le terrain remonte, la rivière creuse, dans la limite de 6 m (AG-053).
+
+**Limites connues**
+
+- Le régime de l'eau et les réglages des bandes d'eau et de littoral ne se règlent pas encore au panneau (AG-056).
+- Canal, fleuve et côte restent à plat, sans terrain (AG-054, AG-055) ; un cours d'eau n'entre pas dans un réseau (ponts : AG-057).
+
 ## 0.7.0
 
 Voies sur un terrain et passages à niveau. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies horizontales et réseaux sans passage à niveau identiques. Le rapport de recette est dans [docs/recette/V0.7.md](docs/recette/V0.7.md).

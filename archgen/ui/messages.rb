@@ -201,7 +201,8 @@ module Archgen
         'sea_needs_flat' => 'Une côte reste à un seul niveau : choisissez ce régime pour l’eau.',
         'water_mode_missing' => 'Cette voie porte de l’eau : choisissez son régime (rivière, canal ou un seul niveau).',
         'water_without_band' => 'Cette voie n’a pas de plan d’eau : retirez le régime de l’eau.',
-        'water_ground_unavailable' => 'Un cours d’eau ne suit pas encore un terrain : posez-le à plat pour l’instant.',
+        'water_ground_unavailable' => 'Seule une rivière suit déjà un terrain : posez ce canal ou ce fleuve à plat pour l’instant.',
+        'river_upstream' => 'Le terrain monte de %{value} m du début à la fin : une rivière se trace de l’amont vers l’aval. Inversez le tracé.',
         'water_in_network' => 'Un cours d’eau n’entre pas dans un réseau tant que les ponts n’existent pas. Tracez-le comme une voie seule.',
         'ditch_next_to_carriageway' => 'Les bandes %{band_number} et %{next_number} placent un fossé contre la chaussée, sans accotement.',
         # Voirie : réseau et carrefours (ADR-36)

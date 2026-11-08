@@ -101,7 +101,7 @@ module Archgen
       end
 
       # Points de pente [[s, z]] : moyenne du terrain sur l'emprise roulante à chaque abscisse.
-      def profile(grid, length, span, ground, section)
+      def profile(grid, length, span, ground, section, water: nil)
         step = ground['grade_step_m']
         ss = (0..(length / step).floor).map { |k| q(k * step) }
         ss << q(length) if length - ss.last > 1e-6
@@ -114,14 +114,40 @@ module Archgen
 
           samples << [s, q(zs.sum / zs.size)]
         end
-        limit = grade_limit(ground, section)
+        river = water && water['mode'] == 'river'
+        if river
+          samples = river_envelope(samples)
+          return samples unless samples.ok?
+
+          samples = samples.value
+        end
+        limit = river ? water['max_grade_percent'] : grade_limit(ground, section)
+        path = river ? '/water/max_grade_percent' : '/ground/max_grade_percent'
         problems = samples.each_cons(2).filter_map do |(s0, z0), (s1, z1)|
           grade = ((z1 - z0) / (s1 - s0)).abs * 100
           next if grade <= limit + 1e-9
 
-          error('E_ROAD_GRADE', '/ground/max_grade_percent', 'grade_too_steep', s_m: q(s0), value: grade.round(2), limit: limit)
+          error('E_ROAD_GRADE', path, 'grade_too_steep', s_m: q(s0), value: grade.round(2), limit: limit)
         end
         problems.empty? ? Core::Result.ok(samples) : Core::Result.fail(problems)
+      end
+
+      # Rivière (EAU_CONTRACT, AG-053) : le tracé va de l'amont vers l'aval, et l'eau ne remonte jamais.
+      # À chaque point de pente, le niveau est le plus bas entre le terrain moyen en ce point et le niveau
+      # du point précédent : là où le terrain remonte, la rivière creuse.
+      UPSTREAM_TOL_M = 1.0
+
+      def river_envelope(samples)
+        rise = samples.last[1] - samples.first[1]
+        if rise >= UPSTREAM_TOL_M - 1e-9
+          return Core::Result.fail([error('E_ROAD_WATER', '/trace', 'river_upstream', value: q(rise), limit: UPSTREAM_TOL_M)])
+        end
+
+        level = nil
+        Core::Result.ok(samples.map do |s, z|
+          level = level.nil? ? z : [level, z].min
+          [s, level]
+        end)
       end
 
       def grade_limit(ground, section)
