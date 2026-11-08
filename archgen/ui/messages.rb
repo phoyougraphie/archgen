@@ -83,6 +83,9 @@ module Archgen
         'no_balcony_level' => 'Le balcon apparaît aux niveaux d’index 2 et 5 : ce bâtiment n’en a aucun.',
         # Matériaux et profils
         'unknown_material' => 'Ce matériau n’est pas dans le catalogue.',
+        'glass_required' => 'Le vitrage demande une matière de verre.',
+        'glass_without_glazing' => 'Une matière de verre est donnée sans vitrage.',
+        'glazing_false_written' => 'Un vitrage décoché ne s’enregistre pas : retirez ce champ.',
         'profile_required' => 'Choisissez un style.',
         'exact_revision_required' => 'Le style choisi doit préciser sa révision.',
         'unknown_profile' => 'Ce style n’existe pas dans cette version.',

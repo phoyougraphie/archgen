@@ -539,6 +539,30 @@ class StreetControllerTest < Minitest::Test
     refute JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json')).key?('variety')
   end
 
+  # AG-064 : une rue fige la révision courante de son style ; une rue d'avant, sans révision, garde la 1.
+  def test_a_street_keeps_the_revision_of_its_style
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    stored = -> { JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json')).dig('building', 'profile') }
+    assert_equal({ 'id' => 'brutalist', 'revision' => 2 }, stored.call)
+
+    legacy = JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json'))
+    legacy['building']['profile'].delete('revision')
+    root.set_attribute('archgen.ensemble', 'ensemble_json', JSON.generate(legacy))
+    @model.selection.replace([root])
+    loaded = call('load_selection')['result']
+    assert_equal 1, loaded['settings'].dig('building', 'profile', 'revision')
+    regenerate = lambda do |settings|
+      digest = call('edit_preview', 'settings' => settings)['result']['ensemble_digest']
+      response = call('regenerate', 'settings' => settings, 'ensemble_digest' => digest)
+      assert response['ok'], response.inspect
+      call('load_selection')
+    end
+    regenerate.call(SETTINGS.merge('seed' => 4))
+    assert_equal({ 'id' => 'brutalist', 'revision' => 1 }, stored.call, 'même style : révision gardée')
+    regenerate.call(Archgen::Core::Merge.leaves(SETTINGS, 'building' => { 'profile' => { 'id' => 'toulousain' } }))
+    assert_equal({ 'id' => 'toulousain', 'revision' => 2 }, stored.call, 'autre style : sa révision courante')
+  end
+
   def test_changing_document_forgets_the_edit
     root = created_root([5.0, 7.0], [65.0, 7.0])
     @model.selection.replace([root])

@@ -1,5 +1,11 @@
 # Journal des versions
 
+## Non publié
+
+**Ajouts**
+
+- **Vitrage** : vitre dans chaque fenêtre, porte pleine, imposte vitrée au-dessus d'une porte haute, au niveau de détail 1. Nouvelle révision des styles Haussmannien, Toulousain et Brutaliste, vitrée ; un bâtiment, une rue ou un îlot existants gardent leur révision et ne changent pas (AG-064).
+
 ## 0.10.0
 
 Rues variées (AG-061 à AG-063), clous et plots (AG-060), variation des baies (D-01). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de voirie 1 inchangé ; un ensemble sans réglage `variety` garde son plan. Le rapport de recette est dans [docs/recette/V0.10.md](docs/recette/V0.10.md).

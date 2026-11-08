@@ -320,8 +320,8 @@ class DetailSolverTest < Minitest::Test
     end
   end
 
-  def signature(id, mode = 'shell')
-    config = resolve('profile' => { 'id' => id }, 'mode' => mode, 'lod' => 1).value
+  def signature(id, mode = 'shell', revision: nil)
+    config = resolve('profile' => { 'id' => id, 'revision' => revision }.compact, 'mode' => mode, 'lod' => 1).value
     [config.to_h, plan(config)]
   end
 
@@ -398,7 +398,7 @@ class DetailSolverTest < Minitest::Test
   def test_canonical_profile_plans_are_stable
     golden = fixture_json('test', 'fixtures', 'profile_plan_digests.json')
     PROFILES.product(%w[shell structural]).each do |id, mode|
-      assert_equal golden["#{id}-#{mode}"], GeometryEngine.plan_digest(signature(id, mode).last), "#{id} #{mode}"
+      assert_equal golden["#{id}-#{mode}"], GeometryEngine.plan_digest(signature(id, mode, revision: 1).last), "#{id} #{mode}"
     end
   end
 end

@@ -387,6 +387,9 @@ module Archgen
           'building' => Core::Merge.leaves(stored['building'], settings.fetch('building', {})),
           'parcel' => Core::Merge.leaves(stored['parcel'], settings.fetch('parcel', {}))
         )
+        # Même style : la révision enregistrée reste ; autre style : sa révision courante (AG-064).
+        chosen = settings.dig('building', 'profile')
+        tree['building'] = tree['building'].merge('profile' => chosen) if chosen && chosen['id'] != stored.dig('building', 'profile', 'id')
         tree['seed'] = settings['seed'] if settings.key?('seed')
         if settings.key?('variety')
           settings['variety'].nil? ? tree.delete('variety') : tree['variety'] = settings['variety']

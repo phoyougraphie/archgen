@@ -5,7 +5,8 @@ module Archgen
     # Brouillon + profil (ou base) → configuration effective validée et gelée.
     module ConfigResolver
       TOP_LEVEL_STYLE_BLOCKS = %w[facade roof structure materials features].freeze
-      KEPT_ON_STYLE_CHANGE = %w[name mode lod seed fidelity footprint levels building_type].freeze
+      DEFAULT_GLASS = 'glass'
+      KEPT_ON_STYLE_CHANGE =%w[name mode lod seed fidelity footprint levels building_type].freeze
       ROOF_PRESETS = {
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
         'gable' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
@@ -112,18 +113,33 @@ module Archgen
         return Result.fail(problems) unless problems.empty?
 
         merged = Merge.leaves(start, draft.reject { |k, _| %w[roof schema_version profile].include?(k) })
-        merged = merged.merge(
-          'schema_version' => 1,
-          'name' => canonical_name(merged['name']),
-          'profile' => profile.ref,
-          'roof' => roof
-        )
+        merged = with_glazing(merged.merge(
+                                'schema_version' => 1,
+                                'name' => canonical_name(merged['name']),
+                                'profile' => profile.ref,
+                                'roof' => roof
+                              ))
         effective = intake.effective(merged)
         return effective unless effective.ok?
 
         verify(effective.value, profile, registry)
       end
       private_class_method :finish
+
+      # AG-064 : un vitrage décoché n'est pas écrit, ni sa matière ; coché, il prend le verre
+      # du catalogue si le style n'en donne pas. Un bâtiment d'avant garde ainsi son empreinte.
+      def with_glazing(config)
+        features = config['features'].dup
+        materials = config['materials'].dup
+        if features['glazing']
+          materials['glass'] ||= DEFAULT_GLASS
+        else
+          features.delete('glazing')
+          materials.delete('glass')
+        end
+        config.merge('features' => features, 'materials' => materials)
+      end
+      private_class_method :with_glazing
 
       def canonical_name(name)
         name.nil? ? BuildingConfig::DEFAULT_NAME : name.strip

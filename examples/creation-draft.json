@@ -2,7 +2,8 @@
   "schema_version": 1,
   "name": "Mon immeuble",
   "profile": {
-    "id": "haussmann"
+    "id": "haussmann",
+    "revision": 1
   },
   "footprint": {
     "width_m": 12,

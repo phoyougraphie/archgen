@@ -175,7 +175,7 @@ class AccessPlannerTest < Minitest::Test
   end
 
   def test_catalog_is_read_by_exact_revision
-    rules = { 'schema_version' => 1, 'access_forms' => { 'brutalist' => { '2' => 'gap' } } }
+    rules = { 'schema_version' => 1, 'access_forms' => { 'brutalist' => { '3' => 'gap' } } }
     result = EnsembleEngine.layout_for(settings, registry: registry, rules: rules)
     assert_equal 'access_form_unavailable', result.errors.first.params['reason']
   end

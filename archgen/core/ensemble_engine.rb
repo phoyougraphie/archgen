@@ -47,6 +47,22 @@ module Archgen
         Canonical.digest(plan)
       end
 
+      # Révision de profil des ensembles écrits avant AG-064 : la seule qui existait alors.
+      LEGACY_PROFILE_REVISION = 1
+
+      # Un ensemble créé fige la révision courante de son style ; relu sans révision, il est
+      # d'avant AG-064 et garde la révision 1. Une rue existante ne change donc pas en douce.
+      def pin_profile(settings, registry:, legacy: false)
+        reference = settings.dig('building', 'profile')
+        return settings unless reference&.key?('id') && !reference.key?('revision')
+
+        revision = legacy ? LEGACY_PROFILE_REVISION : registry.fetch(reference['id']).value&.revision
+        return settings unless revision
+
+        building = settings['building'].merge('profile' => reference.merge('revision' => revision))
+        Canonical.deep_freeze(settings.merge('building' => building))
+      end
+
       # La forme vient du catalogue, au couple profil/révision exact. Une entrée n'est publiée
       # qu'avec sa capacité (ADR-31) : un profil sans entrée ne ferme pas d'îlot.
       def access_form(settings, registry, rules)

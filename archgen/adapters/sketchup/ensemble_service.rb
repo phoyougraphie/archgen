@@ -44,7 +44,7 @@ module Archgen
         # Aucune écriture, aucune trace dans l'Undo.
         def preview(tree:)
           settings = @ensemble_intake.settings(tree)
-          settings.ok? ? compute(settings.value) : settings
+          settings.ok? ? compute(Core::EnsembleEngine.pin_profile(settings.value, registry: @registry)) : settings
         end
 
         # origin_m : le premier point du tracé, dans le repère du modèle.
@@ -394,7 +394,8 @@ module Archgen
           settings = @ensemble_intake.settings(record.metadata['ensemble_json'])
           return settings unless settings.ok?
 
-          Core::Result.ok(LoadedEnsemble.new(record: record, settings: settings.value, target: target_for(model, record.instance, record.metadata)))
+          pinned = Core::EnsembleEngine.pin_profile(settings.value, registry: @registry, legacy: true)
+          Core::Result.ok(LoadedEnsemble.new(record: record, settings: pinned, target: target_for(model, record.instance, record.metadata)))
         end
 
         def target_for(model, instance, metadata)

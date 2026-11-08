@@ -13,6 +13,11 @@
       "label": "Bois peint",
       "srgb": "#465551"
     },
+    "glass": {
+      "label": "Verre",
+      "srgb": "#9FB8C4",
+      "alpha": 0.35
+    },
     "limestone": {
       "label": "Pierre calcaire",
       "srgb": "#DDCBB0"

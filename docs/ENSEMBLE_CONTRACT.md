@@ -29,6 +29,8 @@ Format séparé de la configuration du bâtiment, qui reste en V1 fermée. Clés
 | `access.width_m`, `access.height_m` | [2,5 ; 6] | 3,5 et 2,7 | Valeurs de conception, pas une règle d'accès pompiers ou d'urbanisme. La hauteur ne vaut que pour un porche : 2,7 m tient sous le RDC des styles livrés, qui ne laissent que 2,8 et 2,9 m |
 | `building` | Brouillon de bâtiment V1 | Profil | Style, mode, LOD, niveaux, matériaux. Refusés ici car calculés : `footprint`, `facade.front_bays`, `facade.side_bays`, `facade.entry_bay`, `seed` |
 
+**Révision du style :** figée à la création ; un ensemble d'avant AG-064, sans révision, est relu en révision 1 (ADR-46).
+
 **Même gabarit partout :** tous les bâtiments d'un ensemble ont les mêmes niveaux et la même profondeur ; depuis AG-061, le réglage `variety` tire les niveaux et le toit par parcelle ([rues variées](RUE_VARIEE_CONTRACT.md)).
 
 ## Tracé et segments

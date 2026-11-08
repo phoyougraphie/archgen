@@ -49,6 +49,10 @@ module Archgen
     module DetailSolver
       FRAME_BAR_M = 0.04
       FRAME_MAX_RECESS_M = 0.16
+      PANE_Y_M = [0.015, 0.025].freeze
+      LEAF_Y_M = [0.005, 0.035].freeze
+      TRANSOM_FROM_M = 2.40
+      TRANSOM_Z_M = 2.20
       CORNICE_DEPTH_M = 0.15
       CORNICE_HEIGHT_M = 0.08
       BALCONY_DEPTH_M = 0.90
@@ -126,10 +130,11 @@ module Archgen
 
       def frames(footprint, openings, config, definitions)
         material = config['materials']['frames']
+        glass = config['features']['glazing'] ? config['materials']['glass'] : nil
         wall = config['structure']['wall_m']
         recess = config['mode'] == 'structural' ? [FRAME_MAX_RECESS_M, wall - FRAME_BAR_M].min : 0.0
         openings.reject { |opening| opening.kind == 'porch' }.map do |opening|
-          definition_id = frame_definition(opening, material, definitions)
+          definition_id = frame_definition(opening, material, glass, definitions)
           facade = footprint.facade(opening.facade_id)
           Node.leaf("frame/#{opening.facade_id}/#{opening.level_index}/#{opening.bay_index}", 'frame',
                     { 'type' => 'instance', 'definition_id' => definition_id, 'matrix' => frame_matrix(facade, opening, recess) })
@@ -138,11 +143,13 @@ module Archgen
       private_class_method :frames
 
       # Une définition par type, largeur, hauteur et matériau : le recul vit dans la matrice.
-      def frame_definition(opening, material, definitions)
+      # Sans vitrage, l'identifiant et le contenu restent ceux d'avant AG-064.
+      def frame_definition(opening, material, glass, definitions)
         width = Core::Quant.q(opening.u_max_m - opening.u_min_m)
         height = Core::Quant.q(opening.z_max_m - opening.z_min_m)
         id = "frame/#{opening.kind}/#{micrometres(width)}x#{micrometres(height)}/#{material}"
-        definitions[id] ||= frame_bars(opening.kind, width, height, material)
+        id += "/glazed/#{glass}" if glass
+        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass) : [])
         id
       end
       private_class_method :frame_definition
@@ -166,6 +173,33 @@ module Archgen
         end
       end
       private_class_method :frame_bars
+
+      # AG-064 : vitre dans le jour d'une fenêtre ; vantail plein d'une porte, imposte vitrée
+      # au-dessus de TRANSOM_FROM_M pour une porte haute. Tout reste dans la profondeur du cadre.
+      def joinery(kind, width, height, material, glass)
+        bar = FRAME_BAR_M
+        x0 = bar
+        x1 = width - bar
+        return [pane(x0, x1, bar, height - bar, glass)] if kind == 'window'
+
+        top = height - bar
+        return [leaf(x0, x1, 0.0, top, material)] unless height > TRANSOM_FROM_M + EPS
+
+        [leaf(x0, x1, 0.0, TRANSOM_Z_M, material),
+         Node.leaf('bar/transom', 'frame', Boxes.solid(x0, x1, 0.0, bar, TRANSOM_Z_M, TRANSOM_Z_M + bar, material)),
+         pane(x0, x1, TRANSOM_Z_M + bar, top, glass)]
+      end
+      private_class_method :joinery
+
+      def pane(x0, x1, z0, z1, glass)
+        Node.leaf('pane', 'frame', Boxes.solid(x0, x1, PANE_Y_M[0], PANE_Y_M[1], z0, z1, glass))
+      end
+      private_class_method :pane
+
+      def leaf(x0, x1, z0, z1, material)
+        Node.leaf('leaf', 'frame', Boxes.solid(x0, x1, LEAF_Y_M[0], LEAF_Y_M[1], z0, z1, material))
+      end
+      private_class_method :leaf
 
       # Colonnes (T, −N, K), rigide et directe : x = u relatif, y = d relatif, z = hauteur.
       def frame_matrix(facade, opening, recess)

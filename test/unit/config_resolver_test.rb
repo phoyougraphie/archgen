@@ -56,7 +56,7 @@ class ConfigResolverTest < Minitest::Test
   end
 
   def test_current_revision_is_recorded
-    assert_equal({ 'id' => 'haussmann', 'revision' => 1 }, resolve(draft).value.to_h['profile'])
+    assert_equal({ 'id' => 'haussmann', 'revision' => 2 }, resolve(draft).value.to_h['profile'])
   end
 
   def test_internal_profile_only_on_test_bench

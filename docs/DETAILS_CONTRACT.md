@@ -20,14 +20,16 @@ Option `features.glazing` (booléen), émise au **LOD 1** seulement, comme les c
 
 | Élément | Géométrie (départ) |
 |---|---|
-| **Vitre** de fenêtre | Une face plane par baie, dans le jour du cadre (u de 0,04 à W − 0,04, z de 0,04 à H − 0,04), au milieu de la profondeur du cadre (d₀ + 0,02). Recto et verso, matière `materials.glass` |
-| **Porte pleine** | Un vantail : panneau de 0,05 m d'épaisseur, dans le jour du cadre, de z = 0 à H − 0,04, en retrait au milieu du cadre ; matière `materials.frames` |
-| **Imposte** (porte de plus de 2,40 m) | Traverse de 0,04 m à 2,20 m ; vitre au-dessus, panneau au-dessous |
+| **Vitre** de fenêtre | Une plaque de 0,01 m, dans le jour du cadre (u de 0,04 à W − 0,04, z de 0,04 à H − 0,04), au milieu de la profondeur du cadre (y de 0,015 à 0,025 dans la définition du cadre) ; matière `materials.glass`. Une plaque plutôt qu'une face seule : solide fermé comme les barres, même validation |
+| **Porte pleine** | Un vantail de 0,03 m (y de 0,005 à 0,035), dans le jour du cadre, de z = 0 à H − 0,04 ; matière `materials.frames` |
+| **Imposte** (porte de plus de 2,40 m) | Traverse de 0,04 m de 2,20 à 2,24 m ; vitre au-dessus, vantail au-dessous |
 
 - **Matière `glass`** : un quatrième rôle de matière, `materials.glass`, à clés d'un catalogue fermé, nouvelle révision du catalogue de matières (verre légèrement teinté, translucide). Un bâtiment sans vitrage n'a pas ce rôle.
-- **Définitions partagées** : vitres et vantaux par type, largeur, hauteur et matière, comme les cadres.
+- **Définitions partagées** : vitre, vantail et imposte vivent dans la définition du cadre, dont l'identifiant prend `/glazed/<verre>` ; sans vitrage, identifiant et contenu sont ceux d'avant. Catégorie `frame` (calque Menuiseries).
+- **Résolution** : coché, `features.glazing` prend la matière `glass` du catalogue si le style n'en donne pas ; décoché, ni `glazing` ni `materials.glass` ne sont écrits. Une configuration enregistrée qui les dépareille est refusée (`glass_required`, `glass_without_glazing`, `glazing_false_written`).
+- **Révisions (fait, AG-064)** : Haussmannien, Toulousain et Brutaliste ont une révision 2, vitrée, qui requiert la capacité `glazing`. Le panneau ne propose que la dernière révision de chaque style ; la révision 1 reste lisible. **Une rue ou un îlot fige la révision de son style à la création** ; un ensemble enregistré sans révision (d'avant AG-064) est relu en révision 1, et garde la sienne quand on le modifie sans changer de style (ADR-46).
 - **D-17, options.** **A, retenue (ADR-45)** : vitre et porte pleine seulement (peu de faces, lisible en maquette ; les petits bois et volets restent pour EXT-01). **B** : ajouter dès maintenant des petits bois selon le style (Haussmannien : trois carreaux par vantail), plus de faces et un réglage de plus. **Défaut :** une nouvelle révision de chaque profil publié active le vitrage ; un bâtiment existant garde sa révision, donc rien ne change chez lui tant qu'on ne coche pas la case.
-- **Tests U44** : comptes de faces par baie, vitre dans le jour du cadre sans toucher le mur, empreintes d'avant inchangées sans l'option.
+- **Tests U44** (`test/unit/glazing_test.rb`) : vitre dans le jour, vantail, imposte, comptes de faces, refus, LOD 0, trois styles dans les deux modes, rue vitrée et rue en révision 1 ; révision figée au contrôleur de rue. Empreintes des profils en révision 1 et de quatre ensembles types identiques avant et après. **Fait (AG-064)** : vu dans SketchUp ([image](recette/img/ag064-vitrage.jpg)), sonde `test/host/ag064.rb` 13/13.
 
 ## 2. Rez-de-chaussée commerçant — AG-065 (D-18, D-19)
 

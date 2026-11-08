@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "id": "brutalist",
+  "revision": 2,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "modern_modular",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Brutaliste",
+  "context": {
+    "period": "Inspiration seconde moitié du XXe siècle",
+    "regions": [
+      "international"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "glazing"
+  ],
+  "defaults": {
+    "levels": {
+      "count": 6,
+      "height_m": 3.1,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 5,
+      "window_width_m": 1.6,
+      "window_height_m": 1.2,
+      "sill_m": 0.95
+    },
+    "structure": {
+      "wall_m": 0.32
+    },
+    "materials": {
+      "wall": "concrete",
+      "roof": "concrete",
+      "frames": "dark_metal",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true
+    }
+  },
+  "rules": [
+    {
+      "id": "flat_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "flat"
+        ]
+      },
+      "kind": "historical"
+    }
+  ]
+}

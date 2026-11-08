@@ -13,7 +13,7 @@ module Archgen
     # incohérente bloque le registre plutôt que de publier un profil douteux.
     class StyleRegistry
       # Registre fermé des capacités connues du noyau, implémentées ou non.
-      KNOWN_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds].freeze
+      KNOWN_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds glazing].freeze
       RULE_PARAMS = {
         'window_ratio' => %w[max min], 'level_count' => %w[max min], 'roof_type' => %w[values],
         'material_allowed' => %w[role values], 'feature_chance' => %w[feature probability]
@@ -49,10 +49,12 @@ module Archgen
         Result.ok(profile)
       end
 
-      # Seules les feuilles actives dont tous les prérequis sont disponibles.
+      # Seules les feuilles actives dont tous les prérequis sont disponibles, à leur dernière
+      # révision : une révision plus ancienne reste lisible par `fetch`, sans être proposée (AG-064).
       def active_profiles
         @resolved.values
                  .select { |p| p.status == 'active' && p.kind == 'profile' && (p.requires - @capabilities).empty? }
+                 .group_by(&:id).map { |_, revisions| revisions.max_by(&:revision) }
                  .sort_by { |p| [p.id, p.revision] }
       end
 

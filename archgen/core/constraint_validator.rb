@@ -15,6 +15,7 @@ module Archgen
         check_facade(data, out)
         check_roof(data, out)
         check_materials(data, materials, out) if materials
+        check_glazing(data, out)
         out.concat(fidelity_rules.call(data, profile)) if fidelity_rules && profile
         out.sort_by(&:sort_key)
       end
@@ -25,6 +26,16 @@ module Archgen
 
         levels['height_m'] * levels['count']
       end
+
+      # Vitrage et matière du verre vont ensemble ; absents, le bâtiment est celui d'avant AG-064.
+      def check_glazing(data, out)
+        glazing = data['features'].fetch('glazing', false)
+        glass = data['materials'].key?('glass')
+        out << Diagnostic.error('E_SCHEMA', '/materials/glass', reason: 'glass_required') if glazing && !glass
+        out << Diagnostic.error('E_SCHEMA', '/materials/glass', reason: 'glass_without_glazing') if glass && !glazing
+        out << Diagnostic.error('E_SCHEMA', '/features/glazing', reason: 'glazing_false_written') if data['features'].key?('glazing') && !glazing
+      end
+      private_class_method :check_glazing
 
       def check_name(data, out)
         trimmed = data['name'].strip
