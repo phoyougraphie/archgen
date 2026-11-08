@@ -198,7 +198,7 @@ Dans cet export, les espaces et les accents des noms de matériaux deviennent `_
 
 - Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur, de vitrage ni de garde-corps.
 - Pas de calcul de structure ni de conformité réglementaire. Les styles sont des simplifications, pas des restitutions historiques.
-- Le champ « Variation des baies » est le plus souvent refusé dès qu'il n'est pas nul ; le message propose de changer la graine ou la variation.
+- Le champ « Variation des baies » décale chaque fenêtre au hasard, par pas de 5 mm, d'au plus la valeur saisie ; la graine change le tirage. Une variation de moins de 5 mm ne décale rien.
 - Les anciennes définitions restent dans le fichier après une régénération, pour permettre Annuler. **Fenêtre → Infos sur le modèle → Statistiques → Purger les éléments inutilisés** les retire.
 - Le plus grand bâtiment accepté bloque SketchUp environ 5 à 6 secondes sur le poste de test.
 

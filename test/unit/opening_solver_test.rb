@@ -88,8 +88,22 @@ class OpeningSolverTest < Minitest::Test
     data = config(facade: { 'jitter_m' => 0.05 })
     opening = solve(data).value.find { |o| o.id == 'opening/rear/3/3' }
     draw = Archgen::Core::DeterministicRandom.unit(42, 'opening/rear/3/3/u')
-    expected = 10.05 + (0.05 * ((2 * draw) - 1)) - 0.6
+    # D-01, ADR-43 : le décalage tiré est arrondi à la grille de 5 mm.
+    snapped = ((0.05 * ((2 * draw) - 1)) / 0.005).round(half: :up) * 0.005
+    expected = 10.05 + snapped - 0.6
     assert_in_delta expected, opening.u_min_m, 1e-6
+  end
+
+  def test_jitter_offsets_lie_on_the_five_millimetre_grid_within_the_amplitude
+    [[0.05, 0.05], [0.012, 0.01], [0.004, 0.0]].each do |amount, limit|
+      data = config(facade: { 'jitter_m' => amount })
+      base = solve(config).value.to_h { |o| [o.id, o.u_min_m] }
+      solve(data).value.each do |o|
+        offset = o.u_min_m - base[o.id]
+        assert_in_delta 0.0, (offset / 0.005) - (offset / 0.005).round, 1e-6, o.id
+        assert_operator offset.abs, :<=, limit + 1e-9, "#{o.id} #{amount}"
+      end
+    end
   end
 
   def test_jitter_changes_with_seed_and_is_stable

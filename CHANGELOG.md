@@ -5,6 +5,7 @@
 **Ajouts**
 
 - **Plots de chaussée** : nouvel élément d'une voie, d'une bande d'arrêt ou dérasée, posé sur la limite gauche de sa bande, blanc ou rétroréfléchissant, tous les 12 m par défaut (D-10).
+- **Variation des baies utilisable** : le décalage des fenêtres est arrondi à 5 mm, et n'est plus refusé (avant, 1 % des graines passaient à 2 cm) ; seules les configurations qui s'en servent changent (D-01).
 - **Clous de passage piéton** : case d'un carrefour à feux ; deux rangées de clous de part et d'autre de chaque passage (D-10).
 
 ## 0.9.0

@@ -168,11 +168,10 @@ class EnsembleEngineTest < Minitest::Test
     assert_equal plan['definitions'].keys, longer['definitions'].keys
   end
 
-  # D-01 : le jitter refuse presque toute graine, donc presque tout ensemble qui s'en sert.
-  def test_jitter_refusal_is_located_on_a_parcel
+  # D-01 tranchée (ADR-43) : un ensemble à baies variées se construit, et ses parcelles diffèrent.
+  def test_jittered_ensemble_is_accepted
     result = engine(settings(building: { 'facade' => { 'jitter_m' => 0.02 } }, seed: 7))
-    refute result.ok?
-    assert_equal '/parcels/left/0/0/facade/jitter_m', result.errors.first.path
+    assert result.ok?, result.errors.map(&:to_h).inspect
   end
 
   # --- Budgets

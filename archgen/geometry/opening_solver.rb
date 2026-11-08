@@ -41,12 +41,20 @@ module Archgen
       end
       private_class_method :build
 
+      JITTER_GRID_M = 0.005
+
       def jitter(candidate, config)
         amount = config['facade']['jitter_m']
         return 0.0 if amount.zero?
 
         key = Core::DeterministicRandom.opening_key(candidate.facade_id, candidate.level_index, candidate.bay_index)
-        amount * ((2.0 * Core::DeterministicRandom.unit(config['seed'], key)) - 1.0)
+        drawn = amount * ((2.0 * Core::DeterministicRandom.unit(config['seed'], key)) - 1.0)
+        # D-01, ADR-43 : décalage arrondi à une grille de 5 mm (demi éloigné de zéro), borné au plus grand
+        # multiple de 5 mm qui ne dépasse pas l'amplitude. Deux baies de même largeur ont alors des bords
+        # confondus ou distants de 5 mm au moins ; sous 5 mm d'amplitude, aucun décalage.
+        steps = (drawn / JITTER_GRID_M).round(half: :up)
+        limit = ((amount + 1e-9) / JITTER_GRID_M).floor
+        Core::Quant.q(steps.clamp(-limit, limit) * JITTER_GRID_M)
       end
       private_class_method :jitter
 

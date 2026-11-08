@@ -165,12 +165,13 @@ class GeometryEngineTest < Minitest::Test
     assert_equal 60.0, data['metrics']['wall_top_z_m']
   end
 
-  def test_jittered_cuts_closer_than_two_millimetres_are_refused_with_a_path
-    # Comportement du contrat, voir la décision ouverte D-01 dans docs/DECISIONS.md.
-    result = generate('rect-neutre-shell', seed: 1, facade: { 'jitter_m' => 0.02 })
-    refute result.ok?
-    assert_equal ['/facade/jitter_m'], result.errors.map(&:path).uniq
-    assert_equal ['cuts_too_close'], result.errors.map { |d| d.params['reason'] }.uniq
+  # D-01 tranchée (ADR-43) : avant, 1 % des graines passaient à 2 cm ; sur la grille de 5 mm, toutes passent
+  # (500 graines mesurées de 1 à 30 cm, sur les deux fixtures neutres).
+  def test_jittered_openings_are_accepted_for_every_seed
+    (1..40).each do |seed|
+      result = generate('rect-neutre-shell', seed: seed, facade: { 'jitter_m' => 0.02 })
+      assert result.ok?, "graine #{seed} : #{result.errors.map(&:to_h)}"
+    end
   end
 
   def test_face_estimate_stops_generation_before_meshing
