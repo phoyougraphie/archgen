@@ -113,7 +113,7 @@ Mode `flat` : tout le tracé à une altitude, `level_m` (altitude du niveau 0 de
 
 - Une voie à eau ou à mer n'entre pas dans un réseau (`water_in_network`) tant que les ponts n'existent pas. Deux cours d'eau qui se rejoignent : hors de cette version.
 - Deux racines séparées, une rue et une rivière, ne sont pas comparées entre elles : rien n'empêche de les superposer à la main.
-- **Ponts (AG-057, ADR-40) :** un pont naît tout seul là où une voie d'un réseau franchit un cours d'eau, une voie ferrée ou une autre voie, comme un carrefour (ADR-36), avec un type au choix (poutre, voûte, arc) ; la voie monte et redescend par des rampes de pente bornée. Le détail viendra dans le contrat du ticket, écrit avant son code.
+- **Ponts (AG-057 à AG-059, ADR-40) :** détail dans le [contrat des ponts](PONT_CONTRACT.md) ; un cours d'eau entrera dans un réseau quand chacun de ses nœuds sera un pont, et `water_in_network` disparaîtra alors. un pont naît tout seul là où une voie d'un réseau franchit un cours d'eau, une voie ferrée ou une autre voie, comme un carrefour (ADR-36), avec un type au choix (poutre, voûte, arc) ; la voie monte et redescend par des rampes de pente bornée. Le détail viendra dans le contrat du ticket, écrit avant son code.
 
 ## Panneau (AG-056)
 

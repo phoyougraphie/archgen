@@ -78,7 +78,7 @@ Contrat : [VOIRIE_CONTRACT](../docs/VOIRIE_CONTRACT.md), [maquette](../docs/maqu
 
 ## J9 — Eau et littoral (EXT-13)
 
-Contrat : [EAU_CONTRACT](../docs/EAU_CONTRACT.md). Décision : ADR-39. Les cours d'eau et les côtes sont des voies : chaque ticket prolonge la voirie sans changer une voie existante. Les ponts suivent ADR-40.
+Contrat : [EAU_CONTRACT](../docs/EAU_CONTRACT.md). Décision : ADR-39. Les cours d'eau et les côtes sont des voies : chaque ticket prolonge la voirie sans changer une voie existante. Les ponts suivent ADR-40 et leur [contrat](../docs/PONT_CONTRACT.md).
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
@@ -88,6 +88,8 @@ Contrat : [EAU_CONTRACT](../docs/EAU_CONTRACT.md). Décision : ADR-39. Les cours
 | **AG-054 — Canal à écluses** | AG-053 | Mode `canal` : biefs horizontaux, écluses placées par règle, chambre, portes busquées, rampes des berges. | Nombre, abscisses et chutes à la main sur un plan incliné, écluse en courbe et écluses trop proches refusées, portes partagées. U37. |
 | **AG-055 — Fleuve et côte à un seul niveau** | AG-052, AG-053 | Mode `flat` : niveau saisi ou plus bas du profil ; côté mer sans talus, terrain entaillé jusqu'au bord de la mer. | Niveau unique, terrain accidenté refusé, mer sans talus, terrain au-delà intact. U38. |
 | **AG-056 — Panneau de l'eau, RBZ 0.8.0** | AG-054, AG-055 | Bandes et réglages au panneau, coupe à niveaux cumulés, aperçu des écluses, guide, journal, RBZ. | Rivière, canal, fleuve et trois côtes écrits et rouverts, une entrée d'Annuler, vrai geste à la souris ; recettes rejouées sur le RBZ. H23. |
-| **AG-057 — Ponts** | AG-056, ADR-40 | Selon ADR-40 (D-12) : là où une voie franchit un cours d'eau, une voie ferrée ou une autre voie. Contrat à écrire après la décision. | À fixer par le contrat. |
+| **AG-057 — Pont à poutre** | AG-056, ADR-40 | Selon le [contrat des ponts](../docs/PONT_CONTRACT.md) : type de nœud `bridge` (poutre), voie portée en rampes, tablier, culées, murs, garde-corps ; pont né tout seul sur l'eau, cours d'eau admis dans un réseau par leurs ponts ; noyau. | Cotes, portée et rampes à la main sur l'eau, une voie ferrée et une route, en biais ; voie franchie inchangée ; objets coupés ; refus localisés ; réseaux sans pont inchangés (mêmes empreintes). U39. |
+| **AG-058 — Arc et voûte** | AG-057 | Arc parabolique à montants, voûte maçonnée à arches de 20 m et piles ; gabarit et piles contrôlés. | Flèche, montants, nombre d'arches à la main ; arc dans le gabarit et pile sur une chaussée refusés. U40. |
+| **AG-059 — Panneau de pont, RBZ 0.9.0** | AG-058 | Type Pont et ses réglages au panneau de réseau, eau et littoral dans le réseau, guide, journal, RBZ. | Trois genres écrits et rouverts, une entrée d'Annuler, vrai geste à la souris ; recettes rejouées sur le RBZ. H24. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.
