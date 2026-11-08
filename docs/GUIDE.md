@@ -139,6 +139,16 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 
 **Sur un terrain :** cochez **Suivre le terrain**, sélectionnez le terrain (un groupe ou un composant) et cliquez sur **Retenir le terrain sélectionné**, puis **Relever le terrain** une fois le tracé fini. La voie suit le terrain avec une pente bornée (8 %, 6 % pour un tram, 2,5 % pour une voie ferrée), et des talus la raccordent au terrain. À la création, le terrain d'origine est masqué, jamais modifié : ARCHGEN pose à sa place une copie entaillée le long de la voie. Annuler rend l'original. Pour le revoir après avoir effacé la voie à la main : **Édition → Afficher**.
 
+**Eau et bord de mer :** choisissez un type tout prêt (canal, rivière, fleuve, côte à falaises, côte à dunes, plage et promenade) ou ajoutez des bandes **Plan d'eau**, **Quai**, **Berge naturelle**, **Falaise**, **Estran rocheux**, **Dune**, **Plage** et **Mer**. Sous la bande, réglez la revanche (hauteur du quai au-dessus de l'eau) et la profondeur d'un plan d'eau, la hauteur d'une falaise ou d'une dune, la pente d'une plage. La mer est toujours la première ou la dernière bande ; son fond descend à 3 m en 10 m. Une ganivelle se pose sur une dune ou une plage, un muret sur un trottoir, un chemin, un quai ou une plage. Dès qu'une bande d'eau ou de mer est là, le panneau demande le **régime de l'eau** :
+
+| Régime | Sur un terrain | Réglages |
+|---|---|---|
+| Un seul niveau : fleuve, côte | Tout le tracé à une altitude : celle saisie, ou le point le plus bas du terrain. Pas de talus côté mer : le terrain au-delà de la mer reste tel quel. | Altitude du haut de la coupe |
+| Rivière | Tracez de l'amont vers l'aval : l'eau descend avec le terrain sans jamais remonter, et creuse là où le terrain remonte. | Pente maximale (3 % par défaut) |
+| Canal | Biefs plats ; une écluse est posée dès que le terrain s'écarte de plus d'une chute. L'aperçu donne le nombre d'écluses et leur position. Le canal doit être bordé de quais. | Chute (3 m), longueur d'une chambre (40 m) |
+
+Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une écluse demande une ligne droite de sa chambre plus 10 m de chaque côté. Un cours d'eau ne s'ajoute pas à un réseau de voies tant que les ponts n'existent pas.
+
 **Modifier :** sélectionnez la voie, puis **Extensions → ARCHGEN → Modifier la voie sélectionnée**, et cliquez sur **Recharger la sélection**. Changez la coupe, le rayon (vide : chaque sommet garde le sien) ou l'axe, puis cliquez sur **Remplacer cette voie**. Le tracé ne change pas. Une copie garde sa géométrie.
 
 **À savoir**
@@ -147,7 +157,8 @@ Glissez le personnage le long de la coupe pour juger l'échelle ; décochez **Ga
 - **Refus :** rayon trop petit pour la largeur, virages plus longs que leur segment, demi-tour, angle vif où le bord intérieur se replierait, voie qui se recouvre elle-même.
 - **Limites :** 64 points, 5 000 objets, 20 000 traverses, 60 000 faces distinctes et 600 000 faces au total.
 - **Temps :** 2 km de boulevard planté s'écrivent en moins d'une demi-seconde, 2 km de voie ferrée double en moins de 3 s.
-- **Hors de portée :** pas de fil de caténaire ; un réseau de voies reste horizontal. Pour des carrefours, tracez un réseau de voies. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
+- **Balise de l'eau :** la surface de l'eau est sous la balise de la chaussée ; les portes d'écluse sous celle du mobilier.
+- **Hors de portée :** pas de fil de caténaire ; un réseau de voies reste horizontal ; pas de pont ni de confluence ; largeur d'un cours d'eau constante. Pour des carrefours, tracez un réseau de voies. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
 ## Tracer un réseau de voies et ses carrefours
 
 **Extensions → ARCHGEN → Tracer un réseau de voies.** Le panneau s'ouvre et l'outil de tracé est actif.

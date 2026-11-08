@@ -50,6 +50,16 @@
           </div>
           <p id="r-ground-state" class="hint"></p>
         </div>
+        <div class="road-water" id="r-water-box" hidden>
+          <div class="field"><label for="r-water">Régime de l’eau</label><select id="r-water"><option value="flat">Un seul niveau : fleuve, côte</option><option value="river">Rivière : descend avec le terrain</option><option value="canal">Canal : biefs et écluses</option></select></div>
+          <div class="road-fields">
+            <div class="field" id="f-grade"><label for="r-grade">Pente maximale de l’eau (%)</label><input id="r-grade" inputmode="decimal" placeholder="3"></div>
+            <div class="field" id="f-drop"><label for="r-drop">Chute d’une écluse (m)</label><input id="r-drop" inputmode="decimal" placeholder="3"></div>
+            <div class="field" id="f-chamber"><label for="r-chamber">Longueur d’une chambre (m)</label><input id="r-chamber" inputmode="decimal" placeholder="40"></div>
+            <div class="field" id="f-level"><label for="r-level">Altitude du haut de la coupe (m)</label><input id="r-level" inputmode="decimal" placeholder="au plus bas"></div>
+          </div>
+          <p class="hint">Sans terrain, l’eau reste à un seul niveau quel que soit le régime.</p>
+        </div>
         <p id="road-result" class="road-result" role="status" aria-live="polite"></p>
         <ul id="road-diag" class="road-diag"></ul>
         <div class="actions">

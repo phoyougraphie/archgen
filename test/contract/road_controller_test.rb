@@ -29,6 +29,9 @@ class RoadControllerTest < Minitest::Test
     assert_equal 'Rue de ville', r['result']['profile']['name']
     lane = r['result']['bands'].find { |b| b['type'] == 'lane' }
     assert_equal [2.5, 4.5, 'Voie de circulation'], lane.values_at('min_width_m', 'max_width_m', 'label')
+    water = r['result']['bands'].find { |b| b['type'] == 'water' }
+    assert_equal({ 'min' => 0.3, 'max' => 5, 'default' => 1 }, water['settings']['freeboard_m'])
+    assert_equal({}, lane['settings'])
     tree = r['result']['items'].find { |i| i['kind'] == 'tree' }
     assert_equal 'Feuillu rond', tree['variants'].first['label']
     assert JSON.generate(r)
@@ -82,7 +85,7 @@ class RoadControllerTest < Minitest::Test
     html = read_utf8('archgen', 'ui', 'road_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal %w[veh r-radius r-axis r-ground add-type], ids
+    assert_equal %w[veh r-radius r-axis r-ground r-water r-grade r-drop r-chamber r-level add-type], ids
     assert_empty ids - labels
   end
 end
@@ -197,5 +200,39 @@ class RoadControllerFlowTest < Minitest::Test
     stored = JSON.parse(roots.first.get_attribute('archgen.road', 'road_json'))
     assert_equal 'Rue tram et voitures', stored.dig('profile', 'name')
     assert_equal [20.0], stored.dig('trace', 'radii_m')
+  end
+
+  # AG-056 : le régime de l'eau voyage avec la voie ; refus de la voie, pas de la coupe ; il est rechargé
+  # et peut être ôté en modification avec la dernière bande d'eau.
+  def test_a_canal_is_previewed_created_reloaded_and_turned_into_a_street
+    canal = Archgen::Composition.road_presets.fetch('presets').find { |p| p['id'] == 'canal' }.fetch('profile')
+    draw([0, 0], [120, 0])
+    missing = call('preview', 'profile' => canal, 'road' => { 'axis' => 'center' })
+    assert missing['ok']
+    refute missing['result']['road']['ok']
+    assert_equal 'water_mode_missing', missing['result']['road']['diagnostics'].first['params']['reason']
+    road = { 'axis' => 'center', 'water' => { 'mode' => 'canal', 'lock_drop_m' => 2.5 } }
+    shown = call('preview', 'profile' => canal, 'road' => road)['result']['road']
+    assert shown['ok'], shown.inspect
+    assert_equal [], shown['locks']
+    assert_match(/\A\h{64}\z/, shown['road_digest'])
+    assert call('create', 'profile' => canal, 'road' => road, 'road_digest' => shown['road_digest'])['ok']
+    @controller.mode = 'edit'
+    loaded = call('load_selection')['result']
+    assert_equal({ 'mode' => 'canal', 'max_grade_percent' => 3.0, 'lock_drop_m' => 2.5, 'lock_length_m' => 40.0 }, loaded['water'])
+    street = call('preview', 'profile' => profile, 'road' => { 'axis' => 'center' })['result']['road']
+    assert street['ok'], street.inspect
+    done = call('regenerate', 'profile' => profile, 'road' => { 'axis' => 'center' }, 'road_digest' => street['road_digest'])
+    assert done['ok'], done.inspect
+    stored = JSON.parse(roots.first.get_attribute('archgen.road', 'road_json'))
+    refute stored.key?('water')
+  end
+
+  def test_a_water_setting_that_is_not_an_object_refuses_the_road_not_the_section
+    draw([0, 0], [120, 0])
+    bad = call('preview', 'profile' => profile, 'road' => { 'axis' => 'center', 'water' => 'canal' })
+    assert bad['ok']
+    refute bad['result']['road']['ok']
+    assert_equal ['E_SCHEMA', '/road/water'], bad['result']['road']['diagnostics'].first.values_at('code', 'path')
   end
 end

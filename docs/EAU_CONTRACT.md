@@ -117,7 +117,7 @@ Mode `flat` : tout le tracé à une altitude, `level_m` (altitude du niveau 0 de
 
 ## Panneau (AG-056)
 
-Dans **Composer une coupe** : les bandes d'eau et de littoral, leurs réglages, la coupe dessinée à niveaux cumulés avec le personnage et la surface de l'eau. Dans **Tracer une voie** : le régime de l'eau, ses réglages, et l'aperçu qui annonce la chute totale, le nombre d'écluses et leurs abscisses. Guide, journal, RBZ 0.8.0 et recette H23.
+Livré en 0.8.0 ([rapport](recette/V0.8.md)). Le régime n'apparaît qu'avec une bande d'eau ou de mer ; il est proposé à « Un seul niveau », réglable, et transmis tel quel à Ruby, qui le juge. En modification, le régime suit la coupe : il est retiré des réglages enregistrés avec la dernière bande d'eau. Dans **Composer une coupe** : les bandes d'eau et de littoral, leurs réglages, la coupe dessinée à niveaux cumulés avec le personnage et la surface de l'eau. Dans **Tracer une voie** : le régime de l'eau, ses réglages, et l'aperçu qui annonce la chute totale, le nombre d'écluses et leurs abscisses. Guide, journal, RBZ 0.8.0 et recette H23.
 
 ## Hors périmètre de cette version
 

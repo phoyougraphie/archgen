@@ -165,7 +165,8 @@ module Archgen
         metrics = result.value.plan['metrics']
         { 'ok' => true, 'road_digest' => result.value.road_digest, 'diagnostics' => own,
           'metrics' => metrics.slice('length_m', 'width_m', 'station_count', 'item_count', 'sleeper_count', 'definition_count', 'unique_face_count', 'expanded_face_count',
-                                     'grade_max_percent', 'cut_max_m', 'fill_max_m', 'earthwork_reach_m') }
+                                     'grade_max_percent', 'cut_max_m', 'fill_max_m', 'earthwork_reach_m', 'water_drop_m', 'lock_count', 'origin_z_m'),
+          'locks' => result.value.plan.dig('water', 'locks') || [] }
       end
 
       # Réglages de voie : tracé de l'outil (création) ou tracé enregistré (modification).
@@ -177,13 +178,19 @@ module Archgen
         radius = road['radius_m']
         return failure('E_SCHEMA', '/road/radius_m', 'type', expected: 'number') unless radius.nil? || radius.is_a?(Numeric)
 
+        # Régime de l'eau (EAU_CONTRACT) : transmis tel quel, jugé par RoadIntake.
+        water = road['water']
+        return failure('E_SCHEMA', '/road/water', 'type', expected: 'object') unless water.nil? || water.is_a?(Hash)
+
         if @mode == 'edit'
           return nil unless @edit
 
           trace = @edit.settings['trace']
           radii = radius.nil? ? trace['radii_m'] : Array.new(trace['radii_m'].size, radius)
           # Une voie garde son terrain ou son absence de terrain : la case ne change rien en modification.
-          return Core::Result.ok(@edit.settings.merge('profile' => payload['profile'], 'axis' => axis, 'trace' => trace.merge('radii_m' => radii)))
+          kept = @edit.settings.merge('profile' => payload['profile'], 'axis' => axis, 'trace' => trace.merge('radii_m' => radii))
+          kept = water ? kept.merge('water' => water) : kept.reject { |k, _| k == 'water' }
+          return Core::Result.ok(kept)
         end
         return nil unless @session.finished?
 
@@ -191,6 +198,7 @@ module Archgen
         radii = Array.new([points.size - 2, 0].max, radius.nil? ? DEFAULT_RADIUS_M : radius)
         tree = { 'trace' => { 'points_m' => points, 'radii_m' => radii }, 'axis' => axis, 'profile' => payload['profile'] }
         tree['ground'] = {} if road['on_ground'] == true
+        tree['water'] = water if water
         Core::Result.ok(tree)
       end
 
@@ -254,7 +262,7 @@ module Archgen
         radii = settings['trace']['radii_m'].uniq
         Core::Result.ok({ 'profile' => settings['profile'], 'axis' => settings['axis'], 'radius_m' => radii.size == 1 ? radii.first : nil,
                           'vertex_count' => settings['trace']['points_m'].size, 'revision' => @edit.target.revision,
-                          'on_ground' => settings.key?('ground') })
+                          'on_ground' => settings.key?('ground'), 'water' => settings['water'] })
       end
 
       def regenerate(payload)
@@ -269,6 +277,8 @@ module Archgen
         return failure('E_CONFIRMATION_STALE', '/road_digest', 'confirmation_mismatch') unless computed.value.road_digest == payload['road_digest']
 
         changes = { 'profile' => tree.value['profile'], 'axis' => tree.value['axis'], 'trace' => { 'radii_m' => tree.value['trace']['radii_m'] } }
+        # Régime retiré avec la dernière bande d'eau : nil l'efface des réglages enregistrés.
+        changes['water'] = tree.value['water']
         written = @service.regenerate(model: model, target: @edit.target, changes: changes)
         return written unless written.ok?
 
@@ -325,7 +335,7 @@ module Archgen
       def band_catalogue
         @bands.fetch('bands').map do |type, e|
           { 'type' => type, 'label' => e['label'], 'default_width_m' => e['default_width_m'], 'min_width_m' => e['min_width_m'],
-            'max_width_m' => e['max_width_m'], 'role' => e['role'], 'accepts_items' => e['accepts_items'] }
+            'max_width_m' => e['max_width_m'], 'role' => e['role'], 'accepts_items' => e['accepts_items'], 'settings' => e.fetch('settings', {}) }
         end
       end
 

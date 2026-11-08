@@ -4,7 +4,7 @@ require 'json'
 
 # Recette H19, à lancer sur un document neuf, panneaux fermés :
 #   load '.../test/host/h19.rb'; ArchgenH19Probe.run
-# Éditeur de coupe de voirie, vrai panneau par son DOM : onze préréglages, échelle mesurée à
+# Éditeur de coupe de voirie, vrai panneau par son DOM : dix-sept préréglages (eau et littoral depuis 0.8.0), échelle mesurée à
 # l'écran, refus, ajout, miroir, élément, réouverture ; le modèle ne change jamais.
 # Le vrai geste souris se fait à part. Rapport : tmp/h19.txt.
 module ArchgenH19Probe
@@ -12,7 +12,7 @@ module ArchgenH19Probe
   REPORT = File.join(REPO, 'tmp', 'h19.txt')
   PANEL = Archgen::UI::RoadPanel
   DELAY_S = 1.0
-  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton].freeze
+  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
   # Mesure indépendante de chaque objet (hauteur, largeur, pose au sol ou sur les rails).
   SCALE_PROBE = File.read(File.join(__dir__, 'road_scale_probe.js'), encoding: 'UTF-8').strip.delete_suffix(';')
   CATALOGUE_SETUP = File.read(File.join(__dir__, 'road_catalogue_setup.js'), encoding: 'UTF-8')
@@ -93,8 +93,8 @@ module ArchgenH19Probe
 
   def steps
     # Le panneau rouvre sur la dernière coupe acceptée de la session : rue de ville au premier démarrage seulement.
-    out = [['Ouverture : onze préréglages, une coupe acceptée', -> {}, lambda { |p|
-      p['presets'] == 11 && p['status'] == 'Coupe acceptée' && !p['bands'].empty?
+    out = [['Ouverture : dix-sept préréglages, une coupe acceptée', -> {}, lambda { |p|
+      p['presets'] == PRESETS.size && p['status'] == 'Coupe acceptée' && !p['bands'].empty?
     }]]
     PRESETS.each do |id|
       out << ["Préréglage #{id} accepté, dessiné, chaque objet à l’échelle", -> { click("[data-preset=\"#{id}\"]") }, lambda { |p|

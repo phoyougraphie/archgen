@@ -1,8 +1,8 @@
 # Journal des versions
 
-## 0.8.0-dev
+## 0.8.0
 
-Eau et littoral (EXT-13), en cours. Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement.
+Eau et littoral (EXT-13). Testée sur Windows 11 avec SketchUp 2026 (26.2.243) seulement. Moteur de géométrie 1 et moteur de voirie 1 inchangés : bâtiments, ensembles, voies et réseaux sans eau identiques. Le rapport de recette est dans [docs/recette/V0.8.md](docs/recette/V0.8.md).
 
 **Ajouts**
 
@@ -11,10 +11,10 @@ Eau et littoral (EXT-13), en cours. Testée sur Windows 11 avec SketchUp 2026 (2
 - **Canal à écluses sur un terrain** : biefs plats, écluse posée par règle dès que le terrain s'écarte de plus de la chute (3 m par défaut) ; chambre au niveau bas, mur de chute, portes, chemin de halage en rampe (AG-054).
 - **Fleuve et côte sur un terrain** : à un seul niveau, saisi ou au plus bas du terrain ; pas de talus côté mer (AG-055).
 - **Rivière sur un terrain** : tracée de l'amont vers l'aval, l'eau ne remonte jamais ; là où le terrain remonte, la rivière creuse, dans la limite de 6 m (AG-053).
+- **Panneau** : réglages de bande (revanche, profondeur, hauteur, pente) sous chaque bande, régime de l'eau et ses réglages dans Tracer une voie ; l'aperçu annonce la chute et les écluses (AG-056).
 
 **Limites connues**
 
-- Le régime de l'eau et les réglages des bandes d'eau et de littoral ne se règlent pas encore au panneau (AG-056).
 - Un canal sur un terrain est bordé de quais, et ses portes sont des battants droits ; au-delà de la mer, un terrain plus haut reste en place et forme un mur ; un cours d'eau n'entre pas dans un réseau (ponts : AG-057).
 
 ## 0.7.0

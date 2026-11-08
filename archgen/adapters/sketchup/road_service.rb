@@ -149,7 +149,8 @@ module Archgen
         def merged(settings, changes)
           base = settings.reject { |k, _| changes.key?(k) }
           trace = changes['trace'] ? settings['trace'].merge(changes['trace']) : settings['trace']
-          base.merge(changes).merge('trace' => trace)
+          # Une clé changée à nil est retirée (régime de l'eau ôté avec la dernière bande d'eau).
+          base.merge(changes).merge('trace' => trace).reject { |_, v| v.nil? }
         end
 
         def stale(reason, **params)

@@ -26,8 +26,13 @@
     roadBox: byId('road-box'), roadHint: byId('road-hint'), radius: byId('r-radius'), axis: byId('r-axis'),
     roadResult: byId('road-result'), roadDiag: byId('road-diag'), create: byId('road-create'), clear: byId('road-clear'),
     reload: byId('road-reload'), resume: byId('road-resume'),
-    ground: byId('r-ground'), retain: byId('r-retain'), survey: byId('r-survey'), groundState: byId('r-ground-state')
+    ground: byId('r-ground'), retain: byId('r-retain'), survey: byId('r-survey'), groundState: byId('r-ground-state'),
+    waterBox: byId('r-water-box'), water: byId('r-water'), grade: byId('r-grade'), drop: byId('r-drop'), chamber: byId('r-chamber'), level: byId('r-level'),
+    fGrade: byId('f-grade'), fDrop: byId('f-drop'), fChamber: byId('f-chamber'), fLevel: byId('f-level')
   };
+  // Réglages propres à une bande (EAU_CONTRACT), dans l'ordre d'affichage.
+  var SETTING_LABELS = { freeboard_m: ['Revanche m', 'revanche en mètres'], depth_m: ['Profondeur m', 'profondeur en mètres'],
+    height_m: ['Hauteur m', 'hauteur en mètres'], slope_percent: ['Pente %', 'pente en pour cent'] };
 
   // --- Pont
 
@@ -52,7 +57,47 @@
     var value = text === '' ? null : L.parseDecimal(text);
     state.radiusError = text !== '' && value === null ? 'Saisissez un rayon valide.' : null;
     if (value !== null) { out.radius_m = value; }
+    var water = waterSettings();
+    if (water) { out.water = water; }
     return out;
+  }
+
+  // --- Eau (AG-056) : le régime n'existe qu'avec une bande d'eau ou de mer ; Ruby juge les valeurs.
+
+  function hasWater() {
+    return state.draft.some(function (b) { return b.type === 'water' || b.type === 'sea'; });
+  }
+
+  function waterSettings() {
+    showWaterFields();
+    if (!hasWater()) { return null; }
+    var out = { mode: el.water.value };
+    var fields = { river: [['max_grade_percent', el.grade]], canal: [['lock_drop_m', el.drop], ['lock_length_m', el.chamber]], flat: [['level_m', el.level]] };
+    fields[out.mode].forEach(function (pair) {
+      var text = pair[1].value.trim();
+      if (text === '') { return; }
+      var v = L.parseDecimal(text);
+      if (v === null) { state.radiusError = 'Saisissez un nombre valide pour l’eau.'; } else { out[pair[0]] = v; }
+    });
+    return out;
+  }
+
+  function showWaterFields() {
+    el.waterBox.hidden = !hasWater();
+    el.fGrade.hidden = el.water.value !== 'river';
+    el.fDrop.hidden = el.water.value !== 'canal';
+    el.fChamber.hidden = el.water.value !== 'canal';
+    el.fLevel.hidden = el.water.value !== 'flat';
+  }
+
+  function waterSummary(m, locks) {
+    if (m.water_drop_m === undefined && m.lock_count === undefined) { return ''; }
+    var text = ' Eau : chute de ' + fmt(m.water_drop_m || 0) + ' m';
+    if (m.lock_count !== undefined) {
+      text += m.lock_count === 0 ? ', aucune écluse' : ', ' + m.lock_count + ' écluse' + (m.lock_count > 1 ? 's' : '') + ' à ' +
+        locks.map(function (l) { return fmt(l.s_m); }).join(', ') + ' m du départ';
+    }
+    return text + '.';
   }
 
   function requestPreview(now) {
@@ -132,6 +177,7 @@
       if (m.grade_max_percent !== undefined) {
         el.roadResult.textContent += ' Pente jusqu’à ' + fmt(m.grade_max_percent) + ' %, déblai ' + fmt(m.cut_max_m) + ' m, remblai ' + fmt(m.fill_max_m) + ' m.';
       }
+      el.roadResult.textContent += waterSummary(m, road.locks || []);
       state.digest = road.road_digest;
     } else {
       el.roadResult.textContent = 'Cette voie ne peut pas être créée :';
@@ -182,6 +228,12 @@
     el.radius.value = r.radius_m === null ? '' : L.formatNumber(r.radius_m);
     el.radius.placeholder = r.radius_m === null ? 'rayons enregistrés' : '';
     el.ground.checked = r.on_ground === true;
+    var w = r.water || {};
+    el.water.value = w.mode || 'flat';
+    el.grade.value = w.max_grade_percent === undefined ? '' : L.formatNumber(w.max_grade_percent);
+    el.drop.value = w.lock_drop_m === undefined ? '' : L.formatNumber(w.lock_drop_m);
+    el.chamber.value = w.lock_length_m === undefined ? '' : L.formatNumber(w.lock_length_m);
+    el.level.value = w.level_m === undefined ? '' : L.formatNumber(w.level_m);
     state.notice = 'Voie chargée, révision ' + r.revision;
     el.status.textContent = state.notice;
     el.status.className = 'status';
@@ -209,6 +261,10 @@
   }
 
   el.ground.addEventListener('change', function () { requestPreview(false); });
+  el.water.addEventListener('change', function () { requestPreview(false); });
+  [el.grade, el.drop, el.chamber, el.level].forEach(function (input) {
+    input.addEventListener('input', function () { requestPreview(false); });
+  });
   el.retain.addEventListener('click', function () { send('retain_terrain', {}); });
   el.survey.addEventListener('click', function () {
     el.status.textContent = 'Relevé du terrain…';
@@ -322,6 +378,7 @@
       var type = node('select', { 'aria-label': 'Type de la bande ' + (i + 1) }, row);
       options(type, state.bandList.map(function (b) { return [b.type, b.label]; }), band.type);
       type.addEventListener('change', function () {
+        Object.keys(SETTING_LABELS).forEach(function (k) { delete band[k]; });
         band.type = type.value;
         band.width_m = state.bands[type.value].default_width_m;
         if (!state.bands[type.value].accepts_items) { band.items = []; }
@@ -337,6 +394,16 @@
         state.sel = Math.min(state.sel, state.draft.length - 1);
         custom(); renderList(); requestPreview(true);
       });
+      var settings = state.bands[band.type].settings || {};
+      var keys = Object.keys(SETTING_LABELS).filter(function (k) { return settings[k]; });
+      if (keys.length) {
+        var tune = node('div', { className: 'road-tune' }, li);
+        keys.forEach(function (k) {
+          var value = band[k] === undefined ? settings[k]['default'] : band[k];
+          field(tune, SETTING_LABELS[k][0], value, state.bands[band.type].label + ' ' + (i + 1) + ', ' + SETTING_LABELS[k][1] +
+            ', de ' + L.formatNumber(settings[k].min) + ' à ' + L.formatNumber(settings[k].max), function (v) { band[k] = v; });
+        });
+      }
       li.addEventListener('focusin', function () { select(i); });
       li.addEventListener('click', function () { select(i); });
       if (i === state.sel) { renderItems(li, band, i); }
@@ -634,6 +701,11 @@
         svg('line', { x1: x, y1: z, x2: x, y2: z - h, class: 's-pole', 'stroke-width': 2 }, g);
         svg('rect', { x: x - 0.08 * s, y: z - h, width: 0.16 * s, height: 0.31 * s, class: 's-steel' }, g);
       }
+    } else if (it.kind === 'sand_fence') {
+      // Ganivelle (AG-052) : paroi de lattes vue en bout, comme une barrière.
+      svg('rect', { x: x - 1.5, y: z - h, width: 3, height: h, class: 's-trunk' }, g);
+    } else if (it.kind === 'low_wall') {
+      svg('rect', { x: x - 0.15 * s, y: z - h, width: 0.3 * s, height: h, class: 's-concrete' }, g);
     } else if (it.kind === 'bollard') {
       svg('rect', { x: x - Math.max(1.5, 0.05 * s), y: z - h, width: Math.max(3, 0.1 * s), height: h, rx: 1.5, class: 's-steel' }, g);
     } else if (it.kind === 'pole') {
