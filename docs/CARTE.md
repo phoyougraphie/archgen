@@ -7,10 +7,11 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — D-01 tranchée (variation des baies sur une grille de 5 mm, ADR-43) : plus aucune décision ouverte. Question du propriétaire en cours : rues aux hauteurs et toits variés (hors périmètre d'EXT-07, à cadrer, sans doute avec EXT-08). (→ docs/DECISIONS.md)
+  - Prochaine action — Rues variées cadrées (contrat à valider) : trancher D-13 à D-16, puis AG-061. Commits non poussés depuis f033338 (AG-060, D-01, ce cadrage). (→ docs/RUE_VARIEE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
   - D-01 tranchée — Variation des baies arrondie à 5 mm (ADR-43) : 100 % des graines acceptées de 1 à 30 cm, contre 1 % à 2 cm avant. (→ docs/DECISIONS.md)
+  - Décisions ouvertes D-13 à D-16 — Rues variées : hauteurs (fourchette et écart entre voisines, recommandé), toits (tirés dans une liste, recommandé), styles mêlés (pas encore, recommandé), murs mitoyens découverts (aveugles, recommandé). (→ docs/DECISIONS.md)
   - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
   - Mesures H11 — SketchUp 26.2.243, Ryzen 7 5800H, p95 : plan Haussmann 12×9 13 à 71 ms (cible 150 ms) ; écriture LOD 1 52 à 161 ms (cible 2 s) ; 24×18 Structural 454 ms en générique, 921 ms en Toulousain (cible 5 s) ; 20 régénérations +0,89 Mo (plafond 10 Mo), cadres stables. Plus grand plan accepté : environ 5,5 s, hors contrat. (→ docs/recette/H11.md)
   - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; macOS et SketchUp 2024/2025 hors cible V0.1. (→ docs/MATRICE_POSTE.md)
@@ -81,6 +82,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-08 AG-059 et recette 0.9.0 — Type Pont au panneau de réseau, eau dans le réseau à un seul niveau, eau en plan. Un réseau refusé gardait autrefois sa liste de carrefours vide : un pont refusé (voie portée manquante) devenait impossible à corriger ; la liste précédente reste. Vrai geste : rue et rivière à la souris, pont d'office passé en arc, réseau créé ; les longueurs au clavier et les clics d'options de liste n'arrivent pas depuis l'automatisation (choix au clavier). H24 9/9 après deux corrections de la sonde ; H13 à H23 rejouées sur le RBZ final : 0 échec.
     - 2026-11-08 AG-060 — D-10 tranchée par le propriétaire : B et C. Le plot se pose sur la limite gauche de sa bande (pas de réglage de position) ; les clous sont une option du carrefour à feux, désactivée par défaut, pour que les réseaux enregistrés gardent leur empreinte (34 voies et 6 réseaux vérifiés identiques).
     - 2026-11-08 D-01 — Tranchée par le propriétaire, option A (ADR-43). Le décalage, et non le centre, est arrondi : une porte non décalée garde ainsi ses bords sur la même grille que les fenêtres au-dessus d'elle. L'amplitude est bornée au multiple de 5 mm inférieur, pour ne jamais sortir de la grille. Mesure avant/après sur 500 graines : 0–73 % → 100 %.
+    - 2026-11-08 Rues variées cadrées — Demande du propriétaire : hauteurs et toits variés à la génération d'une rue. La géométrie s'y prête déjà : murs latéraux toujours émis et aveugles (ADR-32), toits coupés aux plans latéraux. Reste un tirage par parcelle, ses contrôles contre les règles du style (Haussmannien : 5 à 7 niveaux, mansarde) et les jointures. Fenêtres et portes : déjà là sur chaque bâtiment ; pas de vitrage ni de menuiserie.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -161,7 +163,11 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-057 Pont à poutre — geometry/road_bridge ; type bridge, rampes, tablier, culées, murs, garde-corps ; pont d'office sur l'eau, cours d'eau et surface d'eau dans les réseaux ; matières road/bridge, road/bridge_stone. U39 vert ; vu dans SketchUp (docs/recette/img/ag057-pont.jpg).
     - [fait] AG-058 Arc et voûte — geometry/road_bridge_forms (forme, gabarit, profils) ; refus bridge_clearance avec la hauteur qui suffit, bridge_clearance_impossible, pier_on_traffic. U40 vert ; vu dans SketchUp (H24, docs/recette/img/h24-voute.jpg).
     - [fait] AG-059 Panneau de pont, RBZ 0.9.0 — ui/network_controller et network_panel : type Pont, genre, voie portée, hauteur libre, rampes ; eau dans le réseau et en plan. H24 9/9, vrai geste ; rapport docs/recette/V0.9.md.
-  - J10+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
+  - J10 Rues variées — Hauteurs et toits tirés par parcelle. AG-061 à 063. (→ docs/RUE_VARIEE_CONTRACT.md)
+    - [bloque] AG-061 Tirage par parcelle — attend D-13 et D-14. U42.
+    - [afaire] AG-062 Jointures à hauteurs différentes — toits contre un mur plus haut, pignons, corniches ; D-16. U43.
+    - [afaire] AG-063 Panneau de rue variée, RBZ 0.10.0 — case, fourchette, toits, répartition annoncée. H25.
+  - J11+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
@@ -352,7 +358,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-05 Interior — Cloisons, escaliers, trémies.
   - EXT-06 Décor de jeu — Exporteur, UV, PBR, collisions, LOD 2.
   - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. Détail en AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
-  - EXT-08 Quartier — Densité, seeds par parcelle.
+  - EXT-08 Quartier — Première partie cadrée : rues variées (AG-061 à 063, D-13 à D-16) ; ensuite densité, mixité, styles mêlés. (→ docs/RUE_VARIEE_CONTRACT.md)
   - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
   - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
   - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)

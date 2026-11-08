@@ -50,5 +50,9 @@
 
 | ID | Question | Constat et options |
 |---|---|---|
+| D-13 | Rues variées : comment varier les hauteurs ? | Demande du propriétaire (2026-11-08). **Option A** : nombre de niveaux tiré par parcelle dans une fourchette, avec un écart maximal entre voisines (2 niveaux par défaut) pour éviter une tour contre un rez-de-chaussée (recommandée). **Option B** : un motif répété le long de la rue (par exemple 5, 6, 5, 7). **Option C** : réglage parcelle par parcelle au panneau, plus long à saisir. [Contrat](RUE_VARIEE_CONTRACT.md). |
+| D-14 | Rues variées : comment varier les toits ? | **Option A** : toit tiré par parcelle parmi une liste choisie (plat, deux pans, mansarde), dans ce que le style permet (recommandée). **Option B** : même toit pour toute la rue, seules les hauteurs varient. |
+| D-15 | Rues variées : mêler les styles d'une parcelle à l'autre ? | **Option A** : un seul style par ensemble dans ce lot, mélange plus tard (recommandée : les hauteurs de rez-de-chaussée, corniches et matières des styles ne s'accordent pas toutes seules). **Option B** : tirer aussi le style parmi plusieurs, ticket supplémentaire. |
+| D-16 | Rues variées : que montrer sur un mur mitoyen découvert par un voisin plus bas ? | **Option A** : le laisser aveugle, comme un pignon nu de ville (recommandée : déjà émis, aucun travail, aspect réaliste). **Option B** : y percer des baies au-dessus du toit du voisin, ticket supplémentaire. |
 
 ADR-03 à 10 précisent les points laissés ouverts dans le fil, avec des choix de départ révisables par décision écrite. Au démarrage, AG-001 consigne les versions hôtes réellement accessibles. Les seuils de performance sont des cibles de livraison à mesurer, et les plages historiques des réglages de conception à calibrer.
