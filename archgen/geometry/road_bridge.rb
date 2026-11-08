@@ -101,6 +101,11 @@ module Archgen
 
         clearance = node.options.fetch('clearance_m', default_clearance(under))
         thickness = THICKNESS.fetch(kind)
+        found = RoadBridgeForms.check(kind, span_half, top(under), clearance, under, sin, cot, over_half)
+        if found
+          reason = found[:reason] == 'bridge_clearance' && found[:needed].nil? ? 'bridge_clearance_impossible' : found[:reason]
+          return fail(node, reason, **{ band_number: found[:band] + 1, needed_m: found[:needed] }.compact)
+        end
         height = top(under) + clearance + thickness
         grade = node.options.fetch('ramp_grade_percent', DEFAULT_GRADE)
         ramp = height / (grade / 100.0)
@@ -141,6 +146,32 @@ module Archgen
         builder.to_primitive
       end
 
+      # Solide entre deux chaînes (a, z), extrudé de u0 à u1 : abouts en bandes de quadrilatères ou de
+      # triangles, côtés le long du contour. Sommets confondus retirés.
+      def slab_between(arm, upper, lower, u0, u1, material)
+        contour = (upper + lower.reverse).chunk_while { |p, q| p == q }.map(&:first)
+        contour.pop while contour.size > 1 && contour.last == contour.first
+        faces = []
+        contour.each_index do |j|
+          a, b = contour[j], contour[(j + 1) % contour.size]
+          faces << [at(arm, a[0], u0, a[1]), at(arm, b[0], u0, b[1]), at(arm, b[0], u1, b[1]), at(arm, a[0], u1, a[1])]
+        end
+        [u0, u1].each_with_index do |u, side|
+          upper.each_index.each_cons(2) do |i, k|
+            ring = [upper[i], upper[k], lower[k], lower[i]].chunk_while { |p, q| p == q }.map(&:first)
+            ring.pop while ring.size > 1 && ring.last == ring.first
+            next if ring.size < 3
+
+            pts = ring.map { |a, z| at(arm, a, u, z) }
+            faces << (side.zero? ? pts.reverse : pts)
+          end
+        end
+        faces = faces.map(&:reverse) if RoadItems.signed_volume(faces).negative?
+        builder = MeshBuilder.new('solid')
+        faces.each { |f| builder.add_face(f, material) }
+        builder.to_primitive
+      end
+
       def box(arm, a0, a1, u0, u1, z0, z1, material)
         ring = ->(a) { [at(arm, a, u0, z0), at(arm, a, u1, z0), at(arm, a, u1, z1), at(arm, a, u0, z1)] }
         prism([ring.call(a0), ring.call(a1)], material)
@@ -166,6 +197,10 @@ module Archgen
           out << ["abutment/#{k + 1}", box(arm, [a0, a1].min, [a0, a1].max, right, left, 0.0, top, material)]
         end
         out.concat(parapets(arm, crossing, info, left, right, bottom))
+        # Arc ou voûte : profils dans le plan de la voie portée, extrudés sur toute sa largeur.
+        RoadBridgeForms.profiles(RoadBridgeForms.shape(info[:kind], dh, bottom)).each do |name, upper, lower|
+          out << [name, slab_between(arm, upper, lower, right, left, material)]
+        end
         out.map do |name, primitive|
           { 'id' => "bridge/#{node.id}/#{name}", 'category' => 'linear', 'children' => [], 'primitive' => primitive }
         end

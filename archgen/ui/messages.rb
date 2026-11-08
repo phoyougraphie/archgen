@@ -215,6 +215,9 @@ module Archgen
         'bridge_over_missing' => 'Choisissez la voie qui passe sur le pont.',
         'bridge_over_unknown' => 'La voie portée doit être une des deux voies du pont, et pas un cours d’eau.',
         'bridge_span_too_long' => 'Ce pont porterait %{value} m, pour %{limit} m au plus : choisissez un arc ou croisez plus droit.',
+        'bridge_clearance' => 'Sous ce pont, l’arc ou la voûte entre dans le gabarit de la bande %{band_number} : relevez la hauteur libre à %{needed_m} m, ou choisissez une poutre.',
+        'bridge_clearance_impossible' => 'Sous ce pont, l’arc ou la voûte entre dans le gabarit de la bande %{band_number}, quelle que soit la hauteur : choisissez une poutre ou un arc.',
+        'pier_on_traffic' => 'Une pile de la voûte tomberait sur la bande %{band_number}, où l’on circule : choisissez un arc ou une poutre.',
         'bridge_setting_unavailable' => 'Ce réglage n’existe que pour un pont.',
         'ditch_next_to_carriageway' => 'Les bandes %{band_number} et %{next_number} placent un fossé contre la chaussée, sans accotement.',
         # Voirie : réseau et carrefours (ADR-36)

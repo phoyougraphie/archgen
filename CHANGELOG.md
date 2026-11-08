@@ -7,6 +7,7 @@ Ponts (AG-057 à AG-059), en cours.
 **Ajouts**
 
 - **Pont à poutre** dans un réseau de voies : né tout seul sur un cours d'eau, au choix sur une voie ferrée ou une route ; la voie portée monte en rampes jusqu'au tablier, avec culées et garde-corps ; les cours d'eau entrent dans un réseau (AG-057).
+- **Arc et voûte** : arc parabolique à montants, voûte de pierre à arches de 20 m au plus et piles ; le gabarit sous l'ouvrage est contrôlé, et un refus donne la hauteur libre qui suffit (AG-058).
 
 ## 0.8.0
 

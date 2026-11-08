@@ -47,11 +47,12 @@ Notations : `U` = point le plus haut de la voie franchie sous le tablier (niveau
 | Type | Épaisseur `e` | Portée permise | Forme sous le tablier |
 |---|---|---|---|
 | `beam` — poutre | 1,2 m | 40 m au plus d'un seul tenant, sinon `bridge_span_too_long` (le message propose l'arc) | Rien entre les culées |
-| `arch` — arc | 0,6 m | 120 m au plus | Arc parabolique de flèche portée ÷ 5, anneau de 1 m, des culées au tablier ; montants verticaux tous les 5 m entre l'arc et le tablier |
-| `vault` — voûte | 0,8 m au-dessus de la clé | Arches de 20 m au plus : `⌈portée / 20⌉` arches égales | Maçonnerie pleine percée d'arches en plein cintre ; piles entre les arches, matière `road/bridge_stone` |
+| `arch` — arc | 0,6 m | 120 m au plus | Arc parabolique dont l'extrados touche la sous-face du tablier à la clé ; flèche voulue portée ÷ 5, naissances au sol si la sous-face est plus basse (la flèche est alors la hauteur de la sous-face) ; anneau de 1 m (vertical) ; montants de 0,4 m, sur toute la largeur, tous les 5 m où il reste au moins 0,3 m entre l'arc et le tablier |
+| `vault` — voûte | 0,8 m | Ouvertures de 20 m au plus : le moins d'arches égales possible, piles de 2 m entre elles | Maçonnerie pleine (`road/bridge_stone`) : piles du sol à la sous-face ; au-dessus de chaque ouverture, un tympan dont l'intrados est un demi-cercle de rayon la demi-ouverture, clé 0,3 m sous la sous-face, coupé au sol s'il y descend |
 
-- **Gabarit** : aucun point de l'arc, d'une voûte ou d'une pile n'entre dans la hauteur libre au-dessus d'une bande de circulation, de rails ou d'eau de la voie franchie (`bridge_clearance`, avec la bande en cause). Une pile ne se pose pas sur une chaussée, une voie ferrée ou un tram (`pier_on_traffic`) ; dans l'eau, elle est permise.
-- Un arc ou une voûte sur une route plate demande souvent de relever `clearance_m` : le refus donne la hauteur qui manque.
+- **Gabarit** (AG-058) : au-dessus de chaque bande de circulation, de rails ou de tram, l'intrados de l'arc ou de la voûte laisse le gabarit de la bande (`clearance_m` du catalogue, 4,5 m) ; au-dessus de l'eau, 2,5 m de passage (départ). La bande est prise sur toute sa largeur, élargie du biais de la voie portée. Sinon `bridge_clearance`, avec le numéro de la bande et `needed_m`, la plus petite hauteur libre du nœud qui suffirait (au centimètre), ou `bridge_clearance_impossible` si 30 m ne suffisent pas. Le gabarit vaut au-dessus des bandes ; la hauteur libre `clearance_m` reste celle du tablier.
+- Une pile ne se pose pas sur une chaussée, une voie ferrée ou un tram (`pier_on_traffic`) ; dans l'eau, elle est permise, et le gabarit ne se contrôle pas sous elle.
+- Exemples à la main (U40) : sur la rivière à berges, l'arc passe avec la hauteur libre par défaut ; la voûte de deux arches de 16 m demande 9,58 m ; sur une rue de ville, l'arc demande 6,22 m, la voûte d'une arche 5,82 m.
 
 ## Plan
 
@@ -69,7 +70,8 @@ Sous la racine du réseau, un groupe `road/bridges` (balise de la chaussée) por
 | `bridge_over_missing` | Deux routes, sans `over` |
 | `bridge_over_unknown` | `over` ne nomme pas une des deux voies, ou nomme la voie à eau |
 | `bridge_span_too_long` | Poutre de plus de 40 m, arc de plus de 120 m |
-| `bridge_clearance` | Arc, voûte ou pile dans la hauteur libre d'une bande |
+| `bridge_clearance` | Arc ou voûte dans le gabarit d'une bande ; donne la hauteur libre qui suffirait |
+| `bridge_clearance_impossible` | Idem, et 30 m de hauteur libre ne suffisent pas |
 | `pier_on_traffic` | Pile sur une chaussée, une voie ferrée ou un tram |
 | `bridge_setting_unavailable` | Un réglage de pont sur un autre type de nœud |
 
