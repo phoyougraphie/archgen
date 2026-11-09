@@ -233,6 +233,11 @@
           "type": "number",
           "minimum": 0,
           "maximum": 4
+        },
+        "ridge": {
+          "enum": [
+            "perpendicular"
+          ]
         }
       },
       "additionalProperties": false,

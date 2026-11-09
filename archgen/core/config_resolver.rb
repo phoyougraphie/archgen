@@ -113,6 +113,7 @@ module Archgen
       def finish(start, draft, profile, registry, intake)
         problems = []
         roof = merged_roof(start['roof'], draft['roof'], problems)
+        roof = with_ridge(roof, draft['roof'], problems)
         return Result.fail(problems) unless problems.empty?
 
         merged = Merge.leaves(start, draft.reject { |k, _| %w[roof schema_version profile].include?(k) })
@@ -173,6 +174,17 @@ module Archgen
         config.merge('shop' => { 'height_m' => height })
       end
       private_class_method :with_shop
+
+      # AG-079 : un faîtage perpendiculaire n'existe que sur deux pans. Saisi avec un autre toit, il
+      # est refusé ; venu du style, il tombe avec le changement de toit. Parallèle, il n'est pas écrit.
+      def with_ridge(roof, explicit, problems)
+        return roof.reject { |key, _| key == 'ridge' } unless roof['ridge'] == 'perpendicular'
+        return roof if roof['type'] == 'gable'
+
+        problems << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/ridge', reason: 'ridge_axis_roof', type: roof['type']) if explicit&.dig('ridge') == 'perpendicular'
+        roof.reject { |key, _| key == 'ridge' }
+      end
+      private_class_method :with_ridge
 
       def canonical_name(name)
         name.nil? ? BuildingConfig::DEFAULT_NAME : name.strip

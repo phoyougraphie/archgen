@@ -12,13 +12,15 @@ module Archgen
       module_function
 
       # Retourne Result<RoofPlan> ; rejette une rive sous Z=0 et une arête trop courte.
-      def call(footprint, wall_top_z, roof, materials:)
+      # `side_overhang` : faux pour un bâtiment de rangée à faîtage perpendiculaire (AG-079).
+      def call(footprint, wall_top_z, roof, materials:, side_overhang: true)
         problems = check(footprint, wall_top_z, roof)
         return Core::Result.fail(problems) unless problems.empty?
 
         pans = case roof['type']
                when 'flat' then flat(footprint, wall_top_z, roof)
-               when 'gable' then gable(footprint, wall_top_z, roof)
+               when 'gable'
+                 roof['ridge'] == 'perpendicular' ? cross_gable(footprint, wall_top_z, roof, side_overhang) : gable(footprint, wall_top_z, roof)
                when 'hip' then hip_roof(footprint, wall_top_z, roof)
                when 'mansard' then mansard(footprint, wall_top_z, roof)
                else raise ArgumentError, "Type de toit inconnu : #{roof['type']}"
@@ -76,6 +78,26 @@ module Archgen
         ]
       end
       private_class_method :gable
+
+      # AG-079 : faîtage au milieu de la largeur, de l'avant à l'arrière ; pignons sur les façades
+      # avant et arrière. En rangée, pas de débord sur les murs latéraux.
+      def cross_gable(footprint, h, roof, side_overhang)
+        e = roof['overhang_m']
+        s = side_overhang ? e : 0.0
+        r = slope(roof['pitch_deg'])
+        w = footprint.width_m
+        d = footprint.depth_m
+        ridge_x = w / 2.0
+        ridge_z = h + (r * ridge_x)
+        eave_z = h - (r * s)
+        [
+          ['roof/left', 'roof_face', [[-s, d + e, eave_z], [-s, -e, eave_z], [ridge_x, -e, ridge_z], [ridge_x, d + e, ridge_z]]],
+          ['roof/right', 'roof_face', [[w + s, -e, eave_z], [w + s, d + e, eave_z], [ridge_x, d + e, ridge_z], [ridge_x, -e, ridge_z]]],
+          ['roof/gable/front', 'gable_end', [[0.0, 0.0, h], [w, 0.0, h], [ridge_x, 0.0, ridge_z]]],
+          ['roof/gable/rear', 'gable_end', [[w, d, h], [0.0, d, h], [ridge_x, d, ridge_z]]]
+        ]
+      end
+      private_class_method :cross_gable
 
       def hip_roof(footprint, h, roof)
         hip_faces('roof', 0.0, 0.0, footprint.width_m, footprint.depth_m, h, slope(roof['pitch_deg']), roof['overhang_m'])

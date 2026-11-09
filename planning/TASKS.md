@@ -139,4 +139,15 @@ Contrat : [STYLES_REGIONAUX_CONTRACT](../docs/STYLES_REGIONAUX_CONTRACT.md). Dé
 | **AG-077 — Lyonnais, Bordelais, Parisien faubourien** | AG-076 | Trois profils, formes d'accès d'îlot. | Idem. U52. |
 | **AG-078 — Panneaux, RBZ 0.14.0** | AG-077 | Styles groupés par famille, case Génoise aux trois panneaux ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H29 à la main. |
 
+## J14 — Pignon sur rue et montagne (EXT-01)
+
+Contrat : [PIGNON_MONTAGNE_CONTRACT](../docs/PIGNON_MONTAGNE_CONTRACT.md). Décisions : ADR-48 (choix de détail délégués).
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-079 — Faîtage perpendiculaire** | AG-078, ADR-48 | `roof.ridge: perpendicular` pour deux pans : bâtiment seul et rangée ; angle averti ; cheminées, lucarnes, génoise adaptées. | Pans et pignons, rangée sans débord latéral, refus hors deux pans. U53. |
+| **AG-080 — Pignon à redents** | AG-079 | `features.stepped_gable` : marches au-dessus du toit sur le pignon avant. | Marches au-dessus de la pente, refus sans faîtage perpendiculaire. U54. |
+| **AG-081 — Bardage bois** | AG-080 | `features.cladding`, `materials.cladding` : dernier niveau, pignons et balcons en bois. | Matières par niveau, empreintes d'avant inchangées. U54. |
+| **AG-082 — Flamand, Savoyard, RBZ 0.15.0** | AG-081 | Deux profils ; liste Faîtage et cases aux trois panneaux ; guide, journal, RBZ. | Profils en bâtiment, rue et îlot ; panneaux essayés ; recette H30 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

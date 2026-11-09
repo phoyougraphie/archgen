@@ -1,5 +1,11 @@
 # Journal des versions
 
+## Non publié
+
+**Ajouts**
+
+- **Faîtage perpendiculaire** : `roof.ridge: perpendicular`, pignon sur rue pour un toit à deux pans, en bâtiment seul et en rangée ; une parcelle d'angle garde un faîtage parallèle et le dit (AG-079).
+
 ## 0.14.0
 
 Styles régionaux maçonnés (AG-074 à AG-078). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H29 dans SketchUp à faire.

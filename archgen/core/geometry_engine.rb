@@ -72,21 +72,46 @@ module Archgen
         estimate = estimate_budget(input, footprint, levels, openings, grids.value)
         return Result.fail(estimate) unless estimate.empty?
 
-        roof_solver = row ? Geometry::RowRoofSolver : Geometry::RoofSolver
-        roof = roof_solver.call(footprint, levels.last.top_z_m, input['roof'], materials: input['materials'])
+        roof = roof_for(input, footprint, levels, row)
         return roof unless roof.ok?
 
+        ridge = cross_ridge?(input, footprint, row) ? 'perpendicular' : 'parallel'
+
         details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input,
-                                              roof_top_z_m: roof.value.top_z_m, row: !row.nil?)
+                                              roof_top_z_m: roof.value.top_z_m, row: !row.nil?, ridge: ridge)
         return details unless details.ok?
 
         plan = build_plan(footprint, levels, openings, grids.value, roof.value, details.value, input, row)
         problems = PlanValidator.call(plan, materials: materials)
         return Result.fail(problems) unless problems.empty?
 
-        Result.ok(Canonical.deep_freeze(plan), details.diagnostics)
+        Result.ok(Canonical.deep_freeze(plan), ridge_warnings(input, footprint, row) + details.diagnostics)
       end
       private_class_method :assemble
+
+      # AG-079 : faîtage perpendiculaire, sauf sur une parcelle d'angle, qui garde le parallèle et le dit.
+      def cross_ridge?(input, footprint, row)
+        input['roof']['ridge'] == 'perpendicular' && !(row && footprint.trapezoid?)
+      end
+      private_class_method :cross_ridge?
+
+      def ridge_warnings(input, footprint, row)
+        return [] unless input['roof']['ridge'] == 'perpendicular' && row && footprint.trapezoid?
+
+        [Diagnostic.warning('W_DETAIL', '/roof/ridge', reason: 'ridge_corner')]
+      end
+      private_class_method :ridge_warnings
+
+      def roof_for(input, footprint, levels, row)
+        top = levels.last.top_z_m
+        if cross_ridge?(input, footprint, row)
+          return Geometry::RoofSolver.call(footprint, top, input['roof'], materials: input['materials'], side_overhang: row.nil?)
+        end
+
+        roof_solver = row ? Geometry::RowRoofSolver : Geometry::RoofSolver
+        roof_solver.call(footprint, top, input['roof'].reject { |key, _| key == 'ridge' }, materials: input['materials'])
+      end
+      private_class_method :roof_for
 
       # Avant toute allocation de maillage : comptes réels de cellules et de faces minimales.
       def estimate_budget(input, footprint, levels, openings, grids)

@@ -113,6 +113,7 @@ module Archgen
 
       def check_roof(data, out)
         roof = data['roof']
+        out << roof_error('ridge', 'ridge_axis_roof', type: roof['type']) if roof.key?('ridge') && roof['type'] != 'gable'
         case roof['type']
         when 'flat' then require_zero(roof, %w[pitch_deg lower_pitch_deg inset_m], out)
         when 'gable', 'hip' then check_sloped(roof, out)

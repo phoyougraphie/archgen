@@ -88,7 +88,8 @@ module Archgen
       module_function
 
       # `roof_top_z_m` et `row` ne servent qu'aux cheminées : haut du toit, bâtiment de rangée.
-      def call(footprint:, levels:, openings:, config:, roof_top_z_m: nil, row: false)
+      # `ridge` : faîtage effectivement posé (AG-079), 'parallel' ou 'perpendicular'.
+      def call(footprint:, levels:, openings:, config:, roof_top_z_m: nil, row: false, ridge: 'parallel')
         return Core::Result.ok(DetailPlan.new(nodes: [], definitions: {})) unless config['lod'] == 1
 
         features = config['features']
@@ -99,8 +100,9 @@ module Archgen
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
-        problems.concat(genoise_problems(levels, openings, config)) if genoise?(config)
-        dormers = features['dormers'] ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
+        cross = ridge == 'perpendicular'
+        problems.concat(genoise_problems(levels, openings, config)) if genoise?(config) && !cross
+        dormers = features['dormers'] && !cross ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
         problems.concat(dormers.errors) if dormers && !dormers.ok?
         return Core::Result.fail(problems) unless problems.empty?
 
@@ -110,16 +112,17 @@ module Archgen
         skipped = clashes.select { |_, why| why == :porch }.keys
         nodes += shutters(footprint, openings.reject { |o| skipped.include?(o.id) }, config, definitions) if features['shutters']
         nodes << cornice(footprint, levels, config) if features['cornice']
-        nodes += genoise(footprint, levels, config) if genoise?(config)
+        nodes += genoise(footprint, levels, config) if genoise?(config) && !cross
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
-        nodes += chimneys(footprint, levels, config, roof_top_z_m, row) if features['chimneys'] && roof_top_z_m
+        nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m
         nodes += dormer_nodes(footprint, levels, config, dormers.value, definitions) if dormers
         built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings += dormers.warnings if dormers
-        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/genoise', reason: 'genoise_roof') if features['genoise'] && !genoise?(config)
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/genoise', reason: 'genoise_roof') if features['genoise'] && (!genoise?(config) || cross)
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/dormers', reason: 'dormer_ridge') if features['dormers'] && cross
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/shutters', reason: 'shutters_skipped', ids: skipped.sort) unless skipped.empty?
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
@@ -530,10 +533,10 @@ module Archgen
       # AG-066 : une ou deux souches. Contre les murs latéraux, centrées sur le faîtage (deux pans,
       # toit plat, toute rangée) ; au bout du faîtage d'une croupe ou d'une mansarde seule.
       # Souches réellement posées (nombre et côté tirés par la seed).
-      def drawn_spots(footprint, config, row)
+      def drawn_spots(footprint, config, row, cross = false)
         seed = config['seed']
         count = Core::DeterministicRandom.unit(seed, 'chimneys') < 0.5 ? 1 : 2
-        spots = chimney_spots(footprint, config, row)
+        spots = cross ? cross_spots(footprint, config) : chimney_spots(footprint, config, row)
         spots = [spots[Core::DeterministicRandom.unit(seed, 'chimneys/side') < 0.5 ? 0 : -1]] if count == 1 || spots.size == 1
         spots.uniq
       end
@@ -548,8 +551,16 @@ module Archgen
       end
       private_class_method :chimney_boxes
 
-      def chimneys(footprint, levels, config, roof_top, row)
-        spots = drawn_spots(footprint, config, row)
+      # AG-079 : au faîtage perpendiculaire, contre les murs avant et arrière.
+      def cross_spots(footprint, config)
+        inner = config['structure']['wall_m'] + CHIMNEY_GAP_M + (CHIMNEY_Y_M / 2.0)
+        x = footprint.width_m / 2.0
+        [[x, inner], [x, footprint.depth_m - inner]]
+      end
+      private_class_method :cross_spots
+
+      def chimneys(footprint, levels, config, roof_top, row, cross = false)
+        spots = drawn_spots(footprint, config, row, cross)
         flat = config['roof']['type'] == 'flat'
         top = Core::Quant.q(roof_top + (flat ? CHIMNEY_ABOVE_FLAT_M : CHIMNEY_ABOVE_RIDGE_M))
         base = levels.last.top_z_m

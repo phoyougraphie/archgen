@@ -295,7 +295,8 @@ class DetailSolverTest < Minitest::Test
   PROFILES = %w[haussmann toulousain brutalist].freeze
 
   def test_real_composition_publishes_the_three_profiles
-    assert_equal PROFILES.sort, registry.active_profiles.map(&:id)
+    # Les styles régionaux (AG-075 et suivants) s'ajoutent ; les trois premiers restent publiés.
+    assert_empty PROFILES - registry.active_profiles.map(&:id)
   end
 
   def test_every_profile_generates_in_both_modes_at_both_lods
