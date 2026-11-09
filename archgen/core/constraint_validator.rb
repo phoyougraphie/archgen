@@ -44,6 +44,16 @@ module Archgen
         check_muntins(data, glazing, out)
         out << Diagnostic.error('E_SCHEMA', '/features/dormers', reason: 'dormers_false_written') if data['features'].key?('dormers') && !data['features']['dormers']
         out << Diagnostic.error('E_SCHEMA', '/features/genoise', reason: 'genoise_false_written') if data['features'].key?('genoise') && !data['features']['genoise']
+        stepped = data['features']['stepped_gable']
+        out << Diagnostic.error('E_SCHEMA', '/features/stepped_gable', reason: 'stepped_gable_false_written') if data['features'].key?('stepped_gable') && !stepped
+        out << Diagnostic.error('E_ROOF_GEOMETRY', '/features/stepped_gable', reason: 'stepped_gable_ridge') if stepped && data['roof']['ridge'] != 'perpendicular'
+        if stepped && data['roof']['overhang_m'] > 0.05 + Quant::EPSILON
+          out << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'stepped_gable_overhang', limit: 0.05)
+        end
+        cladding = data['features']['cladding'] == true
+        out << Diagnostic.error('E_SCHEMA', '/features/cladding', reason: 'cladding_false_written') if data['features'].key?('cladding') && !cladding
+        out << Diagnostic.error('E_SCHEMA', '/materials/cladding', reason: 'cladding_material_required') if cladding && !data['materials'].key?('cladding')
+        out << Diagnostic.error('E_SCHEMA', '/materials/cladding', reason: 'cladding_material_without_cladding') if !cladding && data['materials'].key?('cladding')
         shutters = data['features']['shutters'] == true
         out << Diagnostic.error('E_SCHEMA', '/features/shutters', reason: 'shutters_false_written') if data['features'].key?('shutters') && !shutters
         out << Diagnostic.error('E_SCHEMA', '/materials/shutters', reason: 'shutters_material_required') if shutters && !data['materials'].key?('shutters')

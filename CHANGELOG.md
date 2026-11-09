@@ -5,6 +5,8 @@
 **Ajouts**
 
 - **Faîtage perpendiculaire** : `roof.ridge: perpendicular`, pignon sur rue pour un toit à deux pans, en bâtiment seul et en rangée ; une parcelle d'angle garde un faîtage parallèle et le dit (AG-079).
+- **Pignon à redents** : option `features.stepped_gable`, marches au-dessus du toit sur le pignon avant (AG-080).
+- **Bardage bois** : option `features.cladding`, dernier niveau, pignons et balcons en bois ; matières bois naturel, bois sombre, brique rouge (AG-081).
 
 ## 0.14.0
 

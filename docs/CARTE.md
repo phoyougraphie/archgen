@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-079 fait (faîtage perpendiculaire). Suite : AG-080, pignon à redents. Recettes H26 à H28 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+  - Prochaine action — AG-080 et AG-081 faits (pignon à redents, bardage). Suite : AG-082, Flamand et Savoyard, RBZ 0.15.0. Recettes H26 à H29 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/PIGNON_MONTAGNE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -110,6 +110,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-09 AG-078 — Listes de styles groupées par famille, même ordre aux deux panneaux ; case Génoise partout. RBZ 0.14.0 installé.
     - 2026-11-09 J14 cadré — Faîtage perpendiculaire en premier : pignon à redents et chalet en dépendent. Une parcelle d'angle garde un faîtage parallèle, avec avertissement.
     - 2026-11-09 AG-079 — Toits de rangée à faîtage perpendiculaire faits par le solveur du bâtiment seul, sans débord latéral ; l'angle garde le parallèle avec avertissement. Défaut révélé au passage : un test épinglait les trois styles d'origine depuis AG-075 ; il vérifie maintenant qu'ils restent publiés.
+    - 2026-11-09 AG-080, AG-081 — Pignon à redents refusé avec un débord de plus de 5 cm, qui passerait devant les marches. Bardage par cellule de mur du dernier niveau, sans nouvelle géométrie.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -214,8 +215,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-078 Panneaux, RBZ 0.14.0 — listes par famille, case Génoise ; H29 à faire.
   - J14 Pignon sur rue et montagne — ADR-48. AG-079 à 082. (→ docs/PIGNON_MONTAGNE_CONTRACT.md)
     - [fait] AG-079 Faîtage perpendiculaire — RoofSolver.cross_gable, roof.ridge, détails adaptés. U53 vert.
-    - [afaire] AG-080 Pignon à redents — marches au-dessus du toit. U54.
-    - [afaire] AG-081 Bardage bois — dernier niveau, pignons, balcons. U54.
+    - [fait] AG-080 Pignon à redents — features.stepped_gable ; marches et pinacle. U54 vert.
+    - [fait] AG-081 Bardage bois — features.cladding ; wall_builder par niveau, pignons, balcons. U54 vert.
     - [afaire] AG-082 Flamand, Savoyard, RBZ 0.15.0 — profils, panneaux. H30.
   - J18+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)

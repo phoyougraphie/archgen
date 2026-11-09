@@ -61,6 +61,18 @@
       "label": "Bois peint rouge",
       "srgb": "#8E2B23"
     },
+    "natural_wood": {
+      "label": "Bois naturel",
+      "srgb": "#A0784C"
+    },
+    "dark_wood": {
+      "label": "Bois sombre",
+      "srgb": "#5A4030"
+    },
+    "red_brick": {
+      "label": "Brique rouge",
+      "srgb": "#9A4A32"
+    },
     "glass": {
       "label": "Verre",
       "srgb": "#9FB8C4",

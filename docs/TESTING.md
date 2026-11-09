@@ -58,6 +58,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U51 | Génoises (AG-074) : option non écrite, refus ; deux rangs avant et arrière sous la peau du toit, saillies, matière du toit ; toit plat et mansarde avertis ; refus avec corniche et baie trop haute ; croupe ; LOD 0 ; rue à angle. |
 | U52 | Profils régionaux (AG-075 à AG-077) : chaque profil actif dans sa famille, matières du catalogue ; bâtiment seul dans les deux modes et les deux LOD sous le budget ; rue droite, rue à angle, îlot ; règles averties en plausible, refusées en stricte. |
 | U53 | Faîtage perpendiculaire (AG-079) : écrit seulement s'il est perpendiculaire, refusé hors deux pans ; pignons sur rue, faîtage de l'avant à l'arrière ; plan parallèle inchangé ; cheminées au faîtage, lucarnes et génoise omises et dites ; rangée sans débord latéral ; parcelle d'angle gardée parallèle et dite. |
+| U54 | Pignon à redents et bardage (AG-080, AG-081) : marches au-dessus de la pente, pinacle, devant le pignon ; refus sans faîtage perpendiculaire et avec débord ; angle omis et dit ; dernier niveau, pignons et balcons en bois, deux modes ; refus dépareillés. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

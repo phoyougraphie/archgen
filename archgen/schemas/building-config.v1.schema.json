@@ -271,6 +271,10 @@
         "shutters": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "cladding": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
         }
       },
       "additionalProperties": false,
@@ -308,6 +312,12 @@
           "type": "boolean"
         },
         "genoise": {
+          "type": "boolean"
+        },
+        "stepped_gable": {
+          "type": "boolean"
+        },
+        "cladding": {
           "type": "boolean"
         }
       },

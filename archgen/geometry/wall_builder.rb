@@ -85,8 +85,12 @@ module Archgen
         material = config['materials']['wall']
         structural = config['mode'] == 'structural'
         thickness = config['structure']['wall_m']
+        # AG-081 : avec le bardage, les cellules du dernier niveau prennent sa matière.
+        cladding = config['materials']['cladding']
+        from = levels.last.base_z_m
+        pick = ->(grid, r) { cladding && grid.zs[r] >= from - Core::Quant::EPSILON ? cladding : material }
         walls = grids.map do |grid|
-          primitive = structural ? solid_wall(grid, thickness, material) : surface_wall(grid, material)
+          primitive = structural ? solid_wall(grid, thickness, pick) : surface_wall(grid, pick)
           Node.leaf("wall/#{grid.facade.id}", 'wall', primitive)
         end
         nodes = [Node.group('walls', 'walls', walls)]
@@ -94,16 +98,17 @@ module Archgen
         nodes
       end
 
-      def surface_wall(grid, material)
+      def surface_wall(grid, pick)
         mesh = MeshBuilder.new('surface')
-        each_solid_cell(grid) { |c, r| mesh.add_face(outer_quad(grid, c, r), material) }
+        each_solid_cell(grid) { |c, r| mesh.add_face(outer_quad(grid, c, r), pick.call(grid, r)) }
         mesh.to_primitive
       end
       private_class_method :surface_wall
 
-      def solid_wall(grid, thickness, material)
+      def solid_wall(grid, thickness, pick)
         mesh = MeshBuilder.new('solid')
         each_solid_cell(grid) do |c, r|
+          material = pick.call(grid, r)
           mesh.add_face(outer_quad(grid, c, r), material)
           mesh.add_face(inner_quad(grid, c, r, thickness), material)
           lateral_quads(grid, c, r, thickness).each { |quad| mesh.add_face(quad, material) }

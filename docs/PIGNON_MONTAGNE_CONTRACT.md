@@ -23,9 +23,13 @@ Réglage `roof.ridge` : `"parallel"` (défaut, non écrit) ou `"perpendicular"`,
 
 Option `features.stepped_gable` (booléen), LOD 1, **seulement avec un faîtage perpendiculaire** (sinon refus `stepped_gable_ridge`). Le pignon avant monte au-dessus du toit en marches : 5 marches de chaque côté (départ), chaque marche dépassant la pente de 0,30 m, couronnée au faîte par un pinacle de 0,40 m ; épaisseur 0,30 m, posée 0,05 m devant le nu du mur pour couvrir le pignon du toit. Matière `materials.wall`.
 
+- **Fait (AG-080).** Marches empilées en solides, catégorie `stepped_gable` ; refus `stepped_gable_ridge` et, pour qu'aucun débord ne passe devant les marches, `stepped_gable_overhang` au-delà de 0,05 m de débord ; parcelle d'angle : omis et dit (`stepped_gable_corner`).
+
 ## 3. Bardage bois et débords profonds — AG-081
 
 Option `features.cladding` (booléen), avec un rôle de matière `materials.cladding` (écrit seulement avec l'option ; par défaut `natural_wood`, nouvelle entrée « Bois naturel », et « Bois sombre »). Les murs du **dernier niveau** et les pignons prennent la matière du bardage ; les balcons aussi. Les débords de toit jusqu'à 1,00 m existent déjà (`roof.overhang_m`).
+
+- **Fait (AG-081).** Les cellules de mur du dernier niveau prennent la matière du bardage (les deux modes) ; pignons du toit et balcons aussi. Catalogue : bois naturel, bois sombre, brique rouge (pour le Flamand). Tests U54 (`test/unit/gable_and_cladding_test.rb`) ; empreintes des ensembles types identiques.
 
 ## 4. Profils et panneaux — AG-082
 

@@ -97,7 +97,7 @@ module Archgen
       private_class_method :gables
 
       def node(id, category, points, materials)
-        material = category == 'gable_end' ? materials['wall'] : materials['roof']
+        material = category == 'gable_end' ? materials['cladding'] || materials['wall'] : materials['roof']
         Node.leaf(id, category, MeshBuilder.new('surface').add_face(points, material).to_primitive)
       end
       private_class_method :node

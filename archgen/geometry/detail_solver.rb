@@ -64,6 +64,11 @@ module Archgen
       GENOISE_ROWS = [[0.10, 0.16], [0.10, 0.08]].freeze
       GENOISE_HEAD_M = 0.10
       GENOISE_ROOFS = %w[gable hip].freeze
+      # AG-080 : pignon à redents (départ).
+      STEPS = 5
+      STEP_ABOVE_M = 0.30
+      PINNACLE_M = [0.50, 0.40].freeze
+      STEP_DEPTH_M = [-0.05, 0.25].freeze
       TRANSOM_Z_M = 2.20
       CORNICE_DEPTH_M = 0.15
       CORNICE_HEIGHT_M = 0.08
@@ -113,6 +118,7 @@ module Archgen
         nodes += shutters(footprint, openings.reject { |o| skipped.include?(o.id) }, config, definitions) if features['shutters']
         nodes << cornice(footprint, levels, config) if features['cornice']
         nodes += genoise(footprint, levels, config) if genoise?(config) && !cross
+        nodes += stepped_gable(footprint, levels, config) if features['stepped_gable'] && cross
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m
@@ -123,9 +129,41 @@ module Archgen
         warnings += dormers.warnings if dormers
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/genoise', reason: 'genoise_roof') if features['genoise'] && (!genoise?(config) || cross)
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/dormers', reason: 'dormer_ridge') if features['dormers'] && cross
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/stepped_gable', reason: 'stepped_gable_corner') if features['stepped_gable'] && !cross
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/shutters', reason: 'shutters_skipped', ids: skipped.sort) unless skipped.empty?
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
+
+      # AG-080 : marches empilées sur le pignon avant, chacune 0,30 m au-dessus de la pente au droit
+      # de son bout intérieur ; un pinacle au faîte. Posées devant le nu, elles couvrent le pignon du toit.
+      def stepped_gable(footprint, levels, config)
+        facade = footprint.facade('front')
+        width = facade.length_m
+        r = RoofSolver.slope(config['roof']['pitch_deg'])
+        step = (width / 2.0) / STEPS
+        material = config['materials']['wall']
+        d0, d1 = STEP_DEPTH_M
+        bottom = levels.last.top_z_m
+        nodes = (0...STEPS).map do |k|
+          top = Core::Quant.q(levels.last.top_z_m + (r * (k + 1) * step) + STEP_ABOVE_M)
+          u0 = Core::Quant.q(k * step)
+          u1 = Core::Quant.q(width - (k * step))
+          node = Node.leaf("stepped_gable/#{k}", 'stepped_gable', Boxes.on_facade(facade, u0, u1, bottom, top, d0, d1, material))
+          bottom = top
+          node
+        end
+        half = PINNACLE_M[0] / 2.0
+        middle = width / 2.0
+        nodes << Node.leaf('stepped_gable/pinnacle', 'stepped_gable',
+                           Boxes.on_facade(facade, Core::Quant.q(middle - half), Core::Quant.q(middle + half), bottom, Core::Quant.q(bottom + PINNACLE_M[1]), d0, d1, material))
+      end
+      private_class_method :stepped_gable
+
+      # AG-081 : balcons de bois avec le bardage.
+      def balcony_material(config)
+        config['materials']['cladding'] || config['materials']['wall']
+      end
+      private_class_method :balcony_material
 
       def genoise?(config)
         config['features']['genoise'] && GENOISE_ROOFS.include?(config['roof']['type'])
@@ -489,7 +527,7 @@ module Archgen
         balcony_levels.map do |level|
           Node.leaf("balcony/#{level.index}", 'balcony',
                     Boxes.on_facade(facade, margin, facade.length_m - margin, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m,
-                                    -BALCONY_DEPTH_M, 0.0, config['materials']['wall']))
+                                    -BALCONY_DEPTH_M, 0.0, balcony_material(config)))
         end
       end
       private_class_method :balconies
@@ -499,7 +537,7 @@ module Archgen
         return [] unless ring
 
         balcony_levels.map do |level|
-          Node.leaf("balcony/#{level.index}", 'balcony', Boxes.prism(ring, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m, config['materials']['wall']))
+          Node.leaf("balcony/#{level.index}", 'balcony', Boxes.prism(ring, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m, balcony_material(config)))
         end
       end
       private_class_method :mitred_balconies
