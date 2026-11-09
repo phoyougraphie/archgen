@@ -7,7 +7,7 @@ require_relative '../test_helper'
 class RegionalProfilesTest < Minitest::Test
   include Archgen::Core
 
-  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien].freeze
+  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet].freeze
   STREET = [[0, 0], [48, 0]].freeze
   CORNER = [[0, 0], [40, 0], [40, 30]].freeze
   BLOCK = [[0, 0], [40, 0], [40, 40], [0, 40]].freeze

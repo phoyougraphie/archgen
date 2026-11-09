@@ -65,6 +65,7 @@
       <fieldset>
         <legend>Toiture</legend>
         <div class="field"><label for="f-roof">Type de toit</label><select id="f-roof"><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="hip">Croupe</option><option value="mansard">Mansarde</option></select></div>
+        <div class="field" data-roof="ridge"><label for="f-ridge">Faîtage</label><select id="f-ridge" data-path="/roof/ridge" data-kind="ridge"><option value="parallel">Parallèle à la rue</option><option value="perpendicular">Perpendiculaire (pignon sur rue)</option></select></div>
         <div class="field" data-roof="overhang_m"><label for="f-overhang">Débord (m)</label><input id="f-overhang" data-path="/roof/overhang_m" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="pitch_deg"><label for="f-pitch">Pente (°)</label><input id="f-pitch" data-path="/roof/pitch_deg" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="lower_pitch_deg"><label for="f-lower">Pente basse (°)</label><input id="f-lower" data-path="/roof/lower_pitch_deg" data-kind="number" inputmode="decimal"></div>
@@ -86,6 +87,9 @@
         <div class="field check"><input type="checkbox" id="f-shop" data-path="/ground_floor" data-kind="ground"><label for="f-shop">Commerce au rez-de-chaussée</label></div>
         <div class="field check"><input type="checkbox" id="f-muntins" data-path="/features/muntins" data-kind="check"><label for="f-muntins">Petits bois (avec le vitrage)</label></div>
         <div class="field check"><input type="checkbox" id="f-dormers" data-path="/features/dormers" data-kind="check"><label for="f-dormers">Lucarnes</label></div>
+        <div class="field check"><input type="checkbox" id="f-stepped" data-path="/features/stepped_gable" data-kind="check"><label for="f-stepped">Pignon à redents (pignon sur rue)</label></div>
+        <div class="field check"><input type="checkbox" id="f-cladding" data-path="/features/cladding" data-kind="check"><label for="f-cladding">Bardage bois (dernier niveau)</label></div>
+        <div class="field" id="f-cladding-material-field" hidden><label for="f-mcladding">Bardage, matériau</label><select id="f-mcladding" data-path="/materials/cladding" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field check"><input type="checkbox" id="f-genoise" data-path="/features/genoise" data-kind="check"><label for="f-genoise">Génoise (deux pans, croupe)</label></div>
         <div class="field check"><input type="checkbox" id="f-shutters" data-path="/features/shutters" data-kind="check"><label for="f-shutters">Volets</label></div>
         <div class="field" id="f-shutters-material-field" hidden><label for="f-mshutters">Volets, matériau</label><select id="f-mshutters" data-path="/materials/shutters" data-kind="select" data-catalogue="materials"></select></div>

@@ -249,7 +249,7 @@
 
   function onFieldInput(event) {
     var field = event.target;
-    if (field.id === 'f-shop' || field.id === 'f-shutters') { showShopHeight(); }
+    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -774,6 +774,7 @@
   function showShopHeight() {
     document.getElementById('f-shop-height-field').hidden = !document.getElementById('f-shop').checked;
     document.getElementById('f-shutters-material-field').hidden = !document.getElementById('f-shutters').checked;
+    document.getElementById('f-cladding-material-field').hidden = !document.getElementById('f-cladding').checked;
   }
 
   function writeField(field, value) {
@@ -782,6 +783,7 @@
       case 'list': field.value = L.formatList(value); break;
       case 'check': field.checked = Boolean(value); break;
       case 'ground': field.checked = value === 'shop'; break;
+      case 'ridge': field.value = value || 'parallel'; break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }

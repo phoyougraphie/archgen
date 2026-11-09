@@ -162,7 +162,7 @@ module Archgen
         features = profile.defaults.fetch('features', {})
         { 'revision' => profile.revision, 'glazing' => features['glazing'] == true, 'chimneys' => features['chimneys'] == true,
         'muntins' => features['muntins'] == true, 'shutters' => features['shutters'] == true, 'dormers' => features['dormers'] == true,
-        'genoise' => features['genoise'] == true,
+        'genoise' => features['genoise'] == true, 'stepped_gable' => features['stepped_gable'] == true, 'cladding' => features['cladding'] == true,
           'shop_height_m' => profile.defaults.dig('shop', 'height_m') || Core::ConfigResolver::DEFAULT_SHOP_HEIGHT_M }
       end
 

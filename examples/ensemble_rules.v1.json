@@ -9,6 +9,8 @@
     "lyonnais": { "1": "porch" },
     "bordelais_echoppe": { "1": "gap" },
     "parisien_faubourien": { "1": "porch" },
+    "flamand": { "1": "gap" },
+    "savoyard_chalet": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

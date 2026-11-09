@@ -40,6 +40,8 @@ Option `features.cladding` (booléen), avec un rôle de matière `materials.clad
 
 Panneaux : liste « Faîtage » (parallèle, perpendiculaire) pour un toit à deux pans ; cases Pignon à redents et Bardage (avec sa matière) aux trois panneaux. **RBZ 0.15.0** ; recette **H30** à la main.
 
+- **Fait (AG-082).** Profils `flamand` (débord 0) et `savoyard_chalet` (trois niveaux, pour que le balcon du niveau 2 existe sous le bardage). Liste Faîtage au panneau du bâtiment, montrée pour deux pans seulement ; cases Pignon à redents et Bardage (avec sa matière) aux trois panneaux ; au panneau de rue et de parcelle, le faîtage reste celui du style. RBZ 0.15.0. **Recette H30 dans SketchUp non faite** (laissée au propriétaire).
+
 ## Tests
 
 - **U53** faîtage perpendiculaire : pans et pignons, rangée sans débord latéral, angle averti, refus hors deux pans, détails.

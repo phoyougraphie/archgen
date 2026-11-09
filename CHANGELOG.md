@@ -1,9 +1,12 @@
 # Journal des versions
 
-## Non publié
+## 0.15.0
+
+Pignon sur rue et montagne (AG-079 à AG-082). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H30 dans SketchUp à faire.
 
 **Ajouts**
 
+- **Flamand, Savoyard — chalet** : deux styles ; liste Faîtage et cases Pignon à redents et Bardage aux panneaux (AG-082).
 - **Faîtage perpendiculaire** : `roof.ridge: perpendicular`, pignon sur rue pour un toit à deux pans, en bâtiment seul et en rangée ; une parcelle d'angle garde un faîtage parallèle et le dit (AG-079).
 - **Pignon à redents** : option `features.stepped_gable`, marches au-dessus du toit sur le pignon avant (AG-080).
 - **Bardage bois** : option `features.cladding`, dernier niveau, pignons et balcons en bois ; matières bois naturel, bois sombre, brique rouge (AG-081).

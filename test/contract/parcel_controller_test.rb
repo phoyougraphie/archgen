@@ -54,7 +54,7 @@ class ParcelControllerTest < Minitest::Test
     assert_equal({}, result['own'])
     assert_equal 0, result['custom_count']
     street = result['street']
-    assert_equal %w[chimneys corner dormers genoise glazing ground_floor levels muntins roof shop_height_m shutters width_m], street.keys.sort
+    assert_equal %w[chimneys cladding corner dormers genoise glazing ground_floor levels muntins roof shop_height_m shutters stepped_gable width_m], street.keys.sort
     assert_equal 'dwelling', street['ground_floor']
     assert_equal 4.0, street['shop_height_m']
   end

@@ -15,6 +15,8 @@ module Archgen
         'lyonnais' => 'Pierre dorée, cinq niveaux, hautes fenêtres ; encadrements et volets gris au LOD 1.',
         'bordelais_echoppe' => 'Pierre blonde, un seul niveau à toit caché ; corniche et encadrements au LOD 1.',
         'parisien_faubourien' => 'Enduit clair, quatre niveaux, tuile mécanique ; encadrements et volets gris au LOD 1.',
+        'flamand' => 'Brique rouge, façade étroite à pignon sur rue ; pignon à redents au LOD 1.',
+        'savoyard_chalet' => 'Pierre et bois, pignon sur rue sous un grand débord ; bardage, balcon et volets au LOD 1.',
         'brutalist' => 'Béton, toit plat, grille répétitive ; baies en retrait au LOD 1 Structural.'
       }.freeze
 

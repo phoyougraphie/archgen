@@ -9,7 +9,7 @@ Un style n'est publié qu'avec les capacités qu'il requiert, chacune livrée et
 | Lot | Capacités nouvelles | Styles |
 |---|---|---|
 | **J13 — Régionaux maçonnés** (ce contrat) | Génoises ; matières régionales | Provençal (mas, maison de village), Breton (longère, maison de bourg), Lyonnais, Bordelais (échoppe), Parisien faubourien |
-| J14 — Pignon sur rue et montagne | Axe de faîtage perpendiculaire à la rue, pignon à redents, grands débords, bardage bois | Flamand, Savoyard |
+| J14 — Pignon sur rue et montagne (fait, [contrat](PIGNON_MONTAGNE_CONTRACT.md)) | Axe de faîtage perpendiculaire à la rue, pignon à redents, grands débords, bardage bois | Flamand, Savoyard |
 | J15 — Pan de bois (EXT-02) | Ossature apparente, encorbellement | Maison à colombages, Normand, Alsacien, Basque |
 | J16 — Arcs et ornements (EXT-03) | Arc plein cintre et brisé, meneaux, ordres, fronton, avant-corps, reliefs, baies courbes, patio | Roman, Gothique, Renaissance, Néoclassique, Baroque, Art déco, Art nouveau, Méditerranéen (variantes cycladique, andalouse) |
 | J17 — Volumes modernes (EXT-04) | Volumes assemblés, mur-rideau, fenêtres en bandeau, pilotis, sheds, trame structurelle, protections solaires | Bauhaus, Moderniste, Mid-century, Contemporain minimaliste, Industriel, High-tech, Bioclimatique |

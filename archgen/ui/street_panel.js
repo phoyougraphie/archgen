@@ -16,7 +16,7 @@
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
-    glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
+    glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), stepped_gable: byId('s-stepped'), cladding: byId('s-cladding'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
     shopHeightField: byId('s-shop-height-field'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
@@ -75,7 +75,7 @@
     var features = {};
     if (state.touched.glazing) { features.glazing = el.glazing.checked; }
     if (state.touched.chimneys) { features.chimneys = el.chimneys.checked; }
-    ['muntins', 'shutters', 'dormers', 'genoise'].forEach(function (key) {
+    ['muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding'].forEach(function (key) {
       if (state.touched[key]) { features[key] = el[key].checked; }
     });
     if (Object.keys(features).length) { building.features = features; }
@@ -90,7 +90,7 @@
     var sameRevision = !building || !building.profile.revision || building.profile.revision === hints.revision;
     el.glazing.checked = stored.glazing !== undefined ? stored.glazing : sameRevision && Boolean(hints.glazing);
     el.chimneys.checked = stored.chimneys !== undefined ? stored.chimneys : sameRevision && Boolean(hints.chimneys);
-    ['muntins', 'shutters', 'dormers', 'genoise'].forEach(function (key) {
+    ['muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding'].forEach(function (key) {
       el[key].checked = stored[key] !== undefined ? stored[key] : sameRevision && Boolean(hints[key]);
     });
     el.shop.checked = Boolean(building) && building.ground_floor === 'shop';
@@ -570,7 +570,7 @@ function runSite(message, action, payload) {
     var hints = (state.profiles[el.profile.value] || {}).details || {};
     if (!state.touched.glazing) { el.glazing.checked = Boolean(hints.glazing); }
     if (!state.touched.chimneys) { el.chimneys.checked = Boolean(hints.chimneys); }
-    ['muntins', 'shutters', 'dormers', 'genoise'].forEach(function (key) {
+    ['muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding'].forEach(function (key) {
       if (!state.touched[key]) { el[key].checked = Boolean(hints[key]); }
     });
     el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);

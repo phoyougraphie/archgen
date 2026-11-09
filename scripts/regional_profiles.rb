@@ -115,6 +115,32 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'surrounds' => true }
     },
     'rules' => rules(levels: [3, 6], roofs: %w[gable mansard], ratio: [1.4, 2.0], walls: %w[light_render ochre_render limestone])
+  },
+  'flamand' => {
+    'label' => 'Flamand', 'period' => 'Maison de ville flamande, XVIIe-XIXe siècle', 'regions' => %w[flandre], 'typologies' => %w[residential mixed_use],
+    'requires' => %w[gable cross_ridge stepped_gable glazing muntins surrounds],
+    'defaults' => {
+      'footprint' => { 'width_m' => 7, 'depth_m' => 12 },
+      'levels' => { 'count' => 3, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 1.1, 'window_height_m' => 1.9, 'sill_m' => 0.8, 'entry_bay' => 0, 'door_width_m' => 1.1, 'door_height_m' => 2.6, 'muntin_rows' => 4 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.0, 'pitch_deg' => 50, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'red_brick', 'roof' => 'mechanical_tile', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'stepped_gable' => true }
+    },
+    'rules' => rules(levels: [2, 5], roofs: %w[gable], ratio: [1.4, 2.2], walls: %w[red_brick brick_foraine])
+  },
+  'savoyard_chalet' => {
+    'label' => 'Savoyard — chalet', 'period' => 'Chalet savoyard, XIXe-XXe siècle', 'regions' => %w[savoie], 'typologies' => %w[residential],
+    'requires' => %w[gable cross_ridge cladding balcony shutters glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 2.7, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 0.9, 'window_height_m' => 1.2, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 1.0, 'pitch_deg' => 25, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'dark_wood', 'cladding' => 'natural_wood' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'cladding' => true, 'balcony' => true }
+    },
+    'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.1, 1.6], walls: %w[limestone granite light_render])
   }
 }.freeze
 

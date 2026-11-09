@@ -11,7 +11,7 @@
   var STYLE_BLOCKS = ['/facade/', '/roof/', '/structure/', '/materials/', '/features/', '/shop/'];
   var ROOF_FIELDS = {
     flat: ['overhang_m'],
-    gable: ['overhang_m', 'pitch_deg'],
+    gable: ['ridge', 'overhang_m', 'pitch_deg'],
     hip: ['overhang_m', 'pitch_deg'],
     mansard: ['overhang_m', 'pitch_deg', 'lower_pitch_deg', 'inset_m']
   };

@@ -24,6 +24,8 @@ module Archgen
           'shutters' => { 'type' => 'boolean' },
           'dormers' => { 'type' => 'boolean' },
           'genoise' => { 'type' => 'boolean' },
+          'stepped_gable' => { 'type' => 'boolean' },
+          'cladding' => { 'type' => 'boolean' },
           'width_m' => { 'type' => 'number', 'minimum' => 6, 'maximum' => 60 }
         },
         'additionalProperties' => false
@@ -149,7 +151,7 @@ module Archgen
         out['roof'] = { 'type' => own['roof'] } if own['roof']
         out['ground_floor'] = own['ground_floor'] if own['ground_floor']
         out['shop'] = own['shop'] if own['shop']
-        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise')
+        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding')
         out['features'] = features unless features.empty?
         out
       end
@@ -178,6 +180,7 @@ module Archgen
           'chimneys' => config['features']['chimneys'] == true, 'glazing' => config['features']['glazing'] == true,
           'muntins' => config['features']['muntins'] == true, 'shutters' => config['features']['shutters'] == true,
           'dormers' => config['features']['dormers'] == true, 'genoise' => config['features']['genoise'] == true,
+          'stepped_gable' => config['features']['stepped_gable'] == true, 'cladding' => config['features']['cladding'] == true,
           'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true
         )
       end
