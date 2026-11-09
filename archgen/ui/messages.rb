@@ -21,6 +21,15 @@ module Archgen
         'normand' => 'Pan de bois sombre, toit d’ardoise pentu ; lucarnes et cheminées au LOD 1.',
         'alsacien' => 'Enduit ocre et pan de bois, toit très pentu ; lucarnes au LOD 1.',
         'basque' => 'Enduit blanc et bois rouge, pignon sur rue sous un large débord ; pan de bois au LOD 1.',
+        'maison_romane' => 'Pierre, murs épais, petites baies en plein cintre ; arcs au LOD 1.',
+        'maison_gothique' => 'Pierre, pignon sur rue pentu, baies en arc brisé ; arcs au LOD 1.',
+        'renaissance' => 'Pierre blonde, croisées et lucarnes, encadrements au LOD 1.',
+        'neoclassique' => 'Pierre claire, pilastres, fronton d’entrée et corniche au LOD 1.',
+        'baroque' => 'Pierre dorée, baies cintrées, pilastres et fronton, mansarde au LOD 1.',
+        'art_deco' => 'Béton clair, toit plat, bandes verticales et corniche au LOD 1.',
+        'art_nouveau' => 'Pierre blonde, baies cintrées, balcons, mansarde au LOD 1.',
+        'mediterraneen_cycladique' => 'Enduit blanc, toit plat, baies cintrées, volets bleus au LOD 1.',
+        'mediterraneen_andalou' => 'Enduit blanc, tuile canal, baies cintrées, volets verts au LOD 1.',
         'brutalist' => 'Béton, toit plat, grille répétitive ; baies en retrait au LOD 1 Structural.'
       }.freeze
 
@@ -37,7 +46,7 @@ module Archgen
         '/roof/type' => 'Type de toit', '/roof/overhang_m' => 'Débord', '/roof/pitch_deg' => 'Pente', '/roof/lower_pitch_deg' => 'Pente basse', '/roof/inset_m' => 'Retrait du brisis',
         '/materials/wall' => 'Matériau des murs', '/materials/roof' => 'Matériau du toit', '/materials/frames' => 'Matériau des cadres',
         '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
-        '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/features/muntins' => 'Petits bois', '/features/shutters' => 'Volets', '/features/dormers' => 'Lucarnes', '/features/genoise' => 'Génoise', '/roof/ridge' => 'Faîtage', '/features/stepped_gable' => 'Pignon à redents', '/features/cladding' => 'Bardage', '/features/timber_frame' => 'Pan de bois', '/materials/timber' => 'Matériau du pan de bois', '/materials/cladding' => 'Matériau du bardage', '/materials/shutters' => 'Matériau des volets', '/facade/muntin_rows' => 'Rangs de petits bois', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
+        '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/features/muntins' => 'Petits bois', '/features/shutters' => 'Volets', '/features/dormers' => 'Lucarnes', '/features/genoise' => 'Génoise', '/roof/ridge' => 'Faîtage', '/features/stepped_gable' => 'Pignon à redents', '/features/cladding' => 'Bardage', '/features/timber_frame' => 'Pan de bois', '/features/classical' => 'Ornements classiques', '/facade/arch' => 'Arcs', '/materials/timber' => 'Matériau du pan de bois', '/materials/cladding' => 'Matériau du bardage', '/materials/shutters' => 'Matériau des volets', '/facade/muntin_rows' => 'Rangs de petits bois', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
         '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
         '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
         '/site/terrain' => 'Terrain', '/site/placement' => 'Placement', '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
@@ -105,6 +114,12 @@ module Archgen
         'genoise_head_margin' => 'La fenêtre %{id} monte trop haut sous la génoise : %{limit} m au plus. Réduisez la hauteur des fenêtres.',
         'genoise_roof' => 'La génoise ne se pose que sous un toit à deux pans ou une croupe.',
         'dormers_false_written' => 'Des lucarnes décochées ne s’enregistrent pas : retirez ce champ.',
+        'arch_too_low' => 'La baie %{id} est trop basse pour son arc : il lui faut la flèche de l’arc et 0,30 m de plus. Augmentez sa hauteur ou choisissez des baies droites.',
+        'classical_false_written' => 'Des ornements décochés ne s’enregistrent pas : retirez ce champ.',
+        'classical_with_timber' => 'Les ornements classiques et le pan de bois ne vont pas ensemble : décochez l’un des deux.',
+        'pilaster_no_room' => 'Un pilastre toucherait la baie %{id} (ou ses volets, son encadrement). Réduisez la largeur des fenêtres ou retirez les volets.',
+        'pilaster_porch' => 'Pas de pilastre devant le passage du porche.',
+        'pediment_no_room' => 'Le fronton de l’entrée ne tient pas : il toucherait un pilastre ou le premier étage.',
         'timber_false_written' => 'Un pan de bois décoché ne s’enregistre pas : retirez ce champ.',
         'timber_material_required' => 'Le pan de bois demande son matériau.',
         'timber_material_without_timber' => 'Un matériau de pan de bois est donné sans pan de bois.',

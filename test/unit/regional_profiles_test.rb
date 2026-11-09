@@ -7,7 +7,7 @@ require_relative '../test_helper'
 class RegionalProfilesTest < Minitest::Test
   include Archgen::Core
 
-  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque].freeze
+  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou].freeze
   STREET = [[0, 0], [48, 0]].freeze
   CORNER = [[0, 0], [40, 0], [40, 30]].freeze
   BLOCK = [[0, 0], [40, 0], [40, 40], [0, 40]].freeze
@@ -24,7 +24,7 @@ class RegionalProfilesTest < Minitest::Test
     REGIONAL.each do |id|
       profile = registry.fetch(id)
       assert profile.ok?, "#{id} : #{profile.errors.map(&:to_h).inspect}"
-      assert_includes %w[masonry_vernacular timber_vernacular], profile.value.family_id
+      assert_includes %w[masonry_vernacular timber_vernacular historic_monumental ordered_facade ornamental], profile.value.family_id
       materials = profile.value.defaults['materials'].values
       assert((materials - TestData.materials.keys).empty?, "#{id} : #{materials - TestData.materials.keys}")
       assert_includes registry.active_profiles.map(&:id), id

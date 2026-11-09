@@ -15,6 +15,15 @@
     "normand": { "1": "gap" },
     "alsacien": { "1": "gap" },
     "basque": { "1": "gap" },
+    "maison_romane": { "1": "gap" },
+    "maison_gothique": { "1": "gap" },
+    "renaissance": { "1": "gap" },
+    "neoclassique": { "1": "gap" },
+    "baroque": { "1": "gap" },
+    "art_deco": { "1": "gap" },
+    "art_nouveau": { "1": "gap" },
+    "mediterraneen_cycladique": { "1": "gap" },
+    "mediterraneen_andalou": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

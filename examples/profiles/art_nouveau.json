@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "id": "art_nouveau",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "ornamental",
+    "revision": 1
+  },
+  "family_id": "ornamental",
+  "label": "Art nouveau",
+  "context": {
+    "period": "Immeuble Art nouveau, 1895-1914",
+    "regions": [
+      "france"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "mansard",
+    "arches",
+    "balcony",
+    "glazing",
+    "muntins"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 12,
+      "depth_m": 11
+    },
+    "levels": {
+      "count": 5,
+      "height_m": 3.2,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 4,
+      "window_width_m": 1.2,
+      "window_height_m": 2.0,
+      "sill_m": 0.8,
+      "entry_bay": 2,
+      "door_width_m": 1.2,
+      "door_height_m": 2.5,
+      "muntin_rows": 3,
+      "arch": "round"
+    },
+    "roof": {
+      "type": "mansard",
+      "overhang_m": 0.15,
+      "pitch_deg": 25,
+      "lower_pitch_deg": 65,
+      "inset_m": 0.9
+    },
+    "materials": {
+      "wall": "blond_stone",
+      "roof": "zinc",
+      "frames": "painted_wood",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "balcony": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.4,
+        "max": 2.2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 4,
+        "max": 7
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "mansard"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "blond_stone",
+          "limestone"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

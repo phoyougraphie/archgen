@@ -160,4 +160,15 @@ Contrat : [PAN_DE_BOIS_CONTRACT](../docs/PAN_DE_BOIS_CONTRACT.md). Décisions : 
 | **AG-084 — Colombages, Normand, Alsacien, Basque** | AG-083 | Quatre profils. | Profils en bâtiment, rue et îlot. U52. |
 | **AG-085 — Panneaux, RBZ 0.16.0** | AG-084 | Case Pan de bois aux trois panneaux ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H31 à la main. |
 
+## J16 — Arcs et ornements (EXT-03)
+
+Contrat : [ARCS_ORNEMENTS_CONTRACT](../docs/ARCS_ORNEMENTS_CONTRACT.md). Décisions : ADR-48 (choix de détail délégués) ; portée et approximations consignées au contrat.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-086 — Arcs** | AG-085, ADR-48 | `facade.arch` plein cintre ou brisé : écoinçons devant les baies ; refus d'une baie trop basse. | Tracés, refus, deux modes. U56. |
+| **AG-087 — Ornements classiques** | AG-086 | `features.classical` : pilastres, soubassement, fronton d'entrée ; refus localisés. | Pièces placées, refus. U57. |
+| **AG-088 — Neuf profils** | AG-087 | Maison romane, maison gothique, Renaissance, Néoclassique, Baroque, Art déco, Art nouveau, Méditerranéen cycladique et andalou. | Profils en bâtiment, rue et îlot. U52. |
+| **AG-089 — Panneaux, RBZ 0.17.0** | AG-088 | Liste Arcs et case Ornements ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H32 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

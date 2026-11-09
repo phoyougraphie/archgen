@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "renaissance",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "ordered_facade",
+    "revision": 1
+  },
+  "family_id": "ordered_facade",
+  "label": "Renaissance",
+  "context": {
+    "period": "Hôtel urbain Renaissance, XVIe siècle",
+    "regions": [
+      "france"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "glazing",
+    "muntins",
+    "surrounds",
+    "dormers"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 12,
+      "depth_m": 10
+    },
+    "levels": {
+      "count": 3,
+      "height_m": 3.3,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 4,
+      "window_width_m": 1.2,
+      "window_height_m": 2.0,
+      "sill_m": 0.8,
+      "entry_bay": 2,
+      "door_width_m": 1.2,
+      "door_height_m": 2.6,
+      "muntin_rows": 2
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.2,
+      "pitch_deg": 50
+    },
+    "materials": {
+      "wall": "blond_stone",
+      "roof": "slate",
+      "frames": "painted_wood",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "surrounds": true,
+      "dormers": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.4,
+        "max": 2.0
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 2,
+        "max": 4
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "blond_stone",
+          "limestone"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

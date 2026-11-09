@@ -193,6 +193,125 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true }
     },
     'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[light_render])
+  },
+  'maison_romane' => {
+    'label' => 'Maison romane', 'period' => 'Maison de ville romane, XIIe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'historic_monumental',
+    'requires' => %w[gable arches glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 8, 'depth_m' => 9 },
+      'levels' => { 'count' => 2, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 0.7, 'window_height_m' => 1.3, 'sill_m' => 1.0, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.4, 'arch' => 'round' },
+      'structure' => { 'wall_m' => 0.6 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.2, 'pitch_deg' => 30 },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'terracotta_canal', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[gable], ratio: [1.4, 2.2], walls: %w[limestone granite])
+  },
+  'maison_gothique' => {
+    'label' => 'Maison gothique', 'period' => 'Maison de ville gothique, XIIIe-XVe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'historic_monumental',
+    'requires' => %w[gable cross_ridge arches glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 7, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 3.2, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 0.9, 'window_height_m' => 2.0, 'sill_m' => 0.8, 'entry_bay' => 1, 'door_width_m' => 1.1, 'door_height_m' => 2.6, 'muntin_rows' => 3, 'arch' => 'pointed' },
+      'structure' => { 'wall_m' => 0.5 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.1, 'pitch_deg' => 55, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true }
+    },
+    'rules' => rules(levels: [2, 5], roofs: %w[gable], ratio: [1.6, 2.6], walls: %w[limestone])
+  },
+  'renaissance' => {
+    'label' => 'Renaissance', 'period' => 'Hôtel urbain Renaissance, XVIe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'ordered_facade',
+    'requires' => %w[gable glazing muntins surrounds dormers],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 3.3, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.2, 'window_height_m' => 2.0, 'sill_m' => 0.8, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.6, 'muntin_rows' => 2 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.2, 'pitch_deg' => 50 },
+      'materials' => { 'wall' => 'blond_stone', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'dormers' => true }
+    },
+    'rules' => rules(levels: [2, 4], roofs: %w[gable hip], ratio: [1.4, 2.0], walls: %w[blond_stone limestone])
+  },
+  'neoclassique' => {
+    'label' => 'Néoclassique', 'period' => 'Immeuble néoclassique, fin XVIIIe-début XIXe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'ordered_facade',
+    'requires' => %w[gable classical cornice glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 10 },
+      'levels' => { 'count' => 4, 'height_m' => 3.2, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 5, 'window_width_m' => 1.1, 'window_height_m' => 2.0, 'sill_m' => 0.8, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.3, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 20 },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'classical' => true, 'cornice' => true }
+    },
+    'rules' => rules(levels: [3, 6], roofs: %w[hip gable], ratio: [1.6, 2.2], walls: %w[limestone blond_stone])
+  },
+  'baroque' => {
+    'label' => 'Baroque', 'period' => 'Hôtel baroque, XVIIe-XVIIIe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'ordered_facade',
+    'requires' => %w[mansard classical cornice arches glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 11 },
+      'levels' => { 'count' => 4, 'height_m' => 3.3, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 5, 'window_width_m' => 1.1, 'window_height_m' => 2.2, 'sill_m' => 0.7, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.4, 'muntin_rows' => 3, 'arch' => 'round' },
+      'roof' => { 'type' => 'mansard', 'overhang_m' => 0.15, 'pitch_deg' => 25, 'lower_pitch_deg' => 65, 'inset_m' => 0.9 },
+      'materials' => { 'wall' => 'golden_stone', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'classical' => true, 'cornice' => true }
+    },
+    'rules' => rules(levels: [3, 5], roofs: %w[mansard], ratio: [1.6, 2.4], walls: %w[golden_stone blond_stone limestone])
+  },
+  'art_deco' => {
+    'label' => 'Art déco', 'period' => 'Immeuble Art déco, 1920-1939', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'ornamental',
+    'requires' => %w[flat classical cornice glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 12 },
+      'levels' => { 'count' => 6, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 5, 'window_width_m' => 1.4, 'window_height_m' => 1.8, 'sill_m' => 0.9, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'concrete', 'roof' => 'concrete', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'classical' => true, 'cornice' => true }
+    },
+    'rules' => rules(levels: [4, 8], roofs: %w[flat], ratio: [1.0, 1.6], walls: %w[concrete light_render])
+  },
+  'art_nouveau' => {
+    'label' => 'Art nouveau', 'period' => 'Immeuble Art nouveau, 1895-1914', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'ornamental',
+    'requires' => %w[mansard arches balcony glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 11 },
+      'levels' => { 'count' => 5, 'height_m' => 3.2, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.2, 'window_height_m' => 2.0, 'sill_m' => 0.8, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.5, 'muntin_rows' => 3, 'arch' => 'round' },
+      'roof' => { 'type' => 'mansard', 'overhang_m' => 0.15, 'pitch_deg' => 25, 'lower_pitch_deg' => 65, 'inset_m' => 0.9 },
+      'materials' => { 'wall' => 'blond_stone', 'roof' => 'zinc', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'balcony' => true }
+    },
+    'rules' => rules(levels: [4, 7], roofs: %w[mansard], ratio: [1.4, 2.2], walls: %w[blond_stone limestone])
+  },
+  'mediterraneen_cycladique' => {
+    'label' => 'Méditerranéen — cycladique', 'period' => 'Maison des Cyclades, XIXe-XXe siècle', 'regions' => %w[cyclades], 'typologies' => %w[residential mixed_use], 'family' => 'masonry_vernacular',
+    'requires' => %w[flat arches shutters glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 8, 'depth_m' => 8 },
+      'levels' => { 'count' => 2, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 0.8, 'window_height_m' => 1.3, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 0.9, 'door_height_m' => 2.2, 'arch' => 'round' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'light_render', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'painted_wood_blue' },
+      'features' => { 'glazing' => true, 'shutters' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[flat], ratio: [1.3, 2.0], walls: %w[light_render])
+  },
+  'mediterraneen_andalou' => {
+    'label' => 'Méditerranéen — andalou', 'period' => 'Maison andalouse, XVIIIe-XIXe siècle', 'regions' => %w[andalousie], 'typologies' => %w[residential mixed_use], 'family' => 'masonry_vernacular',
+    'requires' => %w[gable arches shutters glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 10 },
+      'levels' => { 'count' => 2, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.6, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.1, 'door_height_m' => 2.4, 'arch' => 'round' },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 20 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'terracotta_canal', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'painted_wood_green' },
+      'features' => { 'glazing' => true, 'shutters' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[hip gable], ratio: [1.3, 2.0], walls: %w[light_render ochre_render])
   }
 }.freeze
 

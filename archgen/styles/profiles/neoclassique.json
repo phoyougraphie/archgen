@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "id": "neoclassique",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "ordered_facade",
+    "revision": 1
+  },
+  "family_id": "ordered_facade",
+  "label": "Néoclassique",
+  "context": {
+    "period": "Immeuble néoclassique, fin XVIIIe-début XIXe siècle",
+    "regions": [
+      "france"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "classical",
+    "cornice",
+    "glazing",
+    "muntins"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 14,
+      "depth_m": 10
+    },
+    "levels": {
+      "count": 4,
+      "height_m": 3.2,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 5,
+      "window_width_m": 1.1,
+      "window_height_m": 2.0,
+      "sill_m": 0.8,
+      "entry_bay": 2,
+      "door_width_m": 1.2,
+      "door_height_m": 2.3,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.3,
+      "pitch_deg": 20
+    },
+    "materials": {
+      "wall": "limestone",
+      "roof": "slate",
+      "frames": "painted_wood",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "classical": true,
+      "cornice": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.6,
+        "max": 2.2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 3,
+        "max": 6
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "hip",
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "limestone",
+          "blond_stone"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

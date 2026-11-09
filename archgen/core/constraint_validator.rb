@@ -51,6 +51,8 @@ module Archgen
           out << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'stepped_gable_overhang', limit: 0.05)
         end
         check_timber(data, out)
+        out << Diagnostic.error('E_SCHEMA', '/features/classical', reason: 'classical_false_written') if data['features'].key?('classical') && !data['features']['classical']
+        out << Diagnostic.error('E_SCHEMA', '/features/classical', reason: 'classical_with_timber') if data['features']['classical'] && data['features']['timber_frame']
         cladding = data['features']['cladding'] == true
         out << Diagnostic.error('E_SCHEMA', '/features/cladding', reason: 'cladding_false_written') if data['features'].key?('cladding') && !cladding
         out << Diagnostic.error('E_SCHEMA', '/materials/cladding', reason: 'cladding_material_required') if cladding && !data['materials'].key?('cladding')

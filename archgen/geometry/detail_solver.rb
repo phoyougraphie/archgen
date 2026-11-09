@@ -106,6 +106,8 @@ module Archgen
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
         cross = ridge == 'perpendicular'
+        problems.concat(OrnamentSolver.arch_problems(openings, config)) if config['facade']['arch']
+        problems.concat(OrnamentSolver.classical_problems(footprint, openings, config, levels)) if features['classical']
         problems.concat(genoise_problems(levels, openings, config)) if genoise?(config) && !cross
         dormers = features['dormers'] && !cross ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
         problems.concat(dormers.errors) if dormers && !dormers.ok?
@@ -120,6 +122,8 @@ module Archgen
         nodes += genoise(footprint, levels, config) if genoise?(config) && !cross
         nodes += stepped_gable(footprint, levels, config) if features['stepped_gable'] && cross
         nodes += TimberSolver.call(footprint: footprint, levels: levels, openings: openings, config: config, row: row) if features['timber_frame']
+        nodes += OrnamentSolver.arches(footprint, openings, config) if config['facade']['arch']
+        nodes += OrnamentSolver.classical(footprint, openings, config, levels.last.top_z_m) if features['classical']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m
@@ -128,6 +132,8 @@ module Archgen
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings += dormers.warnings if dormers
+        porch_warning = features['classical'] ? OrnamentSolver.porch_warning(footprint, openings, config) : nil
+        warnings << porch_warning if porch_warning
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/genoise', reason: 'genoise_roof') if features['genoise'] && (!genoise?(config) || cross)
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/dormers', reason: 'dormer_ridge') if features['dormers'] && cross
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/stepped_gable', reason: 'stepped_gable_corner') if features['stepped_gable'] && !cross

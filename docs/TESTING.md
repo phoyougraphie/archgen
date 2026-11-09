@@ -60,6 +60,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U53 | Faîtage perpendiculaire (AG-079) : écrit seulement s'il est perpendiculaire, refusé hors deux pans ; pignons sur rue, faîtage de l'avant à l'arrière ; plan parallèle inchangé ; cheminées au faîtage, lucarnes et génoise omises et dites ; rangée sans débord latéral ; parcelle d'angle gardée parallèle et dite. |
 | U54 | Pignon à redents et bardage (AG-080, AG-081) : marches au-dessus de la pente, pinacle, devant le pignon ; refus sans faîtage perpendiculaire et avec débord ; angle omis et dit ; dernier niveau, pignons et balcons en bois, deux modes ; refus dépareillés. |
 | U55 | Pan de bois (AG-083) : matière écrite avec l'option, refus avec encadrements, volets, corniche, bardage ; sablières, huisseries, écharpes aux étages seulement ; aucune pièce devant une baie ; côtés pour un bâtiment seul, nus en rangée ; deux modes. |
+| U56-U57 | Arcs et ornements (AG-086, AG-087) : baies droites non écrites ; écoinçons au-dessus des naissances, plein cintre et brisé, porte comprise ; baie trop basse refusée ; deux modes, LOD 0 ; pilastres, soubassement coupé par la porte, fronton ; refus pilastre et pan de bois. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

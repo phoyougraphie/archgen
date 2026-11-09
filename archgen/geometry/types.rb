@@ -60,7 +60,7 @@ module Archgen
 
     # Construction des nœuds du plan, en données simples sérialisables.
     module Node
-      CATEGORIES = %w[building walls wall slabs slab roof roof_face gable_end details frame cornice balcony surround fascia chimney shutter dormer genoise stepped_gable timber].freeze
+      CATEGORIES = %w[building walls wall slabs slab roof roof_face gable_end details frame cornice balcony surround fascia chimney shutter dormer genoise stepped_gable timber arch classical].freeze
 
       module_function
 

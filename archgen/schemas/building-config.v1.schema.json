@@ -167,6 +167,12 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 6
+        },
+        "arch": {
+          "enum": [
+            "round",
+            "pointed"
+          ]
         }
       },
       "additionalProperties": false,
@@ -325,6 +331,9 @@
           "type": "boolean"
         },
         "timber_frame": {
+          "type": "boolean"
+        },
+        "classical": {
           "type": "boolean"
         }
       },

@@ -1,5 +1,20 @@
 # Journal des versions
 
+## 0.17.0
+
+Arcs et ornements (AG-086 à AG-089). Moteur de géométrie 1 inchangé ; l'existant garde son style et son plan. Recettes H26 à H32 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Arcs** : `facade.arch` plein cintre ou brisé, écoinçons devant le haut des baies (AG-086).
+- **Ornements classiques** : `features.classical`, pilastres, soubassement, fronton d'entrée (AG-087).
+- **Neuf styles** : maison romane, maison gothique, Renaissance, Néoclassique, Baroque, Art déco, Art nouveau, Méditerranéen cycladique et andalou (AG-088).
+- **Panneaux** : liste Arcs, case Ornements classiques (AG-089).
+
+**Limites connues**
+
+- Approchés : avant-corps baroque, reliefs Art déco, courbes Art nouveau, patio andalou. Reportés : gradins, oriels, voûtes.
+
 ## 0.16.0
 
 Pan de bois (AG-083 à AG-085). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H31 dans SketchUp à faire.

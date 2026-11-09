@@ -147,6 +147,7 @@ module Archgen
         features.delete('dormers') unless features['dormers']
         features.delete('genoise') unless features['genoise']
         features.delete('stepped_gable') unless features['stepped_gable']
+        features.delete('classical') unless features['classical']
         # AG-083 : pan de bois et sa matière vont ensemble.
         if features['timber_frame']
           materials['timber'] ||= DEFAULT_TIMBER
@@ -176,6 +177,8 @@ module Archgen
           features.delete('muntins')
           facade.delete('muntin_rows')
         end
+        # AG-086 : des baies droites n'écrivent pas d'arc.
+        facade.delete('arch') unless %w[round pointed].include?(facade['arch'])
         config.merge('features' => features, 'materials' => materials, 'facade' => facade)
       end
       private_class_method :with_glazing
