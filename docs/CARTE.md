@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-074 fait (génoises). Suite : AG-075, Provençal et matières régionales. Recettes H26 à H28 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+  - Prochaine action — AG-075 fait (Provençal, matières). Suite : AG-076, Breton. Recettes H26 à H28 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -104,6 +104,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-09 AG-073 — Un îlot Toulousain révision 3 par défaut aurait été refusé : les volets d'une fenêtre voisine du passage de porche manquaient de place. Ces volets sont omis et dits ; les autres manques restent refusés. Défauts des trois styles vérifiés en bâtiment, rue, rue à angle et îlot avant de publier.
     - 2026-11-09 J13 cadré — Demande : tous les styles, éléments créés au fur et à mesure ; choix de détail délégués (ADR-48). Lots du moins au plus de géométrie nouvelle ; une variante régionale est un profil à part, sans capacité regional_variant.
     - 2026-11-09 AG-074 — Génoise abaissée sous la peau du toit prolongée : posée à H, son rang du haut aurait percé le débord.
+    - 2026-11-09 AG-075 — Les profils régionaux sont écrits par un script qui refuse d'écraser une révision publiée changée ; un test commun (U52) vérifie chaque profil en bâtiment, rue, rue à angle et îlot.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -202,7 +203,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-073 Styles et panneaux, RBZ 0.13.0 — révision 3 Haussmannien et Toulousain, cases aux trois panneaux ; H28 à faire.
   - J13 Styles régionaux maçonnés — ADR-48. AG-074 à 078. Ensuite J14 à J17 : pignon sur rue, pan de bois, arcs et ornements, volumes modernes. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
     - [fait] AG-074 Génoises — features.genoise ; geometry/detail_solver (rangs, onglet, refus). U51 vert.
-    - [afaire] AG-075 Provençal, matières régionales — mas, maison de village. U52.
+    - [fait] AG-075 Provençal, matières régionales — profils provencal_mas, provencal_village ; scripts/regional_profiles.rb ; dix matières. U52 vert.
     - [afaire] AG-076 Breton — longère, maison de bourg. U52.
     - [afaire] AG-077 Lyonnais, Bordelais, Parisien faubourien — trois profils. U52.
     - [afaire] AG-078 Panneaux, RBZ 0.14.0 — styles par famille, case Génoise. H29.

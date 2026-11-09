@@ -143,7 +143,7 @@ class DialogControllerTest < Minitest::Test
   def test_init_gives_ordered_profiles_catalogues_and_limits
     result = call('init')['result']
     assert_equal 'new', result['mode']
-    assert_equal %w[haussmann toulousain brutalist], result['profiles'].map { |p| p['id'] }
+    assert_equal %w[haussmann toulousain provencal_mas provencal_village brutalist], result['profiles'].map { |p| p['id'] }
     result['profiles'].each do |profile|
       assert_equal registry.fetch(profile['id']).value.revision, profile['revision'], 'dernière révision seule (AG-064)'
       refute_empty profile['label']

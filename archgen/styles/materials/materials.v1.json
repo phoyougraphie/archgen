@@ -21,6 +21,46 @@
       "label": "Bois peint bleu pastel",
       "srgb": "#8FAFC4"
     },
+    "ochre_render": {
+      "label": "Enduit ocre",
+      "srgb": "#C99A5B"
+    },
+    "light_render": {
+      "label": "Enduit clair",
+      "srgb": "#E9E1D2"
+    },
+    "blond_stone": {
+      "label": "Pierre blonde",
+      "srgb": "#D8C49A"
+    },
+    "golden_stone": {
+      "label": "Pierre dorée",
+      "srgb": "#C8A060"
+    },
+    "granite": {
+      "label": "Granit",
+      "srgb": "#8E8B86"
+    },
+    "schist": {
+      "label": "Schiste",
+      "srgb": "#6F6A63"
+    },
+    "slate": {
+      "label": "Ardoise",
+      "srgb": "#4A4F56"
+    },
+    "mechanical_tile": {
+      "label": "Tuile mécanique",
+      "srgb": "#A4553A"
+    },
+    "painted_wood_grey": {
+      "label": "Bois peint gris",
+      "srgb": "#8C9496"
+    },
+    "painted_wood_red": {
+      "label": "Bois peint rouge",
+      "srgb": "#8E2B23"
+    },
     "glass": {
       "label": "Verre",
       "srgb": "#9FB8C4",

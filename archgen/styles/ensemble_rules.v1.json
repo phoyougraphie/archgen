@@ -2,6 +2,8 @@
   "schema_version": 1,
   "access_forms": {
     "brutalist": { "1": "gap", "2": "gap" },
+    "provencal_mas": { "1": "gap" },
+    "provencal_village": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }
