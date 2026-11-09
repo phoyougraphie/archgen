@@ -61,6 +61,9 @@ module Archgen
       SURROUND_BAR_M = 0.04
       SURROUND_DEPTH_M = 0.03
       HEAD_MARGIN_M = 0.10
+      FASCIA_DEPTH_M = 0.10
+      FASCIA_Z_M = [0.50, 0.10].freeze # sous le plancher du premier étage
+      SHOP_DOOR_M = 0.90
       EPS = Core::Quant::EPSILON
 
       module_function
@@ -73,17 +76,42 @@ module Archgen
         problems.concat(cornice_problems(config, levels, openings)) if features['cornice']
         balcony_levels = features['balcony'] ? levels.select { |l| BALCONY_LEVELS.include?(l.index) } : []
         problems.concat(balcony_problems(config, balcony_levels, openings))
+        problems.concat(fascia_problems(levels, openings)) if shop?(config)
         return Core::Result.fail(problems) unless problems.empty?
 
         definitions = {}
         nodes = frames(footprint, openings, config, definitions)
         nodes += surrounds(footprint, openings, config) if features['surrounds']
         nodes << cornice(footprint, levels, config) if features['cornice']
+        fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
+        nodes << fascia_node if fascia_node
         built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
+
+      def shop?(config)
+        config['ground_floor'] == 'shop'
+      end
+      private_class_method :shop?
+
+      def fascia_span(levels)
+        top = levels.first.top_z_m
+        [Core::Quant.q(top - FASCIA_Z_M[0]), Core::Quant.q(top - FASCIA_Z_M[1])]
+      end
+      private_class_method :fascia_span
+
+      # AG-065 : le bandeau passerait devant la porte de l'immeuble ou le passage du porche.
+      def fascia_problems(levels, openings)
+        bottom = fascia_span(levels)[0]
+        front(openings).filter_map do |opening|
+          next unless opening.level_index.zero? && opening.kind != 'shopfront' && opening.z_max_m > bottom + EPS
+
+          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/shop/height_m', reason: 'fascia_over_entrance', id: opening.id, limit: bottom)
+        end
+      end
+      private_class_method :fascia_problems
 
       def balcony_warning(balcony_levels)
         reason = balcony_levels.empty? ? 'no_balcony_level' : 'balcony_no_room'
@@ -133,8 +161,9 @@ module Archgen
         glass = config['features']['glazing'] ? config['materials']['glass'] : nil
         wall = config['structure']['wall_m']
         recess = config['mode'] == 'structural' ? [FRAME_MAX_RECESS_M, wall - FRAME_BAR_M].min : 0.0
+        entrance = entrance_u(openings)
         openings.reject { |opening| opening.kind == 'porch' }.map do |opening|
-          definition_id = frame_definition(opening, material, glass, definitions)
+          definition_id = frame_definition(opening, material, glass, definitions, door_side(opening, entrance))
           facade = footprint.facade(opening.facade_id)
           Node.leaf("frame/#{opening.facade_id}/#{opening.level_index}/#{opening.bay_index}", 'frame',
                     { 'type' => 'instance', 'definition_id' => definition_id, 'matrix' => frame_matrix(facade, opening, recess) })
@@ -142,14 +171,30 @@ module Archgen
       end
       private_class_method :frames
 
+      # Milieu de l'entrée de l'immeuble (porte ou passage) sur la façade avant.
+      def entrance_u(openings)
+        entry = front(openings).find { |o| o.level_index.zero? && %w[door porch].include?(o.kind) }
+        entry && ((entry.u_min_m + entry.u_max_m) / 2.0)
+      end
+      private_class_method :entrance_u
+
+      # La porte vitrée d'une vitrine prend son bord le plus proche de l'entrée de l'immeuble.
+      def door_side(opening, entrance)
+        return nil unless opening.kind == 'shopfront'
+
+        entrance && entrance < (opening.u_min_m + opening.u_max_m) / 2.0 ? 'left' : 'right'
+      end
+      private_class_method :door_side
+
       # Une définition par type, largeur, hauteur et matériau : le recul vit dans la matrice.
       # Sans vitrage, l'identifiant et le contenu restent ceux d'avant AG-064.
-      def frame_definition(opening, material, glass, definitions)
+      def frame_definition(opening, material, glass, definitions, side = nil)
         width = Core::Quant.q(opening.u_max_m - opening.u_min_m)
         height = Core::Quant.q(opening.z_max_m - opening.z_min_m)
         id = "frame/#{opening.kind}/#{micrometres(width)}x#{micrometres(height)}/#{material}"
         id += "/glazed/#{glass}" if glass
-        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass) : [])
+        id += "/door-#{side}" if glass && side
+        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass, side) : [])
         id
       end
       private_class_method :frame_definition
@@ -167,7 +212,7 @@ module Archgen
           'right' => [width - bar, width, 0.0, height],
           'top' => [bar, width - bar, height - bar, height]
         }
-        bars['bottom'] = [bar, width - bar, 0.0, bar] if kind == 'window'
+        bars['bottom'] = [bar, width - bar, 0.0, bar] unless kind == 'door'
         bars.map do |name, (x0, x1, z0, z1)|
           Node.leaf("bar/#{name}", 'frame', Boxes.solid(x0, x1, 0.0, bar, z0, z1, material))
         end
@@ -176,11 +221,12 @@ module Archgen
 
       # AG-064 : vitre dans le jour d'une fenêtre ; vantail plein d'une porte, imposte vitrée
       # au-dessus de TRANSOM_FROM_M pour une porte haute. Tout reste dans la profondeur du cadre.
-      def joinery(kind, width, height, material, glass)
+      def joinery(kind, width, height, material, glass, side = nil)
         bar = FRAME_BAR_M
         x0 = bar
         x1 = width - bar
         return [pane(x0, x1, bar, height - bar, glass)] if kind == 'window'
+        return shop_joinery(x0, x1, height, material, glass, side) if kind == 'shopfront'
 
         top = height - bar
         return [leaf(x0, x1, 0.0, top, material)] unless height > TRANSOM_FROM_M + EPS
@@ -190,6 +236,26 @@ module Archgen
          pane(x0, x1, TRANSOM_Z_M + bar, top, glass)]
       end
       private_class_method :joinery
+
+      # AG-065 : vitre fixe et porte vitrée de SHOP_DOOR_M, séparées par un montant.
+      def shop_joinery(x0, x1, height, material, glass, side)
+        bar = FRAME_BAR_M
+        z0 = bar
+        z1 = height - bar
+        if side == 'left'
+          door = [x0, x0 + SHOP_DOOR_M]
+          mullion = [door[1], door[1] + bar]
+          fixed = [mullion[1], x1]
+        else
+          door = [x1 - SHOP_DOOR_M, x1]
+          mullion = [door[0] - bar, door[0]]
+          fixed = [x0, mullion[0]]
+        end
+        [Node.leaf('bar/mullion', 'frame', Boxes.solid(*mullion, 0.0, bar, z0, z1, material)),
+         Node.leaf('pane/door', 'frame', Boxes.solid(*door, PANE_Y_M[0], PANE_Y_M[1], z0, z1, glass)),
+         pane(*fixed, z0, z1, glass)]
+      end
+      private_class_method :shop_joinery
 
       def pane(x0, x1, z0, z1, glass)
         Node.leaf('pane', 'frame', Boxes.solid(x0, x1, PANE_Y_M[0], PANE_Y_M[1], z0, z1, glass))
@@ -259,19 +325,41 @@ module Archgen
       end
       private_class_method :balconies
 
-      # De marge à marge, comme ailleurs, mais sans franchir l'onglet d'un angle rentrant.
       def mitred_balconies(footprint, balcony_levels, margin, config)
-        y = -BALCONY_DEPTH_M
-        near = [margin, footprint.width_m - margin]
-        far = [[margin, footprint.left_x(y)].max, [footprint.width_m - margin, footprint.right_x(y)].min]
-        return [] if far[1] - far[0] < Core::Quant::MIN_EDGE_M
+        ring = mitred_ring(footprint, margin, BALCONY_DEPTH_M)
+        return [] unless ring
 
-        ring = [[far[0], y], [far[1], y], [near[1], 0.0], [near[0], 0.0]]
         balcony_levels.map do |level|
           Node.leaf("balcony/#{level.index}", 'balcony', Boxes.prism(ring, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m, config['materials']['wall']))
         end
       end
       private_class_method :mitred_balconies
+
+      # De marge à marge, comme ailleurs, mais sans franchir l'onglet d'un angle rentrant.
+      def mitred_ring(footprint, margin, depth)
+        y = -depth
+        near = [margin, footprint.width_m - margin]
+        far = [[margin, footprint.left_x(y)].max, [footprint.width_m - margin, footprint.right_x(y)].min]
+        return nil if far[1] - far[0] < Core::Quant::MIN_EDGE_M
+
+        [[far[0], y], [far[1], y], [near[1], 0.0], [near[0], 0.0]]
+      end
+      private_class_method :mitred_ring
+
+      # AG-065 : bandeau d'enseigne de marge à marge, entre les vitrines et le premier plancher.
+      def fascia(footprint, levels, config)
+        z0, z1 = fascia_span(levels)
+        margin = config['facade']['margin_m']
+        material = config['materials']['frames']
+        unless footprint.trapezoid?
+          facade = footprint.facade('front')
+          return Node.leaf('fascia', 'fascia', Boxes.on_facade(facade, margin, facade.length_m - margin, z0, z1, -FASCIA_DEPTH_M, 0.0, material))
+        end
+
+        ring = mitred_ring(footprint, margin, FASCIA_DEPTH_M)
+        ring && Node.leaf('fascia', 'fascia', Boxes.prism(ring, z0, z1, material))
+      end
+      private_class_method :fascia
     end
   end
 end

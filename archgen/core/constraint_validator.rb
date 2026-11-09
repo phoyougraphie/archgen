@@ -5,6 +5,8 @@ module Archgen
     # Contraintes transversales d'une configuration effective. Elles sont hard :
     # bloquantes dans tous les modes de fidélité, indépendantes des profils.
     module ConstraintValidator
+      SHOP_MIN_HEIGHT_M = 3.2
+
       module_function
 
       def call(config, profile: nil, materials: nil, fidelity_rules: nil)
@@ -16,6 +18,7 @@ module Archgen
         check_roof(data, out)
         check_materials(data, materials, out) if materials
         check_glazing(data, out)
+        check_shop(data, out)
         out.concat(fidelity_rules.call(data, profile)) if fidelity_rules && profile
         out.sort_by(&:sort_key)
       end
@@ -23,6 +26,9 @@ module Archgen
       def wall_top_m(data)
         levels = data['levels']
         return levels['heights_m'].sum unless levels['heights_m'].empty?
+
+        shop = data.dig('shop', 'height_m')
+        return shop + (levels['height_m'] * (levels['count'] - 1)) if shop && data['ground_floor'] == 'shop'
 
         levels['height_m'] * levels['count']
       end
@@ -36,6 +42,26 @@ module Archgen
         out << Diagnostic.error('E_SCHEMA', '/features/glazing', reason: 'glazing_false_written') if data['features'].key?('glazing') && !glazing
       end
       private_class_method :check_glazing
+
+      # AG-065 : la hauteur de commerce n'existe qu'avec un rez-de-chaussée commerçant, et
+      # seulement sans hauteurs par niveau, qui priment.
+      def check_shop(data, out)
+        shop = data['ground_floor'] == 'shop'
+        height = data.key?('shop')
+        heights = data['levels']['heights_m']
+        out << Diagnostic.error('E_SCHEMA', '/shop', reason: 'shop_without_ground_floor') if height && !shop
+        return unless shop
+
+        if heights.any?
+          out << Diagnostic.error('E_SCHEMA', '/shop/height_m', reason: 'shop_with_heights') if height
+          if heights.first < SHOP_MIN_HEIGHT_M - Quant::EPSILON
+            out << Diagnostic.error('E_SCHEMA', '/levels/heights_m/0', reason: 'shop_ground_too_low', limit: SHOP_MIN_HEIGHT_M, value: heights.first)
+          end
+        elsif !height
+          out << Diagnostic.error('E_SCHEMA', '/shop/height_m', reason: 'shop_height_required')
+        end
+      end
+      private_class_method :check_shop
 
       def check_name(data, out)
         trimmed = data['name'].strip

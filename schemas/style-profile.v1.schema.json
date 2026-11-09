@@ -323,6 +323,17 @@
             }
           },
           "additionalProperties": false
+        },
+        "shop": {
+          "type": "object",
+          "properties": {
+            "height_m": {
+              "type": "number",
+              "minimum": 3.2,
+              "maximum": 6
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

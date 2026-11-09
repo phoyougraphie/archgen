@@ -209,10 +209,17 @@ module Archgen
           path = "/profiles/#{profile.id}@#{profile.revision}"
           unknown = profile.requires - KNOWN_CAPABILITIES
           error(path, 'unknown_capability', unknown: unknown) unless unknown.empty?
-          candidate = profile.defaults.merge('schema_version' => 1, 'name' => 'Validation', 'profile' => profile.ref)
-          problems = @config_validator.validate(candidate)
-          problems = ConstraintValidator.call(@config_validator.normalize(candidate), materials: @materials) if problems.empty?
+          base = profile.defaults.reject { |key, _| key == 'shop' }.merge('schema_version' => 1, 'name' => 'Validation', 'profile' => profile.ref)
+          candidates = [base]
+          # AG-065 : une hauteur de commerce du style se juge sur un rez-de-chaussée commerçant.
+          candidates << base.merge('ground_floor' => 'shop', 'shop' => profile.defaults['shop']) if profile.defaults.key?('shop')
+          problems = candidates.flat_map { |candidate| defaults_problems(candidate) }.uniq { |d| [d.code, d.path, d.params] }
           problems.select(&:error?).each { |d| error("#{path}/defaults#{d.path}", d.params['reason'].to_s, code: d.code) }
+        end
+
+        def defaults_problems(candidate)
+          problems = @config_validator.validate(candidate)
+          problems.empty? ? ConstraintValidator.call(@config_validator.normalize(candidate), materials: @materials) : problems
         end
       end
       private_constant :Loader

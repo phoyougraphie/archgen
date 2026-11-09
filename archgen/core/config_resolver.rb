@@ -6,7 +6,8 @@ module Archgen
     module ConfigResolver
       TOP_LEVEL_STYLE_BLOCKS = %w[facade roof structure materials features].freeze
       DEFAULT_GLASS = 'glass'
-      KEPT_ON_STYLE_CHANGE =%w[name mode lod seed fidelity footprint levels building_type].freeze
+      DEFAULT_SHOP_HEIGHT_M = 4.0
+      KEPT_ON_STYLE_CHANGE = %w[name mode lod seed fidelity footprint levels building_type ground_floor].freeze
       ROOF_PRESETS = {
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
         'gable' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
@@ -113,12 +114,12 @@ module Archgen
         return Result.fail(problems) unless problems.empty?
 
         merged = Merge.leaves(start, draft.reject { |k, _| %w[roof schema_version profile].include?(k) })
-        merged = with_glazing(merged.merge(
+        merged = with_shop(with_glazing(merged.merge(
                                 'schema_version' => 1,
                                 'name' => canonical_name(merged['name']),
                                 'profile' => profile.ref,
                                 'roof' => roof
-                              ))
+                              )), draft, profile)
         effective = intake.effective(merged)
         return effective unless effective.ok?
 
@@ -140,6 +141,18 @@ module Archgen
         config.merge('features' => features, 'materials' => materials)
       end
       private_class_method :with_glazing
+
+      # AG-065 : un rez-de-chaussée de logement n'écrit ni `ground_floor` ni `shop`. En commerce,
+      # la hauteur vient du brouillon, sinon du style, sinon de DEFAULT_SHOP_HEIGHT_M ; des
+      # hauteurs par niveau saisies priment, et une hauteur de commerce donnée avec elles est refusée.
+      def with_shop(config, draft, profile)
+        return config.reject { |key, _| %w[ground_floor shop].include?(key) } unless config['ground_floor'] == 'shop'
+        return config.reject { |key, _| key == 'shop' } if config['levels']['heights_m'].any? && !draft.dig('shop', 'height_m')
+
+        height = draft.dig('shop', 'height_m') || profile.defaults.dig('shop', 'height_m') || DEFAULT_SHOP_HEIGHT_M
+        config.merge('shop' => { 'height_m' => height })
+      end
+      private_class_method :with_shop
 
       def canonical_name(name)
         name.nil? ? BuildingConfig::DEFAULT_NAME : name.strip

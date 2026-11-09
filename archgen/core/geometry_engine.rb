@@ -17,7 +17,7 @@ module Archgen
         inner = row && footprint.trapezoid? ? Geometry::FootprintSolver.inner_problems(footprint, input['structure']['wall_m']) : []
         return Result.fail(inner) unless inner.empty?
 
-        levels = Geometry::FloorPlanner.call(input['levels'], slab_m: input['structure']['slab_m'])
+        levels = Geometry::FloorPlanner.call(input['levels'], slab_m: input['structure']['slab_m'], ground_m: input.dig('shop', 'height_m'))
         facade = row ? input['facade'].merge('rear_bays' => row.fetch(:rear_bays)) : input['facade']
         candidates = Geometry::FacadeSolver.call(footprint, levels, facade, wall_m: input['structure']['wall_m'])
         return candidates unless candidates.ok?

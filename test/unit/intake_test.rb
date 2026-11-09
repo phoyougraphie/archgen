@@ -165,7 +165,7 @@ class IntakeTest < Minitest::Test
 
   def set_path(hash, path, value)
     copy = JSON.parse(JSON.generate(hash))
-    path[0..-2].reduce(copy) { |h, k| h[k] }[path.last] = value
+    path[0..-2].reduce(copy) { |h, k| h[k] ||= {} }[path.last] = value
     copy
   end
 end

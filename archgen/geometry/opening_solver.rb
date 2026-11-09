@@ -7,12 +7,19 @@ module Archgen
     module OpeningSolver
       EPS = Core::Quant::EPSILON
       CLEARANCE = Core::Quant::CLEARANCE_M
+      # AG-065 : vitrine d'une travée de rez-de-chaussée commerçant (départ).
+      SHOPFRONT_PIER_M = 0.30
+      SHOPFRONT_BASE_M = 0.15
+      SHOPFRONT_HEAD_M = 0.60
+      SHOPFRONT_MIN_WIDTH_M = 1.20
 
       module_function
 
       def call(candidates, config, footprint:, levels:)
-        openings = candidates.map { |c| build(c, config, levels) }
+        pitch = shop_pitch(config, footprint)
+        openings = candidates.map { |c| shopfront?(c, config) ? shopfront(c, pitch, levels) : build(c, config, levels) }
         problems = openings.flat_map { |o| check_extents(o, config, footprint, levels) }
+        problems.concat(narrow_shopfronts(openings))
         problems.concat(check_pairs(openings, config))
         return Core::Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
@@ -41,6 +48,41 @@ module Archgen
       end
       private_class_method :build
 
+      # Toutes les travées avant du rez-de-chaussée, sauf l'entrée de l'immeuble, en commerce.
+      def shopfront?(candidate, config)
+        config['ground_floor'] == 'shop' && candidate.facade_id == 'front' && candidate.level_index.zero? &&
+          candidate.bay_index != config['facade']['entry_bay']
+      end
+      private_class_method :shopfront?
+
+      def shop_pitch(config, footprint)
+        return nil unless config['ground_floor'] == 'shop'
+
+        facade = config['facade']
+        FacadeSolver.frame(footprint.facade('front'), facade['margin_m'], facade['front_bays'], config['structure']['wall_m'])[1]
+      end
+      private_class_method :shop_pitch
+
+      # Sur la trame, sans décalage : un trumeau de SHOPFRONT_PIER_M de chaque côté.
+      def shopfront(candidate, pitch, levels)
+        half = (pitch / 2.0) - SHOPFRONT_PIER_M
+        Opening.new(
+          id: "opening/front/0/#{candidate.bay_index}", facade_id: 'front', level_index: 0, bay_index: candidate.bay_index,
+          kind: 'shopfront',
+          u_min_m: Core::Quant.q(candidate.center_u_m - half), u_max_m: Core::Quant.q(candidate.center_u_m + half),
+          z_min_m: SHOPFRONT_BASE_M, z_max_m: Core::Quant.q(levels.first.top_z_m - SHOPFRONT_HEAD_M)
+        )
+      end
+      private_class_method :shopfront
+
+      # Jamais rétrécie en silence : une travée trop étroite pour une vitrine est refusée.
+      def narrow_shopfronts(openings)
+        openings.select { |o| o.kind == 'shopfront' && o.u_max_m - o.u_min_m < SHOPFRONT_MIN_WIDTH_M - EPS }.map do |o|
+          clearance('/facade/front_bays', 'shopfront_too_narrow', o, limit: SHOPFRONT_MIN_WIDTH_M, value: Core::Quant.q(o.u_max_m - o.u_min_m))
+        end
+      end
+      private_class_method :narrow_shopfronts
+
       JITTER_GRID_M = 0.005
 
       def jitter(candidate, config)
@@ -58,13 +100,16 @@ module Archgen
       end
       private_class_method :jitter
 
+      WIDTH_PATHS = { 'door' => '/facade/door_width_m', 'shopfront' => '/facade/front_bays' }.freeze
+      HEIGHT_PATHS = { 'door' => '/facade/door_height_m', 'shopfront' => '/shop/height_m' }.freeze
+
       def width_path(opening)
-        opening.kind == 'door' ? '/facade/door_width_m' : '/facade/window_width_m'
+        WIDTH_PATHS.fetch(opening.kind, '/facade/window_width_m')
       end
       private_class_method :width_path
 
       def height_path(opening)
-        opening.kind == 'door' ? '/facade/door_height_m' : '/facade/window_height_m'
+        HEIGHT_PATHS.fetch(opening.kind, '/facade/window_height_m')
       end
       private_class_method :height_path
 

@@ -50,6 +50,9 @@
       "cornice": true,
       "balcony": true,
       "glazing": true
+    },
+    "shop": {
+      "height_m": 4.5
     }
   },
   "rules": [

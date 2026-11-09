@@ -7,8 +7,10 @@ module Archgen
     module FloorPlanner
       module_function
 
-      def call(levels, slab_m:)
+      # `ground_m` : hauteur d'un rez-de-chaussée commerçant (AG-065), sans hauteurs par niveau.
+      def call(levels, slab_m:, ground_m: nil)
         heights = levels['heights_m'].empty? ? Array.new(levels['count'], levels['height_m']) : levels['heights_m']
+        heights = [ground_m] + heights.drop(1) if ground_m && levels['heights_m'].empty?
         base = 0.0
         heights.each_with_index.map do |height, index|
           bottom = Core::Quant.q(base)

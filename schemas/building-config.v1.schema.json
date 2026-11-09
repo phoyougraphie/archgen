@@ -288,6 +288,25 @@
         "balcony",
         "surrounds"
       ]
+    },
+    "ground_floor": {
+      "enum": [
+        "shop"
+      ]
+    },
+    "shop": {
+      "type": "object",
+      "properties": {
+        "height_m": {
+          "type": "number",
+          "minimum": 3.2,
+          "maximum": 6
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "height_m"
+      ]
     }
   },
   "additionalProperties": false,

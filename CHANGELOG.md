@@ -5,6 +5,7 @@
 **Ajouts**
 
 - **Vitrage** : vitre dans chaque fenêtre, porte pleine, imposte vitrée au-dessus d'une porte haute, au niveau de détail 1. Nouvelle révision des styles Haussmannien, Toulousain et Brutaliste, vitrée ; un bâtiment, une rue ou un îlot existants gardent leur révision et ne changent pas (AG-064).
+- **Rez-de-chaussée commerçant** : réglage `ground_floor: shop`, une vitrine par travée entre trumeaux, entrée de l'immeuble gardée, bandeau d'enseigne, porte vitrée avec le vitrage ; rue entière en commerce, porche respecté. Pas encore de case au panneau (AG-067) (AG-065).
 
 ## 0.10.0
 

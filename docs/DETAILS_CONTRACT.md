@@ -38,17 +38,18 @@ Réglage `ground_floor` du bâtiment : `"dwelling"` (défaut, absent) ou `"shop"
 | Élément | Géométrie (départ) |
 |---|---|
 | **Hauteur** | Le rez-de-chaussée prend `shop.height_m` ; les étages gardent leur hauteur. Si `levels.heights_m` est saisi, il prime et `shop.height_m` est refusé (`shop_with_heights`) |
-| **Vitrines** | Toutes les travées de la façade avant au rez-de-chaussée, sauf `entry_bay`, deviennent des baies `kind = shopfront` : largeur = pas de travée − 2 × 0,30 m (trumeau de 0,30 m au moins de chaque côté), de z = 0,15 m (soubassement) à hauteur du rez-de-chaussée − 0,60 m |
+| **Vitrines** | Toutes les travées de la façade avant au rez-de-chaussée, sauf `entry_bay`, deviennent des baies `kind = shopfront` : centrées sur la trame, sans variation des baies ; largeur = pas de travée − 2 × 0,30 m (trumeau de 0,30 m de chaque côté), 1,20 m au moins ; de z = 0,15 m (soubassement) à hauteur du rez-de-chaussée − 0,60 m. Cadre de barres comme une fenêtre, traverse basse comprise |
 | **Entrée de l'immeuble** | La travée `entry_bay` garde la porte de l'immeuble |
-| **Bandeau d'enseigne** | Bande en saillie de 0,10 m, de 0,40 m de haut, entre les vitrines et le plancher du premier étage, d'une marge à l'autre ; sans texte ; matière `materials.frames` |
-| **Vitrage** | Avec `features.glazing`, chaque vitrine reçoit une vitre fixe ; une porte vitrée de 0,90 m prend le bord de la vitrine le plus proche de l'entrée de l'immeuble |
+| **Bandeau d'enseigne** | Bande en saillie de 0,10 m, de 0,40 m de haut (de rez-de-chaussée − 0,50 à − 0,10 m), d'une marge à l'autre, coupée à l'onglet sur une parcelle d'angle comme les balcons ; sans texte ; matière `materials.frames` ; LOD 1, catégorie `fascia`. S'il passait devant la porte de l'immeuble ou le passage du porche, refus `fascia_over_entrance` sur `/shop/height_m` |
+| **Vitrage** | Avec `features.glazing`, chaque vitrine reçoit une vitre fixe ; une porte vitrée de 0,90 m prend le bord de la vitrine le plus proche de l'entrée de l'immeuble (porte ou passage), séparée par un montant de 0,04 m. L'identifiant de définition prend `/door-left` ou `/door-right` |
 
-- Dégagements du contrat géométrique appliqués aux vitrines ; un trumeau trop étroit est refusé (`E_OPENING_CLEARANCE`, sur `/facade/bay_width_m` ou `/parcels/<id>/…`), jamais rétréci en silence.
-- Porche d'îlot : une parcelle à porche garde son passage ; ses vitrines s'arrêtent à 0,10 m du passage, comme les baies d'aujourd'hui.
+- Dégagements du contrat géométrique appliqués aux vitrines ; une travée trop étroite pour une vitrine de 1,20 m est refusée (`E_OPENING_CLEARANCE`, `shopfront_too_narrow`, sur `/facade/front_bays`, dans une rue `/parcels/<id>/facade/front_bays`), jamais rétrécie en silence.
+- Porche d'îlot : une parcelle à porche garde son passage ; une vitrine qu'il recouvre s'arrête à 0,10 m du passage, du côté de son milieu, si elle garde 1,20 m ; sinon elle est retirée, comme une baie d'aujourd'hui.
+- **Résolution** : `"dwelling"` n'est pas écrit, ni `shop`. En commerce, la hauteur vient du brouillon, sinon de `defaults.shop.height_m` du style (Haussmannien révision 2 : 4,5 m ; la révision 2 n'était pas encore publiée), sinon 4,0 m. Des `levels.heights_m` saisis priment : `shop` n'est pas écrit, le premier niveau doit faire 3,2 m au moins (`shop_ground_too_low`), et une hauteur de commerce donnée avec eux est refusée (`shop_with_heights`). Refus d'une configuration enregistrée dépareillée : `shop_without_ground_floor`, `shop_height_required`. Un changement de style garde `ground_floor` ; la hauteur repart du nouveau style.
 - Corniche et balcons inchangés ; le premier balcon (niveau d'index 2) monte avec le rez-de-chaussée plus haut.
 - **D-18, options.** **A, retenue (ADR-45)** : une vitrine par travée, entre trumeaux maçonnés (suit la trame, se combine avec la variation des baies). **B** : une devanture continue en applique (bois), d'une marge à l'autre, plus parisienne mais hors trame.
 - **D-19, dans une rue.** **A, retenue (ADR-45)** : commerces sur toute la rue (case du panneau de rue), puis bâtiment par bâtiment au clic droit. **B** : en plus, une proportion tirée par parcelle (par exemple 60 %), comme la variété.
-- **Tests U45.**
+- **Tests U45** (`test/unit/shop_test.rb`) : résolution et refus, hauteur du rez-de-chaussée, vitrines sur la trame sans variation, travée trop étroite refusée, bandeau et son refus, vitrine vitrée et porte côté entrée, balcon relevé, trois styles dans les deux modes, rue entière en commerce, vitrines arrêtées au porche. Empreintes de quatre ensembles types identiques avant et après. **Fait (AG-065)** : vu dans SketchUp ([image](recette/img/ag065-commerce.jpg)), sonde `test/host/ag065.rb` 9/9.
 
 ## 3. Cheminées — AG-066 (D-20)
 

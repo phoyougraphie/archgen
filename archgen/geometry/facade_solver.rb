@@ -39,7 +39,6 @@ module Archgen
         high = [side.length_m - margin, side.inner_end(wall_m)].min
         [low, (high - low) / bays]
       end
-      private_class_method :frame
 
       # `rear_bays` n'existe que pour un bâtiment de rangée, dont l'arrière a sa propre longueur.
       def bay_count(side_id, facade)
