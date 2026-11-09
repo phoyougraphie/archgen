@@ -7,7 +7,7 @@ module Archgen
     class PlanValidator
       PLANAR_TOLERANCE_M = 5e-6
       RIGID_TOLERANCE = 1e-5
-      CATEGORIES = %w[building walls wall slabs slab roof roof_face gable_end details frame cornice balcony surround fascia chimney].freeze
+      CATEGORIES = %w[building walls wall slabs slab roof roof_face gable_end details frame cornice balcony surround fascia chimney shutter].freeze
 
       def self.call(plan, materials: nil)
         new(plan, materials).call

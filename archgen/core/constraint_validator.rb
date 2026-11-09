@@ -42,6 +42,10 @@ module Archgen
         out << Diagnostic.error('E_SCHEMA', '/features/glazing', reason: 'glazing_false_written') if data['features'].key?('glazing') && !glazing
         out << Diagnostic.error('E_SCHEMA', '/features/chimneys', reason: 'chimneys_false_written') if data['features'].key?('chimneys') && !data['features']['chimneys']
         check_muntins(data, glazing, out)
+        shutters = data['features']['shutters'] == true
+        out << Diagnostic.error('E_SCHEMA', '/features/shutters', reason: 'shutters_false_written') if data['features'].key?('shutters') && !shutters
+        out << Diagnostic.error('E_SCHEMA', '/materials/shutters', reason: 'shutters_material_required') if shutters && !data['materials'].key?('shutters')
+        out << Diagnostic.error('E_SCHEMA', '/materials/shutters', reason: 'shutters_material_without_shutters') if !shutters && data['materials'].key?('shutters')
       end
       private_class_method :check_glazing
 

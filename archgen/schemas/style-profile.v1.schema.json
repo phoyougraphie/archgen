@@ -307,6 +307,10 @@
             "glass": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "shutters": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
             }
           },
           "additionalProperties": false
@@ -330,6 +334,9 @@
               "type": "boolean"
             },
             "muntins": {
+              "type": "boolean"
+            },
+            "shutters": {
               "type": "boolean"
             }
           },

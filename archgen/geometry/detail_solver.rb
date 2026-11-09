@@ -57,6 +57,9 @@ module Archgen
       MUNTIN_M = 0.02
       MUNTIN_Y_M = [0.004, 0.014].freeze
       TWO_LEAVES_FROM_M = 0.80
+      # AG-071 : battants de volet ouverts, plaqués au mur.
+      SHUTTER_THICKNESS_M = 0.03
+      SHUTTER_GAP_M = 0.01
       TRANSOM_Z_M = 2.20
       CORNICE_DEPTH_M = 0.15
       CORNICE_HEIGHT_M = 0.08
@@ -90,11 +93,13 @@ module Archgen
         balcony_levels = features['balcony'] ? levels.select { |l| BALCONY_LEVELS.include?(l.index) } : []
         problems.concat(balcony_problems(config, balcony_levels, openings))
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
+        problems.concat(shutter_problems(footprint, openings, config)) if features['shutters']
         return Core::Result.fail(problems) unless problems.empty?
 
         definitions = {}
         nodes = frames(footprint, openings, config, definitions)
         nodes += surrounds(footprint, openings, config) if features['surrounds']
+        nodes += shutters(footprint, openings, config, definitions) if features['shutters']
         nodes << cornice(footprint, levels, config) if features['cornice']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
@@ -314,6 +319,58 @@ module Archgen
         [t[0], t[1], 0.0, 0.0, -n[0], -n[1], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, origin[0], origin[1], origin[2], 1.0].map { |c| Core::Quant.q(c) }
       end
       private_class_method :frame_matrix
+
+      # AG-071 : deux battants par fenêtre, chacun la moitié de sa largeur, à l'extérieur de l'encadrement.
+      def shutter_spans(opening, config)
+        off = config['features']['surrounds'] ? SURROUND_BAR_M : 0.0
+        half = (opening.u_max_m - opening.u_min_m) / 2.0
+        [[opening.u_min_m - off - half, opening.u_min_m - off], [opening.u_max_m + off, opening.u_max_m + off + half]]
+      end
+      private_class_method :shutter_spans
+
+      # Jamais rétréci ni omis : un battant qui sort de la façade ou touche une autre baie (ou son
+      # battant) du même niveau est refusé, avec l'id de la fenêtre.
+      def shutter_problems(footprint, openings, config)
+        off = config['features']['surrounds'] ? SURROUND_BAR_M : 0.0
+        openings.select { |o| o.kind == 'window' }.filter_map do |window|
+          length = footprint.facade(window.facade_id).length_m
+          spans = shutter_spans(window, config)
+          others = openings.reject { |o| o.equal?(window) || o.facade_id != window.facade_id }
+                           .select { |o| o.z_min_m < window.z_max_m - EPS && o.z_max_m > window.z_min_m + EPS }
+          taken = others.flat_map { |o| [[o.u_min_m - off, o.u_max_m + off]] + (o.kind == 'window' ? shutter_spans(o, config) : []) }
+          clash = spans.any? { |a, b| a < -EPS || b > length + EPS || taken.any? { |c, d| a < d - EPS && b > c + EPS } }
+          next unless clash
+
+          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/shutters', reason: 'shutters_no_room', id: window.id)
+        end
+      end
+      private_class_method :shutter_problems
+
+      # Une définition par largeur, hauteur et matière ; la matrice pose chaque battant.
+      def shutters(footprint, openings, config, definitions)
+        material = config['materials']['shutters']
+        openings.select { |o| o.kind == 'window' }.flat_map do |window|
+          facade = footprint.facade(window.facade_id)
+          height = Core::Quant.q(window.z_max_m - window.z_min_m)
+          shutter_spans(window, config).each_with_index.map do |(u0, u1), side|
+            width = Core::Quant.q(u1 - u0)
+            id = "shutter/#{micrometres(width)}x#{micrometres(height)}/#{material}"
+            definitions[id] ||= [Node.leaf('leaf', 'shutter', Boxes.solid(0.0, width, 0.0, SHUTTER_THICKNESS_M, 0.0, height, material))]
+            depth = -(SHUTTER_GAP_M + SHUTTER_THICKNESS_M)
+            Node.leaf("shutter/#{window.facade_id}/#{window.level_index}/#{window.bay_index}/#{side}", 'shutter',
+                      { 'type' => 'instance', 'definition_id' => id, 'matrix' => placement_matrix(facade, Core::Quant.q(u0), window.z_min_m, depth) })
+          end
+        end
+      end
+      private_class_method :shutters
+
+      def placement_matrix(facade, u, z, depth)
+        t = facade.tangent
+        n = facade.normal
+        origin = facade.point(u, z, depth)
+        [t[0], t[1], 0.0, 0.0, -n[0], -n[1], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, origin[0], origin[1], origin[2], 1.0].map { |c| Core::Quant.q(c) }
+      end
+      private_class_method :placement_matrix
 
       def surrounds(footprint, openings, config)
         material = config['materials']['wall']

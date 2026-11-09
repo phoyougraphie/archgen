@@ -13,6 +13,14 @@
       "label": "Bois peint",
       "srgb": "#465551"
     },
+    "painted_wood_green": {
+      "label": "Bois peint vert",
+      "srgb": "#4F6B4A"
+    },
+    "painted_wood_blue": {
+      "label": "Bois peint bleu pastel",
+      "srgb": "#8FAFC4"
+    },
     "glass": {
       "label": "Verre",
       "srgb": "#9FB8C4",

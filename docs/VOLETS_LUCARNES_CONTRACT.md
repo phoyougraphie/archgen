@@ -41,6 +41,7 @@ Option `features.shutters` (booléen), LOD 1, et quatrième rôle de matière fa
 
 - Catalogue de matières : nouvelles entrées « Bois peint vert » et « Bois peint bleu pastel » (Toulousain), révision du catalogue.
 - Définitions partagées : un battant par largeur, hauteur et matière.
+- **Fait (AG-071).** `features.shutters` et `materials.shutters` (coché : `painted_wood` si rien n'est donné ; décoché : ni l'un ni l'autre). Refus d'une configuration enregistrée dépareillée : `shutters_false_written`, `shutters_material_required`, `shutters_material_without_shutters`. La place se juge contre toute baie du même niveau et de la même façade (porte, vitrine, passage compris) et contre ses battants ; un battant hors de la façade est refusé. Catalogue : `painted_wood_green`, `painted_wood_blue`. Catégorie `shutter`. Tests U49 (`test/unit/shutters_test.rb`) ; empreintes de quatre ensembles types identiques. Pas de case au panneau avant AG-073.
 - **D-25, options.** **A, retenue (ADR-47)** : battants ouverts plaqués au mur, refus localisé faute de place. **B** : persiennes repliées dans l'embrasure, invisibles de face (pas de conflit de place, mais peu lisibles en maquette).
 
 ## 3. Lucarnes — AG-072 (D-23, D-24)

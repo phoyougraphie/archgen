@@ -8,6 +8,7 @@ module Archgen
       DEFAULT_GLASS = 'glass'
       DEFAULT_SHOP_HEIGHT_M = 4.0
       DEFAULT_MUNTIN_ROWS = 3
+      DEFAULT_SHUTTERS = 'painted_wood'
       KEPT_ON_STYLE_CHANGE = %w[name mode lod seed fidelity footprint levels building_type ground_floor].freeze
       ROOF_PRESETS = {
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
@@ -140,6 +141,13 @@ module Archgen
           materials.delete('glass')
         end
         features.delete('chimneys') unless features['chimneys']
+        # AG-071 : volets et leur matière vont ensemble.
+        if features['shutters']
+          materials['shutters'] ||= DEFAULT_SHUTTERS
+        else
+          features.delete('shutters')
+          materials.delete('shutters')
+        end
         # AG-070 : petits bois avec le vitrage seulement ; leurs rangs ne s'écrivent qu'avec eux.
         facade = config['facade'].dup
         if features['muntins']

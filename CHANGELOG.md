@@ -5,6 +5,7 @@
 **Ajouts**
 
 - **Petits bois** : option `features.muntins` avec le vitrage, montant central et traverses, rangs donnés par le style ; pas encore de case au panneau (AG-070).
+- **Volets** : option `features.shutters`, deux battants ouverts par fenêtre, plaqués au mur ; matière `materials.shutters`, avec deux teintes nouvelles (vert, bleu pastel) ; refus quand la place manque ; pas encore de case au panneau (AG-071).
 
 ## 0.12.0
 
