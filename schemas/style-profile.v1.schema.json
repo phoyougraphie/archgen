@@ -341,6 +341,9 @@
             },
             "dormers": {
               "type": "boolean"
+            },
+            "genoise": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false

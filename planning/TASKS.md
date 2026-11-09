@@ -127,4 +127,16 @@ Contrat : [VOLETS_LUCARNES_CONTRACT](../docs/VOLETS_LUCARNES_CONTRACT.md). Déci
 | **AG-072 — Lucarnes** | AG-071, ADR-47 | `features.dormers` : une lucarne par travée avant, sur mansarde, deux pans et croupe ; avertissement sur toit plat ; refus faute de place ; rangées et cheminées compatibles. | Une par travée, sur chaque toit, aucune face hors parcelle. U50. |
 | **AG-073 — Styles et panneaux, RBZ 0.13.0** | AG-072, ADR-47 | Révision 3 des styles selon D-27 ; cases Petits bois, Volets, Lucarnes aux panneaux du bâtiment, de la rue et de la parcelle ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H28 à la main. |
 
+## J13 — Styles régionaux maçonnés (EXT-01)
+
+Contrat : [STYLES_REGIONAUX_CONTRACT](../docs/STYLES_REGIONAUX_CONTRACT.md). Décisions : ADR-48 (choix de détail délégués, options recommandées). Plan des lots J13 à J17 dans le contrat.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-074 — Génoises** | AG-073, ADR-48 | `features.genoise` : deux rangs en encorbellement sous l'égout, avant et arrière, deux pans et croupe ; refus avec corniche ou baie trop haute. | Rangs et saillies, avertissement sur toit plat ou mansarde, rangée d'angle. U51. |
+| **AG-075 — Provençal, matières régionales** | AG-074 | Profils Provençal — mas et — maison de village ; nouvelles matières du catalogue. | Profils valides, défauts en bâtiment, rue et îlot. U52. |
+| **AG-076 — Breton** | AG-075 | Profils Breton — longère et — maison de bourg. | Idem. U52. |
+| **AG-077 — Lyonnais, Bordelais, Parisien faubourien** | AG-076 | Trois profils, formes d'accès d'îlot. | Idem. U52. |
+| **AG-078 — Panneaux, RBZ 0.14.0** | AG-077 | Styles groupés par famille, case Génoise aux trois panneaux ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H29 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

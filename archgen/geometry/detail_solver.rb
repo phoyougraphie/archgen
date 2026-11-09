@@ -60,6 +60,10 @@ module Archgen
       # AG-071 : battants de volet ouverts, plaqués au mur.
       SHUTTER_THICKNESS_M = 0.03
       SHUTTER_GAP_M = 0.01
+      # AG-074 : génoise, rangs du haut vers le bas (hauteur, saillie).
+      GENOISE_ROWS = [[0.10, 0.16], [0.10, 0.08]].freeze
+      GENOISE_HEAD_M = 0.10
+      GENOISE_ROOFS = %w[gable hip].freeze
       TRANSOM_Z_M = 2.20
       CORNICE_DEPTH_M = 0.15
       CORNICE_HEIGHT_M = 0.08
@@ -95,6 +99,7 @@ module Archgen
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
+        problems.concat(genoise_problems(levels, openings, config)) if genoise?(config)
         dormers = features['dormers'] ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
         problems.concat(dormers.errors) if dormers && !dormers.ok?
         return Core::Result.fail(problems) unless problems.empty?
@@ -105,6 +110,7 @@ module Archgen
         skipped = clashes.select { |_, why| why == :porch }.keys
         nodes += shutters(footprint, openings.reject { |o| skipped.include?(o.id) }, config, definitions) if features['shutters']
         nodes << cornice(footprint, levels, config) if features['cornice']
+        nodes += genoise(footprint, levels, config) if genoise?(config)
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row) if features['chimneys'] && roof_top_z_m
@@ -113,9 +119,55 @@ module Archgen
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings += dormers.warnings if dormers
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/genoise', reason: 'genoise_roof') if features['genoise'] && !genoise?(config)
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/shutters', reason: 'shutters_skipped', ids: skipped.sort) unless skipped.empty?
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
+
+      def genoise?(config)
+        config['features']['genoise'] && GENOISE_ROOFS.include?(config['roof']['type'])
+      end
+      private_class_method :genoise?
+
+      # Le rang du haut s'arrête sous la peau du toit prolongée : rien ne la traverse.
+      def genoise_top(levels, config)
+        Core::Quant.q(levels.last.top_z_m - (RoofSolver.slope(config['roof']['pitch_deg']) * GENOISE_ROWS.first[1]))
+      end
+      private_class_method :genoise_top
+
+      def genoise_problems(levels, openings, config)
+        problems = []
+        problems << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/genoise', reason: 'genoise_with_cornice') if config['features']['cornice']
+        limit = Core::Quant.q(genoise_top(levels, config) - GENOISE_ROWS.sum(&:first) - GENOISE_HEAD_M)
+        openings.select { |o| %w[front rear].include?(o.facade_id) && o.z_max_m > limit + EPS }.each do |o|
+          problems << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/genoise', reason: 'genoise_head_margin', id: o.id, limit: limit)
+        end
+        problems
+      end
+      private_class_method :genoise_problems
+
+      # AG-074 : rangs de tuiles en encorbellement sous l'égout, avant et arrière.
+      def genoise(footprint, levels, config)
+        material = config['materials']['roof']
+        top = genoise_top(levels, config)
+        nodes = []
+        GENOISE_ROWS.each_with_index do |(height, depth), row|
+          z1 = Core::Quant.q(top - GENOISE_ROWS.first(row).sum(&:first))
+          z0 = Core::Quant.q(z1 - height)
+          front = footprint.facade('front')
+          if footprint.trapezoid?
+            ring = mitred_ring(footprint, 0.0, depth)
+            nodes << Node.leaf("genoise/front/#{row}", 'genoise', Boxes.prism(ring, z0, z1, material)) if ring
+          else
+            nodes << Node.leaf("genoise/front/#{row}", 'genoise', Boxes.on_facade(front, 0.0, front.length_m, z0, z1, -depth, 0.0, material))
+          end
+          rear = footprint.facade('rear')
+          trim = footprint.trapezoid? ? depth : 0.0
+          nodes << Node.leaf("genoise/rear/#{row}", 'genoise', Boxes.on_facade(rear, trim, rear.length_m - trim, z0, z1, -depth, 0.0, material))
+        end
+        nodes
+      end
+      private_class_method :genoise
 
       def shop?(config)
         config['ground_floor'] == 'shop'

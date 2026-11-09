@@ -1,5 +1,11 @@
 # Journal des versions
 
+## Non publié
+
+**Ajouts**
+
+- **Génoises** : option `features.genoise`, deux rangs de tuiles en encorbellement sous l'égout, avant et arrière, sur deux pans et croupe ; pas encore de case au panneau (AG-074).
+
 ## 0.13.0
 
 Volets, lucarnes et petits bois (AG-070 à AG-073). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde sa révision de style et son plan. Recettes H26 à H28 dans SketchUp à faire.
