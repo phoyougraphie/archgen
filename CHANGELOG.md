@@ -1,5 +1,11 @@
 # Journal des versions
 
+## Non publié
+
+**Ajouts**
+
+- **Réglages propres d'une parcelle** (format) : clé `parcels` d'une rue ou d'un îlot, pour changer les niveaux, le toit, le commerce, les cheminées, le vitrage ou la largeur d'un seul bâtiment ; le geste au clic droit vient avec AG-069 (AG-068).
+
 ## 0.11.0
 
 Détails de bâtiment (AG-064 à AG-067) : vitrage, rez-de-chaussée commerçant, cheminées. Moteur de géométrie 1 inchangé ; un bâtiment, une rue ou un îlot existants gardent leur plan. Recette H26 dans SketchUp à faire.

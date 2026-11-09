@@ -26,6 +26,7 @@ module Archgen
 
           parcels = EnsembleVariety.assign(settings, parcels)
         end
+        parcels = EnsembleParcels.attach(settings, parcels)
         prepared = parcels.map { |parcel| ParcelBuilding.prepare(settings, parcel, registry: registry, intake: intake) }
         errors = prepared.flat_map(&:errors)
         return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
@@ -37,10 +38,13 @@ module Archgen
       def layout_for(settings, registry:, rules: nil)
         layout = Geometry::ParcelLayout.call(settings)
         return layout unless layout.ok?
-        return Result.ok(layout.value.merge('accesses' => [])) unless settings.dig('trace', 'closed')
+        return EnsembleParcels.layout(settings, layout.value.merge('accesses' => [])) unless settings.dig('trace', 'closed')
 
         form = access_form(settings, registry, rules || Composition.ensemble_rules)
-        form.ok? ? Geometry::AccessPlanner.call(layout.value, settings, form: form.value) : form
+        return form unless form.ok?
+
+        planned = Geometry::AccessPlanner.call(layout.value, settings, form: form.value)
+        planned.ok? ? EnsembleParcels.layout(settings, planned.value) : planned
       end
 
       def digest(plan)

@@ -63,6 +63,7 @@ module Archgen
       core/plan_projection
       core/geometry_engine
       core/ensemble_variety
+      core/ensemble_parcels
       core/parcel_building
       core/ensemble_engine
       core/ensemble_site

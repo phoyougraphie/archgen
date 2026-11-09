@@ -144,6 +144,10 @@
       },
       "additionalProperties": false
     },
+    "parcels": {
+      "title": "Réglages propres : id de parcelle vers levels, roof, ground_floor, shop, chimneys, glazing, width_m (docs/DETAILS_CONTRACT.md ; détail vérifié par EnsembleParcels)",
+      "type": "object"
+    },
     "building": {
       "type": "object"
     }

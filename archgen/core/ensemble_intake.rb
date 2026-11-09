@@ -36,7 +36,7 @@ module Archgen
         problems = @settings.validate(tree)
         return Result.fail(problems) unless problems.empty?
 
-        problems = building_problems(tree.fetch('building', {})) + shape_problems(tree) + variety_problems(tree)
+        problems = building_problems(tree.fetch('building', {})) + shape_problems(tree) + variety_problems(tree) + EnsembleParcels.problems(tree)
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
         Result.ok(Canonical.deep_freeze(effective(tree)))
@@ -109,6 +109,7 @@ module Archgen
           merged = merged.merge('variety' => merged['variety'].merge('levels' => levels))
         end
         normalized = @settings.normalize(merged)
+        normalized = normalized.merge('parcels' => EnsembleParcels.normalize(normalized['parcels'])) if normalized['parcels']
         normalized.merge('trace' => normalized['trace'].merge('points_m' => normalized.dig('trace', 'points_m').map { |p| Quant.q3(p) }))
       end
 

@@ -76,6 +76,8 @@ module Archgen
         pick = parcel['variety'] || {}
         building = Merge.leaves(building, 'levels' => { 'count' => pick['levels'] }) if pick['levels']
         building = Merge.leaves(building, 'roof' => { 'type' => pick['roof'] }) if pick['roof']
+        # Réglages propres (AG-068) : après la variété.
+        building = Merge.leaves(building, EnsembleParcels.building_overrides(parcel['own'])) if parcel['own']
         Merge.leaves(
           building,
           'footprint' => { 'width_m' => parcel['width_m'], 'depth_m' => parcel['depth_m'] },

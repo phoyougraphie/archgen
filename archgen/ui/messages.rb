@@ -170,6 +170,10 @@ module Archgen
         'total_faces' => 'Le bâtiment et son terrassement dépassent la limite de %{limit} faces. Augmentez le pas du relevé ou réduisez le niveau de détail.',
         # Voirie : coupe (docs/VOIRIE_CONTRACT.md)
         # Rues variées (docs/RUE_VARIEE_CONTRACT.md)
+        'unknown_parcel' => 'Ce réglage propre désigne la parcelle %{id}, qui n’existe plus (le tracé a changé). Retirez-le.',
+        'width_locked' => 'La largeur de cette parcelle ne peut pas changer : parcelle d’angle, sans voisine sur son segment, ou voisine qui a déjà sa propre largeur.',
+        'neighbour_too_narrow' => 'Sa voisine %{other} passerait à %{value} m : %{limit} m au moins. Choisissez une largeur plus proche.',
+        'empty_parcel' => 'Ce réglage propre est vide : retirez-le.',
         'variety_levels_order' => 'Le nombre de niveaux minimal (%{min}) dépasse le maximal (%{max}).',
         'variety_with_levels' => 'Une rue variée tire le nombre de niveaux : retirez la liste des hauteurs par niveau.',
         'variety_style_levels' => 'Ce style demande de %{min} à %{max} niveaux : resserrez la fourchette, ou passez en fidélité plausible.',
