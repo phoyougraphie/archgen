@@ -171,4 +171,16 @@ Contrat : [ARCS_ORNEMENTS_CONTRACT](../docs/ARCS_ORNEMENTS_CONTRACT.md). Décisi
 | **AG-088 — Neuf profils** | AG-087 | Maison romane, maison gothique, Renaissance, Néoclassique, Baroque, Art déco, Art nouveau, Méditerranéen cycladique et andalou. | Profils en bâtiment, rue et îlot. U52. |
 | **AG-089 — Panneaux, RBZ 0.17.0** | AG-088 | Liste Arcs et case Ornements ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H32 à la main. |
 
+## J17 — Volumes modernes (EXT-04)
+
+Contrat : [VOLUMES_MODERNES_CONTRACT](../docs/VOLUMES_MODERNES_CONTRACT.md). Décisions : ADR-48 ; volumes assemblés et scénario climatique reportés.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-090 — Bandeaux et murs-rideaux** | AG-089, ADR-48 | `facade.ribbon` : une baie par étage de marge à marge, montants. | Baies, montants, refus. U58. |
+| **AG-091 — Pilotis** | AG-090 | `features.pilotis` : rez-de-chaussée ouvert, poteaux, sous-face. | Murs et baies absents au RDC, poteaux, refus. U59. |
+| **AG-092 — Toit en sheds** | AG-091 | Type de toit `sawtooth`, bâtiment seul et rangée. | Dents, faces vitrées, rangée. U60. |
+| **AG-093 — Trame structurelle et brise-soleil** | AG-092 | `features.structural_grid`, `features.sun_shades`. | Pièces placées. U61. |
+| **AG-094 — Sept profils, RBZ 0.18.0** | AG-093 | Bauhaus, Moderniste, Mid-century, Minimaliste, Industriel, High-tech, Bioclimatique ; panneaux ; guide, journal, RBZ. | Profils en bâtiment, rue et îlot ; recette H33 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

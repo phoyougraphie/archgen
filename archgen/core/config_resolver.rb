@@ -16,13 +16,15 @@ module Archgen
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
         'gable' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
         'hip' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
-        'mansard' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 65.0, 'inset_m' => 0.9 }
+        'mansard' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 65.0, 'inset_m' => 0.9 },
+        'sawtooth' => { 'pitch_deg' => 25.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 }
       }.freeze
       INACTIVE_ROOF_FIELDS = {
         'flat' => %w[pitch_deg lower_pitch_deg inset_m],
         'gable' => %w[lower_pitch_deg inset_m],
         'hip' => %w[lower_pitch_deg inset_m],
-        'mansard' => []
+        'mansard' => [],
+        'sawtooth' => %w[lower_pitch_deg inset_m overhang_m]
       }.freeze
 
       module_function
@@ -148,6 +150,7 @@ module Archgen
         features.delete('genoise') unless features['genoise']
         features.delete('stepped_gable') unless features['stepped_gable']
         features.delete('classical') unless features['classical']
+        %w[pilotis structural_grid sun_shades].each { |key| features.delete(key) unless features[key] }
         # AG-083 : pan de bois et sa matière vont ensemble.
         if features['timber_frame']
           materials['timber'] ||= DEFAULT_TIMBER
@@ -179,6 +182,7 @@ module Archgen
         end
         # AG-086 : des baies droites n'écrivent pas d'arc.
         facade.delete('arch') unless %w[round pointed].include?(facade['arch'])
+        facade.delete('ribbon') unless %w[band curtain].include?(facade['ribbon'])
         config.merge('features' => features, 'materials' => materials, 'facade' => facade)
       end
       private_class_method :with_glazing

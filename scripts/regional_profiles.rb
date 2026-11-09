@@ -312,6 +312,97 @@ PROFILES = {
       'features' => { 'glazing' => true, 'shutters' => true }
     },
     'rules' => rules(levels: [1, 3], roofs: %w[hip gable], ratio: [1.3, 2.0], walls: %w[light_render ochre_render])
+  },
+  'bauhaus' => {
+    'label' => 'Bauhaus', 'period' => 'Architecture Bauhaus, 1919-1933', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'requires' => %w[flat ribbon glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.4, 'window_height_m' => 1.2, 'sill_m' => 0.9, 'entry_bay' => 2, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'ribbon' => 'band' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true }
+    },
+    'rules' => rules(levels: [2, 5], roofs: %w[flat], ratio: [0.4, 1.2], walls: %w[light_render concrete])
+  },
+  'moderniste' => {
+    'label' => 'Moderniste', 'period' => 'Mouvement moderne, 1925-1960', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'requires' => %w[flat ribbon pilotis glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 16, 'depth_m' => 11 },
+      'levels' => { 'count' => 4, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 5, 'window_width_m' => 1.4, 'window_height_m' => 1.3, 'sill_m' => 0.9, 'entry_bay' => 2, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'ribbon' => 'band' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'concrete', 'roof' => 'concrete', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'pilotis' => true }
+    },
+    'rules' => rules(levels: [2, 8], roofs: %w[flat], ratio: [0.4, 1.2], walls: %w[concrete light_render])
+  },
+  'mid_century' => {
+    'label' => 'Mid-century', 'period' => 'Architecture mid-century, 1945-1970', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'requires' => %w[flat ribbon glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 10 },
+      'levels' => { 'count' => 2, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.6, 'window_height_m' => 1.8, 'sill_m' => 0.6, 'entry_bay' => 2, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'ribbon' => 'band' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 1.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'red_brick', 'roof' => 'concrete', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[flat gable], ratio: [0.4, 1.4], walls: %w[red_brick natural_wood light_render])
+  },
+  'minimaliste' => {
+    'label' => 'Contemporain minimaliste', 'period' => 'Architecture contemporaine, depuis 1990', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'requires' => %w[flat ribbon glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.4, 'window_height_m' => 2.0, 'sill_m' => 0.6, 'entry_bay' => 2, 'door_width_m' => 1.1, 'door_height_m' => 2.4, 'ribbon' => 'curtain' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true }
+    },
+    'rules' => rules(levels: [2, 6], roofs: %w[flat], ratio: [0.4, 2.0], walls: %w[light_render concrete])
+  },
+  'industriel' => {
+    'label' => 'Industriel', 'period' => 'Bâtiment industriel, 1880-1960', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'tech_environment',
+    'requires' => %w[sawtooth glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 16, 'depth_m' => 12 },
+      'levels' => { 'count' => 2, 'height_m' => 4.5, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.6, 'window_height_m' => 2.4, 'sill_m' => 1.0, 'entry_bay' => 2, 'door_width_m' => 2.4, 'door_height_m' => 3.4, 'muntin_rows' => 4 },
+      'roof' => { 'type' => 'sawtooth', 'overhang_m' => 0.0, 'pitch_deg' => 30 },
+      'materials' => { 'wall' => 'red_brick', 'roof' => 'dark_metal', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[sawtooth flat gable], ratio: [1.0, 1.6], walls: %w[red_brick concrete])
+  },
+  'high_tech' => {
+    'label' => 'High-tech', 'period' => 'Architecture high-tech, depuis 1970', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'tech_environment',
+    'requires' => %w[flat ribbon structural_grid glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 12 },
+      'levels' => { 'count' => 5, 'height_m' => 3.2, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.4, 'window_height_m' => 2.0, 'sill_m' => 0.6, 'entry_bay' => 2, 'door_width_m' => 1.2, 'door_height_m' => 2.4, 'ribbon' => 'curtain' },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'dark_metal', 'roof' => 'dark_metal', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'structural_grid' => true }
+    },
+    'rules' => rules(levels: [3, 8], roofs: %w[flat], ratio: [0.4, 2.0], walls: %w[dark_metal concrete])
+  },
+  'bioclimatique' => {
+    'label' => 'Bioclimatique', 'period' => 'Architecture bioclimatique, depuis 1975', 'regions' => %w[europe], 'typologies' => %w[residential mixed_use], 'family' => 'tech_environment',
+    'requires' => %w[gable cladding sun_shades glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.4, 'window_height_m' => 1.6, 'sill_m' => 0.8, 'entry_bay' => 2, 'door_width_m' => 1.0, 'door_height_m' => 2.2 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.6, 'pitch_deg' => 25 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'dark_metal', 'frames' => 'dark_metal', 'glass' => 'glass', 'cladding' => 'natural_wood' },
+      'features' => { 'glazing' => true, 'cladding' => true, 'sun_shades' => true }
+    },
+    'rules' => rules(levels: [1, 4], roofs: %w[gable flat], ratio: [0.8, 1.6], walls: %w[light_render natural_wood])
   }
 }.freeze
 

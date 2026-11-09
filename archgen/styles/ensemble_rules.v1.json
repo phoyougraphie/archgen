@@ -24,6 +24,13 @@
     "art_nouveau": { "1": "gap" },
     "mediterraneen_cycladique": { "1": "gap" },
     "mediterraneen_andalou": { "1": "gap" },
+    "bauhaus": { "1": "gap" },
+    "moderniste": { "1": "gap" },
+    "mid_century": { "1": "gap" },
+    "minimaliste": { "1": "gap" },
+    "industriel": { "1": "gap" },
+    "high_tech": { "1": "gap" },
+    "bioclimatique": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

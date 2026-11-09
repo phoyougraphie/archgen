@@ -173,6 +173,12 @@
             "round",
             "pointed"
           ]
+        },
+        "ribbon": {
+          "enum": [
+            "band",
+            "curtain"
+          ]
         }
       },
       "additionalProperties": false,
@@ -217,7 +223,8 @@
             "flat",
             "gable",
             "hip",
-            "mansard"
+            "mansard",
+            "sawtooth"
           ]
         },
         "overhang_m": {
@@ -334,6 +341,15 @@
           "type": "boolean"
         },
         "classical": {
+          "type": "boolean"
+        },
+        "pilotis": {
+          "type": "boolean"
+        },
+        "structural_grid": {
+          "type": "boolean"
+        },
+        "sun_shades": {
           "type": "boolean"
         }
       },

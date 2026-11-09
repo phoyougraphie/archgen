@@ -786,6 +786,7 @@
       case 'ground': field.checked = value === 'shop'; break;
       case 'ridge': field.value = value || 'parallel'; break;
       case 'arch': field.value = value || 'flat'; break;
+      case 'ribbon': field.value = value || 'bays'; break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }

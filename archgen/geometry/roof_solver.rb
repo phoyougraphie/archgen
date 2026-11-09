@@ -23,6 +23,7 @@ module Archgen
                  roof['ridge'] == 'perpendicular' ? cross_gable(footprint, wall_top_z, roof, side_overhang) : gable(footprint, wall_top_z, roof)
                when 'hip' then hip_roof(footprint, wall_top_z, roof)
                when 'mansard' then mansard(footprint, wall_top_z, roof)
+               when 'sawtooth' then sawtooth(footprint, wall_top_z, roof)
                else raise ArgumentError, "Type de toit inconnu : #{roof['type']}"
                end
         nodes = pans.map { |id, category, points| face_node(id, category, points, materials) }
@@ -49,7 +50,10 @@ module Archgen
       private_class_method :check
 
       def face_node(id, category, points, materials)
-        material = category == 'gable_end' ? materials['cladding'] || materials['wall'] : materials['roof']
+        material = if category == 'gable_end' then materials['cladding'] || materials['wall']
+                   elsif id.include?('/light/') then materials['glass'] || materials['frames']
+                   else materials['roof']
+                   end
         Node.leaf(id, category, MeshBuilder.new('surface').add_face(points, material).to_primitive)
       end
       private_class_method :face_node
@@ -98,6 +102,30 @@ module Archgen
         ]
       end
       private_class_method :cross_gable
+
+      SAWTOOTH_DEPTH_M = 4.0
+
+      # AG-092 : dents de l'avant vers l'arrière, pan incliné vers l'avant, jour vertical vers l'arrière.
+      # Les bords suivent les murs latéraux, onglets compris : la rangée d'angle y passe aussi.
+      def sawtooth(footprint, h, roof)
+        d = footprint.depth_m
+        count = [(d / SAWTOOTH_DEPTH_M).round, 1].max
+        step = d / count
+        top = h + (slope(roof['pitch_deg']) * step)
+        l = ->(y) { Core::Quant.q(footprint.left_x(y)) }
+        r = ->(y) { Core::Quant.q(footprint.right_x(y)) }
+        (0...count).flat_map do |k|
+          y0 = Core::Quant.q(k * step)
+          y1 = Core::Quant.q((k + 1) * step)
+          [
+            ["roof/tooth/#{k}", 'roof_face', [[l.call(y0), y0, h], [r.call(y0), y0, h], [r.call(y1), y1, top], [l.call(y1), y1, top]]],
+            ["roof/light/#{k}", 'roof_face', [[r.call(y1), y1, h], [l.call(y1), y1, h], [l.call(y1), y1, top], [r.call(y1), y1, top]]],
+            ["roof/gable/left/#{k}", 'gable_end', [[l.call(y0), y0, h], [l.call(y1), y1, top], [l.call(y1), y1, h]]],
+            ["roof/gable/right/#{k}", 'gable_end', [[r.call(y0), y0, h], [r.call(y1), y1, h], [r.call(y1), y1, top]]]
+          ]
+        end
+      end
+      private_class_method :sawtooth
 
       def hip_roof(footprint, h, roof)
         hip_faces('roof', 0.0, 0.0, footprint.width_m, footprint.depth_m, h, slope(roof['pitch_deg']), roof['overhang_m'])

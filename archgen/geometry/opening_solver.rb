@@ -12,12 +12,16 @@ module Archgen
       SHOPFRONT_BASE_M = 0.15
       SHOPFRONT_HEAD_M = 0.60
       SHOPFRONT_MIN_WIDTH_M = 1.20
+      # AG-090 : baie en bandeau ou mur-rideau, aux étages.
+      CURTAIN_GAP_M = 0.15
+      RIBBON_FACADES = %w[front rear].freeze
 
       module_function
 
       def call(candidates, config, footprint:, levels:)
         pitch = shop_pitch(config, footprint)
         openings = candidates.map { |c| shopfront?(c, config) ? shopfront(c, pitch, levels) : build(c, config, levels) }
+        openings = ribbons(openings, config, footprint, levels) if config['facade']['ribbon']
         problems = openings.flat_map { |o| check_extents(o, config, footprint, levels) }
         problems.concat(narrow_shopfronts(openings))
         problems.concat(check_pairs(openings, config))
@@ -83,6 +87,39 @@ module Archgen
       end
       private_class_method :narrow_shopfronts
 
+      # Aux étages des façades avant et arrière, une seule baie par niveau, de marge à marge.
+      def ribbons(openings, config, footprint, levels)
+        facade = config['facade']
+        kept = openings.reject { |o| RIBBON_FACADES.include?(o.facade_id) && o.level_index.positive? }
+        added = RIBBON_FACADES.flat_map do |side_id|
+          next [] if openings.none? { |o| o.facade_id == side_id && o.level_index.positive? }
+
+          side = footprint.facade(side_id)
+          bays = openings.select { |o| o.facade_id == side_id && o.level_index == levels.size - 1 }.size
+          wall = config['structure']['wall_m']
+          start, pitch = FacadeSolver.frame(side, facade['margin_m'], bays, wall)
+          # Bornée aux dégagements d'about de façade : un angle biais ne la touche pas.
+          low = [start, [wall, side.inner_start(wall)].max + CLEARANCE].max
+          high = [start + (bays * pitch), side.length_m - ([wall, side.length_m - side.inner_end(wall)].max + CLEARANCE)].min
+          levels.drop(1).map do |level|
+            z0, z1 = ribbon_heights(facade, config, levels, level)
+            Opening.new(id: "opening/#{side_id}/#{level.index}/ribbon", facade_id: side_id, level_index: level.index, bay_index: 0, kind: 'ribbon',
+                        u_min_m: Core::Quant.q(low), u_max_m: Core::Quant.q(high), z_min_m: Core::Quant.q(z0), z_max_m: Core::Quant.q(z1))
+          end
+        end
+        kept + added
+      end
+      private_class_method :ribbons
+
+      def ribbon_heights(facade, config, levels, level)
+        return [level.base_z_m + facade['sill_m'], level.base_z_m + facade['sill_m'] + facade['window_height_m']] if facade['ribbon'] == 'band'
+
+        last = level.index == levels.size - 1
+        ceiling = last ? level.top_z_m : level.top_z_m - config['structure']['slab_m']
+        [level.base_z_m + CURTAIN_GAP_M, ceiling - CURTAIN_GAP_M]
+      end
+      private_class_method :ribbon_heights
+
       JITTER_GRID_M = 0.005
 
       def jitter(candidate, config)
@@ -100,8 +137,8 @@ module Archgen
       end
       private_class_method :jitter
 
-      WIDTH_PATHS = { 'door' => '/facade/door_width_m', 'shopfront' => '/facade/front_bays' }.freeze
-      HEIGHT_PATHS = { 'door' => '/facade/door_height_m', 'shopfront' => '/shop/height_m' }.freeze
+      WIDTH_PATHS = { 'door' => '/facade/door_width_m', 'shopfront' => '/facade/front_bays', 'ribbon' => '/facade/margin_m' }.freeze
+      HEIGHT_PATHS = { 'door' => '/facade/door_height_m', 'shopfront' => '/shop/height_m', 'ribbon' => '/facade/ribbon' }.freeze
 
       def width_path(opening)
         WIDTH_PATHS.fetch(opening.kind, '/facade/window_width_m')

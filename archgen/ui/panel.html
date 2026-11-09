@@ -64,7 +64,7 @@
       </fieldset>
       <fieldset>
         <legend>Toiture</legend>
-        <div class="field"><label for="f-roof">Type de toit</label><select id="f-roof"><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="hip">Croupe</option><option value="mansard">Mansarde</option></select></div>
+        <div class="field"><label for="f-roof">Type de toit</label><select id="f-roof"><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="hip">Croupe</option><option value="mansard">Mansarde</option><option value="sawtooth">Sheds</option></select></div>
         <div class="field" data-roof="ridge"><label for="f-ridge">Faîtage</label><select id="f-ridge" data-path="/roof/ridge" data-kind="ridge"><option value="parallel">Parallèle à la rue</option><option value="perpendicular">Perpendiculaire (pignon sur rue)</option></select></div>
         <div class="field" data-roof="overhang_m"><label for="f-overhang">Débord (m)</label><input id="f-overhang" data-path="/roof/overhang_m" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="pitch_deg"><label for="f-pitch">Pente (°)</label><input id="f-pitch" data-path="/roof/pitch_deg" data-kind="number" inputmode="decimal"></div>
@@ -92,6 +92,10 @@
         <div class="field" id="f-cladding-material-field" hidden><label for="f-mcladding">Bardage, matériau</label><select id="f-mcladding" data-path="/materials/cladding" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field"><label for="f-arch">Arcs des baies</label><select id="f-arch" data-path="/facade/arch" data-kind="arch"><option value="flat">Baies droites</option><option value="round">Plein cintre</option><option value="pointed">Arc brisé</option></select></div>
         <div class="field check"><input type="checkbox" id="f-classical" data-path="/features/classical" data-kind="check"><label for="f-classical">Ornements classiques (pilastres, fronton)</label></div>
+        <div class="field"><label for="f-ribbon">Baies des étages</label><select id="f-ribbon" data-path="/facade/ribbon" data-kind="ribbon"><option value="bays">Par travée</option><option value="band">En bandeau</option><option value="curtain">Mur-rideau</option></select></div>
+        <div class="field check"><input type="checkbox" id="f-pilotis" data-path="/features/pilotis" data-kind="check"><label for="f-pilotis">Pilotis</label></div>
+        <div class="field check"><input type="checkbox" id="f-structural_grid" data-path="/features/structural_grid" data-kind="check"><label for="f-structural_grid">Trame structurelle</label></div>
+        <div class="field check"><input type="checkbox" id="f-sun_shades" data-path="/features/sun_shades" data-kind="check"><label for="f-sun_shades">Brise-soleil</label></div>
         <div class="field check"><input type="checkbox" id="f-timber" data-path="/features/timber_frame" data-kind="check"><label for="f-timber">Pan de bois (étages)</label></div>
         <div class="field" id="f-timber-material-field" hidden><label for="f-mtimber">Pan de bois, matériau</label><select id="f-mtimber" data-path="/materials/timber" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field check"><input type="checkbox" id="f-genoise" data-path="/features/genoise" data-kind="check"><label for="f-genoise">Génoise (deux pans, croupe)</label></div>

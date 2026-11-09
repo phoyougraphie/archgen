@@ -13,6 +13,15 @@ module Archgen
       # seul reste identique (docs/ENSEMBLE_CONTRACT.md).
       def generate(config, materials: nil, row: nil)
         input = config.geometry_input
+        dropped = row && input['features']['pilotis']
+        input = Canonical.deep_freeze(input.merge('features' => input['features'].reject { |key, _| key == 'pilotis' })) if dropped
+        result = generate_input(input, materials, row)
+        return result unless dropped && result.ok?
+
+        Result.ok(result.value, [Diagnostic.warning('W_DETAIL', '/features/pilotis', reason: 'pilotis_in_row')] + result.diagnostics)
+      end
+
+      def generate_input(input, materials, row)
         footprint = footprint_for(input, row)
         inner = row && footprint.trapezoid? ? Geometry::FootprintSolver.inner_problems(footprint, input['structure']['wall_m']) : []
         return Result.fail(inner) unless inner.empty?
@@ -21,6 +30,10 @@ module Archgen
         facade = row ? input['facade'].merge('rear_bays' => row.fetch(:rear_bays)) : input['facade']
         candidates = Geometry::FacadeSolver.call(footprint, levels, facade, wall_m: input['structure']['wall_m'])
         return candidates unless candidates.ok?
+
+        # AG-091 : sur pilotis, le rez-de-chaussée n'a ni mur ni baie. En rangée, les voisins s'appuient
+        # sur lui : les pilotis sont omis et dits (AG-094).
+        candidates = Result.ok(candidates.value.reject { |c| c.level_index.zero? }) if input['features']['pilotis']
 
         openings = Geometry::OpeningSolver.call(candidates.value, porch_input(input, row), footprint: footprint, levels: levels)
         return openings unless openings.ok?
@@ -108,7 +121,7 @@ module Archgen
           return Geometry::RoofSolver.call(footprint, top, input['roof'], materials: input['materials'], side_overhang: row.nil?)
         end
 
-        roof_solver = row ? Geometry::RowRoofSolver : Geometry::RoofSolver
+        roof_solver = row && input['roof']['type'] != 'sawtooth' ? Geometry::RowRoofSolver : Geometry::RoofSolver
         roof_solver.call(footprint, top, input['roof'].reject { |key, _| key == 'ridge' }, materials: input['materials'])
       end
       private_class_method :roof_for

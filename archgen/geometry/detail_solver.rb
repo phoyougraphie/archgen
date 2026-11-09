@@ -57,6 +57,9 @@ module Archgen
       MUNTIN_M = 0.02
       MUNTIN_Y_M = [0.004, 0.014].freeze
       TWO_LEAVES_FROM_M = 0.80
+      # AG-090 : montants d'une baie en bandeau.
+      RIBBON_MULLION_M = 0.05
+      RIBBON_MODULE_MIN_M = 0.80
       # AG-071 : battants de volet ouverts, plaqués au mur.
       SHUTTER_THICKNESS_M = 0.03
       SHUTTER_GAP_M = 0.01
@@ -124,6 +127,8 @@ module Archgen
         nodes += TimberSolver.call(footprint: footprint, levels: levels, openings: openings, config: config, row: row) if features['timber_frame']
         nodes += OrnamentSolver.arches(footprint, openings, config) if config['facade']['arch']
         nodes += OrnamentSolver.classical(footprint, openings, config, levels.last.top_z_m) if features['classical']
+        nodes += ModernSolver.structural_grid(footprint, levels, openings, config) if features['structural_grid']
+        nodes += ModernSolver.sun_shades(footprint, openings, config) if features['sun_shades']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m
@@ -323,7 +328,11 @@ module Archgen
         id += "/door-#{side}" if glass && side
         rows = nil unless opening.kind == 'window'
         id += "/muntins/#{rows}" if rows
-        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass, side) : []) +
+        module_width = opening.kind == 'ribbon' ? ribbon_module(width) : nil
+        id += "/modules/#{micrometres(module_width)}" if module_width
+        definitions[id] ||= frame_bars(opening.kind, width, height, material) +
+                            (module_width ? ribbon_joinery(width, height, module_width, material, glass) : []) +
+                            (glass && !module_width ? joinery(opening.kind, width, height, material, glass, side) : []) +
                             (rows ? muntins(width, height, rows, material) : [])
         id
       end
@@ -407,6 +416,32 @@ module Archgen
         out
       end
       private_class_method :muntins
+
+      # Modules égaux d'au moins RIBBON_MODULE_MIN_M, séparés par des montants ; une vitre par module.
+      def ribbon_module(width)
+        clear = width - (2 * FRAME_BAR_M)
+        count = [(clear / RIBBON_MODULE_MIN_M).floor, 1].max
+        Core::Quant.q(clear / count)
+      end
+      private_class_method :ribbon_module
+
+      def ribbon_joinery(width, height, module_width, material, glass)
+        bar = FRAME_BAR_M
+        count = ((width - (2 * bar)) / module_width).round
+        half = RIBBON_MULLION_M / 2.0
+        nodes = (1...count).map do |k|
+          x = bar + (k * module_width)
+          Node.leaf("bar/mullion/#{k}", 'frame', Boxes.solid(x - half, x + half, 0.0, bar, bar, height - bar, material))
+        end
+        return nodes unless glass
+
+        nodes + (0...count).map do |k|
+          x0 = bar + (k * module_width) + (k.zero? ? 0.0 : half)
+          x1 = bar + ((k + 1) * module_width) - (k == count - 1 ? 0.0 : half)
+          Node.leaf("pane/#{k}", 'frame', Boxes.solid(x0, x1, PANE_Y_M[0], PANE_Y_M[1], bar, height - bar, glass))
+        end
+      end
+      private_class_method :ribbon_joinery
 
       def pane(x0, x1, z0, z1, glass)
         Node.leaf('pane', 'frame', Boxes.solid(x0, x1, PANE_Y_M[0], PANE_Y_M[1], z0, z1, glass))

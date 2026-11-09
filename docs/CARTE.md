@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J16 fini : RBZ 0.17.0 installé, arcs, ornements, neuf styles. Suite : J17, volumes modernes, à cadrer. Recettes H26 à H32 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/ARCS_ORNEMENTS_CONTRACT.md)
+  - Prochaine action — Tous les lots de styles faits (J13 à J17) : RBZ 0.18.0 installé, 32 styles. Reportés : encorbellement, volumes assemblés, gradins, oriels. Recettes H26 à H33 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -116,6 +116,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-09 AG-083 à AG-085 — Pan de bois posé sur le mur, refusé avec les détails qui occupent la même épaisseur. Écharpes en parallélogrammes, validées comme solides. Quatre profils de la famille bois ; RBZ 0.16.0 installé.
     - 2026-11-09 J16 cadré — Roman et Gothique en maisons de ville, pas en églises. Deux capacités portent le lot (arcs, ornements classiques) ; avant-corps, reliefs Art déco, Art nouveau et patio approchés et dits ; gradins, oriels, voûtes reportés.
     - 2026-11-09 AG-086 à AG-089 — Le test commun U52 a trouvé trois défauts de profils avant publication : rangs de petits bois sans petits bois, croupe refusée en rangée, plafond de niveaux Art déco. Pilastre devant un porche omis et dit. RBZ 0.17.0 installé.
+    - 2026-11-09 J17 cadré — Quatre capacités (bandeaux et murs-rideaux, pilotis, sheds, trame et brise-soleil). Volumes assemblés et scénario climatique reportés.
+    - 2026-11-09 AG-090 à AG-094 — Pilotis en rangée changés de refus en omission dite, pour que le Moderniste fasse une rue. Bandeaux bornés aux dégagements d'about (angle biais). Trois défauts de profils corrigés avant publication par U52. RBZ 0.18.0, 32 styles.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -232,6 +234,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-087 Ornements classiques — features.classical ; pilastres, soubassement, fronton. U57 vert.
     - [fait] AG-088 Neuf profils — neuf profils, familles historique, ordonnancée, ornementale, maçonnée. U52 vert.
     - [fait] AG-089 Panneaux, RBZ 0.17.0 — liste Arcs, case Ornements ; H32 à faire.
+  - J17 Volumes modernes — ADR-48 ; volumes assemblés reportés. AG-090 à 094. (→ docs/VOLUMES_MODERNES_CONTRACT.md)
+    - [fait] AG-090 Bandeaux et murs-rideaux — facade.ribbon ; opening_solver, montants. U58 vert.
+    - [fait] AG-091 Pilotis — features.pilotis ; wall_builder. U59 vert.
+    - [fait] AG-092 Toit en sheds — toit sawtooth ; roof_solver. U60 vert.
+    - [fait] AG-093 Trame structurelle et brise-soleil — modern_solver : trame, brise-soleil. U61 vert.
+    - [fait] AG-094 Sept profils, RBZ 0.18.0 — sept profils, panneaux, RBZ 0.18.0 ; H33 à faire.
   - J18+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1

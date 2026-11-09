@@ -1,5 +1,21 @@
 # Journal des versions
 
+## 0.18.0
+
+Volumes modernes (AG-090 à AG-094). Moteur de géométrie 1 inchangé ; l'existant garde son style et son plan. Recettes H26 à H33 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Bandeaux et murs-rideaux** : `facade.ribbon`, une baie par étage de marge à marge, montants et vitres par module (AG-090).
+- **Pilotis** : `features.pilotis`, rez-de-chaussée ouvert sur poteaux, sous-face ; omis et dits en rangée (AG-091).
+- **Toit en sheds** : type de toit `sawtooth`, jours vitrés tournés vers l'arrière, bâtiment seul et rangée (AG-092).
+- **Trame structurelle et brise-soleil** : `features.structural_grid`, `features.sun_shades` (AG-093).
+- **Sept styles** : Bauhaus, Moderniste, Mid-century, Contemporain minimaliste, Industriel, High-tech, Bioclimatique ; liste Baies et cases aux panneaux (AG-094).
+
+**Limites connues**
+
+- Volumes assemblés et scénario climatique reportés.
+
 ## 0.17.0
 
 Arcs et ornements (AG-086 à AG-089). Moteur de géométrie 1 inchangé ; l'existant garde son style et son plan. Recettes H26 à H32 dans SketchUp à faire.

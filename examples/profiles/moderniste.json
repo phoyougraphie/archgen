@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "moderniste",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "modern_modular",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Moderniste",
+  "context": {
+    "period": "Mouvement moderne, 1925-1960",
+    "regions": [
+      "europe"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "flat",
+    "ribbon",
+    "pilotis",
+    "glazing"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 16,
+      "depth_m": 11
+    },
+    "levels": {
+      "count": 4,
+      "height_m": 3.0,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 5,
+      "window_width_m": 1.4,
+      "window_height_m": 1.3,
+      "sill_m": 0.9,
+      "entry_bay": 2,
+      "door_width_m": 1.0,
+      "door_height_m": 2.2,
+      "ribbon": "band"
+    },
+    "roof": {
+      "type": "flat",
+      "overhang_m": 0.0,
+      "pitch_deg": 0
+    },
+    "materials": {
+      "wall": "concrete",
+      "roof": "concrete",
+      "frames": "dark_metal",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "pilotis": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 0.4,
+        "max": 1.2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 2,
+        "max": 8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "flat"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "concrete",
+          "light_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

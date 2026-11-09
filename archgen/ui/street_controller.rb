@@ -164,6 +164,7 @@ module Archgen
         'muntins' => features['muntins'] == true, 'shutters' => features['shutters'] == true, 'dormers' => features['dormers'] == true,
         'genoise' => features['genoise'] == true, 'stepped_gable' => features['stepped_gable'] == true, 'cladding' => features['cladding'] == true,
         'timber_frame' => features['timber_frame'] == true, 'classical' => features['classical'] == true,
+        'pilotis' => features['pilotis'] == true, 'structural_grid' => features['structural_grid'] == true, 'sun_shades' => features['sun_shades'] == true,
           'shop_height_m' => profile.defaults.dig('shop', 'height_m') || Core::ConfigResolver::DEFAULT_SHOP_HEIGHT_M }
       end
 

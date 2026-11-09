@@ -25,7 +25,7 @@ module Archgen
       # Résultat : Result<[Dormer]>, ou un avertissement sans lucarne sur un toit plat.
       def call(footprint:, levels:, config:, row:, blocked: [])
         roof = config['roof']
-        if roof['type'] == 'flat'
+        unless %w[gable hip mansard].include?(roof['type'])
           return Core::Result.ok([], [Core::Diagnostic.warning('W_DETAIL', '/features/dormers', reason: 'dormer_flat_roof')])
         end
 

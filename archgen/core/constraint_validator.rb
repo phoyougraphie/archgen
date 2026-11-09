@@ -51,6 +51,18 @@ module Archgen
           out << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'stepped_gable_overhang', limit: 0.05)
         end
         check_timber(data, out)
+        %w[pilotis structural_grid sun_shades].each do |key|
+          out << Diagnostic.error('E_SCHEMA', "/features/#{key}", reason: "#{key}_false_written") if data['features'].key?(key) && !data['features'][key]
+        end
+        if data['features']['structural_grid']
+          %w[timber_frame classical shutters].each do |rival|
+            out << Diagnostic.error('E_SCHEMA', '/features/structural_grid', reason: "structural_grid_with_#{rival}") if data['features'][rival]
+          end
+        end
+        if data['features']['pilotis']
+          out << Diagnostic.error('E_SCHEMA', '/features/pilotis', reason: 'pilotis_levels') if data['levels']['count'] < 2
+          out << Diagnostic.error('E_SCHEMA', '/features/pilotis', reason: 'pilotis_with_shop') if data['ground_floor'] == 'shop'
+        end
         out << Diagnostic.error('E_SCHEMA', '/features/classical', reason: 'classical_false_written') if data['features'].key?('classical') && !data['features']['classical']
         out << Diagnostic.error('E_SCHEMA', '/features/classical', reason: 'classical_with_timber') if data['features']['classical'] && data['features']['timber_frame']
         cladding = data['features']['cladding'] == true
@@ -147,6 +159,9 @@ module Archgen
         case roof['type']
         when 'flat' then require_zero(roof, %w[pitch_deg lower_pitch_deg inset_m], out)
         when 'gable', 'hip' then check_sloped(roof, out)
+        when 'sawtooth'
+          check_sloped(roof, out)
+          require_zero(roof, %w[overhang_m], out)
         when 'mansard' then check_mansard(data, roof, out)
         end
         check_eave(data, roof, out)

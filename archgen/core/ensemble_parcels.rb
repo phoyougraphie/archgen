@@ -28,6 +28,9 @@ module Archgen
           'cladding' => { 'type' => 'boolean' },
           'timber_frame' => { 'type' => 'boolean' },
           'classical' => { 'type' => 'boolean' },
+          'pilotis' => { 'type' => 'boolean' },
+          'structural_grid' => { 'type' => 'boolean' },
+          'sun_shades' => { 'type' => 'boolean' },
           'width_m' => { 'type' => 'number', 'minimum' => 6, 'maximum' => 60 }
         },
         'additionalProperties' => false
@@ -153,7 +156,7 @@ module Archgen
         out['roof'] = { 'type' => own['roof'] } if own['roof']
         out['ground_floor'] = own['ground_floor'] if own['ground_floor']
         out['shop'] = own['shop'] if own['shop']
-        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical')
+        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical', 'pilotis', 'structural_grid', 'sun_shades')
         out['features'] = features unless features.empty?
         out
       end
@@ -184,6 +187,8 @@ module Archgen
           'dormers' => config['features']['dormers'] == true, 'genoise' => config['features']['genoise'] == true,
           'stepped_gable' => config['features']['stepped_gable'] == true, 'cladding' => config['features']['cladding'] == true,
           'timber_frame' => config['features']['timber_frame'] == true, 'classical' => config['features']['classical'] == true,
+          'pilotis' => config['features']['pilotis'] == true, 'structural_grid' => config['features']['structural_grid'] == true,
+          'sun_shades' => config['features']['sun_shades'] == true,
           'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true
         )
       end

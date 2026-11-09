@@ -13,7 +13,8 @@
     flat: ['overhang_m'],
     gable: ['ridge', 'overhang_m', 'pitch_deg'],
     hip: ['overhang_m', 'pitch_deg'],
-    mansard: ['overhang_m', 'pitch_deg', 'lower_pitch_deg', 'inset_m']
+    mansard: ['overhang_m', 'pitch_deg', 'lower_pitch_deg', 'inset_m'],
+    sawtooth: ['pitch_deg']
   };
   var ALL_ROOF_FIELDS = ['overhang_m', 'pitch_deg', 'lower_pitch_deg', 'inset_m'];
 

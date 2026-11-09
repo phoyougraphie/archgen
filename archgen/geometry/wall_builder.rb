@@ -89,36 +89,63 @@ module Archgen
         cladding = config['materials']['cladding']
         from = levels.last.base_z_m
         pick = ->(grid, r) { cladding && grid.zs[r] >= from - Core::Quant::EPSILON ? cladding : material }
+        floor = config['features']['pilotis'] ? levels[1].base_z_m : nil
         walls = grids.map do |grid|
-          primitive = structural ? solid_wall(grid, thickness, pick) : surface_wall(grid, pick)
+          primitive = structural ? solid_wall(grid, thickness, pick, floor) : surface_wall(grid, pick, floor)
           Node.leaf("wall/#{grid.facade.id}", 'wall', primitive)
         end
+        walls.concat(pilotis(footprint, levels, config, material, structural)) if floor
         nodes = [Node.group('walls', 'walls', walls)]
         nodes << Node.group('slabs', 'slabs', slabs(footprint, levels, config, material)) if structural && levels.size > 1
         nodes
       end
 
-      def surface_wall(grid, pick)
+      def surface_wall(grid, pick, floor = nil)
         mesh = MeshBuilder.new('surface')
-        each_solid_cell(grid) { |c, r| mesh.add_face(outer_quad(grid, c, r), pick.call(grid, r)) }
+        each_solid_cell(grid, floor) { |c, r| mesh.add_face(outer_quad(grid, c, r), pick.call(grid, r)) }
         mesh.to_primitive
       end
       private_class_method :surface_wall
 
-      def solid_wall(grid, thickness, pick)
+      def solid_wall(grid, thickness, pick, floor = nil)
         mesh = MeshBuilder.new('solid')
-        each_solid_cell(grid) do |c, r|
+        each_solid_cell(grid, floor) do |c, r|
           material = pick.call(grid, r)
           mesh.add_face(outer_quad(grid, c, r), material)
           mesh.add_face(inner_quad(grid, c, r, thickness), material)
-          lateral_quads(grid, c, r, thickness).each { |quad| mesh.add_face(quad, material) }
+          lateral_quads(grid, c, r, thickness, floor).each { |quad| mesh.add_face(quad, material) }
         end
         mesh.to_primitive
       end
       private_class_method :solid_wall
 
-      def each_solid_cell(grid)
+      # `floor` : sur pilotis (AG-091), rien sous le premier plancher.
+      PILOTI_M = 0.30
+
+      # Poteaux aux angles et aux limites de travée, avant et arrière ; sous-face du premier étage en
+      # Shell (en Structural, la dalle la fait déjà).
+      def pilotis(footprint, levels, config, material, structural)
+        top = levels[1].base_z_m
+        w = footprint.width_m
+        d = footprint.depth_m
+        f = config['facade']
+        start, pitch = FacadeSolver.frame(footprint.facade('front'), f['margin_m'], f['front_bays'], config['structure']['wall_m'])
+        xs = [0.0, w - PILOTI_M] + (1...f['front_bays']).map { |i| Core::Quant.q(start + (i * pitch) - (PILOTI_M / 2.0)) }
+        nodes = xs.product([0.0, d - PILOTI_M]).each_with_index.map do |(x, y), n|
+          Node.leaf("wall/piloti/#{n}", 'wall', Boxes.solid(x, Core::Quant.q(x + PILOTI_M), y, Core::Quant.q(y + PILOTI_M), 0.0, top, material))
+        end
+        return nodes if structural
+
+        mesh = MeshBuilder.new('surface')
+        mesh.add_face([[0.0, 0.0, top], [0.0, d, top], [w, d, top], [w, 0.0, top]], material)
+        nodes << Node.leaf('wall/soffit', 'wall', mesh.to_primitive)
+      end
+      private_class_method :pilotis
+
+      def each_solid_cell(grid, floor = nil)
         (0...grid.rows).each do |row|
+          next if floor && grid.zs[row] < floor - Core::Quant::EPSILON
+
           (0...grid.columns).each { |column| yield(column, row) if grid.solid?(column, row) }
         end
       end
@@ -141,7 +168,7 @@ module Archgen
       # Une face latérale seulement si le voisin est absent ou vide : ferme la pièce
       # et produit onglets, jambages, linteau et appui. Le sens donne une normale
       # sortante en coordonnées (T, K, N), repère direct.
-      def lateral_quads(grid, c, r, t)
+      def lateral_quads(grid, c, r, t, floor = nil)
         f = grid.facade
         u0, u1, z0, z1 = bounds(grid, c, r)
         quads = []
@@ -151,7 +178,8 @@ module Archgen
         unless grid.solid?(c + 1, r)
           quads << [inner(grid, u1, z0, t), inner(grid, u1, z1, t), f.point(u1, z1), f.point(u1, z0)]
         end
-        unless grid.solid?(c, r - 1)
+        # Sur pilotis (AG-091), la rangée posée sur le premier plancher a sa face basse.
+        unless grid.solid?(c, r - 1) && !(floor && grid.zs[r] <= floor + Core::Quant::EPSILON)
           quads << [inner(grid, u0, z0, t), inner(grid, u1, z0, t), f.point(u1, z0), f.point(u0, z0)]
         end
         unless grid.solid?(c, r + 1)
