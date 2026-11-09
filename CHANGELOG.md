@@ -7,6 +7,7 @@
 - **Génoises** : option `features.genoise`, deux rangs de tuiles en encorbellement sous l'égout, avant et arrière, sur deux pans et croupe ; pas encore de case au panneau (AG-074).
 - **Provençal** : styles « Provençal — mas » et « Provençal — maison de village » ; dix matières régionales (enduits ocre et clair, pierres blonde et dorée, granit, schiste, ardoise, tuile mécanique, bois peints gris et rouge) (AG-075).
 - **Breton** : styles « Breton — longère » et « Breton — maison de bourg », granit ou schiste et ardoise, lucarnes et cheminées (AG-076).
+- **Lyonnais, Bordelais — échoppe, Parisien faubourien** : trois styles de plus ; formes d'accès d'îlot par porche (Lyonnais, faubourien) ou par interruption (échoppe) (AG-077).
 
 ## 0.13.0
 

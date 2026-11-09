@@ -76,6 +76,45 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'dormers' => true, 'chimneys' => true, 'surrounds' => true }
     },
     'rules' => rules(levels: [2, 3], roofs: %w[gable], ratio: [1.3, 1.9], walls: %w[granite schist light_render])
+  },
+  'lyonnais' => {
+    'label' => 'Lyonnais', 'period' => 'Immeuble lyonnais, XIXe siècle (Croix-Rousse, Presqu\'île)', 'regions' => %w[lyon], 'typologies' => %w[residential mixed_use],
+    'requires' => %w[gable glazing muntins shutters surrounds],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 11 },
+      'levels' => { 'count' => 5, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 1.1, 'window_height_m' => 1.9, 'sill_m' => 0.7, 'entry_bay' => 1, 'door_width_m' => 1.2, 'door_height_m' => 2.6, 'muntin_rows' => 4 },
+      'roof' => gable(20, 0.3),
+      'materials' => { 'wall' => 'golden_stone', 'roof' => 'terracotta_canal', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'painted_wood_grey' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'surrounds' => true }
+    },
+    'rules' => rules(levels: [4, 7], roofs: %w[gable hip], ratio: [1.5, 2.2], walls: %w[golden_stone light_render ochre_render])
+  },
+  'bordelais_echoppe' => {
+    'label' => 'Bordelais — échoppe', 'period' => 'Échoppe bordelaise, XIXe-début XXe siècle', 'regions' => %w[bordeaux], 'typologies' => %w[residential],
+    'requires' => %w[flat glazing muntins surrounds cornice],
+    'defaults' => {
+      'footprint' => { 'width_m' => 7, 'depth_m' => 12 },
+      'levels' => { 'count' => 1, 'height_m' => 3.6, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 1.1, 'window_height_m' => 2.2, 'sill_m' => 0.6, 'entry_bay' => 0, 'door_width_m' => 1.1, 'door_height_m' => 2.8, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'blond_stone', 'roof' => 'zinc', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'cornice' => true }
+    },
+    'rules' => rules(levels: [1, 2], roofs: %w[flat gable], ratio: [1.6, 2.4], walls: %w[blond_stone limestone])
+  },
+  'parisien_faubourien' => {
+    'label' => 'Parisien faubourien', 'period' => 'Immeuble de faubourg parisien, XVIIIe-XIXe siècle', 'regions' => %w[paris], 'typologies' => %w[residential mixed_use],
+    'requires' => %w[gable glazing muntins shutters surrounds],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 9 },
+      'levels' => { 'count' => 4, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.7, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.1, 'door_height_m' => 2.4, 'muntin_rows' => 3 },
+      'roof' => gable(30, 0.2),
+      'materials' => { 'wall' => 'light_render', 'roof' => 'mechanical_tile', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'painted_wood_grey' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'surrounds' => true }
+    },
+    'rules' => rules(levels: [3, 6], roofs: %w[gable mansard], ratio: [1.4, 2.0], walls: %w[light_render ochre_render limestone])
   }
 }.freeze
 

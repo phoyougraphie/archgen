@@ -49,7 +49,7 @@ class StyleRegistryTest < Minitest::Test
   # --- Chargement des fixtures
 
   def test_repository_profiles_load
-    assert_equal %w[breton_bourg breton_longere brutalist haussmann provencal_mas provencal_village toulousain], registry.active_profiles.map(&:id)
+    assert_equal %w[bordelais_echoppe breton_bourg breton_longere brutalist haussmann lyonnais parisien_faubourien provencal_mas provencal_village toulousain], registry.active_profiles.map(&:id)
   end
 
   def test_only_available_capabilities_are_published

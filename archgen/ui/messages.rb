@@ -12,6 +12,9 @@ module Archgen
         'provencal_village' => 'Enduit clair, maison étroite de trois niveaux ; génoise, volets bleu pastel au LOD 1.',
         'breton_longere' => 'Granit et ardoise, longère basse et allongée ; lucarnes et cheminées au LOD 1.',
         'breton_bourg' => 'Schiste et ardoise, maison de bourg à toit pentu ; lucarnes, cheminées et encadrements au LOD 1.',
+        'lyonnais' => 'Pierre dorée, cinq niveaux, hautes fenêtres ; encadrements et volets gris au LOD 1.',
+        'bordelais_echoppe' => 'Pierre blonde, un seul niveau à toit caché ; corniche et encadrements au LOD 1.',
+        'parisien_faubourien' => 'Enduit clair, quatre niveaux, tuile mécanique ; encadrements et volets gris au LOD 1.',
         'brutalist' => 'Béton, toit plat, grille répétitive ; baies en retrait au LOD 1 Structural.'
       }.freeze
 

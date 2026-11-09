@@ -45,10 +45,11 @@ Calibrages du catalogue (niveaux ; hauteur d'étage ; pente) et règles historiq
 | **Breton — maison de bourg** | 2 niveaux de 2,8 m, deux pans à 45° | Schiste ou granit enduit, ardoise | Lucarnes, cheminées, encadrements, petits bois, vitrage |
 | **Lyonnais** (AG-077) | 5 niveaux de 3,0 m, deux pans à 20°, fenêtres hautes | Pierre dorée, tuile canal | Encadrements, petits bois, vitrage, volets (gris) |
 | **Bordelais — échoppe** | 1 niveau de 3,6 m, toit plat caché, corniche | Pierre blonde | Corniche, encadrements, petits bois, vitrage |
-| **Parisien faubourien** | 4 niveaux de 2,9 m, deux pans à 30° | Enduit clair, tuile mécanique | Encadrements, volets (gris), petits bois, vitrage |
+| **Parisien faubourien** | 4 niveaux de 3,0 m (2,9 m ne laissait pas passer le porche d'îlot), deux pans à 30° | Enduit clair, tuile mécanique | Encadrements, volets (gris), petits bois, vitrage |
 
 - **Fait (AG-075).** Profils `provencal_mas` et `provencal_village` (famille `masonry_vernacular`), écrits par `scripts/regional_profiles.rb` (qui refuse d'écraser une révision publiée changée) ; dix matières régionales au catalogue ; règle `material_allowed` du mur en `soft`. Tests U52 (`test/unit/regional_profiles_test.rb`), à étendre à chaque profil du lot.
 - **Fait (AG-076).** Profils `breton_longere` et `breton_bourg`.
+- **Fait (AG-077).** Profils `lyonnais`, `bordelais_echoppe`, `parisien_faubourien`.
 - Formes d'accès d'îlot : porche pour Lyonnais et Parisien faubourien ; accès par interruption pour les autres.
 - Chaque profil est vérifié par défaut en bâtiment seul (deux modes, LOD 0 et 1), en rue droite, en rue à angle et en îlot, avant d'être publié.
 
