@@ -238,7 +238,7 @@
 
   function onFieldInput(event) {
     var field = event.target;
-    if (field.id === 'f-shop') { showShopHeight(); }
+    if (field.id === 'f-shop' || field.id === 'f-shutters') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -762,6 +762,7 @@
   // AG-067 : la hauteur du commerce ne s'affiche qu'avec un rez-de-chaussée commerçant.
   function showShopHeight() {
     document.getElementById('f-shop-height-field').hidden = !document.getElementById('f-shop').checked;
+    document.getElementById('f-shutters-material-field').hidden = !document.getElementById('f-shutters').checked;
   }
 
   function writeField(field, value) {

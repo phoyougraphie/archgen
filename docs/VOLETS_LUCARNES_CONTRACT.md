@@ -41,6 +41,7 @@ Option `features.shutters` (booléen), LOD 1, et quatrième rôle de matière fa
 
 - Catalogue de matières : nouvelles entrées « Bois peint vert » et « Bois peint bleu pastel » (Toulousain), révision du catalogue.
 - Définitions partagées : un battant par largeur, hauteur et matière.
+- **Écart (AG-073).** Une fenêtre que seul le passage d'un porche empêche d'avoir ses volets n'en a pas : omis et dit (`W_DETAIL`, `shutters_skipped`, avec les ids). Sans cela, un îlot Toulousain révision 3 par défaut aurait été refusé ; les autres manques de place restent refusés.
 - **Fait (AG-071).** `features.shutters` et `materials.shutters` (coché : `painted_wood` si rien n'est donné ; décoché : ni l'un ni l'autre). Refus d'une configuration enregistrée dépareillée : `shutters_false_written`, `shutters_material_required`, `shutters_material_without_shutters`. La place se juge contre toute baie du même niveau et de la même façade (porte, vitrine, passage compris) et contre ses battants ; un battant hors de la façade est refusé. Catalogue : `painted_wood_green`, `painted_wood_blue`. Catégorie `shutter`. Tests U49 (`test/unit/shutters_test.rb`) ; empreintes de quatre ensembles types identiques. Pas de case au panneau avant AG-073.
 - **D-25, options.** **A, retenue (ADR-47)** : battants ouverts plaqués au mur, refus localisé faute de place. **B** : persiennes repliées dans l'embrasure, invisibles de face (pas de conflit de place, mais peu lisibles en maquette).
 
@@ -67,6 +68,7 @@ Option `features.dormers` (booléen), LOD 1.
 ## 4. Styles et panneaux — AG-073 (D-27)
 
 - **D-27, options.** **A, retenue (ADR-47)** : révision 3 des styles, chacune activant ce qui lui ressemble : Haussmannien lucarnes et petits bois (`muntin_rows` 3) ; Toulousain volets (bleu pastel) et petits bois ; Brutaliste inchangé (pas de révision). Un bâtiment ou un ensemble existant garde sa révision (ADR-46). **B** : aucune révision, tout est décoché par défaut ; on coche au panneau.
+- **Fait (AG-073).** Révisions 3 (`haussmann.r3`, `toulousain.r3`) et entrées « 3 » des formes d'accès d'îlot ; un style d'avant reste lisible et l'existant garde sa révision. Cases Petits bois, Volets (avec le choix du matériau), Lucarnes au panneau du bâtiment ; mêmes cases au panneau de rue (envoyées seulement si touchées) et listes au panneau de parcelle (champs `muntins`, `shutters`, `dormers` des réglages propres). Défauts des trois styles vérifiés en bâtiment seul (deux modes, deux LOD), en rue, en rue à angle et en îlot. Décocher le vitrage d'un style à petits bois est refusé (`muntins_without_glazing`) avec le message « cochez Vitrage » : rien n'est retiré en silence. RBZ 0.13.0. **Recette H28 dans SketchUp non faite** (laissée au propriétaire).
 - **Panneaux** : cases Petits bois, Volets, Lucarnes dans la section Détails du bâtiment et de la rue, et au panneau de parcelle (Comme la rue / Oui / Non). Guide, journal ; **RBZ 0.13.0** ; recette **H28**.
 
 ## Tests

@@ -150,6 +150,7 @@ module Archgen
       def details_hints(profile)
         features = profile.defaults.fetch('features', {})
         { 'revision' => profile.revision, 'glazing' => features['glazing'] == true, 'chimneys' => features['chimneys'] == true,
+        'muntins' => features['muntins'] == true, 'shutters' => features['shutters'] == true, 'dormers' => features['dormers'] == true,
           'shop_height_m' => profile.defaults.dig('shop', 'height_m') || Core::ConfigResolver::DEFAULT_SHOP_HEIGHT_M }
       end
 

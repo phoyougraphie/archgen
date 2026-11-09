@@ -34,7 +34,7 @@ class ShuttersTest < Minitest::Test
   end
 
   def test_resolution_and_refusals
-    on = ConfigResolver.resolve({ 'schema_version' => 1, 'profile' => { 'id' => 'toulousain' }, 'features' => { 'shutters' => true } },
+    on = ConfigResolver.resolve({ 'schema_version' => 1, 'profile' => { 'id' => 'brutalist' }, 'features' => { 'shutters' => true } },
                                 registry: registry, intake: TestData.intake).value.to_h
     assert_equal 'painted_wood', on['materials']['shutters']
     off = ConfigResolver.resolve({ 'schema_version' => 1, 'profile' => { 'id' => 'toulousain' }, 'features' => { 'shutters' => false }, 'materials' => { 'shutters' => 'painted_wood_green' } },

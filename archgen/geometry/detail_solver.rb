@@ -93,7 +93,8 @@ module Archgen
         balcony_levels = features['balcony'] ? levels.select { |l| BALCONY_LEVELS.include?(l.index) } : []
         problems.concat(balcony_problems(config, balcony_levels, openings))
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
-        problems.concat(shutter_problems(footprint, openings, config)) if features['shutters']
+        clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
+        problems.concat(shutter_problems(clashes))
         dormers = features['dormers'] ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
         problems.concat(dormers.errors) if dormers && !dormers.ok?
         return Core::Result.fail(problems) unless problems.empty?
@@ -101,7 +102,8 @@ module Archgen
         definitions = {}
         nodes = frames(footprint, openings, config, definitions)
         nodes += surrounds(footprint, openings, config) if features['surrounds']
-        nodes += shutters(footprint, openings, config, definitions) if features['shutters']
+        skipped = clashes.select { |_, why| why == :porch }.keys
+        nodes += shutters(footprint, openings.reject { |o| skipped.include?(o.id) }, config, definitions) if features['shutters']
         nodes << cornice(footprint, levels, config) if features['cornice']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
@@ -111,6 +113,7 @@ module Archgen
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings += dormers.warnings if dormers
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/shutters', reason: 'shutters_skipped', ids: skipped.sort) unless skipped.empty?
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
 
@@ -334,18 +337,29 @@ module Archgen
 
       # Jamais rétréci ni omis : un battant qui sort de la façade ou touche une autre baie (ou son
       # battant) du même niveau est refusé, avec l'id de la fenêtre.
-      def shutter_problems(footprint, openings, config)
+      # { id de fenêtre => :porch | :other } pour chaque fenêtre dont un battant ne tient pas.
+      # :porch : seul le passage d'un porche le gêne (AG-073) ; ses volets sont omis et dits.
+      def shutter_clashes(footprint, openings, config)
         off = config['features']['surrounds'] ? SURROUND_BAR_M : 0.0
-        openings.select { |o| o.kind == 'window' }.filter_map do |window|
+        openings.select { |o| o.kind == 'window' }.each_with_object({}) do |window, out|
           length = footprint.facade(window.facade_id).length_m
           spans = shutter_spans(window, config)
           others = openings.reject { |o| o.equal?(window) || o.facade_id != window.facade_id }
                            .select { |o| o.z_min_m < window.z_max_m - EPS && o.z_max_m > window.z_min_m + EPS }
-          taken = others.flat_map { |o| [[o.u_min_m - off, o.u_max_m + off]] + (o.kind == 'window' ? shutter_spans(o, config) : []) }
-          clash = spans.any? { |a, b| a < -EPS || b > length + EPS || taken.any? { |c, d| a < d - EPS && b > c + EPS } }
-          next unless clash
+          clash = lambda do |list|
+            taken = list.flat_map { |o| [[o.u_min_m - off, o.u_max_m + off]] + (o.kind == 'window' ? shutter_spans(o, config) : []) }
+            spans.any? { |a, b| a < -EPS || b > length + EPS || taken.any? { |c, d| a < d - EPS && b > c + EPS } }
+          end
+          next unless clash.call(others)
 
-          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/shutters', reason: 'shutters_no_room', id: window.id)
+          out[window.id] = clash.call(others.reject { |o| o.kind == 'porch' }) ? :other : :porch
+        end
+      end
+      private_class_method :shutter_clashes
+
+      def shutter_problems(clashes)
+        clashes.select { |_, why| why == :other }.keys.map do |id|
+          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/shutters', reason: 'shutters_no_room', id: id)
         end
       end
       private_class_method :shutter_problems

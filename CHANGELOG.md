@@ -1,9 +1,12 @@
 # Journal des versions
 
-## Non publié
+## 0.13.0
+
+Volets, lucarnes et petits bois (AG-070 à AG-073). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde sa révision de style et son plan. Recettes H26 à H28 dans SketchUp à faire.
 
 **Ajouts**
 
+- **Révision 3 des styles** : Haussmannien avec lucarnes et petits bois ; Toulousain avec volets bleu pastel et petits bois ; cases Petits bois, Volets, Lucarnes aux panneaux du bâtiment, de la rue et de la parcelle (AG-073).
 - **Petits bois** : option `features.muntins` avec le vitrage, montant central et traverses, rangs donnés par le style ; pas encore de case au panneau (AG-070).
 - **Volets** : option `features.shutters`, deux battants ouverts par fenêtre, plaqués au mur ; matière `materials.shutters`, avec deux teintes nouvelles (vert, bleu pastel) ; refus quand la place manque ; pas encore de case au panneau (AG-071).
 - **Lucarnes** : option `features.dormers`, une par travée de la façade avant, sur mansarde, deux pans et croupe, posée sans percer le toit ; aucune sur un toit plat ; pas encore de case au panneau (AG-072).

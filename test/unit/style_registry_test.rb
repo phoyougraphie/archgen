@@ -66,7 +66,8 @@ class StyleRegistryTest < Minitest::Test
 
   def test_requires_is_ordered_union_parent_then_child
     assert_equal %w[rectangle rect_opening flat mansard cornice balcony], registry.fetch('haussmann', revision: 1).value.requires
-    assert_equal %w[rectangle rect_opening flat mansard cornice balcony glazing], registry.fetch('haussmann').value.requires
+    assert_equal %w[rectangle rect_opening flat mansard cornice balcony glazing], registry.fetch('haussmann', revision: 2).value.requires
+    assert_equal %w[rectangle rect_opening flat mansard cornice balcony glazing muntins dormers], registry.fetch('haussmann').value.requires
   end
 
   def test_defaults_merge_leaf_by_leaf_and_arrays_replace

@@ -73,7 +73,7 @@ class PanelAssetsTest < Minitest::Test
     html = read_utf8(*UI_DIR, 'street_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal 30, ids.size, '8 champs de variété depuis AG-063, 4 de détails depuis AG-067, 1 de réglages propres depuis AG-069'
+    assert_equal 33, ids.size, '8 champs de variété depuis AG-063, 4 de détails depuis AG-067, 1 de réglages propres depuis AG-069, 3 depuis AG-073'
     assert_empty ids - labels
   end
 

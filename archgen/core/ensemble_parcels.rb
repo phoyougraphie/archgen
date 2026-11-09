@@ -20,6 +20,9 @@ module Archgen
                       'additionalProperties' => false },
           'chimneys' => { 'type' => 'boolean' },
           'glazing' => { 'type' => 'boolean' },
+          'muntins' => { 'type' => 'boolean' },
+          'shutters' => { 'type' => 'boolean' },
+          'dormers' => { 'type' => 'boolean' },
           'width_m' => { 'type' => 'number', 'minimum' => 6, 'maximum' => 60 }
         },
         'additionalProperties' => false
@@ -145,7 +148,7 @@ module Archgen
         out['roof'] = { 'type' => own['roof'] } if own['roof']
         out['ground_floor'] = own['ground_floor'] if own['ground_floor']
         out['shop'] = own['shop'] if own['shop']
-        features = own.slice('chimneys', 'glazing')
+        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers')
         out['features'] = features unless features.empty?
         out
       end
@@ -172,6 +175,8 @@ module Archgen
           'ground_floor' => config.fetch('ground_floor', 'dwelling'),
           'shop_height_m' => config.dig('shop', 'height_m') || shop_default(config, registry),
           'chimneys' => config['features']['chimneys'] == true, 'glazing' => config['features']['glazing'] == true,
+          'muntins' => config['features']['muntins'] == true, 'shutters' => config['features']['shutters'] == true,
+          'dormers' => config['features']['dormers'] == true,
           'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true
         )
       end

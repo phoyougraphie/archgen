@@ -96,6 +96,7 @@ module Archgen
         'shutters_false_written' => 'Des volets décochés ne s’enregistrent pas : retirez ce champ.',
         'shutters_material_required' => 'Les volets demandent leur matériau.',
         'shutters_material_without_shutters' => 'Un matériau de volets est donné sans volets.',
+        'shutters_skipped' => 'Pas de volets sur %{ids} : le passage du porche ne leur laisse pas la place.',
         'shutters_no_room' => 'Les volets ouverts de la fenêtre %{id} ne tiennent pas : il manque de la place à côté. Réduisez la largeur des fenêtres ou leur nombre.',
         'muntins_false_written' => 'Des petits bois décochés ne s’enregistrent pas : retirez ce champ.',
         'muntins_without_glazing' => 'Les petits bois demandent le vitrage : cochez Vitrage.',

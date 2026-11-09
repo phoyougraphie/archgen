@@ -560,12 +560,14 @@ class StreetControllerTest < Minitest::Test
     regenerate.call(SETTINGS.merge('seed' => 4))
     assert_equal({ 'id' => 'brutalist', 'revision' => 1 }, stored.call, 'même style : révision gardée')
     regenerate.call(Archgen::Core::Merge.leaves(SETTINGS, 'building' => { 'profile' => { 'id' => 'toulousain' } }))
-    assert_equal({ 'id' => 'toulousain', 'revision' => 2 }, stored.call, 'autre style : sa révision courante')
+    assert_equal({ 'id' => 'toulousain', 'revision' => 3 }, stored.call, 'autre style : sa révision courante')
   end
 
   def test_init_gives_the_details_each_style_ticks
     details = call('init')['result']['profiles'].to_h { |p| [p['id'], p['details']] }
-    assert_equal({ 'revision' => 2, 'glazing' => true, 'chimneys' => false, 'shop_height_m' => 4.5 }, details['haussmann'])
+    assert_equal({ 'revision' => 3, 'glazing' => true, 'chimneys' => false, 'muntins' => true, 'shutters' => false, 'dormers' => true, 'shop_height_m' => 4.5 },
+                 details['haussmann'])
+    assert_equal [true, false], details['toulousain'].values_at('shutters', 'dormers')
     assert_equal 4.0, details['toulousain']['shop_height_m']
   end
 

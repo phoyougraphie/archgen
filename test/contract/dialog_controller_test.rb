@@ -145,7 +145,7 @@ class DialogControllerTest < Minitest::Test
     assert_equal 'new', result['mode']
     assert_equal %w[haussmann toulousain brutalist], result['profiles'].map { |p| p['id'] }
     result['profiles'].each do |profile|
-      assert_equal 2, profile['revision'], 'dernière révision seule (AG-064)'
+      assert_equal registry.fetch(profile['id']).value.revision, profile['revision'], 'dernière révision seule (AG-064)'
       refute_empty profile['label']
       refute_empty profile['signature']
     end

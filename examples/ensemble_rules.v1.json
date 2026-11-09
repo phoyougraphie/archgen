@@ -2,7 +2,7 @@
   "schema_version": 1,
   "access_forms": {
     "brutalist": { "1": "gap", "2": "gap" },
-    "haussmann": { "1": "porch", "2": "porch" },
-    "toulousain": { "1": "porch", "2": "porch" }
+    "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
+    "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }
 }

@@ -51,14 +51,14 @@ class GlazingTest < Minitest::Test
 
   def test_new_revision_glazes_and_old_revision_stays_as_it_was
     now = config('profile' => { 'id' => 'haussmann' }).to_h
-    assert_equal [2, true, 'glass'], [now['profile']['revision'], now['features']['glazing'], now['materials']['glass']]
+    assert_equal [3, true, 'glass'], [now['profile']['revision'], now['features']['glazing'], now['materials']['glass']]
     before = config('profile' => { 'id' => 'haussmann', 'revision' => 1 }).to_h
     refute before['features'].key?('glazing')
     refute before['materials'].key?('glass')
   end
 
   def test_unticked_glazing_is_not_written_and_ticked_takes_the_catalogue_glass
-    off = config('profile' => { 'id' => 'haussmann' }, 'features' => { 'glazing' => false }).to_h
+    off = config('profile' => { 'id' => 'haussmann' }, 'features' => { 'glazing' => false, 'muntins' => false }).to_h
     refute off['features'].key?('glazing')
     refute off['materials'].key?('glass')
     on = config('profile' => { 'id' => 'haussmann', 'revision' => 1 }, 'features' => { 'glazing' => true }).to_h
