@@ -118,13 +118,13 @@ Contrat : [DETAILS_CONTRACT](../docs/DETAILS_CONTRACT.md). Décisions : D-17 à 
 
 ## J12 — Volets, lucarnes et petits bois (EXT-01)
 
-Contrat : [VOLETS_LUCARNES_CONTRACT](../docs/VOLETS_LUCARNES_CONTRACT.md). Décisions : D-23 à D-27, **à trancher** ; aucun ticket ne démarre avant. Chaque réglage est une clé facultative : un bâtiment ou un ensemble existant ne change pas.
+Contrat : [VOLETS_LUCARNES_CONTRACT](../docs/VOLETS_LUCARNES_CONTRACT.md). Décisions : D-23 à D-27, tranchées (ADR-47). Chaque réglage est une clé facultative : un bâtiment ou un ensemble existant ne change pas.
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
-| **AG-070 — Petits bois** | AG-069, D-26 | `features.muntins` avec le vitrage : montant central et traverses selon `facade.muntin_rows` du style, dans la définition du cadre. | Comptes de barres, rien sans vitrage, empreintes d'avant inchangées. U48. |
-| **AG-071 — Volets** | AG-070, D-25 | `features.shutters`, rôle `materials.shutters` : deux battants ouverts par fenêtre ; refus `shutters_no_room` ; nouvelles teintes au catalogue. | Battants placés, rien sur portes et vitrines, refus localisé. U49. |
-| **AG-072 — Lucarnes** | AG-071, D-23, D-24 | `features.dormers` : une lucarne par travée avant, sur mansarde, deux pans et croupe ; avertissement sur toit plat ; refus faute de place ; rangées et cheminées compatibles. | Une par travée, sur chaque toit, aucune face hors parcelle. U50. |
-| **AG-073 — Styles et panneaux, RBZ 0.13.0** | AG-072, D-27 | Révision 3 des styles selon D-27 ; cases Petits bois, Volets, Lucarnes aux panneaux du bâtiment, de la rue et de la parcelle ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H28 à la main. |
+| **AG-070 — Petits bois** | AG-069, ADR-47 | `features.muntins` avec le vitrage : montant central et traverses selon `facade.muntin_rows` du style, dans la définition du cadre. | Comptes de barres, rien sans vitrage, empreintes d'avant inchangées. U48. |
+| **AG-071 — Volets** | AG-070, ADR-47 | `features.shutters`, rôle `materials.shutters` : deux battants ouverts par fenêtre ; refus `shutters_no_room` ; nouvelles teintes au catalogue. | Battants placés, rien sur portes et vitrines, refus localisé. U49. |
+| **AG-072 — Lucarnes** | AG-071, ADR-47 | `features.dormers` : une lucarne par travée avant, sur mansarde, deux pans et croupe ; avertissement sur toit plat ; refus faute de place ; rangées et cheminées compatibles. | Une par travée, sur chaque toit, aucune face hors parcelle. U50. |
+| **AG-073 — Styles et panneaux, RBZ 0.13.0** | AG-072, ADR-47 | Révision 3 des styles selon D-27 ; cases Petits bois, Volets, Lucarnes aux panneaux du bâtiment, de la rue et de la parcelle ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H28 à la main. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

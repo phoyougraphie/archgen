@@ -1,5 +1,11 @@
 # Journal des versions
 
+## Non publié
+
+**Ajouts**
+
+- **Petits bois** : option `features.muntins` avec le vitrage, montant central et traverses, rangs donnés par le style ; pas encore de case au panneau (AG-070).
+
 ## 0.12.0
 
 Personnaliser un bâtiment d'une rue (AG-068, AG-069). Moteur de géométrie 1 inchangé ; un ensemble sans réglage propre garde son plan. Recettes H26 et H27 dans SketchUp à faire.

@@ -52,6 +52,11 @@ module Archgen
       PANE_Y_M = [0.015, 0.025].freeze
       LEAF_Y_M = [0.005, 0.035].freeze
       TRANSOM_FROM_M = 2.40
+      # AG-070 : petits bois, devant la vitre.
+      MULLION_M = 0.03
+      MUNTIN_M = 0.02
+      MUNTIN_Y_M = [0.004, 0.014].freeze
+      TWO_LEAVES_FROM_M = 0.80
       TRANSOM_Z_M = 2.20
       CORNICE_DEPTH_M = 0.15
       CORNICE_HEIGHT_M = 0.08
@@ -168,11 +173,12 @@ module Archgen
       def frames(footprint, openings, config, definitions)
         material = config['materials']['frames']
         glass = config['features']['glazing'] ? config['materials']['glass'] : nil
+        rows = glass && config['features']['muntins'] ? config['facade']['muntin_rows'] : nil
         wall = config['structure']['wall_m']
         recess = config['mode'] == 'structural' ? [FRAME_MAX_RECESS_M, wall - FRAME_BAR_M].min : 0.0
         entrance = entrance_u(openings)
         openings.reject { |opening| opening.kind == 'porch' }.map do |opening|
-          definition_id = frame_definition(opening, material, glass, definitions, door_side(opening, entrance))
+          definition_id = frame_definition(opening, material, glass, definitions, door_side(opening, entrance), rows)
           facade = footprint.facade(opening.facade_id)
           Node.leaf("frame/#{opening.facade_id}/#{opening.level_index}/#{opening.bay_index}", 'frame',
                     { 'type' => 'instance', 'definition_id' => definition_id, 'matrix' => frame_matrix(facade, opening, recess) })
@@ -197,13 +203,16 @@ module Archgen
 
       # Une définition par type, largeur, hauteur et matériau : le recul vit dans la matrice.
       # Sans vitrage, l'identifiant et le contenu restent ceux d'avant AG-064.
-      def frame_definition(opening, material, glass, definitions, side = nil)
+      def frame_definition(opening, material, glass, definitions, side = nil, rows = nil)
         width = Core::Quant.q(opening.u_max_m - opening.u_min_m)
         height = Core::Quant.q(opening.z_max_m - opening.z_min_m)
         id = "frame/#{opening.kind}/#{micrometres(width)}x#{micrometres(height)}/#{material}"
         id += "/glazed/#{glass}" if glass
         id += "/door-#{side}" if glass && side
-        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass, side) : [])
+        rows = nil unless opening.kind == 'window'
+        id += "/muntins/#{rows}" if rows
+        definitions[id] ||= frame_bars(opening.kind, width, height, material) + (glass ? joinery(opening.kind, width, height, material, glass, side) : []) +
+                            (rows ? muntins(width, height, rows, material) : [])
         id
       end
       private_class_method :frame_definition
@@ -265,6 +274,27 @@ module Archgen
          pane(*fixed, z0, z1, glass)]
       end
       private_class_method :shop_joinery
+
+      # AG-070 : montant central (deux vantaux dès TWO_LEAVES_FROM_M) et rows − 1 traverses par vantail.
+      def muntins(width, height, rows, material)
+        bar = FRAME_BAR_M
+        z0 = bar
+        z1 = height - bar
+        y0, y1 = MUNTIN_Y_M
+        middle = width / 2.0
+        two = width >= TWO_LEAVES_FROM_M - EPS
+        spans = two ? [[bar, middle - (MULLION_M / 2.0)], [middle + (MULLION_M / 2.0), width - bar]] : [[bar, width - bar]]
+        out = []
+        out << Node.leaf('muntin/mullion', 'frame', Boxes.solid(middle - (MULLION_M / 2.0), middle + (MULLION_M / 2.0), y0, y1, z0, z1, material)) if two
+        spans.each_with_index do |(x0, x1), leaf|
+          (1...rows).each do |k|
+            z = z0 + ((z1 - z0) * k / rows)
+            out << Node.leaf("muntin/#{leaf}/#{k}", 'frame', Boxes.solid(x0, x1, y0, y1, z - (MUNTIN_M / 2.0), z + (MUNTIN_M / 2.0), material))
+          end
+        end
+        out
+      end
+      private_class_method :muntins
 
       def pane(x0, x1, z0, z1, glass)
         Node.leaf('pane', 'frame', Boxes.solid(x0, x1, PANE_Y_M[0], PANE_Y_M[1], z0, z1, glass))

@@ -41,8 +41,21 @@ module Archgen
         out << Diagnostic.error('E_SCHEMA', '/materials/glass', reason: 'glass_without_glazing') if glass && !glazing
         out << Diagnostic.error('E_SCHEMA', '/features/glazing', reason: 'glazing_false_written') if data['features'].key?('glazing') && !glazing
         out << Diagnostic.error('E_SCHEMA', '/features/chimneys', reason: 'chimneys_false_written') if data['features'].key?('chimneys') && !data['features']['chimneys']
+        check_muntins(data, glazing, out)
       end
       private_class_method :check_glazing
+
+      # AG-070 : petits bois écrits seulement s'ils sont vrais, avec le vitrage et leur nombre de rangs.
+      def check_muntins(data, glazing, out)
+        features = data['features']
+        muntins = features['muntins'] == true
+        rows = data['facade'].key?('muntin_rows')
+        out << Diagnostic.error('E_SCHEMA', '/features/muntins', reason: 'muntins_false_written') if features.key?('muntins') && !muntins
+        out << Diagnostic.error('E_SCHEMA', '/features/muntins', reason: 'muntins_without_glazing') if muntins && !glazing
+        out << Diagnostic.error('E_SCHEMA', '/facade/muntin_rows', reason: 'muntin_rows_required') if muntins && !rows
+        out << Diagnostic.error('E_SCHEMA', '/facade/muntin_rows', reason: 'muntin_rows_without_muntins') if rows && !muntins
+      end
+      private_class_method :check_muntins
 
       # AG-065 : la hauteur de commerce n'existe qu'avec un rez-de-chaussée commerçant, et
       # seulement sans hauteurs par niveau, qui priment.

@@ -1,6 +1,6 @@
 # Contrat des volets, lucarnes et petits bois — J12 (AG-070 à AG-073)
 
-Contrat de départ, écrit avant le code. Décisions D-23 à D-27 **à trancher** par le propriétaire ; les options A sont recommandées. Il poursuit EXT-01 (richesse des façades et des toits) après J11 ([détails](DETAILS_CONTRACT.md)). Les valeurs marquées « départ » sont à calibrer à la recette.
+Contrat de départ, écrit avant le code. Décisions D-23 à D-27 tranchées par le propriétaire (options A, ADR-47). Il poursuit EXT-01 (richesse des façades et des toits) après J11 ([détails](DETAILS_CONTRACT.md)). Les valeurs marquées « départ » sont à calibrer à la recette.
 
 **Besoin du propriétaire (2026-11-09).** Après le vitrage, les commerces et les cheminées : des volets et des lucarnes. Les petits bois, écartés de J11 (D-17), viennent avec eux.
 
@@ -26,7 +26,8 @@ Option `features.muntins` (booléen), LOD 1, **seulement avec `features.glazing`
 
 - La définition du cadre prend `/muntins/<rangs>` dans son identifiant ; sans l'option, identifiant et contenu sont ceux d'avant.
 - Portes et vitrines : pas de petits bois.
-- **D-26, options.** **A, recommandée** : montant central et traverses, nombre de rangs donné par le style. **B** : nombre de rangs et de colonnes libre au panneau.
+- **Fait (AG-070).** `features.muntins` et `facade.muntin_rows` ([1 ; 6]) : coché, les rangs prennent ceux du style, sinon 3 ; décoché, ni l'un ni l'autre n'est écrit. Refus d'une configuration enregistrée dépareillée : `muntins_false_written`, `muntins_without_glazing`, `muntin_rows_required`, `muntin_rows_without_muntins`. Barres de y 0,004 à 0,014, à 1 mm de la vitre pour qu'aucune face ne touche la sienne. Tests U48 (`test/unit/muntins_test.rb`) ; empreintes de quatre ensembles types identiques. Pas de case au panneau avant AG-073.
+- **D-26, options.** **A, retenue (ADR-47)** : montant central et traverses, nombre de rangs donné par le style. **B** : nombre de rangs et de colonnes libre au panneau.
 
 ## 2. Volets — AG-071 (D-25)
 
@@ -40,7 +41,7 @@ Option `features.shutters` (booléen), LOD 1, et quatrième rôle de matière fa
 
 - Catalogue de matières : nouvelles entrées « Bois peint vert » et « Bois peint bleu pastel » (Toulousain), révision du catalogue.
 - Définitions partagées : un battant par largeur, hauteur et matière.
-- **D-25, options.** **A, recommandée** : battants ouverts plaqués au mur, refus localisé faute de place. **B** : persiennes repliées dans l'embrasure, invisibles de face (pas de conflit de place, mais peu lisibles en maquette).
+- **D-25, options.** **A, retenue (ADR-47)** : battants ouverts plaqués au mur, refus localisé faute de place. **B** : persiennes repliées dans l'embrasure, invisibles de face (pas de conflit de place, mais peu lisibles en maquette).
 
 ## 3. Lucarnes — AG-072 (D-23, D-24)
 
@@ -56,12 +57,12 @@ Option `features.dormers` (booléen), LOD 1.
 
 - En rangée : même règle ; une lucarne ne passe jamais le plan latéral d'une parcelle.
 - Avec des cheminées : une souche et une lucarne ne se recouvrent pas ; sinon refus `dormer_on_chimney`.
-- **D-23, options.** **A, recommandée** : volume posé qui traverse la peau du toit sans la percer (peu de faces, aucune face de toit découpée, même validation que les souches). **B** : vraie trémie dans le pan, faces du toit découpées autour de la lucarne (plus juste vue de l'intérieur du comble, beaucoup plus de cas).
-- **D-24, options.** **A, recommandée** : façade avant seulement, une par travée. **B** : avant et arrière.
+- **D-23, options.** **A, retenue (ADR-47)** : volume posé qui traverse la peau du toit sans la percer (peu de faces, aucune face de toit découpée, même validation que les souches). **B** : vraie trémie dans le pan, faces du toit découpées autour de la lucarne (plus juste vue de l'intérieur du comble, beaucoup plus de cas).
+- **D-24, options.** **A, retenue (ADR-47)** : façade avant seulement, une par travée. **B** : avant et arrière.
 
 ## 4. Styles et panneaux — AG-073 (D-27)
 
-- **D-27, options.** **A, recommandée** : révision 3 des styles, chacune activant ce qui lui ressemble : Haussmannien lucarnes et petits bois (`muntin_rows` 3) ; Toulousain volets (bleu pastel) et petits bois ; Brutaliste inchangé (pas de révision). Un bâtiment ou un ensemble existant garde sa révision (ADR-46). **B** : aucune révision, tout est décoché par défaut ; on coche au panneau.
+- **D-27, options.** **A, retenue (ADR-47)** : révision 3 des styles, chacune activant ce qui lui ressemble : Haussmannien lucarnes et petits bois (`muntin_rows` 3) ; Toulousain volets (bleu pastel) et petits bois ; Brutaliste inchangé (pas de révision). Un bâtiment ou un ensemble existant garde sa révision (ADR-46). **B** : aucune révision, tout est décoché par défaut ; on coche au panneau.
 - **Panneaux** : cases Petits bois, Volets, Lucarnes dans la section Détails du bâtiment et de la rue, et au panneau de parcelle (Comme la rue / Oui / Non). Guide, journal ; **RBZ 0.13.0** ; recette **H28**.
 
 ## Tests

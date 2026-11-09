@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J12 cadré : volets, lucarnes, petits bois. Décisions D-23 à D-27 à trancher (options A recommandées) avant AG-070. Recettes H26 et H27 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
+  - Prochaine action — AG-070 fait (petits bois). Suite : AG-071, volets. Recettes H26 et H27 à faire à la main. Commits non poussés depuis 9bc192d. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -97,6 +97,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-09 AG-068 — Largeurs et ids jugés après les accès de cour, dans layout_for, pour que la mise sur terrain voie les mêmes limites. Le validateur de schéma ne lit pas un additionalProperties à sous-schéma : le détail d'une entrée est tenu en Ruby (EnsembleParcels::ENTRY_SCHEMA). Empreintes des ensembles types identiques ; version de développement installée dans SketchUp.
     - 2026-11-09 AG-069 — Avant d'écrire, l'édition de la rue est refermée et la racine sélectionnée : on ne remplace jamais une définition pendant qu'on est dedans. Valeurs de la rue calculées par le noyau (street_values), affichées en grisé ; champ vide = rue. Panneau de rue : compte et retrait des réglages propres. Panneau de parcelle essayé dans le navigateur intégré ; menu contextuel non essayé dans SketchUp.
     - 2026-11-09 J12 cadré — Demande du propriétaire : volets et lucarnes ; petits bois repris de D-17. Lucarne posée sans percer le toit, comme une souche (recommandé) ; volets ouverts plaqués, refus faute de place ; décisions D-23 à D-27 ouvertes.
+    - 2026-11-09 D-23 à D-27 — Options A retenues par le propriétaire (ADR-47).
+    - 2026-11-09 AG-070 — Petits bois à 1 mm devant la vitre : aucune face confondue. Les rangs ne s'écrivent qu'avec l'option, comme la matière du verre avec le vitrage.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -188,8 +190,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-067 Section Détails aux panneaux, RBZ 0.11.0 — panel.html/js, street_panel.html/js, street_controller (cases du style) ; RBZ 0.11.0, H26 à faire.
     - [fait] AG-068 Réglages propres d'une parcelle — core/ensemble_parcels (lecture, largeur, priorité), E_STREET_PARCEL. U47 vert.
     - [fait] AG-069 Clic droit « Personnaliser ce bâtiment », RBZ 0.12.0 — ui/parcel_controller, ui/parcel_panel (menu contextuel, panneau), compte au panneau de rue ; RBZ 0.12.0, H27 à faire.
-  - J12 Volets, lucarnes et petits bois — Décisions D-23 à D-27 à trancher. AG-070 à 073. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
-    - [afaire] AG-070 Petits bois — D-26 : montant central et traverses, avec le vitrage. U48.
+  - J12 Volets, lucarnes et petits bois — D-23 à D-27 tranchées (ADR-47). AG-070 à 073. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
+    - [fait] AG-070 Petits bois — features.muntins, facade.muntin_rows ; geometry/detail_solver (montant, traverses). U48 vert.
     - [afaire] AG-071 Volets — D-25 : battants ouverts plaqués, refus faute de place. U49.
     - [afaire] AG-072 Lucarnes — D-23, D-24 : une par travée avant, posée sans percer le toit. U50.
     - [afaire] AG-073 Styles et panneaux, RBZ 0.13.0 — D-27 : révision 3, cases aux trois panneaux. H28.

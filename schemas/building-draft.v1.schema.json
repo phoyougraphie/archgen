@@ -149,6 +149,11 @@
           "type": "number",
           "minimum": 0,
           "maximum": 0.3
+        },
+        "muntin_rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
         }
       },
       "additionalProperties": false
@@ -241,6 +246,9 @@
           "type": "boolean"
         },
         "chimneys": {
+          "type": "boolean"
+        },
+        "muntins": {
           "type": "boolean"
         }
       },
