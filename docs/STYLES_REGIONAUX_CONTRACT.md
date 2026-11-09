@@ -57,6 +57,8 @@ Calibrages du catalogue (niveaux ; hauteur d'étage ; pente) et règles historiq
 
 Le panneau propose déjà tous les styles actifs ; la liste devient longue : groupement par famille (« Vernaculaire maçonné », « Façade ordonnancée », « Moderne modulaire »). Case Génoise dans les trois panneaux. Guide, journal ; **RBZ 0.14.0** ; recette **H29** à la main.
 
+- **Fait (AG-078).** Le panneau du bâtiment et celui de la rue reçoivent, avec chaque style, le libellé de sa famille et rangent la liste en groupes ; même ordre dans les deux. Case Génoise aux trois panneaux (champ `genoise` des réglages propres). RBZ 0.14.0. **Recette H29 dans SketchUp non faite** (laissée au propriétaire).
+
 ## Tests
 
 - **U51** génoises : rangs et saillies, toits pris en charge, refus et avertissement, rangée d'angle.

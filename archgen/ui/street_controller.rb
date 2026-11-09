@@ -126,7 +126,7 @@ module Archgen
         @mutations.clear
         Core::Result.ok(
           'version' => VERSION,
-          'profiles' => @registry.active_profiles.map { |p| { 'id' => p.id, 'label' => p.label }.merge(variety_hints(p)) },
+          'profiles' => ordered_profiles.map { |p| { 'id' => p.id, 'label' => p.label, 'family' => family_label(p) }.merge(variety_hints(p)) },
           'defaults' => DEFAULT_SETTINGS,
           'side' => @session.side,
           'tool_active' => @tool_active == true,
@@ -146,11 +146,23 @@ module Archgen
         levels ? out.merge('levels' => { 'min' => levels['min'], 'max' => levels['max'] }) : out
       end
 
+      # AG-078 : même ordre et mêmes familles que le panneau du bâtiment.
+      def ordered_profiles
+        order = Messages::SIGNATURES.keys
+        @registry.active_profiles.sort_by { |p| order.index(p.id) || order.size }
+      end
+
+      def family_label(profile)
+        family = @registry.fetch(profile.family_id, allow_internal: true)
+        family.ok? ? family.value.label : ''
+      end
+
       # AG-067 : ce que le style coche lui-même, pour les cases Détails d'une rue laissées telles quelles.
       def details_hints(profile)
         features = profile.defaults.fetch('features', {})
         { 'revision' => profile.revision, 'glazing' => features['glazing'] == true, 'chimneys' => features['chimneys'] == true,
         'muntins' => features['muntins'] == true, 'shutters' => features['shutters'] == true, 'dormers' => features['dormers'] == true,
+        'genoise' => features['genoise'] == true,
           'shop_height_m' => profile.defaults.dig('shop', 'height_m') || Core::ConfigResolver::DEFAULT_SHOP_HEIGHT_M }
       end
 

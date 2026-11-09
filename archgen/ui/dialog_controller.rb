@@ -184,8 +184,15 @@ module Archgen
       def profiles
         order = Messages::SIGNATURES.keys
         @registry.active_profiles.sort_by { |p| order.index(p.id) || order.size }.map do |profile|
-          { 'id' => profile.id, 'revision' => profile.revision, 'label' => profile.label, 'signature' => Messages::SIGNATURES[profile.id].to_s }
+          { 'id' => profile.id, 'revision' => profile.revision, 'label' => profile.label, 'signature' => Messages::SIGNATURES[profile.id].to_s,
+            'family' => family_label(profile) }
         end
+      end
+
+      # AG-078 : les styles se groupent par famille dans la liste.
+      def family_label(profile)
+        family = @registry.fetch(profile.family_id, allow_internal: true)
+        family.ok? ? family.value.label : ''
       end
 
       def load_selection

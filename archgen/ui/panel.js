@@ -108,7 +108,7 @@
     if (!response.ok) { return showFailure(response.diagnostics); }
     var result = response.result;
     state.profiles = result.profiles;
-    fillSelect(el.profile, result.profiles.map(function (p) { return { value: p.id, label: p.label }; }));
+    fillSelect(el.profile, result.profiles.map(function (p) { return { value: p.id, label: p.label, group: p.family }; }));
     document.querySelectorAll('[data-catalogue="materials"]').forEach(function (select) {
       fillSelect(select, result.materials.map(function (m) { return { value: m.id, label: m.label }; }));
     });
@@ -116,13 +116,24 @@
     startMode(result.mode);
   }
 
+  // Avec `group`, les options se rangent sous un optgroup par groupe, dans l'ordre reçu.
   function fillSelect(select, options) {
     select.textContent = '';
+    var groups = {};
     options.forEach(function (option) {
       var node = document.createElement('option');
       node.value = option.value;
       node.textContent = option.label;
-      select.appendChild(node);
+      var parent = select;
+      if (option.group) {
+        if (!groups[option.group]) {
+          groups[option.group] = document.createElement('optgroup');
+          groups[option.group].label = option.group;
+          select.appendChild(groups[option.group]);
+        }
+        parent = groups[option.group];
+      }
+      parent.appendChild(node);
     });
   }
 

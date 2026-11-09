@@ -1,9 +1,12 @@
 # Journal des versions
 
-## Non publié
+## 0.14.0
+
+Styles régionaux maçonnés (AG-074 à AG-078). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H29 dans SketchUp à faire.
 
 **Ajouts**
 
+- **Panneaux** : styles groupés par famille ; case Génoise aux panneaux du bâtiment, de la rue et de la parcelle (AG-078).
 - **Génoises** : option `features.genoise`, deux rangs de tuiles en encorbellement sous l'égout, avant et arrière, sur deux pans et croupe ; pas encore de case au panneau (AG-074).
 - **Provençal** : styles « Provençal — mas » et « Provençal — maison de village » ; dix matières régionales (enduits ocre et clair, pierres blonde et dorée, granit, schiste, ardoise, tuile mécanique, bois peints gris et rouge) (AG-075).
 - **Breton** : styles « Breton — longère » et « Breton — maison de bourg », granit ou schiste et ardoise, lucarnes et cheminées (AG-076).
