@@ -74,7 +74,8 @@ module Archgen
 
         # Régénère tout l'ensemble dans une définition fraîche ; une copie garde la sienne.
         # `changes` : champs à modifier, fusionnés sur les réglages enregistrés ; `replace` : réglages complets.
-        def regenerate(model:, target:, changes: {}, replace: nil)
+        # `operation` : nom de l'entrée d'Annuler (AG-069 : personnaliser un bâtiment).
+        def regenerate(model:, target:, changes: {}, replace: nil, operation: 'ARCHGEN : régénérer l’ensemble')
           loaded = verify_target(model, target)
           return loaded unless loaded.ok?
 
@@ -88,7 +89,7 @@ module Archgen
           site = kept_site(model, record, computed.value)
           return site unless site.ok?
 
-          written = @guard.run(model, 'ARCHGEN : régénérer l’ensemble', instance: record.instance) { replace_definition(model, record, computed.value, site: site.value) }
+          written = @guard.run(model, operation, instance: record.instance) { replace_definition(model, record, computed.value, site: site.value) }
           written.ok? ? Core::Result.ok(written.value, computed.diagnostics + site.diagnostics) : written
         end
 

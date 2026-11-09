@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : bâtiment de la rue</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1 id="title">Personnaliser ce bâtiment</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Lecture…</p>
+</header>
+
+<main class="form street">
+  <p class="hint">Un champ vide prend la valeur de la rue, affichée en grisé. « Rue » efface le réglage propre de ce champ.</p>
+  <fieldset>
+    <legend id="parcel-name">Bâtiment</legend>
+    <div class="field"><label for="p-levels">Niveaux, RDC inclus</label><input id="p-levels" data-field="levels" data-kind="int" inputmode="numeric"></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-levels-reset" data-reset="levels" aria-label="Niveaux : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-roof">Toit</label><select id="p-roof" data-field="roof" data-kind="select"><option value="">Celui de la rue</option><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="mansard">Mansarde</option></select></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-roof-reset" data-reset="roof" aria-label="Toit : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-ground">Rez-de-chaussée</label><select id="p-ground" data-field="ground_floor" data-kind="select"><option value="">Celui de la rue</option><option value="dwelling">Logement</option><option value="shop">Commerce</option></select></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-ground-reset" data-reset="ground_floor" aria-label="Rez-de-chaussée : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-shop">Hauteur du commerce (m)</label><input id="p-shop" data-field="shop_height_m" data-kind="number" inputmode="decimal"></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-shop-reset" data-reset="shop_height_m" aria-label="Hauteur du commerce : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-chimneys">Cheminées</label><select id="p-chimneys" data-field="chimneys" data-kind="bool"><option value="">Comme la rue</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-chimneys-reset" data-reset="chimneys" aria-label="Cheminées : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-glazing">Vitrage</label><select id="p-glazing" data-field="glazing" data-kind="bool"><option value="">Comme la rue</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-glazing-reset" data-reset="glazing" aria-label="Vitrage : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-width">Largeur de façade (m)</label><input id="p-width" data-field="width_m" data-kind="number" inputmode="decimal"></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-width-reset" data-reset="width_m" aria-label="Largeur : revenir au réglage de la rue">Rue</button></div>
+    <p id="p-width-hint" class="hint wide">La voisine du même côté de rue prend ou cède la différence.</p>
+  </fieldset>
+  <p id="result" class="hint" role="status"></p>
+  <ul id="problems" class="error"></ul>
+  <div class="actions">
+    <button type="button" id="p-all-reset">Tout revenir au réglage de la rue</button>
+    <button type="button" id="p-apply" disabled>Appliquer</button>
+  </div>
+</main>
+<script src="parcel_panel.js"></script>
+</body>
+</html>

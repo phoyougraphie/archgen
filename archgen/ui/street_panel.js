@@ -17,7 +17,7 @@
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
     glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
-    shopHeightField: byId('s-shop-height-field'),
+    shopHeightField: byId('s-shop-height-field'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
@@ -65,6 +65,8 @@
     if (number(el.accessHeight) !== null) { access.height_m = number(el.accessHeight); }
     var out = { building: building, parcel: parcel, layout: layout, access: access, variety: variety() };
     if (number(el.seed) !== null) { out.seed = number(el.seed); }
+    // AG-069 : retirer d'un coup les réglages propres posés au clic droit.
+    if (state.mode === 'edit' && el.custom.checked) { out.parcels = null; }
     return out;
   }
 
@@ -474,7 +476,11 @@ function runSite(message, action, payload) {
     resetSitePreview();
     showSiteState(response.result.site);
     fill(response.result.settings);
-    el.status.textContent = 'Révision ' + response.result.revision;
+    var custom = response.result.custom_count || 0;
+    el.custom.checked = false;
+    el.customField.hidden = custom === 0;
+    el.customLabel.textContent = 'Retirer les réglages propres de ' + custom + ' bâtiment(s) personnalisé(s) au clic droit';
+    el.status.textContent = 'Révision ' + response.result.revision + (custom ? ', ' + custom + ' bâtiment(s) personnalisé(s)' : '');
     showEdit(response.result, true);
   }
 

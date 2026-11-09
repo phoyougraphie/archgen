@@ -96,6 +96,7 @@ Clé facultative `parcels` du format `ensemble` V1 : une table `id de parcelle �
 - **Exception au refus actuel** : seule cette action accepte une parcelle sélectionnée à l'intérieur d'un ensemble. Les autres (Modifier le bâtiment sélectionné, Terrain) la refusent toujours.
 - Le panneau de rue (Modifier l'ensemble sélectionné) affiche le nombre de bâtiments personnalisés ; changer la fourchette ou les toits de la rue ne touche pas leurs réglages propres.
 - **Recette H27** : vrai geste au clic droit, une entrée d'Annuler, réouverture du fichier.
+- **Fait (AG-069).** `ui/parcel_controller` (testable sans SketchUp : init avec les valeurs de la rue calculées par `EnsembleParcels.street_values`, aperçu, écriture rejouée une seule fois, jeton d'aperçu) et `ui/parcel_panel` (menu contextuel, choix de la parcelle : édition ouverte sur une racine d'ensemble, une instance de parcelle sélectionnée dont le nom est un id). Avant d'écrire, l'édition de la rue est refermée et la racine sélectionnée : la définition n'est jamais remplacée pendant qu'on est dedans. Un champ vide vaut la rue ; plus aucun champ retire l'entrée, plus aucune entrée retire `parcels`. Panneau de rue : nombre de bâtiments personnalisés et case « retirer les réglages propres » (`parcels: null`, seule écriture permise de cette clé depuis le panneau de rue). RBZ 0.12.0. Vérifié : tests de contrat (`test/contract/parcel_controller_test.rb`), panneau chargé et champs essayés dans un navigateur ; **recette H27 dans SketchUp non faite** (laissée au propriétaire).
 
 ## Panneaux, AG-067
 

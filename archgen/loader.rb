@@ -96,6 +96,7 @@ module Archgen
       ui/messages
       ui/dialog_controller
       ui/street_controller
+      ui/parcel_controller
       ui/road_controller
       ui/network_controller
     ].freeze

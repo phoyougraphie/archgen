@@ -292,7 +292,8 @@ module Archgen
         return status unless status.ok?
 
         @terrain = Adapters::SketchUp::TerrainRef.new(document_key: @model_provider.call.guid, persistent_id: status.value['terrain_pid']) if status.value && !@terrain
-        Core::Result.ok(edit_body(computed.value, 'settings' => @edit_settings, 'revision' => @edit_target.revision, 'site' => site_state(status.value)))
+        Core::Result.ok(edit_body(computed.value, 'settings' => @edit_settings, 'revision' => @edit_target.revision, 'site' => site_state(status.value),
+                                  'custom_count' => (@edit_settings['parcels'] || {}).size))
       end
 
       def edit_preview(payload)
@@ -399,6 +400,8 @@ module Archgen
         chosen = settings.dig('building', 'profile')
         tree['building'] = tree['building'].merge('profile' => chosen) if chosen && chosen['id'] != stored.dig('building', 'profile', 'id')
         tree['seed'] = settings['seed'] if settings.key?('seed')
+        # AG-069 : le panneau de rue peut retirer tous les réglages propres (null), jamais en écrire.
+        tree.delete('parcels') if settings.key?('parcels') && settings['parcels'].nil?
         if settings.key?('variety')
           settings['variety'].nil? ? tree.delete('variety') : tree['variety'] = settings['variety']
         end

@@ -7,6 +7,7 @@ Archgen::Loader.load_adapter
 Archgen::Loader.load_internal('ui/panel_observers')
 Archgen::Loader.load_internal('ui/panel')
 Archgen::Loader.load_internal('ui/street_panel')
+Archgen::Loader.load_internal('ui/parcel_panel')
 Archgen::Loader.load_internal('ui/road_panel')
 Archgen::Loader.load_internal('ui/network_panel')
 
@@ -23,6 +24,8 @@ module Archgen
     submenu.add_item('Modifier la voie sélectionnée') { UI::RoadPanel.show('edit') }
     submenu.add_item('Tracer un réseau de voies') { UI::NetworkPanel.show('trace') }
     submenu.add_item('Modifier le réseau sélectionné') { UI::NetworkPanel.show('edit') }
+    # AG-069 : clic droit sur un bâtiment, dans une rue ou un îlot ouvert.
+    UI::ParcelPanel.install_context_menu
     @menu_installed = true
   end
 end

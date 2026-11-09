@@ -104,6 +104,8 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 
 **Détails de toute la rue :** la section **Détails** a les mêmes cases, pour tous les bâtiments de la rue ou de l'îlot (niveau de détail 1). Une case laissée telle quelle suit le style ; une case touchée vaut pour toute la rue. Les commerces respectent le passage d'un îlot à porche. Personnaliser un seul bâtiment viendra par un clic droit.
 
+**Personnaliser un bâtiment de la rue :** double-cliquez la rue pour l'ouvrir, faites un clic droit sur un bâtiment, puis **ARCHGEN → Personnaliser ce bâtiment**. L'édition de la rue se referme et un petit panneau s'ouvre : **niveaux**, **toit**, **rez-de-chaussée** (logement ou commerce) et **hauteur du commerce**, **cheminées**, **vitrage**, **largeur de façade**. Un champ vide prend la valeur de la rue, affichée en grisé ; **Rue** efface le réglage de ce champ, **Tout revenir au réglage de la rue** les efface tous. Une largeur propre se prend sur la voisine du même côté (6 m au moins pour elle) ; un bâtiment d'angle garde la sienne. **Appliquer** régénère la rue ; **Annuler** la rétablit en une fois. Les autres bâtiments ne bougent pas, et un tirage de rue variée reste le même. Le panneau de rue affiche le nombre de bâtiments personnalisés et peut retirer tous leurs réglages propres.
+
 **Modifier :** sélectionnez l'ensemble, puis **Extensions → ARCHGEN → Modifier l'ensemble sélectionné**. Changez les réglages (la variété et sa graine comprises ; décocher Varier rend un seul gabarit), puis cliquez sur **Remplacer cet ensemble**. Toute sa géométrie est remplacée, ses bâtiments compris. Le tracé ne change pas : pour le changer, tracez-en un autre. Une copie garde sa géométrie jusqu'à sa propre modification.
 
 **À savoir**

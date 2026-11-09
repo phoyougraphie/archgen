@@ -1,10 +1,14 @@
 # Journal des versions
 
-## Non publié
+## 0.12.0
+
+Personnaliser un bâtiment d'une rue (AG-068, AG-069). Moteur de géométrie 1 inchangé ; un ensemble sans réglage propre garde son plan. Recettes H26 et H27 dans SketchUp à faire.
 
 **Ajouts**
 
-- **Réglages propres d'une parcelle** (format) : clé `parcels` d'une rue ou d'un îlot, pour changer les niveaux, le toit, le commerce, les cheminées, le vitrage ou la largeur d'un seul bâtiment ; le geste au clic droit vient avec AG-069 (AG-068).
+- **Personnaliser ce bâtiment** : dans une rue ou un îlot ouvert, clic droit sur un bâtiment, puis ARCHGEN → Personnaliser ce bâtiment ; niveaux, toit, commerce et sa hauteur, cheminées, vitrage, largeur ; valeur de la rue en grisé et retour à la rue par champ ; une entrée d'Annuler « ARCHGEN : personnaliser un bâtiment » (AG-069).
+- **Réglages propres d'une parcelle** (format) : clé `parcels` d'une rue ou d'un îlot ; la largeur se prend sur la voisine du même côté (AG-068).
+- **Panneau de rue** : nombre de bâtiments personnalisés, case pour retirer tous leurs réglages propres (AG-069).
 
 ## 0.11.0
 

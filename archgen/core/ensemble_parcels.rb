@@ -150,6 +150,38 @@ module Archgen
         out
       end
 
+      # AG-069 : ce que la rue donne à cette parcelle sans ses réglages propres (valeurs grisées du
+      # panneau de parcelle). Mêmes étapes que EnsembleEngine.call, sans plan.
+      def street_values(settings, id, registry:, intake:)
+        others = (settings['parcels'] || {}).reject { |key, _| key == id }
+        street = settings.merge('parcels' => others)
+        layout = EnsembleEngine.layout_for(street, registry: registry)
+        return layout unless layout.ok?
+
+        parcels = layout.value['parcels']
+        parcel = parcels.find { |p| p['id'] == id }
+        return Result.fail([error('E_STREET_PARCEL', "/parcels/#{id}", 'unknown_parcel', id: id)]) unless parcel
+
+        parcel = EnsembleVariety.assign(street, parcels).find { |p| p['id'] == id } if street['variety']
+        ready = ParcelBuilding.prepare(street, parcel, registry: registry, intake: intake)
+        return ready unless ready.ok?
+
+        config = ready.value.config.to_h
+        Result.ok(
+          'levels' => config['levels']['count'], 'roof' => config['roof']['type'],
+          'ground_floor' => config.fetch('ground_floor', 'dwelling'),
+          'shop_height_m' => config.dig('shop', 'height_m') || shop_default(config, registry),
+          'chimneys' => config['features']['chimneys'] == true, 'glazing' => config['features']['glazing'] == true,
+          'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true
+        )
+      end
+
+      def shop_default(config, registry)
+        profile = registry.fetch(config['profile']['id'], revision: config['profile']['revision'])
+        (profile.ok? && profile.value.defaults.dig('shop', 'height_m')) || ConfigResolver::DEFAULT_SHOP_HEIGHT_M
+      end
+      private_class_method :shop_default
+
       def error(code, path, reason, **params)
         Diagnostic.error(code, path, reason: reason, **params)
       end
