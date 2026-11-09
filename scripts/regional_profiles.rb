@@ -48,6 +48,34 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'genoise' => true }
     },
     'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.4, 2.0], walls: %w[ochre_render light_render limestone])
+  },
+  'breton_longere' => {
+    'label' => 'Breton — longère', 'period' => 'Longère bretonne, XVIIIe-XIXe siècle', 'regions' => %w[bretagne], 'typologies' => %w[residential],
+    'requires' => %w[gable glazing muntins dormers chimneys],
+    'defaults' => {
+      'footprint' => { 'width_m' => 16, 'depth_m' => 7 },
+      'levels' => { 'count' => 1, 'height_m' => 2.6, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 4, 'window_width_m' => 0.9, 'window_height_m' => 1.2, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 0.9, 'door_height_m' => 2.0, 'muntin_rows' => 3 },
+      'structure' => { 'wall_m' => 0.5 },
+      'roof' => gable(45, 0.15),
+      'materials' => { 'wall' => 'granite', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'dormers' => true, 'chimneys' => true }
+    },
+    'rules' => rules(levels: [1, 2], roofs: %w[gable], ratio: [1.1, 1.8], walls: %w[granite schist light_render])
+  },
+  'breton_bourg' => {
+    'label' => 'Breton — maison de bourg', 'period' => 'Maison de bourg bretonne, XIXe siècle', 'regions' => %w[bretagne], 'typologies' => %w[residential mixed_use],
+    'requires' => %w[gable glazing muntins dormers chimneys surrounds],
+    'defaults' => {
+      'footprint' => { 'width_m' => 9, 'depth_m' => 8 },
+      'levels' => { 'count' => 2, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.5, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'muntin_rows' => 3 },
+      'structure' => { 'wall_m' => 0.45 },
+      'roof' => gable(45, 0.15),
+      'materials' => { 'wall' => 'schist', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'dormers' => true, 'chimneys' => true, 'surrounds' => true }
+    },
+    'rules' => rules(levels: [2, 3], roofs: %w[gable], ratio: [1.3, 1.9], walls: %w[granite schist light_render])
   }
 }.freeze
 

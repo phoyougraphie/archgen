@@ -10,6 +10,8 @@ module Archgen
         'toulousain' => 'Brique foraine, toit en tuile canal, baies verticales ; encadrements au LOD 1.',
         'provencal_mas' => 'Enduit ocre, deux niveaux, toit bas en tuile canal ; génoise, volets verts au LOD 1.',
         'provencal_village' => 'Enduit clair, maison étroite de trois niveaux ; génoise, volets bleu pastel au LOD 1.',
+        'breton_longere' => 'Granit et ardoise, longère basse et allongée ; lucarnes et cheminées au LOD 1.',
+        'breton_bourg' => 'Schiste et ardoise, maison de bourg à toit pentu ; lucarnes, cheminées et encadrements au LOD 1.',
         'brutalist' => 'Béton, toit plat, grille répétitive ; baies en retrait au LOD 1 Structural.'
       }.freeze
 
