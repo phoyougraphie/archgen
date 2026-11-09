@@ -56,11 +56,12 @@ Réglage `ground_floor` du bâtiment : `"dwelling"` (défaut, absent) ou `"shop"
 Option `features.chimneys` (booléen), LOD 1.
 
 - **Souche** : parallélépipède de 0,60 × 0,45 m (départ), adossé à l'intérieur d'un mur latéral (à 0,10 m de sa face intérieure), centré sur le faîtage pour un toit à deux pans ou une mansarde. Le haut dépasse le faîtage de 0,60 m ; sur un toit plat, il dépasse la toiture de 1,00 m. Un **couronnement** de 0,05 m déborde de 0,05 m. Matière `materials.wall`.
-- **Nombre** : 1 ou 2 souches par bâtiment (une contre chaque mur latéral), tiré par `unit(seed, "chimneys")`. Une parcelle d'angle ou un bâtiment seul suit la même règle.
+- **Nombre** : 1 ou 2 souches par bâtiment (une contre chaque mur latéral), tiré par `unit(seed, "chimneys")` (< 0,5 : une) ; une souche seule prend le côté gauche ou droit tiré par `unit(seed, "chimneys/side")`. Une parcelle d'angle ou un bâtiment seul suit la même règle ; sur une parcelle d'angle, la souche reste à 0,10 m du mur biais sur toute sa profondeur. La seed devient géométrique : deux parcelles ne partagent plus leur plan quand les cheminées sont cochées.
 - **Assise** : la souche part du haut des murs (z = H) et traverse la peau du toit sans la percer, comme la peau du toit traverse déjà la corniche. Elle ne déborde jamais chez le voisin.
-- **Croupe** : il n'y a pas de faîtage sur toute la longueur ; souche centrée sur le bout du faîtage.
+- **Croupe** : il n'y a pas de faîtage sur toute la longueur ; souche centrée sur le bout du faîtage. Même règle pour la mansarde d'un bâtiment seul, dont le haut est une croupe ; une mansarde de rangée a des pignons et suit la règle des murs latéraux. Un toit carré n'a qu'un sommet : une seule souche.
+- **Résolution** : décochée, l'option n'est pas écrite ; `chimneys: false` enregistré est refusé (`chimneys_false_written`). Couronnement de z = haut − 0,05 au haut ; catégorie `chimney`. Sur un toit plat, la face basse de la souche est confondue avec le toit et cachée.
 - **D-20, options.** **A, retenue (ADR-45)** : souches contre les murs latéraux, sur tous les types de toit (réaliste en rangée, où les souches mitoyennes se groupent par deux, et simple). **B** : souches seulement sur les toits en pente ; un toit plat n'en a pas, avec un avertissement `W_DETAIL`.
-- **Tests U46.**
+- **Tests U46** (`test/unit/chimney_test.rb`) : option non écrite, refus ; deux pans (position, faîtage + 0,60, couronnement, matière) ; tirage stable ; toit plat + 1,00 ; croupe, carré, mansarde ; LOD 0, deux modes ; rue : souches dans chaque parcelle, une ou deux selon la seed. Empreintes de quatre ensembles types identiques. **Fait (AG-066)** ; contrôle dans SketchUp laissé au propriétaire.
 
 ## 4. Personnaliser une parcelle — AG-068 et AG-069 (D-21, D-22)
 

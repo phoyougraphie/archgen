@@ -64,11 +64,19 @@ module Archgen
       FASCIA_DEPTH_M = 0.10
       FASCIA_Z_M = [0.50, 0.10].freeze # sous le plancher du premier étage
       SHOP_DOOR_M = 0.90
+      # AG-066 : souche de cheminée (départ).
+      CHIMNEY_X_M = 0.60
+      CHIMNEY_Y_M = 0.45
+      CHIMNEY_GAP_M = 0.10
+      CHIMNEY_ABOVE_RIDGE_M = 0.60
+      CHIMNEY_ABOVE_FLAT_M = 1.00
+      CHIMNEY_CAP_M = 0.05
       EPS = Core::Quant::EPSILON
 
       module_function
 
-      def call(footprint:, levels:, openings:, config:)
+      # `roof_top_z_m` et `row` ne servent qu'aux cheminées : haut du toit, bâtiment de rangée.
+      def call(footprint:, levels:, openings:, config:, roof_top_z_m: nil, row: false)
         return Core::Result.ok(DetailPlan.new(nodes: [], definitions: {})) unless config['lod'] == 1
 
         features = config['features']
@@ -85,6 +93,7 @@ module Archgen
         nodes << cornice(footprint, levels, config) if features['cornice']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
+        nodes += chimneys(footprint, levels, config, roof_top_z_m, row) if features['chimneys'] && roof_top_z_m
         built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
@@ -360,6 +369,62 @@ module Archgen
         ring && Node.leaf('fascia', 'fascia', Boxes.prism(ring, z0, z1, material))
       end
       private_class_method :fascia
+
+      # AG-066 : une ou deux souches. Contre les murs latéraux, centrées sur le faîtage (deux pans,
+      # toit plat, toute rangée) ; au bout du faîtage d'une croupe ou d'une mansarde seule.
+      def chimneys(footprint, levels, config, roof_top, row)
+        seed = config['seed']
+        count = Core::DeterministicRandom.unit(seed, 'chimneys') < 0.5 ? 1 : 2
+        spots = chimney_spots(footprint, config, row)
+        spots = [spots[Core::DeterministicRandom.unit(seed, 'chimneys/side') < 0.5 ? 0 : -1]] if count == 1 || spots.size == 1
+        flat = config['roof']['type'] == 'flat'
+        top = Core::Quant.q(roof_top + (flat ? CHIMNEY_ABOVE_FLAT_M : CHIMNEY_ABOVE_RIDGE_M))
+        base = levels.last.top_z_m
+        material = config['materials']['wall']
+        spots.uniq.each_with_index.flat_map do |(x, y), index|
+          x0 = Core::Quant.q(x - (CHIMNEY_X_M / 2.0))
+          x1 = Core::Quant.q(x + (CHIMNEY_X_M / 2.0))
+          y0 = Core::Quant.q(y - (CHIMNEY_Y_M / 2.0))
+          y1 = Core::Quant.q(y + (CHIMNEY_Y_M / 2.0))
+          cap = CHIMNEY_CAP_M
+          [Node.leaf("chimney/#{index}", 'chimney', Boxes.solid(x0, x1, y0, y1, base, Core::Quant.q(top - cap), material)),
+           Node.leaf("chimney/#{index}/cap", 'chimney', Boxes.solid(x0 - cap, x1 + cap, y0 - cap, y1 + cap, Core::Quant.q(top - cap), top, material))]
+        end
+      end
+      private_class_method :chimneys
+
+      # Milieux des souches, de gauche à droite (ou de l'avant vers l'arrière).
+      def chimney_spots(footprint, config, row)
+        roof = config['roof']
+        return ridge_ends(footprint, roof) if !row && %w[hip mansard].include?(roof['type'])
+
+        y = footprint.depth_m / 2.0
+        ys = [y - (CHIMNEY_Y_M / 2.0), y + (CHIMNEY_Y_M / 2.0)]
+        inner = config['structure']['wall_m'] + CHIMNEY_GAP_M + (CHIMNEY_X_M / 2.0)
+        left = ys.map { |v| footprint.left_x(v) }.max + inner
+        right = ys.map { |v| footprint.right_x(v) }.min - inner
+        [[left, y], [right, y]]
+      end
+      private_class_method :chimney_spots
+
+      # Même faîtage que RoofSolver.hip_faces ; un carré n'a qu'un sommet.
+      def ridge_ends(footprint, roof)
+        inset = roof['type'] == 'mansard' ? roof['inset_m'] : 0.0
+        x0 = inset
+        y0 = inset
+        x1 = footprint.width_m - inset
+        y1 = footprint.depth_m - inset
+        width = x1 - x0
+        depth = y1 - y0
+        half = [width, depth].min / 2.0
+        xc = (x0 + x1) / 2.0
+        yc = (y0 + y1) / 2.0
+        return [[xc, yc]] if (width - depth).abs <= RoofSolver::SQUARE_TOLERANCE
+        return [[x0 + half, yc], [x1 - half, yc]] if width > depth
+
+        [[xc, y0 + half], [xc, y1 - half]]
+      end
+      private_class_method :ridge_ends
     end
   end
 end

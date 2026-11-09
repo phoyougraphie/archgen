@@ -24,7 +24,7 @@ module Archgen
         '/roof/type' => 'Type de toit', '/roof/overhang_m' => 'Débord', '/roof/pitch_deg' => 'Pente', '/roof/lower_pitch_deg' => 'Pente basse', '/roof/inset_m' => 'Retrait du brisis',
         '/materials/wall' => 'Matériau des murs', '/materials/roof' => 'Matériau du toit', '/materials/frames' => 'Matériau des cadres',
         '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
-        '/features/glazing' => 'Vitrage', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
+        '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
         '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
         '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
         '/site/terrain' => 'Terrain', '/site/placement' => 'Placement', '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
@@ -87,6 +87,7 @@ module Archgen
         'glass_required' => 'Le vitrage demande une matière de verre.',
         'glass_without_glazing' => 'Une matière de verre est donnée sans vitrage.',
         'glazing_false_written' => 'Un vitrage décoché ne s’enregistre pas : retirez ce champ.',
+        'chimneys_false_written' => 'Des cheminées décochées ne s’enregistrent pas : retirez ce champ.',
         'shop_without_ground_floor' => 'Une hauteur de commerce est donnée sans rez-de-chaussée commerçant.',
         'shop_height_required' => 'Un rez-de-chaussée commerçant demande sa hauteur.',
         'shop_with_heights' => 'Les hauteurs par niveau sont saisies : elles fixent déjà le rez-de-chaussée. Retirez la hauteur du commerce.',

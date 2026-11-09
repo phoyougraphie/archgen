@@ -239,6 +239,9 @@
         },
         "glazing": {
           "type": "boolean"
+        },
+        "chimneys": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

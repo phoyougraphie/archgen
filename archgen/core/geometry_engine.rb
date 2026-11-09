@@ -76,7 +76,8 @@ module Archgen
         roof = roof_solver.call(footprint, levels.last.top_z_m, input['roof'], materials: input['materials'])
         return roof unless roof.ok?
 
-        details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input)
+        details = Geometry::DetailSolver.call(footprint: footprint, levels: levels, openings: openings, config: input,
+                                              roof_top_z_m: roof.value.top_z_m, row: !row.nil?)
         return details unless details.ok?
 
         plan = build_plan(footprint, levels, openings, grids.value, roof.value, details.value, input, row)

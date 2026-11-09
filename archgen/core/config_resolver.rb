@@ -127,7 +127,7 @@ module Archgen
       end
       private_class_method :finish
 
-      # AG-064 : un vitrage décoché n'est pas écrit, ni sa matière ; coché, il prend le verre
+      # AG-064, AG-066 : un vitrage ou des cheminées décochés ne sont pas écrits, ni sa matière ; coché, il prend le verre
       # du catalogue si le style n'en donne pas. Un bâtiment d'avant garde ainsi son empreinte.
       def with_glazing(config)
         features = config['features'].dup
@@ -138,6 +138,7 @@ module Archgen
           features.delete('glazing')
           materials.delete('glass')
         end
+        features.delete('chimneys') unless features['chimneys']
         config.merge('features' => features, 'materials' => materials)
       end
       private_class_method :with_glazing

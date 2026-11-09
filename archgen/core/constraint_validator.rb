@@ -40,6 +40,7 @@ module Archgen
         out << Diagnostic.error('E_SCHEMA', '/materials/glass', reason: 'glass_required') if glazing && !glass
         out << Diagnostic.error('E_SCHEMA', '/materials/glass', reason: 'glass_without_glazing') if glass && !glazing
         out << Diagnostic.error('E_SCHEMA', '/features/glazing', reason: 'glazing_false_written') if data['features'].key?('glazing') && !glazing
+        out << Diagnostic.error('E_SCHEMA', '/features/chimneys', reason: 'chimneys_false_written') if data['features'].key?('chimneys') && !data['features']['chimneys']
       end
       private_class_method :check_glazing
 
