@@ -22,6 +22,14 @@ module Archgen
         config = config_for(settings, parcel, registry: registry, intake: intake)
         return config unless config.ok?
 
+        # AG-097 : largeur des fenêtres à l'échelle tirée, au pas de 5 cm ; seconde résolution.
+        scale = parcel.dig('variety', 'ground', 'width_scale')
+        if scale
+          width = ((config.value.dig('facade', 'window_width_m') * scale / 0.05).round * 0.05).round(2)
+          config = config_for(settings, parcel.merge('window_width_m' => width), registry: registry, intake: intake)
+          return config unless config.ok?
+        end
+
         hip = hip_problem(config.value)
         return Result.fail([hip]) if hip
 
@@ -76,13 +84,21 @@ module Archgen
         pick = parcel['variety'] || {}
         building = Merge.leaves(building, 'levels' => { 'count' => pick['levels'] }) if pick['levels']
         building = Merge.leaves(building, 'roof' => { 'type' => pick['roof'] }) if pick['roof']
+        # AG-097 : commerce tiré ; un réglage propre `ground_floor` passe ensuite.
+        building = Merge.leaves(building, 'ground_floor' => pick.dig('ground', 'shop') ? 'shop' : 'dwelling') if pick['ground']&.key?('shop')
         # Réglages propres (AG-068) : après la variété.
         building = Merge.leaves(building, EnsembleParcels.building_overrides(parcel['own'])) if parcel['own']
+        # AG-096 : un autre style que la rue (ADR-49) ; ses défauts passent avant les réglages de la rue.
+        building = Merge.leaves(building, 'facade' => { 'window_width_m' => parcel['window_width_m'] }) if parcel['window_width_m']
+        own_profile = EnsembleParcels.profile_for(parcel['own'])
+        building = building.merge('profile' => own_profile) if own_profile
+        ground = pick['ground'] || {}
+        entry = ground['entry_bay'] && ground['entry_bay'] < front ? ground['entry_bay'] : front / 2
         Merge.leaves(
           building,
           'footprint' => { 'width_m' => parcel['width_m'], 'depth_m' => parcel['depth_m'] },
           'seed' => seed(settings['seed'], parcel['id']),
-          'facade' => { 'front_bays' => front, 'side_bays' => 0, 'entry_bay' => front / 2 }
+          'facade' => { 'front_bays' => front, 'side_bays' => 0, 'entry_bay' => entry }
         )
       end
       private_class_method :request

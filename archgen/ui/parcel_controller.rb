@@ -70,7 +70,11 @@ module Archgen
         street = Core::EnsembleParcels.street_values(@settings, @parcel_id, registry: @registry, intake: @intake)
         return street unless street.ok?
 
-        Core::Result.ok('version' => VERSION, 'parcel_id' => @parcel_id, 'street' => street.value, 'own' => own_fields(current_own),
+        styles = Messages::SIGNATURES.keys.filter_map { |id| @registry.fetch(id).value }.map do |p|
+          family = @registry.fetch(p.family_id, allow_internal: true)
+          { 'id' => p.id, 'label' => p.label, 'family' => family.ok? ? family.value.label : '' }
+        end
+        Core::Result.ok('version' => VERSION, 'parcel_id' => @parcel_id, 'street' => street.value, 'own' => own_fields(current_own), 'styles' => styles,
                         'custom_count' => (@settings['parcels'] || {}).size)
       end
 
@@ -111,18 +115,20 @@ module Archgen
 
       # Le panneau envoie des champs plats ; la hauteur du commerce y est `shop_height_m`.
       def own_fields(own)
-        out = own.reject { |key, _| key == 'shop' }
+        out = own.reject { |key, _| %w[shop style_revision].include?(key) }
         out['shop_height_m'] = own.dig('shop', 'height_m') if own.dig('shop', 'height_m')
         out
       end
 
-      FIELDS = %w[levels roof ground_floor shop_height_m chimneys glazing muntins shutters dormers genoise stepped_gable cladding timber_frame classical pilotis structural_grid sun_shades width_m].freeze
+      FIELDS = %w[style levels roof ground_floor shop_height_m chimneys glazing muntins shutters dormers genoise stepped_gable cladding timber_frame classical pilotis structural_grid sun_shades shop_front width_m].freeze
 
       # Champ absent : la valeur de la rue. Plus aucun champ : la parcelle n'a plus de réglage propre.
       def tree_with(fields)
         return failure('E_SCHEMA', '/own', 'invalid_envelope') unless fields.is_a?(Hash) && (fields.keys - FIELDS).empty?
 
         own = fields.reject { |key, value| key == 'shop_height_m' || value.nil? }
+        # Même style qu'avant : sa révision figée reste (ADR-46).
+        own['style_revision'] = current_own['style_revision'] if own['style'] && own['style'] == current_own['style'] && current_own['style_revision']
         own['shop'] = { 'height_m' => fields['shop_height_m'] } unless fields['shop_height_m'].nil?
         parcels = (@settings['parcels'] || {}).reject { |key, _| key == @parcel_id }
         parcels[@parcel_id] = own unless own.empty?

@@ -17,6 +17,7 @@
   <p class="hint">Un champ vide prend la valeur de la rue, affichée en grisé. « Rue » efface le réglage propre de ce champ.</p>
   <fieldset>
     <legend id="parcel-name">Bâtiment</legend>
+    <div class="field wide"><label for="p-style">Style</label><select id="p-style" data-field="style" data-kind="select"><option value="">Celui de la rue</option></select></div>
     <div class="field"><label for="p-levels">Niveaux, RDC inclus</label><input id="p-levels" data-field="levels" data-kind="int" inputmode="numeric"></div>
     <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-levels-reset" data-reset="levels" aria-label="Niveaux : revenir au réglage de la rue">Rue</button></div>
     <div class="field"><label for="p-roof">Toit</label><select id="p-roof" data-field="roof" data-kind="select"><option value="">Celui de la rue</option><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="mansard">Mansarde</option></select></div>
@@ -51,6 +52,8 @@
     <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-structural_grid-reset" data-reset="structural_grid" aria-label="Trame structurelle : revenir au réglage de la rue">Rue</button></div>
     <div class="field"><label for="p-sun_shades">Brise-soleil</label><select id="p-sun_shades" data-field="sun_shades" data-kind="bool"><option value="">Comme la rue</option><option value="true">Oui</option><option value="false">Non</option></select></div>
     <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-sun_shades-reset" data-reset="sun_shades" aria-label="Brise-soleil : revenir au réglage de la rue">Rue</button></div>
+    <div class="field"><label for="p-shop_front">Devanture</label><select id="p-shop_front" data-field="shop_front" data-kind="select"><option value="">Comme la rue</option><option value="none">Rien</option><option value="awning">Store banne</option><option value="pergola">Pergola</option></select></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-shop_front-reset" data-reset="shop_front" aria-label="Devanture : revenir au réglage de la rue">Rue</button></div>
     <div class="field"><label for="p-width">Largeur de façade (m)</label><input id="p-width" data-field="width_m" data-kind="number" inputmode="decimal"></div>
     <div class="field"><span class="hint">&nbsp;</span><button type="button" id="p-width-reset" data-reset="width_m" aria-label="Largeur : revenir au réglage de la rue">Rue</button></div>
     <p id="p-width-hint" class="hint wide">La voisine du même côté de rue prend ou cède la différence.</p>

@@ -44,6 +44,7 @@
     <div class="field check"><input type="checkbox" id="s-pilotis" data-detail="pilotis"><label for="s-pilotis">Pilotis</label></div>
     <div class="field check"><input type="checkbox" id="s-structural_grid" data-detail="structural_grid"><label for="s-structural_grid">Trame structurelle</label></div>
     <div class="field check"><input type="checkbox" id="s-sun_shades" data-detail="sun_shades"><label for="s-sun_shades">Brise-soleil</label></div>
+    <div class="field"><label for="s-shopfront">Devanture des commerces</label><select id="s-shopfront"><option value="none">Rien</option><option value="awning">Store banne</option><option value="pergola">Pergola</option></select></div>
     <div class="field check"><input type="checkbox" id="s-shop" data-detail="shop"><label for="s-shop">Commerces au rez-de-chaussée</label></div>
     <div class="field" id="s-shop-height-field" hidden><label for="s-shop-height">Hauteur des commerces, m (vide : selon le style)</label><input id="s-shop-height" inputmode="decimal"></div>
   </fieldset>
@@ -58,6 +59,8 @@
   </fieldset>
   <fieldset>
     <legend>Variété</legend>
+    <div class="field wide check"><input type="checkbox" id="s-ground"><label for="s-ground">Rez-de-chaussée variés (porte et largeur des fenêtres tirées par bâtiment)</label></div>
+    <div class="field"><label for="s-shopshare">Part de commerces, % (vide : selon la case Commerces)</label><input id="s-shopshare" inputmode="numeric"></div>
     <div class="field wide check"><input type="checkbox" id="s-variety"><label for="s-variety">Varier les bâtiments (niveaux et toits tirés par parcelle)</label></div>
     <div class="field"><label for="s-vmin">Niveaux, au moins</label><input id="s-vmin" inputmode="numeric" data-variety="1"></div>
     <div class="field"><label for="s-vmax">Niveaux, au plus</label><input id="s-vmax" inputmode="numeric" data-variety="1"></div>

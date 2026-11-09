@@ -129,6 +129,7 @@ module Archgen
         nodes += OrnamentSolver.classical(footprint, openings, config, levels.last.top_z_m) if features['classical']
         nodes += ModernSolver.structural_grid(footprint, levels, openings, config) if features['structural_grid']
         nodes += ModernSolver.sun_shades(footprint, openings, config) if features['sun_shades']
+        nodes += ModernSolver.shop_front(footprint, levels, openings, config) if features['shop_front'] && shop?(config)
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m

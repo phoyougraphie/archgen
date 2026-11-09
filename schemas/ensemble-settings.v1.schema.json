@@ -140,6 +140,23 @@
               "hip"
             ]
           }
+        },
+        "ground": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "entry": {
+              "type": "boolean"
+            },
+            "shop_share": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "widths": {
+              "type": "boolean"
+            }
+          }
         }
       },
       "additionalProperties": false

@@ -21,7 +21,7 @@
     return typeof value === 'number' ? String(Math.round(value * 1000000) / 1000000).replace('.', ',') : '';
   }
 
-  var WORDS = { flat: 'plat', gable: 'deux pans', mansard: 'mansarde', dwelling: 'logement', shop: 'commerce', 'true': 'oui', 'false': 'non' };
+  var WORDS = { none: 'rien', awning: 'store banne', pergola: 'pergola', flat: 'plat', gable: 'deux pans', mansard: 'mansarde', dwelling: 'logement', shop: 'commerce', 'true': 'oui', 'false': 'non' };
 
   // Valeur de la rue, en grisé : placeholder d'un champ, libellé de l'option vide d'une liste.
   function showStreet(street) {
@@ -89,6 +89,25 @@
     }, DEBOUNCE_MS);
   }
 
+  // Styles groupés par famille, après l'option « celui de la rue ».
+  function fillStyles(styles) {
+    var select = byId('p-style');
+    while (select.options.length > 1) { select.remove(1); }
+    Array.prototype.slice.call(select.querySelectorAll('optgroup')).forEach(function (g) { select.removeChild(g); });
+    var groups = {};
+    styles.forEach(function (style) {
+      if (!groups[style.family]) {
+        groups[style.family] = document.createElement('optgroup');
+        groups[style.family].label = style.family;
+        select.appendChild(groups[style.family]);
+      }
+      var option = document.createElement('option');
+      option.value = style.id;
+      option.textContent = style.label;
+      groups[style.family].appendChild(option);
+    });
+  }
+
   function onInit(response) {
     if (!response.ok) {
       el.status.textContent = 'Bâtiment illisible';
@@ -97,6 +116,7 @@
     }
     var result = response.result;
     state.street = result.street;
+    fillStyles(result.styles || []);
     el.name.textContent = 'Bâtiment ' + result.parcel_id;
     el.status.textContent = result.custom_count + ' bâtiment(s) personnalisé(s) dans cette rue';
     showStreet(result.street);

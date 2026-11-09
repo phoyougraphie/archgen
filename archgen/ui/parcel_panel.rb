@@ -26,15 +26,6 @@ module Archgen
         [root, parcel.name]
       end
 
-      def self.install_context_menu
-        ::UI.add_context_menu_handler do |menu|
-          model = ::Sketchup.active_model
-          next unless model && picked(model)
-
-          menu.add_submenu('ARCHGEN').add_item('Personnaliser ce bâtiment') { show }
-        end
-      end
-
       # L'édition de l'ensemble est refermée et la racine sélectionnée : l'écriture remplacera sa
       # définition, jamais pendant qu'on est dedans.
       def self.show

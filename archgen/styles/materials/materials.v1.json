@@ -73,6 +73,18 @@
       "label": "Brique rouge",
       "srgb": "#9A4A32"
     },
+    "canvas_red": {
+      "label": "Toile rouge",
+      "srgb": "#A63A32"
+    },
+    "canvas_green": {
+      "label": "Toile verte",
+      "srgb": "#3F6B4E"
+    },
+    "canvas_beige": {
+      "label": "Toile beige",
+      "srgb": "#D8C8A6"
+    },
     "glass": {
       "label": "Verre",
       "srgb": "#9FB8C4",

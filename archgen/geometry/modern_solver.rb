@@ -59,6 +59,72 @@ module Archgen
         end
       end
 
+      AWNING = { depth: 1.50, drop: 0.50, thick: 0.02, valance: 0.25 }.freeze
+      PERGOLA = { depth: 2.40, height: 2.60, post: 0.10, beam: 0.10, rafter: 0.06, rafter_h: 0.08, spacing: 0.60, post_spacing: 3.0, door_gap: 0.30 }.freeze
+
+      # AG-098 : store banne au-dessus de chaque vitrine, ou pergola de marge à marge interrompue
+      # devant la porte de l'immeuble. Façade avant, sous le bandeau.
+      def shop_front(footprint, levels, openings, config)
+        facade = footprint.facade('front')
+        top = levels.first.top_z_m - 0.50
+        front = openings.select { |o| o.facade_id == 'front' && o.level_index.zero? }
+        return awnings(facade, front, top, config['materials']['awning']) if config['features']['shop_front'] == 'awning'
+
+        pergola(facade, front, config)
+      end
+
+      def awnings(facade, front, top, material)
+        a = AWNING
+        front.select { |o| o.kind == 'shopfront' }.flat_map do |o|
+          low = top - a[:drop]
+          section = [[0.0, top], [0.0, top - a[:thick]], [-a[:depth], low - a[:thick]], [-a[:depth], low]]
+          [Node.leaf("shop_front/awning/#{o.bay_index}", 'shop_front', extrude(facade, section, o.u_min_m, o.u_max_m, material)),
+           box(facade, "shop_front/valance/#{o.bay_index}", o.u_min_m, o.u_max_m, low - a[:valance], low, [-a[:depth] - a[:thick], -a[:depth]], material, 'shop_front')]
+        end
+      end
+      private_class_method :awnings
+
+      def pergola(facade, front, config)
+        p = PERGOLA
+        material = config['materials']['frames']
+        margin = config['facade']['margin_m']
+        door = front.find { |o| %w[door porch].include?(o.kind) }
+        spans = door ? [[margin, door.u_min_m - p[:door_gap]], [door.u_max_m + p[:door_gap], facade.length_m - margin]] : [[margin, facade.length_m - margin]]
+        spans.select { |u0, u1| u1 - u0 >= 1.0 }.each_with_index.flat_map do |(u0, u1), s|
+          base = "shop_front/pergola/#{s}"
+          count = [((u1 - u0) / p[:post_spacing]).ceil, 1].max
+          posts = (0..count).map { |k| u0 + ((u1 - u0 - p[:post]) * k / count) }
+          nodes = posts.each_with_index.map do |u, k|
+            box(facade, "#{base}/post/#{k}", u, u + p[:post], 0.0, p[:height] - p[:beam], [-p[:depth], -p[:depth] + p[:post]], material, 'shop_front')
+          end
+          nodes << box(facade, "#{base}/beam/front", u0, u1, p[:height] - p[:beam], p[:height], [-p[:depth], -p[:depth] + p[:beam]], material, 'shop_front')
+          nodes << box(facade, "#{base}/beam/wall", u0, u1, p[:height] - p[:beam], p[:height], [-p[:beam], 0.0], material, 'shop_front')
+          rafters = (((u1 - u0 - p[:rafter]) / p[:spacing]).floor + 1)
+          rafters.times do |k|
+            u = u0 + (k * p[:spacing])
+            nodes << box(facade, "#{base}/rafter/#{k}", u, u + p[:rafter], p[:height], p[:height] + p[:rafter_h], [-p[:depth], 0.0], material, 'shop_front')
+          end
+          nodes
+        end
+      end
+      private_class_method :pergola
+
+      # Solide : section (d, z) balayée le long de la façade, de u0 à u1.
+      def extrude(facade, section, u0, u1, material)
+        q = ->(v) { Core::Quant.q(v) }
+        a = section.map { |d, z| facade.point(q.call(u0), q.call(z), q.call(d)) }
+        b = section.map { |d, z| facade.point(q.call(u1), q.call(z), q.call(d)) }
+        mesh = MeshBuilder.new('solid')
+        mesh.add_face(a, material)
+        mesh.add_face(b.reverse, material)
+        section.each_index do |i|
+          j = (i + 1) % section.size
+          mesh.add_face([b[i], b[j], a[j], a[i]], material)
+        end
+        mesh.to_primitive
+      end
+      private_class_method :extrude
+
       def box(facade, id, u0, u1, z0, z1, depth, material, category = 'structure')
         q = ->(v) { Core::Quant.q(v) }
         Node.leaf(id, category, Boxes.on_facade(facade, q.call(u0), q.call(u1), q.call(z0), q.call(z1), depth[0], depth[1], material))

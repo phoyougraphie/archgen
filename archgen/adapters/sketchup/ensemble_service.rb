@@ -44,7 +44,10 @@ module Archgen
         # Aucune écriture, aucune trace dans l'Undo.
         def preview(tree:)
           settings = @ensemble_intake.settings(tree)
-          settings.ok? ? compute(Core::EnsembleEngine.pin_profile(settings.value, registry: @registry)) : settings
+          return settings unless settings.ok?
+
+          pinned = Core::EnsembleEngine.pin_profile(settings.value, registry: @registry)
+          compute(Core::EnsembleParcels.pin_styles(pinned, registry: @registry))
         end
 
         # origin_m : le premier point du tracé, dans le repère du modèle.

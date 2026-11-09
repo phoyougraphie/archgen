@@ -183,4 +183,16 @@ Contrat : [VOLUMES_MODERNES_CONTRACT](../docs/VOLUMES_MODERNES_CONTRACT.md). Dé
 | **AG-093 — Trame structurelle et brise-soleil** | AG-092 | `features.structural_grid`, `features.sun_shades`. | Pièces placées. U61. |
 | **AG-094 — Sept profils, RBZ 0.18.0** | AG-093 | Bauhaus, Moderniste, Mid-century, Minimaliste, Industriel, High-tech, Bioclimatique ; panneaux ; guide, journal, RBZ. | Profils en bâtiment, rue et îlot ; recette H33 à la main. |
 
+## J18 — Ville mixte (EXT-08)
+
+Contrat : [VILLE_MIXTE_CONTRACT](../docs/VILLE_MIXTE_CONTRACT.md). Décisions : ADR-49 (plusieurs styles par rue) ; détails selon ADR-48.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-095 — Clic droit Modifier** | AG-094 | Menu contextuel sur une racine de bâtiment ou de rue. | Sélection reconnue. U62. |
+| **AG-096 — Style par bâtiment** | AG-095, ADR-49 | `parcels.<id>.style`, révision figée ; panneau de parcelle. | Style appliqué, voisins inchangés, refus. U63. |
+| **AG-097 — Rez-de-chaussée variés** | AG-096 | `variety.ground` : entrée, part de commerces, largeurs. | Tirages reproductibles, réglage propre prioritaire. U64. |
+| **AG-098 — Stores bannes et pergolas** | AG-097 | `shop.front`, matière de toile. | Pièces placées, refus. U65. |
+| **AG-099 — Panneaux, RBZ 0.19.0** | AG-098 | Listes et cases ; guide, journal, RBZ. | Panneaux essayés ; recette H34 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

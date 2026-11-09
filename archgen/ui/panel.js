@@ -249,7 +249,7 @@
 
   function onFieldInput(event) {
     var field = event.target;
-    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding' || field.id === 'f-timber') { showShopHeight(); }
+    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding' || field.id === 'f-timber' || field.id === 'f-shopfront') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -773,6 +773,8 @@
   // AG-067 : la hauteur du commerce ne s'affiche qu'avec un rez-de-chaussée commerçant.
   function showShopHeight() {
     document.getElementById('f-shop-height-field').hidden = !document.getElementById('f-shop').checked;
+    document.getElementById('f-shopfront-field').hidden = !document.getElementById('f-shop').checked;
+    document.getElementById('f-awning-material-field').hidden = !document.getElementById('f-shop').checked || document.getElementById('f-shopfront').value !== 'awning';
     document.getElementById('f-shutters-material-field').hidden = !document.getElementById('f-shutters').checked;
     document.getElementById('f-cladding-material-field').hidden = !document.getElementById('f-cladding').checked;
     document.getElementById('f-timber-material-field').hidden = !document.getElementById('f-timber').checked;
@@ -787,6 +789,7 @@
       case 'ridge': field.value = value || 'parallel'; break;
       case 'arch': field.value = value || 'flat'; break;
       case 'ribbon': field.value = value || 'bays'; break;
+      case 'shopfront': field.value = value || 'none'; break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }

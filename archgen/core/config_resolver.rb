@@ -11,6 +11,7 @@ module Archgen
       DEFAULT_SHUTTERS = 'painted_wood'
       DEFAULT_CLADDING = 'natural_wood'
       DEFAULT_TIMBER = 'dark_wood'
+      DEFAULT_AWNING = 'canvas_red'
       KEPT_ON_STYLE_CHANGE = %w[name mode lod seed fidelity footprint levels building_type ground_floor].freeze
       ROOF_PRESETS = {
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
@@ -151,6 +152,13 @@ module Archgen
         features.delete('stepped_gable') unless features['stepped_gable']
         features.delete('classical') unless features['classical']
         %w[pilotis structural_grid sun_shades].each { |key| features.delete(key) unless features[key] }
+        # AG-098 : devanture ; « none » n'est pas écrit ; la toile seulement avec un store.
+        features.delete('shop_front') unless %w[awning pergola].include?(features['shop_front'])
+        if features['shop_front'] == 'awning'
+          materials['awning'] ||= DEFAULT_AWNING
+        else
+          materials.delete('awning')
+        end
         # AG-083 : pan de bois et sa matière vont ensemble.
         if features['timber_frame']
           materials['timber'] ||= DEFAULT_TIMBER

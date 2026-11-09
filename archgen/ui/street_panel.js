@@ -17,7 +17,7 @@
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
     glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), stepped_gable: byId('s-stepped'), cladding: byId('s-cladding'), timber_frame: byId('s-timber'), classical: byId('s-classical'), pilotis: byId('s-pilotis'), structural_grid: byId('s-structural_grid'), sun_shades: byId('s-sun_shades'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
-    shopHeightField: byId('s-shop-height-field'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
+    shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
@@ -44,7 +44,7 @@
     var count = number(el.count);
     var height = number(el.height);
     var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth), number(el.accessHeight),
-      number(el.vmin), number(el.vmax), number(el.vstep), number(el.seed), number(el.shopHeight)];
+      number(el.vmin), number(el.vmax), number(el.vstep), number(el.seed), number(el.shopHeight), number(el.shopShare)];
     state.localError = values.some(function (v) { return v !== null && isNaN(v); }) ? 'Saisissez un nombre valide.' : null;
     if (!state.localError && el.variety.checked && (number(el.vmin) === null || number(el.vmax) === null)) {
       state.localError = 'Saisissez la fourchette de niveaux.';
@@ -80,6 +80,7 @@
     });
     if (Object.keys(features).length) { building.features = features; }
     if (state.touched.shop) { building.ground_floor = el.shop.checked ? 'shop' : 'dwelling'; }
+    if (state.touched.shop_front) { building.features = building.features || {}; building.features.shop_front = el.shopFront.value; }
     if (el.shop.checked && number(el.shopHeight) !== null) { building.shop = { height_m: number(el.shopHeight) }; }
   }
 
@@ -94,6 +95,7 @@
       el[key].checked = stored[key] !== undefined ? stored[key] : sameRevision && Boolean(hints[key]);
     });
     el.shop.checked = Boolean(building) && building.ground_floor === 'shop';
+    el.shopFront.value = stored.shop_front || (sameRevision && hints.shop_front) || 'none';
     el.shopHeight.value = building && building.shop && building.shop.height_m !== undefined ? decimal(building.shop.height_m) : '';
     el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);
     state.touched = {};
@@ -106,11 +108,20 @@
 
   // Case décochée : null, la rue garde un seul gabarit (et la variété enregistrée est retirée).
   function variety() {
-    if (!el.variety.checked) { return null; }
-    var levels = { min: number(el.vmin), max: number(el.vmax) };
-    if (number(el.vstep) !== null) { levels.max_step = number(el.vstep); }
-    var roofs = el.roofs.filter(function (box) { return box.checked; }).map(function (box) { return box.getAttribute('data-roof'); });
-    return roofs.length ? { levels: levels, roofs: roofs } : { levels: levels };
+    var out = {};
+    if (el.variety.checked) {
+      var levels = { min: number(el.vmin), max: number(el.vmax) };
+      if (number(el.vstep) !== null) { levels.max_step = number(el.vstep); }
+      var roofs = el.roofs.filter(function (box) { return box.checked; }).map(function (box) { return box.getAttribute('data-roof'); });
+      out.levels = levels;
+      if (roofs.length) { out.roofs = roofs; }
+    }
+    // AG-097 : rez-de-chaussée variés, indépendamment des niveaux.
+    var ground = {};
+    if (el.ground.checked) { ground.entry = true; ground.widths = true; }
+    if (number(el.shopShare) !== null) { ground.shop_share = Math.round(number(el.shopShare)) / 100; }
+    if (Object.keys(ground).length) { out.ground = ground; }
+    return Object.keys(out).length ? out : null;
   }
 
   var ROOF_WORDS = { flat: ['toit plat', 'toits plats'], gable: ['toit à deux pans', 'toits à deux pans'], mansard: ['mansarde', 'mansardes'] };
@@ -127,6 +138,7 @@
       var words = ROOF_WORDS[roof] || [roof, roof];
       parts.push(n + ' ' + (n > 1 ? words[1] : words[0]));
     });
+    if (drawn.shops) { parts.push(drawn.shops + (drawn.shops > 1 ? ' commerces' : ' commerce')); }
     return parts.length ? ' Tirage : ' + parts.join(', ') + '.' : '';
   }
 
@@ -450,7 +462,10 @@ function runSite(message, action, payload) {
     setOptional(el.bay, values.parcel.bay_width_m);
     el.seed.value = values.seed === undefined ? '1' : String(values.seed);
     fillDetails(building);
-    var drawn = values.variety;
+    var stored = values.variety || {};
+    var drawn = stored.levels ? stored : null;
+    el.ground.checked = Boolean(stored.ground && (stored.ground.entry || stored.ground.widths));
+    el.shopShare.value = stored.ground && stored.ground.shop_share !== undefined ? String(Math.round(stored.ground.shop_share * 100)) : '';
     el.variety.checked = Boolean(drawn);
     applyStyle(!drawn);
     if (drawn) {
@@ -575,6 +590,8 @@ function runSite(message, action, payload) {
     });
     el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);
   });
+  el.shopFront.addEventListener('change', function () { state.touched.shop_front = true; requestPreview(); });
+  el.ground.addEventListener('change', requestPreview);
   Array.prototype.slice.call(document.querySelectorAll('input[data-detail]')).forEach(function (box) {
     box.addEventListener('change', function () { state.touched[box.getAttribute('data-detail')] = true; showShopHeight(); requestPreview(); });
   });

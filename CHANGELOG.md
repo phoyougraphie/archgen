@@ -1,5 +1,17 @@
 # Journal des versions
 
+## 0.19.0
+
+Ville mixte (AG-095 à AG-099). Moteur de géométrie 1 inchangé ; l'existant garde son plan. Recette H34 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Clic droit Modifier** : sur un bâtiment seul et sur une rue (AG-095).
+- **Plusieurs styles dans une rue** : style propre d'un bâtiment, révision figée (AG-096, ADR-49).
+- **Rez-de-chaussée variés** : porte, largeur des fenêtres et part de commerces tirées par bâtiment (AG-097).
+- **Stores bannes et pergolas** devant les commerces ; toiles rouge, verte, beige (AG-098).
+- **Panneaux** : Devanture, Rez-de-chaussée variés, Part de commerces, Style du bâtiment (AG-099).
+
 ## 0.18.0
 
 Volumes modernes (AG-090 à AG-094). Moteur de géométrie 1 inchangé ; l'existant garde son style et son plan. Recettes H26 à H33 dans SketchUp à faire.

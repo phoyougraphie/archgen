@@ -292,6 +292,10 @@
         "timber": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "awning": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
         }
       },
       "additionalProperties": false,
@@ -351,6 +355,12 @@
         },
         "sun_shades": {
           "type": "boolean"
+        },
+        "shop_front": {
+          "enum": [
+            "awning",
+            "pergola"
+          ]
         }
       },
       "additionalProperties": false,

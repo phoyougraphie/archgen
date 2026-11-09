@@ -31,7 +31,10 @@ module Archgen
           'pilotis' => { 'type' => 'boolean' },
           'structural_grid' => { 'type' => 'boolean' },
           'sun_shades' => { 'type' => 'boolean' },
-          'width_m' => { 'type' => 'number', 'minimum' => 6, 'maximum' => 60 }
+          'shop_front' => { 'enum' => %w[none awning pergola] },
+          'width_m' => { 'type' => 'number', 'minimum' => 6, 'maximum' => 60 },
+          'style' => { 'type' => 'string', 'pattern' => '^[a-z][a-z0-9_]{0,63}$' },
+          'style_revision' => { 'type' => 'integer', 'minimum' => 1, 'maximum' => 999999 }
         },
         'additionalProperties' => false
       }.freeze
@@ -149,6 +152,28 @@ module Archgen
         parcels.map { |parcel| entries[parcel['id']] ? parcel.merge('own' => entries[parcel['id']]) : parcel }
       end
 
+      # AG-096 : le style propre d'une parcelle, révision comprise, remplace celui de la rue.
+      def profile_for(own)
+        return nil unless own&.dig('style')
+
+        ref = { 'id' => own['style'] }
+        own['style_revision'] ? ref.merge('revision' => own['style_revision']) : ref
+      end
+
+      # Fige la révision courante de chaque style propre qui n'en a pas (ADR-46, ADR-49).
+      def pin_styles(settings, registry:)
+        entries = settings['parcels']
+        return settings unless entries&.any? { |_, own| own['style'] && !own['style_revision'] }
+
+        pinned = entries.to_h do |id, own|
+          next [id, own] unless own['style'] && !own['style_revision']
+
+          revision = registry.fetch(own['style']).value&.revision
+          [id, revision ? own.merge('style_revision' => revision) : own]
+        end
+        Canonical.deep_freeze(settings.merge('parcels' => pinned))
+      end
+
       # Champs du brouillon de bâtiment correspondant aux réglages propres.
       def building_overrides(own)
         out = {}
@@ -156,7 +181,7 @@ module Archgen
         out['roof'] = { 'type' => own['roof'] } if own['roof']
         out['ground_floor'] = own['ground_floor'] if own['ground_floor']
         out['shop'] = own['shop'] if own['shop']
-        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical', 'pilotis', 'structural_grid', 'sun_shades')
+        features = own.slice('chimneys', 'glazing', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical', 'pilotis', 'structural_grid', 'sun_shades', 'shop_front')
         out['features'] = features unless features.empty?
         out
       end
@@ -188,8 +213,9 @@ module Archgen
           'stepped_gable' => config['features']['stepped_gable'] == true, 'cladding' => config['features']['cladding'] == true,
           'timber_frame' => config['features']['timber_frame'] == true, 'classical' => config['features']['classical'] == true,
           'pilotis' => config['features']['pilotis'] == true, 'structural_grid' => config['features']['structural_grid'] == true,
-          'sun_shades' => config['features']['sun_shades'] == true,
-          'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true
+          'sun_shades' => config['features']['sun_shades'] == true, 'shop_front' => config['features']['shop_front'] || 'none',
+          'width_m' => parcel['width_m'], 'corner' => parcel['corner'] == true,
+          'style' => registry.fetch(config['profile']['id'], revision: config['profile']['revision']).value&.label.to_s
         )
       end
 
