@@ -5,7 +5,7 @@
 
   var DEBOUNCE_MS = 300;
   var COOLDOWN_MS = 700;
-  var state = { counter: 0, pending: {}, timer: null, digest: null, ready: false, busy: false, cooling: false, localError: null, mode: 'new', loaded: false };
+  var state = { counter: 0, pending: {}, timer: null, digest: null, ready: false, busy: false, cooling: false, localError: null, mode: 'new', loaded: false, touched: {} };
 
   function byId(id) { return document.getElementById(id); }
   var el = {
@@ -16,6 +16,8 @@
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
+    glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
+    shopHeightField: byId('s-shop-height-field'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
@@ -42,7 +44,7 @@
     var count = number(el.count);
     var height = number(el.height);
     var values = [count, height, number(el.street), number(el.target), number(el.depth), number(el.bay), number(el.accessWidth), number(el.accessHeight),
-      number(el.vmin), number(el.vmax), number(el.vstep), number(el.seed)];
+      number(el.vmin), number(el.vmax), number(el.vstep), number(el.seed), number(el.shopHeight)];
     state.localError = values.some(function (v) { return v !== null && isNaN(v); }) ? 'Saisissez un nombre valide.' : null;
     if (!state.localError && el.variety.checked && (number(el.vmin) === null || number(el.vmax) === null)) {
       state.localError = 'Saisissez la fourchette de niveaux.';
@@ -51,6 +53,7 @@
     if (count !== null) { levels.count = count; }
     if (height !== null) { levels.height_m = height; }
     if (count !== null || height !== null) { building.levels = levels; }
+    details(building);
     var parcel = {};
     if (number(el.target) !== null) { parcel.target_width_m = number(el.target); }
     if (number(el.depth) !== null) { parcel.depth_m = number(el.depth); }
@@ -63,6 +66,34 @@
     var out = { building: building, parcel: parcel, layout: layout, access: access, variety: variety() };
     if (number(el.seed) !== null) { out.seed = number(el.seed); }
     return out;
+  }
+
+  // AG-067 : une case Détails n'est envoyée que si on l'a touchée ; sinon la rue suit son style.
+  function details(building) {
+    var features = {};
+    if (state.touched.glazing) { features.glazing = el.glazing.checked; }
+    if (state.touched.chimneys) { features.chimneys = el.chimneys.checked; }
+    if (Object.keys(features).length) { building.features = features; }
+    if (state.touched.shop) { building.ground_floor = el.shop.checked ? 'shop' : 'dwelling'; }
+    if (el.shop.checked && number(el.shopHeight) !== null) { building.shop = { height_m: number(el.shopHeight) }; }
+  }
+
+  // Cases du style, ou celles enregistrées ; un style d'une autre révision n'a ni vitrage ni cheminées.
+  function fillDetails(building) {
+    var hints = (state.profiles[el.profile.value] || {}).details || {};
+    var stored = building ? building.features || {} : {};
+    var sameRevision = !building || !building.profile.revision || building.profile.revision === hints.revision;
+    el.glazing.checked = stored.glazing !== undefined ? stored.glazing : sameRevision && Boolean(hints.glazing);
+    el.chimneys.checked = stored.chimneys !== undefined ? stored.chimneys : sameRevision && Boolean(hints.chimneys);
+    el.shop.checked = Boolean(building) && building.ground_floor === 'shop';
+    el.shopHeight.value = building && building.shop && building.shop.height_m !== undefined ? decimal(building.shop.height_m) : '';
+    el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);
+    state.touched = {};
+    showShopHeight();
+  }
+
+  function showShopHeight() {
+    el.shopHeightField.hidden = !el.shop.checked;
   }
 
   // Case décochée : null, la rue garde un seul gabarit (et la variété enregistrée est retirée).
@@ -269,6 +300,7 @@ if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(respons
     el.seed.value = '1';
     el.variety.checked = false;
     applyStyle(true);
+    fillDetails(null);
     toggleVariety();
     el.target.value = decimal(defaults.parcel.target_width_m);
     el.depth.value = decimal(defaults.parcel.depth_m);
@@ -399,6 +431,7 @@ function runSite(message, action, payload) {
     setOptional(el.depth, values.parcel.depth_m);
     setOptional(el.bay, values.parcel.bay_width_m);
     el.seed.value = values.seed === undefined ? '1' : String(values.seed);
+    fillDetails(building);
     var drawn = values.variety;
     el.variety.checked = Boolean(drawn);
     applyStyle(!drawn);
@@ -509,7 +542,17 @@ function runSite(message, action, payload) {
   el.variety.addEventListener('change', function () { toggleVariety(); requestPreview(); });
   el.roofs.forEach(function (box) { box.addEventListener('change', requestPreview); });
   // Un autre style propose ses toits et sa fourchette, tant que la variété n'est pas choisie.
-  el.profile.addEventListener('change', function () { applyStyle(!el.variety.checked); });
+  el.profile.addEventListener('change', function () {
+    applyStyle(!el.variety.checked);
+    // Un autre style propose ses cases Détails, sauf celles qu'on a touchées.
+    var hints = (state.profiles[el.profile.value] || {}).details || {};
+    if (!state.touched.glazing) { el.glazing.checked = Boolean(hints.glazing); }
+    if (!state.touched.chimneys) { el.chimneys.checked = Boolean(hints.chimneys); }
+    el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);
+  });
+  Array.prototype.slice.call(document.querySelectorAll('input[data-detail]')).forEach(function (box) {
+    box.addEventListener('change', function () { state.touched[box.getAttribute('data-detail')] = true; showShopHeight(); requestPreview(); });
+  });
 
   el.create.addEventListener('click', function () {
     var values = settings();

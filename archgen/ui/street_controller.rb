@@ -142,7 +142,15 @@ module Archgen
         roofs = profile.rules.find { |r| r['rule'] == 'roof_type' }&.dig('params', 'values')
         levels = profile.rules.find { |r| r['rule'] == 'level_count' }&.fetch('params')
         out = { 'roofs' => roofs ? VARIETY_ROOFS & roofs : VARIETY_ROOFS }
+        out['details'] = details_hints(profile)
         levels ? out.merge('levels' => { 'min' => levels['min'], 'max' => levels['max'] }) : out
+      end
+
+      # AG-067 : ce que le style coche lui-même, pour les cases Détails d'une rue laissées telles quelles.
+      def details_hints(profile)
+        features = profile.defaults.fetch('features', {})
+        { 'revision' => profile.revision, 'glazing' => features['glazing'] == true, 'chimneys' => features['chimneys'] == true,
+          'shop_height_m' => profile.defaults.dig('shop', 'height_m') || Core::ConfigResolver::DEFAULT_SHOP_HEIGHT_M }
       end
 
       def preview(payload)

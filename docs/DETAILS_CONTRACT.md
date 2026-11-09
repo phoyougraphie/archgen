@@ -98,7 +98,9 @@ Clé facultative `parcels` du format `ensemble` V1 : une table `id de parcelle �
 
 ## Panneaux, AG-067
 
-Section **Détails** dans le panneau du bâtiment et dans celui de la rue : cases Vitrage, Commerce au rez-de-chaussée (et sa hauteur), Cheminées. Pour une rue, elles valent pour toute la rue (D-19, A). Guide, journal ; **RBZ 0.11.0** ; recette **H26**. Le clic droit d'AG-069 donne le **RBZ 0.12.0**.
+Section **Détails** dans le panneau du bâtiment et dans celui de la rue : cases Vitrage, Commerce au rez-de-chaussée (et sa hauteur), Cheminées. Pour une rue, elles valent pour toute la rue (D-19, A). Guide, journal ; **RBZ 0.11.0** ; recette **H26**.
+
+- **Fait (AG-067).** Panneau du bâtiment : section « Détails (LOD 1) », cases liées à `/features/glazing`, `/features/chimneys`, `/ground_floor` (cochée : `shop`, décochée : `dwelling`) ; le champ Hauteur du commerce (`/shop/height_m`) ne paraît qu'avec la case, et un changement de style l'efface comme les autres blocs de style. Panneau de rue : mêmes cases ; une case n'est envoyée que si on l'a touchée, sinon la rue suit son style (le noyau donne, par style, ce qu'il coche et sa hauteur de commerce) ; à la modification, une case non envoyée garde la valeur enregistrée. Une rue d'une autre révision que celle proposée montre ses cases décochées. Vérifié : tests de contrat, panneaux chargés et cases essayées dans un navigateur ; **recette H26 dans SketchUp non faite** (laissée au propriétaire). Le clic droit d'AG-069 donne le **RBZ 0.12.0**.
 
 ## Hors périmètre
 

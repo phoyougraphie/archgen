@@ -8,7 +8,7 @@
   'use strict';
 
   // Blocs que reprend un nouveau profil : leurs réglages locaux sont oubliés.
-  var STYLE_BLOCKS = ['/facade/', '/roof/', '/structure/', '/materials/', '/features/'];
+  var STYLE_BLOCKS = ['/facade/', '/roof/', '/structure/', '/materials/', '/features/', '/shop/'];
   var ROOF_FIELDS = {
     flat: ['overhang_m'],
     gable: ['overhang_m', 'pitch_deg'],
@@ -73,6 +73,11 @@
   }
 
   // Sélectionner un autre profil oublie les blocs qu'il reprend.
+  // Cases à cocher : la valeur reçue du noyau les remet toujours à jour.
+  function isToggle(kind) {
+    return kind === 'check' || kind === 'ground';
+  }
+
   function clearStyleOverrides(overrides) {
     var kept = {};
     Object.keys(overrides).forEach(function (path) {
@@ -209,7 +214,7 @@
   return {
     parseDecimal: parseDecimal, parseInteger: parseInteger, parseList: parseList,
     formatNumber: formatNumber, formatList: formatList, getPath: getPath,
-    buildDraft: buildDraft, clearStyleOverrides: clearStyleOverrides, withRoofType: withRoofType,
+    buildDraft: buildDraft, clearStyleOverrides: clearStyleOverrides, isToggle: isToggle, withRoofType: withRoofType,
     activeRoofFields: activeRoofFields, inactiveRoofFields: inactiveRoofFields,
     isCurrent: isCurrent, nextRequestId: nextRequestId, groupDiagnostics: groupDiagnostics,
     uniqueDiagnostics: uniqueDiagnostics, messageText: messageText,

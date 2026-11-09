@@ -563,6 +563,31 @@ class StreetControllerTest < Minitest::Test
     assert_equal({ 'id' => 'toulousain', 'revision' => 2 }, stored.call, 'autre style : sa révision courante')
   end
 
+  def test_init_gives_the_details_each_style_ticks
+    details = call('init')['result']['profiles'].to_h { |p| [p['id'], p['details']] }
+    assert_equal({ 'revision' => 2, 'glazing' => true, 'chimneys' => false, 'shop_height_m' => 4.5 }, details['haussmann'])
+    assert_equal 4.0, details['toulousain']['shop_height_m']
+  end
+
+  def test_details_of_a_whole_street_are_kept_and_changed_on_edit
+    root = created_root([5.0, 7.0], [65.0, 7.0])
+    stored = -> { JSON.parse(root.get_attribute('archgen.ensemble', 'ensemble_json'))['building'] }
+    @model.selection.replace([root])
+    call('load_selection')
+    regenerate = lambda do |settings|
+      digest = call('edit_preview', 'settings' => settings)['result']['ensemble_digest']
+      response = call('regenerate', 'settings' => settings, 'ensemble_digest' => digest)
+      assert response['ok'], response.inspect
+      call('load_selection')
+    end
+    regenerate.call(Archgen::Core::Merge.leaves(SETTINGS, 'building' => { 'ground_floor' => 'shop', 'features' => { 'chimneys' => true } }))
+    assert_equal ['shop', true], [stored.call['ground_floor'], stored.call.dig('features', 'chimneys')]
+    regenerate.call(SETTINGS.merge('seed' => 4))
+    assert_equal 'shop', stored.call['ground_floor'], 'une case non envoyée garde la valeur de la rue'
+    regenerate.call(Archgen::Core::Merge.leaves(SETTINGS, 'building' => { 'ground_floor' => 'dwelling' }))
+    assert_equal 'dwelling', stored.call['ground_floor']
+  end
+
   def test_changing_document_forgets_the_edit
     root = created_root([5.0, 7.0], [65.0, 7.0])
     @model.selection.replace([root])

@@ -80,6 +80,13 @@
         <div class="field check"><input type="checkbox" id="f-surrounds" data-path="/features/surrounds" data-kind="check"><label for="f-surrounds">Encadrements</label></div>
       </fieldset>
       <fieldset>
+        <legend>Détails (LOD 1)</legend>
+        <div class="field check"><input type="checkbox" id="f-glazing" data-path="/features/glazing" data-kind="check"><label for="f-glazing">Vitrage</label></div>
+        <div class="field check"><input type="checkbox" id="f-chimneys" data-path="/features/chimneys" data-kind="check"><label for="f-chimneys">Cheminées</label></div>
+        <div class="field check"><input type="checkbox" id="f-shop" data-path="/ground_floor" data-kind="ground"><label for="f-shop">Commerce au rez-de-chaussée</label></div>
+        <div class="field" id="f-shop-height-field" hidden><label for="f-shop-height">Hauteur du commerce (m)</label><input id="f-shop-height" data-path="/shop/height_m" data-kind="number" inputmode="decimal"></div>
+      </fieldset>
+      <fieldset>
         <legend>Génération</legend>
         <div class="field"><label for="f-seed">Graine</label><input id="f-seed" data-path="/seed" data-kind="int" inputmode="numeric"></div>
         <div class="field"><label for="f-fidelity">Fidélité</label><select id="f-fidelity" data-path="/fidelity" data-kind="select"><option value="strict">Stricte</option><option value="plausible">Plausible</option><option value="creative">Créative</option></select></div>

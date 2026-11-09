@@ -231,12 +231,14 @@
       case 'select': return text;
       case 'select-int': return L.parseInteger(text);
       case 'check': return field.checked;
+      case 'ground': return field.checked ? 'shop' : 'dwelling';
       default: return text.trim() === '' ? null : text;
     }
   }
 
   function onFieldInput(event) {
     var field = event.target;
+    if (field.id === 'f-shop') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -749,11 +751,17 @@
     fields.forEach(function (field) {
       var path = field.dataset.path;
       if (field === active || state.localErrors[path] !== undefined) { return; }
-      if (Object.prototype.hasOwnProperty.call(state.overrides, path) && field.dataset.kind !== 'check') { return; }
+      if (Object.prototype.hasOwnProperty.call(state.overrides, path) && !L.isToggle(field.dataset.kind)) { return; }
       writeField(field, L.getPath(config, path));
     });
+    showShopHeight();
     el.roof.value = config.roof.type;
     showRoofFields(config.roof.type);
+  }
+
+  // AG-067 : la hauteur du commerce ne s'affiche qu'avec un rez-de-chaussée commerçant.
+  function showShopHeight() {
+    document.getElementById('f-shop-height-field').hidden = !document.getElementById('f-shop').checked;
   }
 
   function writeField(field, value) {
@@ -761,6 +769,7 @@
       case 'number': field.value = L.formatNumber(value); break;
       case 'list': field.value = L.formatList(value); break;
       case 'check': field.checked = Boolean(value); break;
+      case 'ground': field.checked = value === 'shop'; break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }
@@ -848,7 +857,7 @@
   // --- Événements
 
   fields.forEach(function (field) {
-    field.addEventListener(field.dataset.kind === 'check' || field.tagName === 'SELECT' ? 'change' : 'input', onFieldInput);
+    field.addEventListener(L.isToggle(field.dataset.kind) || field.tagName === 'SELECT' ? 'change' : 'input', onFieldInput);
   });
   el.profile.addEventListener('change', onProfileChange);
   el.roof.addEventListener('change', onRoofChange);

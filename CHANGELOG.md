@@ -1,11 +1,14 @@
 # Journal des versions
 
-## Non publié
+## 0.11.0
+
+Détails de bâtiment (AG-064 à AG-067) : vitrage, rez-de-chaussée commerçant, cheminées. Moteur de géométrie 1 inchangé ; un bâtiment, une rue ou un îlot existants gardent leur plan. Recette H26 dans SketchUp à faire.
 
 **Ajouts**
 
 - **Vitrage** : vitre dans chaque fenêtre, porte pleine, imposte vitrée au-dessus d'une porte haute, au niveau de détail 1. Nouvelle révision des styles Haussmannien, Toulousain et Brutaliste, vitrée ; un bâtiment, une rue ou un îlot existants gardent leur révision et ne changent pas (AG-064).
-- **Rez-de-chaussée commerçant** : réglage `ground_floor: shop`, une vitrine par travée entre trumeaux, entrée de l'immeuble gardée, bandeau d'enseigne, porte vitrée avec le vitrage ; rue entière en commerce, porche respecté. Pas encore de case au panneau (AG-067) (AG-065).
+- **Rez-de-chaussée commerçant** : réglage `ground_floor: shop`, une vitrine par travée entre trumeaux, entrée de l'immeuble gardée, bandeau d'enseigne, porte vitrée avec le vitrage ; rue entière en commerce, porche respecté. (AG-065).
+- **Section Détails aux panneaux** : cases Vitrage, Cheminées, Commerce au rez-de-chaussée et sa hauteur, dans le panneau du bâtiment et dans celui de la rue (pour toute la rue) (AG-067).
 - **Cheminées** : option `features.chimneys`, une ou deux souches par bâtiment, contre les murs latéraux ou au bout du faîtage d'une croupe, au niveau de détail 1 (AG-066).
 
 ## 0.10.0

@@ -32,6 +32,8 @@ L'aperçu à droite est recalculé à chaque changement, sans rien écrire dans 
 
 5. Cliquez sur **Générer**. Le bâtiment est créé à l'origine du modèle et sélectionné : déplacez-le et faites-le pivoter avec les outils de SketchUp. **Annuler** retire la création en une fois.
 
+**Détails (niveau de détail 1) :** la section **Détails** propose **Vitrage** (une vitre dans chaque fenêtre, une porte pleine, une imposte vitrée au-dessus d'une porte haute), **Cheminées** (une ou deux souches, contre les murs de côté ou au bout du faîtage d'une croupe) et **Commerce au rez-de-chaussée** : une vitrine par travée de la façade avant, la porte de l'immeuble gardée, un bandeau d'enseigne au-dessus. Cocher Commerce fait paraître **Hauteur du commerce** : vide, elle vient du style (4,5 m en Haussmannien, 4,0 m ailleurs). Une travée trop étroite pour une vitrine de 1,20 m est refusée et expliquée. Les styles Haussmannien, Toulousain et Brutaliste cochent le vitrage par défaut ; un bâtiment créé avant la version 0.11.0 le garde décoché.
+
 **Limites :** emprise de 60 × 60 m, 15 niveaux, 60 m sous toit, 90 m au sommet, 720 ouvertures. Au-delà, ARCHGEN refuse sans modifier le modèle.
 
 ## Modifier un bâtiment
@@ -99,6 +101,8 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 **Le porche fait 2,7 m de haut par défaut**, car le rez-de-chaussée des styles livrés ne laisse que 2,8 à 2,9 m. Ce n'est pas une règle d'accès pompiers ni d'urbanisme.
 
 **Rue variée :** cochez **Varier les bâtiments** dans la section Variété. Chaque parcelle tire alors son nombre de niveaux dans la fourchette (**Niveaux, au moins** et **au plus**), à un **écart** au plus de sa voisine (2 niveaux par défaut), et son toit parmi les cases cochées : **Toit plat**, **Deux pans**, **Mansarde**. Le panneau propose la fourchette et les toits du style ; un toit marqué « hors style » reste possible, le style le signale alors (et le refuse en fidélité stricte). Sans toit coché, chaque parcelle garde le toit du style. Le résultat annonce le tirage avant d'écrire, par exemple « de 3 à 7 niveaux, 2 toits plats, 4 mansardes ». **Une autre graine donne une autre rue** ; même graine et mêmes réglages, même rue. Les murs mitoyens découverts au-dessus d'un voisin plus bas restent aveugles. Quand la case est cochée, le champ Niveaux de la section Bâtiments est ignoré : le nombre de niveaux vient du tirage ; la Hauteur courante reste celle de chaque étage.
+
+**Détails de toute la rue :** la section **Détails** a les mêmes cases, pour tous les bâtiments de la rue ou de l'îlot (niveau de détail 1). Une case laissée telle quelle suit le style ; une case touchée vaut pour toute la rue. Les commerces respectent le passage d'un îlot à porche. Personnaliser un seul bâtiment viendra par un clic droit.
 
 **Modifier :** sélectionnez l'ensemble, puis **Extensions → ARCHGEN → Modifier l'ensemble sélectionné**. Changez les réglages (la variété et sa graine comprises ; décocher Varier rend un seul gabarit), puis cliquez sur **Remplacer cet ensemble**. Toute sa géométrie est remplacée, ses bâtiments compris. Le tracé ne change pas : pour le changer, tracez-en un autre. Une copie garde sa géométrie jusqu'à sa propre modification.
 

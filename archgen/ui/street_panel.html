@@ -30,6 +30,13 @@
     <div class="field"><label for="s-height">Hauteur courante, m (vide : selon le style)</label><input id="s-height" inputmode="decimal"></div>
   </fieldset>
   <fieldset>
+    <legend>Détails (LOD 1, toute la rue)</legend>
+    <div class="field check"><input type="checkbox" id="s-glazing" data-detail="glazing"><label for="s-glazing">Vitrage</label></div>
+    <div class="field check"><input type="checkbox" id="s-chimneys" data-detail="chimneys"><label for="s-chimneys">Cheminées</label></div>
+    <div class="field check"><input type="checkbox" id="s-shop" data-detail="shop"><label for="s-shop">Commerces au rez-de-chaussée</label></div>
+    <div class="field" id="s-shop-height-field" hidden><label for="s-shop-height">Hauteur des commerces, m (vide : selon le style)</label><input id="s-shop-height" inputmode="decimal"></div>
+  </fieldset>
+  <fieldset>
     <legend>Rue et parcelles</legend>
     <div class="field wide"><label for="s-side">Côté bâti (Ctrl dans la vue)</label><select id="s-side"><option value="left">À gauche du tracé</option><option value="right">À droite du tracé</option><option value="both">Des deux côtés</option></select></div>
     <div class="field" id="s-street-field" hidden><label for="s-street">Largeur de rue (m)</label><input id="s-street" inputmode="decimal"></div>
