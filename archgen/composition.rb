@@ -9,7 +9,7 @@ module Archgen
     ROOT = __dir__
     # Capacités géométriques réellement implémentées : un profil qui en requiert
     # d'autres reste indisponible. La liste complète publie les trois feuilles V0.1.
-    IMPLEMENTED_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds glazing chimneys muntins shutters].freeze
+    IMPLEMENTED_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds glazing chimneys muntins shutters dormers].freeze
 
     module_function
 

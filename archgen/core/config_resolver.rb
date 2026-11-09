@@ -141,6 +141,7 @@ module Archgen
           materials.delete('glass')
         end
         features.delete('chimneys') unless features['chimneys']
+        features.delete('dormers') unless features['dormers']
         # AG-071 : volets et leur matière vont ensemble.
         if features['shutters']
           materials['shutters'] ||= DEFAULT_SHUTTERS

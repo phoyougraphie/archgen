@@ -58,6 +58,9 @@ Option `features.dormers` (booléen), LOD 1.
 
 - En rangée : même règle ; une lucarne ne passe jamais le plan latéral d'une parcelle.
 - Avec des cheminées : une souche et une lucarne ne se recouvrent pas ; sinon refus `dormer_on_chimney`.
+- **Fait (AG-072).** `geometry/dormer_solver` : la peau du toit est le minimum de ses plans (pans avant et arrière ; en plus, pour un bâtiment seul, ceux de la croupe et des côtés de la mansarde). Allège à 0,30 m au-dessus des murs, ou 0,05 m au-dessus de la peau devant la lucarne si c'est plus haut (brisis) ; fenêtre de 1,40 m, réduite par pas de 0,05 m jusqu'à ce que l'arrière du volume soit enfoui sous la peau avant le faîtage. Volume en faces de surface ouvert dessous, jour de la fenêtre libre ; fenêtre de la définition partagée des fenêtres, posée dans le plan de la façade de lucarne. Catégorie `dormer`.
+- **Écart au départ du contrat, consigné ici.** Une travée d'extrémité contre une croupe, ou contre l'onglet d'une parcelle d'angle, n'a pas de lucarne : elle est **omise et dite** (`W_DETAIL`, `dormer_skipped`, `why` : `hip` ou `corner`, avec les ids), au lieu d'un refus. Un refus aurait interdit les lucarnes sur presque toute croupe et toute rue qui tourne ; l'omission n'est pas silencieuse. Les autres manques de place restent refusés (`dormer_no_room`, `dormer_too_low`, `dormer_on_chimney`).
+- Tests U50 (`test/unit/dormers_test.rb`) ; empreintes de quatre ensembles types identiques. **Pas vu dans SketchUp** ; pas de case au panneau avant AG-073.
 - **D-23, options.** **A, retenue (ADR-47)** : volume posé qui traverse la peau du toit sans la percer (peu de faces, aucune face de toit découpée, même validation que les souches). **B** : vraie trémie dans le pan, faces du toit découpées autour de la lucarne (plus juste vue de l'intérieur du comble, beaucoup plus de cas).
 - **D-24, options.** **A, retenue (ADR-47)** : façade avant seulement, une par travée. **B** : avant et arrière.
 

@@ -257,6 +257,9 @@
         },
         "shutters": {
           "type": "boolean"
+        },
+        "dormers": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

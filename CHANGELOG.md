@@ -6,6 +6,7 @@
 
 - **Petits bois** : option `features.muntins` avec le vitrage, montant central et traverses, rangs donnés par le style ; pas encore de case au panneau (AG-070).
 - **Volets** : option `features.shutters`, deux battants ouverts par fenêtre, plaqués au mur ; matière `materials.shutters`, avec deux teintes nouvelles (vert, bleu pastel) ; refus quand la place manque ; pas encore de case au panneau (AG-071).
+- **Lucarnes** : option `features.dormers`, une par travée de la façade avant, sur mansarde, deux pans et croupe, posée sans percer le toit ; aucune sur un toit plat ; pas encore de case au panneau (AG-072).
 
 ## 0.12.0
 

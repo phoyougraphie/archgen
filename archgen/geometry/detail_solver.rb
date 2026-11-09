@@ -94,6 +94,8 @@ module Archgen
         problems.concat(balcony_problems(config, balcony_levels, openings))
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         problems.concat(shutter_problems(footprint, openings, config)) if features['shutters']
+        dormers = features['dormers'] ? DormerSolver.call(footprint: footprint, levels: levels, config: config, row: row, blocked: chimney_boxes(footprint, config, row)) : nil
+        problems.concat(dormers.errors) if dormers && !dormers.ok?
         return Core::Result.fail(problems) unless problems.empty?
 
         definitions = {}
@@ -104,9 +106,11 @@ module Archgen
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row) if features['chimneys'] && roof_top_z_m
+        nodes += dormer_nodes(footprint, levels, config, dormers.value, definitions) if dormers
         built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
         nodes += built_balconies
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
+        warnings += dormers.warnings if dormers
         Core::Result.ok(DetailPlan.new(nodes: nodes, definitions: definitions), warnings)
       end
 
@@ -459,11 +463,27 @@ module Archgen
 
       # AG-066 : une ou deux souches. Contre les murs latéraux, centrées sur le faîtage (deux pans,
       # toit plat, toute rangée) ; au bout du faîtage d'une croupe ou d'une mansarde seule.
-      def chimneys(footprint, levels, config, roof_top, row)
+      # Souches réellement posées (nombre et côté tirés par la seed).
+      def drawn_spots(footprint, config, row)
         seed = config['seed']
         count = Core::DeterministicRandom.unit(seed, 'chimneys') < 0.5 ? 1 : 2
         spots = chimney_spots(footprint, config, row)
         spots = [spots[Core::DeterministicRandom.unit(seed, 'chimneys/side') < 0.5 ? 0 : -1]] if count == 1 || spots.size == 1
+        spots.uniq
+      end
+      private_class_method :drawn_spots
+
+      # Emprises au sol des souches, couronnement compris, pour les lucarnes (AG-072).
+      def chimney_boxes(footprint, config, row)
+        return [] unless config['features']['chimneys']
+
+        reach = [CHIMNEY_X_M / 2.0, CHIMNEY_Y_M / 2.0].map { |half| half + CHIMNEY_CAP_M }
+        drawn_spots(footprint, config, row).map { |x, y| [[x - reach[0], x + reach[0]], [y - reach[1], y + reach[1]]] }
+      end
+      private_class_method :chimney_boxes
+
+      def chimneys(footprint, levels, config, roof_top, row)
+        spots = drawn_spots(footprint, config, row)
         flat = config['roof']['type'] == 'flat'
         top = Core::Quant.q(roof_top + (flat ? CHIMNEY_ABOVE_FLAT_M : CHIMNEY_ABOVE_RIDGE_M))
         base = levels.last.top_z_m
@@ -479,6 +499,25 @@ module Archgen
         end
       end
       private_class_method :chimneys
+
+      # AG-072 : volume de chaque lucarne et sa fenêtre, même définition partagée qu'une fenêtre.
+      def dormer_nodes(footprint, levels, config, dormers, definitions)
+        material = config['materials']['frames']
+        glass = config['features']['glazing'] ? config['materials']['glass'] : nil
+        rows = glass && config['features']['muntins'] ? config['facade']['muntin_rows'] : nil
+        width = config['facade']['window_width_m']
+        facade = footprint.facade('front')
+        top = levels.last.top_z_m
+        dormers.flat_map do |dormer|
+          u0 = Core::Quant.q(((dormer.x0 + dormer.x1) / 2.0) - (width / 2.0))
+          window = Opening.new(id: dormer.id, facade_id: 'front', level_index: levels.size, bay_index: 0, kind: 'window',
+                               u_min_m: u0, u_max_m: Core::Quant.q(u0 + width), z_min_m: dormer.sill_z, z_max_m: Core::Quant.q(dormer.sill_z + dormer.window_height))
+          definition_id = frame_definition(window, material, glass, definitions, nil, rows)
+          [DormerSolver.body(dormer, top, width, config),
+           Node.leaf("frame/#{dormer.id}", 'frame', { 'type' => 'instance', 'definition_id' => definition_id, 'matrix' => placement_matrix(facade, u0, dormer.sill_z, dormer.y_front) })]
+        end
+      end
+      private_class_method :dormer_nodes
 
       # Milieux des souches, de gauche à droite (ou de l'avant vers l'arrière).
       def chimney_spots(footprint, config, row)
