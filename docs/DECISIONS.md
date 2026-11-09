@@ -53,5 +53,10 @@
 
 | ID | Question | Constat et options |
 |---|---|---|
+| D-23 | Lucarnes : percer le toit ? | Demande du propriétaire (2026-11-09) : « des volets et des lucarnes ». **Option A** : volume posé qui traverse la peau du toit sans la percer, comme une souche (recommandée). **Option B** : vraie trémie, faces du toit découpées. |
+| D-24 | Lucarnes : où ? | **Option A** : façade avant seulement, une par travée, à l'aplomb des fenêtres ; aucune sur un toit plat, avec un avertissement (recommandée). **Option B** : avant et arrière. |
+| D-25 | Volets : lesquels ? | **Option A** : deux battants ouverts plaqués au mur de part et d'autre de chaque fenêtre, rôle de matière `shutters`, refus localisé faute de place (recommandée). **Option B** : persiennes repliées dans l'embrasure, invisibles de face. |
+| D-26 | Petits bois : quel découpage ? | **Option A** : montant central et traverses, nombre de rangs donné par le style, avec le vitrage seulement (recommandée). **Option B** : rangs et colonnes libres au panneau. |
+| D-27 | Styles : qui active quoi ? | **Option A** : révision 3 de l'Haussmannien (lucarnes, petits bois) et du Toulousain (volets bleu pastel, petits bois) ; Brutaliste inchangé ; l'existant garde sa révision (recommandée). **Option B** : aucune révision, tout décoché par défaut. |
 
 ADR-03 à 10 précisent les points laissés ouverts dans le fil, avec des choix de départ révisables par décision écrite. Au démarrage, AG-001 consigne les versions hôtes réellement accessibles. Les seuils de performance sont des cibles de livraison à mesurer, et les plages historiques des réglages de conception à calibrer.

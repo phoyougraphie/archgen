@@ -106,4 +106,4 @@ Section **Détails** dans le panneau du bâtiment et dans celui de la rue : case
 
 ## Hors périmètre
 
-Petits bois, volets, lucarnes (EXT-01) ; enseignes à texte ; intérieur des commerces (EXT-05) ; vitrage au LOD 0 ; mélange de styles entre parcelles (D-15) ; personnaliser un bâtiment d'un îlot à porche autrement que par les champs ci-dessus.
+Petits bois, volets, lucarnes (cadrés en J12, [contrat](VOLETS_LUCARNES_CONTRACT.md)) ; enseignes à texte ; intérieur des commerces (EXT-05) ; vitrage au LOD 0 ; mélange de styles entre parcelles (D-15) ; personnaliser un bâtiment d'un îlot à porche autrement que par les champs ci-dessus.
