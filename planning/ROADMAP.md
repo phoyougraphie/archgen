@@ -19,7 +19,8 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J12 — Volets, lucarnes et petits bois | J11, ADR-47 | AG-070–073 | Petits bois, volets ouverts, lucarnes sur les pans avant ; révision 3 des styles ; RBZ 0.13.0. |
 | J13 — Styles régionaux maçonnés | J12, ADR-48 | AG-074–078 | Génoises ; Provençal, Breton, Lyonnais, Bordelais, Parisien faubourien ; RBZ 0.14.0. |
 | J14 — Pignon sur rue et montagne | J13, ADR-48 | AG-079–082 | Faîtage perpendiculaire, pignon à redents, bardage ; Flamand, Savoyard ; RBZ 0.15.0. |
-| J15 à J17 — Autres styles | J14, ADR-48 | à cadrer | Pignon sur rue et montagne ; pan de bois ; arcs et ornements ; volumes modernes ([plan](../docs/STYLES_REGIONAUX_CONTRACT.md)). |
+| J15 — Pan de bois | J14, ADR-48 | AG-083–085 | Pan de bois apparent ; colombages, Normand, Alsacien, Basque ; RBZ 0.16.0. |
+| J16 et J17 — Autres styles | J15, ADR-48 | à cadrer | Pignon sur rue et montagne ; pan de bois ; arcs et ornements ; volumes modernes ([plan](../docs/STYLES_REGIONAUX_CONTRACT.md)). |
 | J18+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
 
 Les branches AG-004/005, AG-007/009 et AG-018/019 sont indépendantes une fois leurs prérequis satisfaits. Les dépendances dans [TASKS](TASKS.md) priment sur les numéros et permettent de commencer du Ruby pur avant de fermer J0 ; la table fixe l'ordre de validation des jalons. Attacher les éléments de preuve au ticket et garder une démo neutre de référence. Sans hôte disponible, continuer sur les tests purs ; ne pas franchir un jalon qui requiert la recette native.

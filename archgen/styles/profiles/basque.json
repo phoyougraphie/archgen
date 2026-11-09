@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "basque",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "timber_vernacular",
+    "revision": 1
+  },
+  "family_id": "timber_vernacular",
+  "label": "Basque",
+  "context": {
+    "period": "Maison basque (etxe), XVIIe-XIXe siècle",
+    "regions": [
+      "pays_basque"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "cross_ridge",
+    "timber_frame",
+    "glazing",
+    "muntins"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 10,
+      "depth_m": 12
+    },
+    "levels": {
+      "count": 3,
+      "height_m": 2.8,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.0,
+      "window_height_m": 1.4,
+      "sill_m": 0.9,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.1,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.6,
+      "pitch_deg": 30,
+      "ridge": "perpendicular"
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "terracotta_canal",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "timber": "painted_wood_red"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "timber_frame": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.2,
+        "max": 1.8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 2,
+        "max": 4
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

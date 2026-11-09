@@ -17,6 +17,10 @@ module Archgen
         'parisien_faubourien' => 'Enduit clair, quatre niveaux, tuile mécanique ; encadrements et volets gris au LOD 1.',
         'flamand' => 'Brique rouge, façade étroite à pignon sur rue ; pignon à redents au LOD 1.',
         'savoyard_chalet' => 'Pierre et bois, pignon sur rue sous un grand débord ; bardage, balcon et volets au LOD 1.',
+        'colombages' => 'Enduit clair et pan de bois sombre aux étages, toit à deux pans ; pan de bois au LOD 1.',
+        'normand' => 'Pan de bois sombre, toit d’ardoise pentu ; lucarnes et cheminées au LOD 1.',
+        'alsacien' => 'Enduit ocre et pan de bois, toit très pentu ; lucarnes au LOD 1.',
+        'basque' => 'Enduit blanc et bois rouge, pignon sur rue sous un large débord ; pan de bois au LOD 1.',
         'brutalist' => 'Béton, toit plat, grille répétitive ; baies en retrait au LOD 1 Structural.'
       }.freeze
 
@@ -33,7 +37,7 @@ module Archgen
         '/roof/type' => 'Type de toit', '/roof/overhang_m' => 'Débord', '/roof/pitch_deg' => 'Pente', '/roof/lower_pitch_deg' => 'Pente basse', '/roof/inset_m' => 'Retrait du brisis',
         '/materials/wall' => 'Matériau des murs', '/materials/roof' => 'Matériau du toit', '/materials/frames' => 'Matériau des cadres',
         '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
-        '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/features/muntins' => 'Petits bois', '/features/shutters' => 'Volets', '/features/dormers' => 'Lucarnes', '/features/genoise' => 'Génoise', '/roof/ridge' => 'Faîtage', '/features/stepped_gable' => 'Pignon à redents', '/features/cladding' => 'Bardage', '/materials/cladding' => 'Matériau du bardage', '/materials/shutters' => 'Matériau des volets', '/facade/muntin_rows' => 'Rangs de petits bois', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
+        '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/features/muntins' => 'Petits bois', '/features/shutters' => 'Volets', '/features/dormers' => 'Lucarnes', '/features/genoise' => 'Génoise', '/roof/ridge' => 'Faîtage', '/features/stepped_gable' => 'Pignon à redents', '/features/cladding' => 'Bardage', '/features/timber_frame' => 'Pan de bois', '/materials/timber' => 'Matériau du pan de bois', '/materials/cladding' => 'Matériau du bardage', '/materials/shutters' => 'Matériau des volets', '/facade/muntin_rows' => 'Rangs de petits bois', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
         '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
         '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
         '/site/terrain' => 'Terrain', '/site/placement' => 'Placement', '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
@@ -101,6 +105,13 @@ module Archgen
         'genoise_head_margin' => 'La fenêtre %{id} monte trop haut sous la génoise : %{limit} m au plus. Réduisez la hauteur des fenêtres.',
         'genoise_roof' => 'La génoise ne se pose que sous un toit à deux pans ou une croupe.',
         'dormers_false_written' => 'Des lucarnes décochées ne s’enregistrent pas : retirez ce champ.',
+        'timber_false_written' => 'Un pan de bois décoché ne s’enregistre pas : retirez ce champ.',
+        'timber_material_required' => 'Le pan de bois demande son matériau.',
+        'timber_material_without_timber' => 'Un matériau de pan de bois est donné sans pan de bois.',
+        'timber_with_surrounds' => 'Le pan de bois et les encadrements occupent la même place devant le mur : décochez l’un des deux.',
+        'timber_with_shutters' => 'Le pan de bois et les volets occupent la même place devant le mur : décochez l’un des deux.',
+        'timber_with_cornice' => 'Le pan de bois et la corniche se recouvrent sous le toit : décochez l’un des deux.',
+        'timber_with_cladding' => 'Le pan de bois et le bardage ne vont pas ensemble : décochez l’un des deux.',
         'cladding_false_written' => 'Un bardage décoché ne s’enregistre pas : retirez ce champ.',
         'cladding_material_required' => 'Le bardage demande son matériau.',
         'cladding_material_without_cladding' => 'Un matériau de bardage est donné sans bardage.',

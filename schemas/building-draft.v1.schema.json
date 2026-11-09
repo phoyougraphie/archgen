@@ -240,6 +240,10 @@
         "cladding": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "timber": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
         }
       },
       "additionalProperties": false
@@ -278,6 +282,9 @@
           "type": "boolean"
         },
         "cladding": {
+          "type": "boolean"
+        },
+        "timber_frame": {
           "type": "boolean"
         }
       },

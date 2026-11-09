@@ -11,6 +11,10 @@
     "parisien_faubourien": { "1": "porch" },
     "flamand": { "1": "gap" },
     "savoyard_chalet": { "1": "gap" },
+    "colombages": { "1": "gap" },
+    "normand": { "1": "gap" },
+    "alsacien": { "1": "gap" },
+    "basque": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

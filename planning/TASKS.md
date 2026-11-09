@@ -150,4 +150,14 @@ Contrat : [PIGNON_MONTAGNE_CONTRACT](../docs/PIGNON_MONTAGNE_CONTRACT.md). Déci
 | **AG-081 — Bardage bois** | AG-080 | `features.cladding`, `materials.cladding` : dernier niveau, pignons et balcons en bois. | Matières par niveau, empreintes d'avant inchangées. U54. |
 | **AG-082 — Flamand, Savoyard, RBZ 0.15.0** | AG-081 | Deux profils ; liste Faîtage et cases aux trois panneaux ; guide, journal, RBZ. | Profils en bâtiment, rue et îlot ; panneaux essayés ; recette H30 à la main. |
 
+## J15 — Pan de bois (EXT-02)
+
+Contrat : [PAN_DE_BOIS_CONTRACT](../docs/PAN_DE_BOIS_CONTRACT.md). Décisions : ADR-48 (choix de détail délégués) ; encorbellement reporté, consigné au contrat.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-083 — Pan de bois apparent** | AG-082, ADR-48 | `features.timber_frame`, `materials.timber` : sablières, poteaux, huisseries, décharges aux étages ; refus des détails concurrents. | Pièces placées, solides valides, deux modes. U55. |
+| **AG-084 — Colombages, Normand, Alsacien, Basque** | AG-083 | Quatre profils. | Profils en bâtiment, rue et îlot. U52. |
+| **AG-085 — Panneaux, RBZ 0.16.0** | AG-084 | Case Pan de bois aux trois panneaux ; guide, journal, RBZ. | Panneaux essayés, version installée ; recette H31 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

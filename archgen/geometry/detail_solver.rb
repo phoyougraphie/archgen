@@ -119,6 +119,7 @@ module Archgen
         nodes << cornice(footprint, levels, config) if features['cornice']
         nodes += genoise(footprint, levels, config) if genoise?(config) && !cross
         nodes += stepped_gable(footprint, levels, config) if features['stepped_gable'] && cross
+        nodes += TimberSolver.call(footprint: footprint, levels: levels, openings: openings, config: config, row: row) if features['timber_frame']
         fascia_node = shop?(config) ? fascia(footprint, levels, config) : nil
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m

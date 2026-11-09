@@ -1,5 +1,19 @@
 # Journal des versions
 
+## 0.16.0
+
+Pan de bois (AG-083 à AG-085). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H31 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Pan de bois apparent** : option `features.timber_frame`, sablières, poteaux, huisseries et écharpes aux étages, matière `materials.timber` (AG-083).
+- **Maison à colombages, Normand, Alsacien, Basque** : quatre styles de la famille « Ossature bois traditionnelle » (AG-084).
+- **Panneaux** : case Pan de bois et son matériau aux trois panneaux (AG-085).
+
+**Limites connues**
+
+- Pas encore d'encorbellement (étages en saillie), reporté.
+
 ## 0.15.0
 
 Pignon sur rue et montagne (AG-079 à AG-082). Moteur de géométrie 1 inchangé ; un bâtiment ou un ensemble existant garde son style et son plan. Recettes H26 à H30 dans SketchUp à faire.

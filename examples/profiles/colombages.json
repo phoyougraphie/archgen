@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "id": "colombages",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "timber_vernacular",
+    "revision": 1
+  },
+  "family_id": "timber_vernacular",
+  "label": "Maison à colombages",
+  "context": {
+    "period": "Maison à pan de bois, XVe-XVIIIe siècle",
+    "regions": [
+      "france"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "timber_frame",
+    "glazing",
+    "muntins"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 9,
+      "depth_m": 9
+    },
+    "levels": {
+      "count": 3,
+      "height_m": 2.8,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.0,
+      "window_height_m": 1.4,
+      "sill_m": 0.9,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.1,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.3,
+      "pitch_deg": 45
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "mechanical_tile",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "timber": "dark_wood"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "timber_frame": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.2,
+        "max": 1.8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 2,
+        "max": 4
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "ochre_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

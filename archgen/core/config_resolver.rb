@@ -10,6 +10,7 @@ module Archgen
       DEFAULT_MUNTIN_ROWS = 3
       DEFAULT_SHUTTERS = 'painted_wood'
       DEFAULT_CLADDING = 'natural_wood'
+      DEFAULT_TIMBER = 'dark_wood'
       KEPT_ON_STYLE_CHANGE = %w[name mode lod seed fidelity footprint levels building_type ground_floor].freeze
       ROOF_PRESETS = {
         'flat' => { 'pitch_deg' => 0.0, 'lower_pitch_deg' => 0.0, 'inset_m' => 0.0 },
@@ -146,6 +147,13 @@ module Archgen
         features.delete('dormers') unless features['dormers']
         features.delete('genoise') unless features['genoise']
         features.delete('stepped_gable') unless features['stepped_gable']
+        # AG-083 : pan de bois et sa matière vont ensemble.
+        if features['timber_frame']
+          materials['timber'] ||= DEFAULT_TIMBER
+        else
+          features.delete('timber_frame')
+          materials.delete('timber')
+        end
         # AG-081 : bardage et sa matière vont ensemble.
         if features['cladding']
           materials['cladding'] ||= DEFAULT_CLADDING

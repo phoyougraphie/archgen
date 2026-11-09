@@ -58,6 +58,7 @@ module Archgen
       geometry/row_roof_solver
       geometry/detail_solver
       geometry/dormer_solver
+      geometry/timber_solver
       core/budget
       core/plan_validator
       core/site_plan_validator

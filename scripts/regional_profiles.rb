@@ -141,13 +141,65 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'cladding' => true, 'balcony' => true }
     },
     'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.1, 1.6], walls: %w[limestone granite light_render])
+  },
+  'colombages' => {
+    'label' => 'Maison à colombages', 'period' => 'Maison à pan de bois, XVe-XVIIIe siècle', 'regions' => %w[france], 'typologies' => %w[residential mixed_use], 'family' => 'timber_vernacular',
+    'requires' => %w[gable timber_frame glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 9, 'depth_m' => 9 },
+      'levels' => { 'count' => 3, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.4, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 45 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'mechanical_tile', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'dark_wood' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true }
+    },
+    'rules' => rules(levels: [2, 4], roofs: %w[gable hip], ratio: [1.2, 1.8], walls: %w[light_render ochre_render])
+  },
+  'normand' => {
+    'label' => 'Normand', 'period' => 'Maison normande à pan de bois, XVIe-XIXe siècle', 'regions' => %w[normandie], 'typologies' => %w[residential mixed_use], 'family' => 'timber_vernacular',
+    'requires' => %w[gable timber_frame dormers chimneys glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 8 },
+      'levels' => { 'count' => 2, 'height_m' => 2.7, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 0.9, 'window_height_m' => 1.3, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 50 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'dark_wood' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true, 'dormers' => true, 'chimneys' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[gable hip], ratio: [1.2, 1.8], walls: %w[light_render])
+  },
+  'alsacien' => {
+    'label' => 'Alsacien', 'period' => 'Maison alsacienne à colombages, XVIe-XIXe siècle', 'regions' => %w[alsace], 'typologies' => %w[residential mixed_use], 'family' => 'timber_vernacular',
+    'requires' => %w[gable timber_frame dormers glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 10 },
+      'levels' => { 'count' => 3, 'height_m' => 2.7, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 0.9, 'window_height_m' => 1.3, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 55 },
+      'materials' => { 'wall' => 'ochre_render', 'roof' => 'mechanical_tile', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'dark_wood' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true, 'dormers' => true }
+    },
+    'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[ochre_render light_render])
+  },
+  'basque' => {
+    'label' => 'Basque', 'period' => 'Maison basque (etxe), XVIIe-XIXe siècle', 'regions' => %w[pays_basque], 'typologies' => %w[residential mixed_use], 'family' => 'timber_vernacular',
+    'requires' => %w[gable cross_ridge timber_frame glazing muntins],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 12 },
+      'levels' => { 'count' => 3, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.4, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.1, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.6, 'pitch_deg' => 30, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'terracotta_canal', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'painted_wood_red' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true }
+    },
+    'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[light_render])
   }
 }.freeze
 
 def document(id, spec)
   {
     'schema_version' => 1, 'id' => id, 'revision' => 1, 'kind' => 'profile', 'status' => 'active',
-    'parent' => { 'id' => 'masonry_vernacular', 'revision' => 1 }, 'family_id' => 'masonry_vernacular', 'label' => spec['label'],
+    'parent' => { 'id' => spec.fetch('family', 'masonry_vernacular'), 'revision' => 1 }, 'family_id' => spec.fetch('family', 'masonry_vernacular'), 'label' => spec['label'],
     'context' => { 'period' => spec['period'], 'regions' => spec['regions'], 'typologies' => spec['typologies'] },
     'requires' => spec['requires'], 'defaults' => spec['defaults'], 'rules' => spec['rules']
   }

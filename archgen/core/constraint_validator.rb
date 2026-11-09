@@ -50,6 +50,7 @@ module Archgen
         if stepped && data['roof']['overhang_m'] > 0.05 + Quant::EPSILON
           out << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'stepped_gable_overhang', limit: 0.05)
         end
+        check_timber(data, out)
         cladding = data['features']['cladding'] == true
         out << Diagnostic.error('E_SCHEMA', '/features/cladding', reason: 'cladding_false_written') if data['features'].key?('cladding') && !cladding
         out << Diagnostic.error('E_SCHEMA', '/materials/cladding', reason: 'cladding_material_required') if cladding && !data['materials'].key?('cladding')
@@ -72,6 +73,23 @@ module Archgen
         out << Diagnostic.error('E_SCHEMA', '/facade/muntin_rows', reason: 'muntin_rows_without_muntins') if rows && !muntins
       end
       private_class_method :check_muntins
+
+      # AG-083 : le pan de bois occupe l'épaisseur devant le mur ; rien d'autre ne s'y pose.
+      TIMBER_RIVALS = %w[surrounds shutters cornice cladding].freeze
+
+      def check_timber(data, out)
+        features = data['features']
+        timber = features['timber_frame'] == true
+        out << Diagnostic.error('E_SCHEMA', '/features/timber_frame', reason: 'timber_false_written') if features.key?('timber_frame') && !timber
+        out << Diagnostic.error('E_SCHEMA', '/materials/timber', reason: 'timber_material_required') if timber && !data['materials'].key?('timber')
+        out << Diagnostic.error('E_SCHEMA', '/materials/timber', reason: 'timber_material_without_timber') if !timber && data['materials'].key?('timber')
+        return unless timber
+
+        TIMBER_RIVALS.each do |rival|
+          out << Diagnostic.error('E_SCHEMA', '/features/timber_frame', reason: "timber_with_#{rival}") if features[rival]
+        end
+      end
+      private_class_method :check_timber
 
       # AG-065 : la hauteur de commerce n'existe qu'avec un rez-de-chaussée commerçant, et
       # seulement sans hauteurs par niveau, qui priment.

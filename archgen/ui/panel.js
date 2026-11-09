@@ -249,7 +249,7 @@
 
   function onFieldInput(event) {
     var field = event.target;
-    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding') { showShopHeight(); }
+    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding' || field.id === 'f-timber') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -775,6 +775,7 @@
     document.getElementById('f-shop-height-field').hidden = !document.getElementById('f-shop').checked;
     document.getElementById('f-shutters-material-field').hidden = !document.getElementById('f-shutters').checked;
     document.getElementById('f-cladding-material-field').hidden = !document.getElementById('f-cladding').checked;
+    document.getElementById('f-timber-material-field').hidden = !document.getElementById('f-timber').checked;
   }
 
   function writeField(field, value) {

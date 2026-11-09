@@ -116,7 +116,7 @@ module Archgen
         out
       end
 
-      FIELDS = %w[levels roof ground_floor shop_height_m chimneys glazing muntins shutters dormers genoise stepped_gable cladding width_m].freeze
+      FIELDS = %w[levels roof ground_floor shop_height_m chimneys glazing muntins shutters dormers genoise stepped_gable cladding timber_frame width_m].freeze
 
       # Champ absent : la valeur de la rue. Plus aucun champ : la parcelle n'a plus de réglage propre.
       def tree_with(fields)
