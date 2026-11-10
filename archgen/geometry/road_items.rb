@@ -139,8 +139,16 @@ module Archgen
           dir = len < 1e-12 ? axis_dir(axis, i) : [(b[0] - a[0]) / len, (b[1] - a[1]) / len]
           point = [a[0] + ((b[0] - a[0]) * t), a[1] + ((b[1] - a[1]) * t)]
           definitions[id] ||= RoadItemShapes.definition(item['kind'], item['variant'], item['height_m'], count: item['count'])
-          instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
+          instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], side(item))
         end
+      end
+
+      # Un panneau tourne sa plaque (côté −X local) vers ceux qui arrivent dans son sens : X suit le tracé
+      # en `forward`, s'y oppose en `backward`. Les autres objets suivent la chaussée la plus proche.
+      def side(item)
+        return item['toward'] unless item['kind'] == 'sign'
+
+        item['facing'] == 'backward' ? 'right' : 'left'
       end
 
       # Segment et fraction de l'axe à l'abscisse s.

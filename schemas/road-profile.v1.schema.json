@@ -75,6 +75,12 @@
                     "type": "number",
                     "minimum": 0
                   }
+                },
+                "facing": {
+                  "enum": [
+                    "forward",
+                    "backward"
+                  ]
                 }
               },
               "required": [

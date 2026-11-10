@@ -79,6 +79,10 @@ Nouveaux types dans `road_items.v1.json`, avec leur copie embarquée identique (
 - La plaque fait 0,7 m. Elle est en haut du mât, son bas à `height_m − 0,7`. Elle est épaisse de 0,02 m, avec un liseré de couleur à 0,05 m du bord.
 - Formes : octogone, triangle, disque à 16 pans, carré, selon D-36.
 - Couleurs uniquement. Le chiffre d'une limitation n'est pas écrit (limite rappelée au guide).
+- **Fait (AG-123).** Ce qui est livré :
+  - la clé `facing` au schéma de coupe ; l'intake la réserve aux panneaux (`facing_unavailable`) et écrit `forward` par défaut ;
+  - `RoadItems.side` oriente l'instance d'un panneau selon son sens et non selon la chaussée la plus proche ;
+  - la plaque est découpée en éventail ; son haut est exactement à `height_m`.
 
 ## 5. Éditeur et version — AG-124
 

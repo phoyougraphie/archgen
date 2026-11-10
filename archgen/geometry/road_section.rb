@@ -224,6 +224,7 @@ module Archgen
                 'repeat' => item.key?('positions_m') ? 'positions' : entry['repeat'], 'toward' => toward(rows, band, x) }
         out['count'] = item['count'] if item.key?('count')
         out['positions_m'] = item['positions_m'] if item.key?('positions_m')
+        out['facing'] = item['facing'] if item.key?('facing')
         if out['repeat'] == 'spaced'
           out['spacing_m'] = item['spacing_m']
           out['count_per_100m'] = count_over(item['spacing_m'])

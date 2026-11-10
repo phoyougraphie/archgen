@@ -161,6 +161,9 @@ module Archgen
         out.concat(spacing_problems(item, entry, path))
         out.concat(count_problems(item, entry, path))
         out.concat(position_problems(item, entry, path))
+        if item.key?('facing') && item['kind'] != 'sign'
+          out << Diagnostic.error('E_ROAD_ITEM', "#{path}/facing", reason: 'facing_unavailable', kind: item['kind'])
+        end
         out
       end
 
@@ -233,6 +236,8 @@ module Archgen
         end
         out['height_variation'] = Quant.q(item.fetch('height_variation', 0).to_f) if entry['height_variation']
         out['count'] = item.fetch('count', entry['default_count']) if entry['default_count']
+        # Sens d'un panneau (docs/MOBILIER_CONTRACT.md §4) : vu par ceux qui suivent le tracé, par défaut.
+        out['facing'] = item.fetch('facing', 'forward') if item['kind'] == 'sign'
         out
       end
 

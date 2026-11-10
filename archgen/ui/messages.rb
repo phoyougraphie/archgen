@@ -322,6 +322,7 @@ module Archgen
         'coast_without_sea' => 'Une falaise ou une plage descend vers la mer : ajoutez une mer au bout de la coupe.',
         'bus_stop_band_too_narrow' => 'Un abri de bus demande une bande de %{min} m au moins (celle-ci fait %{value} m) : élargissez-la ou choisissez le mât seul.',
         'bus_stop_clearance' => 'Un élément de la même bande est à moins de 2 m de l’abri (position %{value} m) : il le gênera.',
+        'facing_unavailable' => 'Seul un panneau a un sens.',
         'positions_required' => 'Cet élément se pose à des endroits précis : donnez ses positions, en mètres depuis le début de la voie.',
         'positions_with_spacing' => 'Donnez des positions ou un pas, pas les deux.',
         'positions_order' => 'Les positions doivent aller en croissant, sans doublon.',
