@@ -122,6 +122,7 @@ module Archgen
         return Result.fail(problems) unless problems.empty?
 
         merged = Merge.leaves(start, draft.reject { |k, _| %w[roof schema_version profile].include?(k) })
+        merged = merged.merge('structure' => merged['structure'].reject { |key, value| key == 'ground_slab' && value != true })
         merged = with_shop(with_glazing(merged.merge(
                                 'schema_version' => 1,
                                 'name' => canonical_name(merged['name']),

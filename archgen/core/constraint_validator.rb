@@ -51,6 +51,7 @@ module Archgen
           out << Diagnostic.error('E_ROOF_GEOMETRY', '/roof/overhang_m', reason: 'stepped_gable_overhang', limit: 0.05)
         end
         check_timber(data, out)
+        out << Diagnostic.error('E_SCHEMA', '/structure/ground_slab', reason: 'ground_slab_false_written') if data['structure'].key?('ground_slab') && data['structure']['ground_slab'] != true
         front = data['features']['shop_front']
         out << Diagnostic.error('E_SCHEMA', '/features/shop_front', reason: 'shop_front_without_shop') if front && data['ground_floor'] != 'shop'
         out << Diagnostic.error('E_SCHEMA', '/materials/awning', reason: 'awning_material_required') if front == 'awning' && !data['materials'].key?('awning')

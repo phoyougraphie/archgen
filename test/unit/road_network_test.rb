@@ -206,7 +206,8 @@ class RoadNetworkTest < Minitest::Test
       'motorway_at_grade' => [road('a', [[0, 0], [100, 0]], 'autoroute'), road('b', [[50, -50], [50, 50]])],
       'arms_too_close' => [a, road('b', [[50, 0], [95.3, 21.1]])],
       'junction_on_curve' => [road('a', [[0, 0], [50, 0], [100, 30]]), road('b', [[50, -50], [50, 50]])],
-      'arm_too_short' => [a, road('b', [[50, -50], [50, 4]])],
+      # AG-101 : à 4 m, le dépassement est absorbé en T ; à 9 m, au-delà de la demi-chaussée + 1 m, le moignon reste trop court.
+      'arm_too_short' => [a, road('b', [[50, -50], [50, 9]])],
       'too_many_arms' => [road('a', [[0, 0], [100, 0]]), road('b', [[50, -50], [50, 50]]), road('c', [[10, -40], [90, 40]]),
                           road('d', [[10, 40], [90, -40]])]
     }.each do |reason, roads|

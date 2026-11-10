@@ -140,6 +140,7 @@ module Archgen
 
       def build_plan(footprint, levels, openings, grids, roof, details, input, row)
         walls = Geometry::WallBuilder.call(footprint, levels, grids, input)
+        walls.first['children'].concat(Geometry::WallBuilder.ground(footprint, openings, input))
         walls.first['children'] << Geometry::PorchSolver.passage_node(footprint, row[:porch], input) if row&.dig(:porch)
         children = walls + roof.nodes
         children << Geometry::Node.group('details', 'details', details.nodes) unless details.nodes.empty?

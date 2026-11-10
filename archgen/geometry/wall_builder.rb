@@ -121,6 +121,33 @@ module Archgen
 
       # `floor` : sur pilotis (AG-091), rien sous le premier plancher.
       PILOTI_M = 0.30
+      THRESHOLD_M = 0.03
+      THRESHOLD_OUT_M = 0.20
+      THRESHOLD_SHELL_IN_M = 0.05
+
+      # AG-100 : dalle de rez-de-chaussée (face à z = 0 en Shell, dalle sous z = 0 en Structural) et
+      # seuil sous chaque porte d'entrée ; rien sur pilotis.
+      def ground(footprint, openings, config)
+        return [] unless config['structure']['ground_slab'] && !config['features']['pilotis']
+
+        material = config['materials']['wall']
+        structural = config['mode'] == 'structural'
+        ring = footprint.ring
+        nodes = if structural
+                  [Node.leaf('wall/ground_slab', 'slab', Boxes.prism(ring, Core::Quant.q(-config['structure']['slab_m']), 0.0, material))]
+                else
+                  mesh = MeshBuilder.new('surface')
+                  mesh.add_face(ring.map { |x, y| [x, y, 0.0] }, material)
+                  [Node.leaf('wall/ground_slab', 'slab', mesh.to_primitive)]
+                end
+        inside = structural ? config['structure']['wall_m'] : THRESHOLD_SHELL_IN_M
+        openings.select { |o| o.kind == 'door' }.each do |o|
+          facade = footprint.facade(o.facade_id)
+          nodes << Node.leaf("wall/threshold/#{o.facade_id}", 'wall', Boxes.on_facade(facade, o.u_min_m, o.u_max_m, 0.0, THRESHOLD_M, -THRESHOLD_OUT_M, inside, material))
+        end
+        nodes
+      end
+
 
       # Poteaux aux angles et aux limites de travée, avant et arrière ; sous-face du premier étage en
       # Shell (en Structural, la dalle la fait déjà).

@@ -212,6 +212,8 @@ module Archgen
       def tree_for(settings)
         # Une case Varier décochée envoie `variety: null` : la rue garde alors un seul gabarit.
         tree = settings.reject { |key, value| %w[layout access].include?(key) || (key == 'variety' && value.nil?) }.merge('trace' => @session.trace)
+        # ADR-50 : une nouvelle rue reçoit la dalle et les seuils ; enregistrés, ils restent.
+        tree = tree.merge('building' => Core::Merge.leaves({ 'structure' => { 'ground_slab' => true } }, tree.fetch('building', {})))
         return settings.key?('access') ? tree.merge('access' => settings['access']) : tree if @session.closed?
 
         tree.merge('layout' => layout_for(settings))

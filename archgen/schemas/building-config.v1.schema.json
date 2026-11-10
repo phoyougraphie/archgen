@@ -207,6 +207,9 @@
           "type": "number",
           "minimum": 0.1,
           "maximum": 0.5
+        },
+        "ground_slab": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false,

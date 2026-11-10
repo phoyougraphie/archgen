@@ -215,7 +215,8 @@ module Archgen
         target = resolve_target(payload['target_token'], current)
         return target unless target.ok?
 
-        result = @service.preview(draft: payload['draft'], model: current, target: target.value)
+        draft = target.value ? payload['draft'] : creation_draft(payload['draft'])
+        result = @service.preview(draft: draft, model: current, target: target.value)
         return result unless result.ok?
 
         value = result.value
@@ -263,9 +264,14 @@ module Archgen
         Messages.value_text(value, path)
       end
 
+      # ADR-50 : un nouveau bâtiment reçoit la dalle et les seuils, que le panneau peut décocher.
+      def creation_draft(draft)
+        Core::Merge.leaves({ 'structure' => { 'ground_slab' => true } }, draft)
+      end
+
       def generate(payload)
         current = model
-        created = @service.create(model: current, draft: payload['draft'])
+        created = @service.create(model: current, draft: creation_draft(payload['draft']))
         return created unless created.ok?
 
         summary = created.value

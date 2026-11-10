@@ -195,4 +195,15 @@ Contrat : [VILLE_MIXTE_CONTRACT](../docs/VILLE_MIXTE_CONTRACT.md). Décisions : 
 | **AG-098 — Stores bannes et pergolas** | AG-097 | `shop.front`, matière de toile. | Pièces placées, refus. U65. |
 | **AG-099 — Panneaux, RBZ 0.19.0** | AG-098 | Listes et cases ; guide, journal, RBZ. | Panneaux essayés ; recette H34 à la main. |
 
+## J19 — Carrefours sans réseau, dalle et seuils
+
+Contrat : [CARREFOURS_DALLE_CONTRACT](../docs/CARREFOURS_DALLE_CONTRACT.md). Décisions : ADR-50 (dalle par défaut à la création) ; détails selon ADR-48.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-100 — Dalle de rez-de-chaussée et seuils** | AG-099, ADR-50 | `structure.ground_slab` ; dalle et seuils au LOD 0 ; écrit à la création. | Dalle, seuils, existant inchangé. U66. |
+| **AG-101 — T plus tolérants** | AG-100 | Bout sur la chaussée ou léger dépassement : un T. | Cas de T. U67. |
+| **AG-102 — Carrefours depuis Tracer une voie** | AG-101 | Voies touchées fusionnées en un réseau, une opération. | Fusion, refus. U68. |
+| **AG-103 — RBZ 0.20.0** | AG-102 | Guide, journal, RBZ. | Version installée ; recette H35 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

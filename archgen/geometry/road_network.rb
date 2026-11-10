@@ -42,7 +42,9 @@ module Archgen
       def detect(roads)
         hits = []
         roads.combination(2) do |a, b|
-          crossings(a, b).each { |p, sa, sb| hits << [p, [[a.index, sa], [b.index, sb]]] }
+          # AG-101 : un croisement à moins de la demi-largeur de l'autre voie (+ 1 m) d'un bout est ce
+          # bout : une voie qui dépasse un peu fait un T, pas une croix à moignon.
+          crossings(a, b).each { |p, sa, sb| hits << [p, [[a.index, end_snap(a, sa, b)], [b.index, end_snap(b, sb, a)]]] }
         end
         roads.each do |r|
           [0.0, r.length].each do |s|
@@ -51,11 +53,24 @@ module Archgen
               next if o.index == r.index
 
               p, so = closest(o, end_point)
-              hits << [p, [[r.index, s], [o.index, so]]] if Math.hypot(p[0] - end_point[0], p[1] - end_point[1]) <= SNAP_M
+              # AG-101 : un bout posé sur la chaussée de l'autre voie fait un T, au point de son axe.
+              hits << [p, [[r.index, s], [o.index, so]]] if Math.hypot(p[0] - end_point[0], p[1] - end_point[1]) <= reach(o)
             end
           end
         end
         merge(hits, roads)
+      end
+
+      # Portée d'un raccord sur une voie : sa demi-largeur et SNAP_M.
+      def reach(road)
+        (road.width / 2.0) + SNAP_M
+      end
+
+      def end_snap(road, s, other)
+        return 0.0 if s <= reach(other)
+        return road.length if road.length - s <= reach(other)
+
+        s
       end
 
       def crossings(a, b)

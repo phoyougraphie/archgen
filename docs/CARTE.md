@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J18 fini : RBZ 0.19.0 installé (clic droit Modifier, styles mêlés, rez-de-chaussée variés, stores et pergolas). Recettes H26 à H34 à faire à la main. (→ docs/VILLE_MIXTE_CONTRACT.md)
+  - Prochaine action — AG-100 et AG-101 faits (dalle et seuils, T tolérants). En cours : AG-102, carrefours depuis Tracer une voie. Recettes H26 à H34 à faire à la main. (→ docs/CARREFOURS_DALLE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -120,6 +120,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-09 AG-090 à AG-094 — Pilotis en rangée changés de refus en omission dite, pour que le Moderniste fasse une rue. Bandeaux bornés aux dégagements d'about (angle biais). Trois défauts de profils corrigés avant publication par U52. RBZ 0.18.0, 32 styles.
     - 2026-11-09 J18 cadré — Demande : clic droit Modifier, styles mêlés dans une rue (ADR-49, revient sur ADR-44), rez-de-chaussée moins répétitifs, stores et pergolas. Envoi sur GitHub des 24 commits fait à la demande.
     - 2026-11-09 AG-095 à AG-099 — Devanture passée de shop.front à features.shop_front (shop est reconstruit à la résolution). Résumé « shops » écrit seulement avec un tirage de rez-de-chaussée, sinon toute rue variée aurait changé de plan. Largeur de fenêtre tirée pour tout le bâtiment : une seule largeur par bâtiment dans le format.
+    - 2026-11-10 J19 cadré — Cause des T difficiles : un bout n'était raccordé qu'à 1 m de l'axe de l'autre voie, pas sur sa chaussée ; un léger dépassement faisait une croix à moignon. Dalle et seuils écrits à la création (ADR-50) pour ne pas changer l'existant.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -248,7 +249,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-097 Rez-de-chaussée variés — variety.ground. U64 vert.
     - [fait] AG-098 Stores bannes et pergolas — features.shop_front, toiles. U65 vert.
     - [fait] AG-099 Panneaux, RBZ 0.19.0 — panneaux, RBZ 0.19.0 ; H34 à faire.
-  - J19+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
+  - J19 Carrefours sans réseau, dalle et seuils — ADR-50. AG-100 à 103. (→ docs/CARREFOURS_DALLE_CONTRACT.md)
+    - [fait] AG-100 Dalle de rez-de-chaussée et seuils — structure.ground_slab, wall_builder.ground ; écrit à la création. U66 vert.
+    - [fait] AG-101 T plus tolérants — road_network : portée = demi-chaussée + 1 m. U67 vert.
+    - [afaire] AG-102 Carrefours depuis Tracer une voie — fusion en réseau. U68.
+    - [afaire] AG-103 RBZ 0.20.0 — H35.
+  - J20+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
