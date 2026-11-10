@@ -194,6 +194,7 @@ module Archgen
         out = { 'band' => band, 'index' => index, 'kind' => item['kind'], 'variant' => item['variant'],
                 'x_m' => q(x), 'z_m' => q(z_at(rows[band]['surface'], x)), 'height_m' => item['height_m'],
                 'repeat' => entry['repeat'], 'toward' => toward(rows, band, x) }
+        out['count'] = item['count'] if item.key?('count')
         if entry['repeat'] == 'spaced'
           out['spacing_m'] = item['spacing_m']
           out['count_per_100m'] = count_over(item['spacing_m'])

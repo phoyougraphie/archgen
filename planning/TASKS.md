@@ -237,7 +237,7 @@ Contrat : [MOBILIER_CONTRACT](../docs/MOBILIER_CONTRACT.md). Décisions : ADR-55
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
-| **AG-120 — Catalogue et formes** | AG-119, ADR-55 | `bench`, `bin`, `bike_rack`, `bus_stop`, `sign` au catalogue ; formes ; matières bleu, verre, jaune ; bandes admises. | Solides fermés, définitions partagées, copies identiques. U82. |
+| **AG-120 — Catalogue et formes** | AG-119, ADR-55 | `bench`, `bin`, `bike_rack`, `bus_stop`, `sign` au catalogue ; formes ; matières bleu, verre, jaune ; bandes admises. | Solides fermés, définitions partagées, copies identiques. U82 vert. |
 | **AG-121 — Pose à des positions** | AG-120 | `positions_m` pour tout élément ponctuel ; refus hors tronçon, avec un pas, positions exigées. | Pose exacte sur droite et arc. U83. |
 | **AG-122 — Arrêt de bus** | AG-121 | Abri ouvert vers la chaussée, mât seul ; bande de 1,6 m ; marquage jaune ; proximité. | U84. |
 | **AG-123 — Panneaux** | AG-121 | Huit plaques, sens `forward`/`backward`, mât. | U85. |

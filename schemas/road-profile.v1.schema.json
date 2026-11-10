@@ -61,6 +61,11 @@
                   "type": "number",
                   "minimum": 0,
                   "maximum": 0.3
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10
                 }
               },
               "required": [

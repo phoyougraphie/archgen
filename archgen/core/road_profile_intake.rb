@@ -152,7 +152,17 @@ module Archgen
         end
         out.concat(height_problems(item, entry, path))
         out.concat(spacing_problems(item, entry, path))
+        out.concat(count_problems(item, entry, path))
         out
+      end
+
+      # Arceaux d'une attache vélos (docs/MOBILIER_CONTRACT.md, AG-120).
+      def count_problems(item, entry, path)
+        return [] unless item.key?('count')
+        return [Diagnostic.error('E_ROAD_ITEM', "#{path}/count", reason: 'count_unavailable', kind: item['kind'])] unless entry['default_count']
+        return [] if item['count'].is_a?(Integer) && item['count'].between?(entry['min_count'], entry['max_count'])
+
+        [Diagnostic.error('E_ROAD_ITEM', "#{path}/count", reason: 'count_range', value: item['count'], min: entry['min_count'], max: entry['max_count'])]
       end
 
       def height_problems(item, entry, path)
@@ -196,6 +206,7 @@ module Archgen
                 'height_m' => Quant.q(item.fetch('height_m', entry['default_height_m']).to_f) }
         out['spacing_m'] = Quant.q(item.fetch('spacing_m', entry['default_spacing_m']).to_f) if entry['repeat'] == 'spaced'
         out['height_variation'] = Quant.q(item.fetch('height_variation', 0).to_f) if entry['height_variation']
+        out['count'] = item.fetch('count', entry['default_count']) if entry['default_count']
         out
       end
 

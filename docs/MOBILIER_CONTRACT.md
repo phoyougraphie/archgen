@@ -40,6 +40,12 @@ Nouveaux types dans `road_items.v1.json`, avec leur copie embarquée identique (
 - Matières : `road/item/wood`, `steel`, `metal`, `red` et `white` existent déjà. On ajoute `road/item/blue`, `road/item/glass` (verre, opacité 0,35) et `road/item/yellow` (marquage de l'abri). Ce sont des données versionnées du catalogue `road_materials`.
 - Repère de l'instance : le même que celui des éléments existants. Y pointe vers la chaussée la plus proche. Le banc tourne le dos à la chaussée ; l'abri s'ouvre vers elle.
 - Les objets comptent dans les plafonds `road_items` et `road_faces` existants.
+- **Fait (AG-120).** Ce qui est livré :
+  - `Geometry::RoadFurnitureShapes` donne les formes des cinq types ;
+  - `bench`, `bin` et `bike_rack` sont au catalogue (copies identiques) et posés au pas régulier, avec la clé facultative `count` (schéma de coupe, refus `count_unavailable` et `count_range`) ;
+  - les matières `road/item/blue`, `glass` (opacité 0,35) et `yellow` sont ajoutées ;
+  - l'éditeur dessine le banc, la corbeille et l'arceau dans la coupe.
+  - Écart d'ordre : les formes de `bus_stop` et `sign` sont faites, mais leurs entrées de catalogue viennent avec AG-121, car elles exigent `positions_m`. Sans ce mode, le moteur les aurait traitées comme des éléments continus.
 
 ## 2. Pose à des positions — AG-121
 

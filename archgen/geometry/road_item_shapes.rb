@@ -7,7 +7,7 @@ module Archgen
     # voie, Y vers la chaussée la plus proche (côté d'une crosse), Z vers le haut.
     module RoadItemShapes
       SIDES = 8
-      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white stone metal reflector].freeze
+      PARTS = %w[trunk crown steel lamp hedge wood concrete head red white stone metal reflector blue glass yellow].freeze
 
       module_function
 
@@ -16,7 +16,8 @@ module Archgen
       end
 
       # Une définition : liste de nœuds « part », chacun un solide fermé.
-      def definition(kind, variant, height, crown: nil)
+      # `count` : arceaux d'une attache vélos (AG-120).
+      def definition(kind, variant, height, crown: nil, count: nil)
         solids = case kind
                  when 'tree' then tree(variant, height, crown)
                  when 'lamp' then lamp(variant, height)
@@ -31,6 +32,12 @@ module Archgen
                  when 'post' then [box(-crown / 2, crown / 2, -crown / 2, crown / 2, 0, height, variant)]
                  # Traverse : 2,60 m en travers, 0,25 m le long, 0,15 m d'épaisseur dont 2 cm hors du ballast.
                  when 'sleeper' then [box(-0.125, 0.125, -1.3, 1.3, -height + 0.02, 0.02, variant)]
+                 # Mobilier urbain (docs/MOBILIER_CONTRACT.md, AG-120).
+                 when 'bench' then RoadFurnitureShapes.bench(height)
+                 when 'bin' then RoadFurnitureShapes.bin(height)
+                 when 'bike_rack' then RoadFurnitureShapes.bike_rack(height, count || 1)
+                 when 'bus_stop' then RoadFurnitureShapes.bus_stop(variant, height)
+                 when 'sign' then RoadFurnitureShapes.sign(variant, height)
                  else raise ArgumentError, "Objet sans forme : #{kind}"
                  end
         solids.each_with_index.map do |primitive, i|

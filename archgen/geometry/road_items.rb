@@ -39,7 +39,7 @@ module Archgen
       FAMILIES = {
         'tree' => 'road_vegetation', 'hedge' => 'road_vegetation', 'lamp' => 'road_lighting',
         'bollard' => 'road_furniture', 'pole' => 'road_furniture', 'post' => 'road_furniture', 'fence' => 'road_furniture',
-        'guard' => 'road_furniture', 'road_stud' => 'road_furniture', 'crossing_stud' => 'road_furniture', 'sand_fence' => 'road_furniture', 'low_wall' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
+        'guard' => 'road_furniture', 'road_stud' => 'road_furniture', 'crossing_stud' => 'road_furniture', 'sand_fence' => 'road_furniture', 'low_wall' => 'road_furniture', 'signal' => 'road_furniture', 'crossing_light' => 'road_furniture', 'crossing_gate' => 'road_furniture', 'bench' => 'road_furniture', 'bin' => 'road_furniture', 'bike_rack' => 'road_furniture', 'bus_stop' => 'road_furniture', 'sign' => 'road_furniture', 'rail' => 'road_rails', 'sleeper' => 'road_rails'
       }.freeze
 
       def family(node)
@@ -111,8 +111,8 @@ module Archgen
         length = polyline_length(line)
         spaced_positions(length, item['spacing_m']).each_with_index do |s, rank|
           height = chosen_height(item, entry, seed, rank)
-          id = definition_id(item['kind'], item['variant'], height)
-          definitions[id] ||= RoadItemShapes.definition(item['kind'], item['variant'], height, crown: crown(item, entry, height))
+          id = definition_id(item['kind'], item['variant'], height, item['count'])
+          definitions[id] ||= RoadItemShapes.definition(item['kind'], item['variant'], height, crown: crown(item, entry, height), count: item['count'])
           point, dir = point_at(line, s)
           instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
         end
@@ -134,8 +134,8 @@ module Archgen
         { 'radius' => Core::Quant.q(shape['crown_radius_ratio'] * height), 'base' => Core::Quant.q(shape['crown_base_ratio'] * height) }
       end
 
-      def definition_id(kind, variant, height)
-        "#{PREFIX}#{kind}/#{variant}/#{(height * 1000).round}"
+      def definition_id(kind, variant, height, count = nil)
+        "#{PREFIX}#{kind}/#{variant}/#{(height * 1000).round}#{count ? "/#{count}" : ''}"
       end
 
       def polyline_length(line)

@@ -7,7 +7,7 @@ class RoadProfileTest < Minitest::Test
   include Archgen::Core
 
   BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank cliff rocks dune beach sea].freeze
-  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud].freeze
+  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud bench bin bike_rack].freeze
   PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
   STEP = 0.001
 
@@ -145,7 +145,7 @@ class RoadProfileTest < Minitest::Test
 
   def test_unknown_band_type_item_kind_and_variant_are_refused
     assert_refused(profile(band('lane'), { 'type' => 'canal', 'width_m' => 3 }), 'E_ROAD_BAND', '/bands/1/type', 'unknown_type')
-    assert_refused(profile(band('sidewalk', 3, [{ 'kind' => 'bench' }])), 'E_ROAD_ITEM', '/bands/0/items/0/kind', 'unknown_kind')
+    assert_refused(profile(band('sidewalk', 3, [{ 'kind' => 'kiosk' }])), 'E_ROAD_ITEM', '/bands/0/items/0/kind', 'unknown_kind')
     found = assert_refused(profile(band('sidewalk', 3, [{ 'kind' => 'lamp', 'variant' => 'neon' }])), 'E_ROAD_ITEM', '/bands/0/items/0/variant', 'unknown_variant')
     assert_includes found.params['allowed'], 'heritage'
   end

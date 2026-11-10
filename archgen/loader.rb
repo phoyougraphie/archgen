@@ -35,6 +35,7 @@ module Archgen
       geometry/road_axis
       geometry/road_ribbons
       geometry/road_item_shapes
+      geometry/road_furniture_shapes
       geometry/road_items
       geometry/road_ground
       geometry/road_junction

@@ -320,6 +320,8 @@ module Archgen
         'bank_too_steep' => 'Cette berge est trop raide : %{min} m de large au moins pour cette revanche.',
         'sea_not_outer' => 'La mer est la première ou la dernière bande de la coupe, et une seule.',
         'coast_without_sea' => 'Une falaise ou une plage descend vers la mer : ajoutez une mer au bout de la coupe.',
+        'count_unavailable' => 'Seule une attache vélos a un nombre d’arceaux.',
+        'count_range' => 'Une attache vélos compte de %{min} à %{max} arceaux.',
         'item_band_mismatch' => 'Cet élément ne se pose pas sur cette bande : une ganivelle va sur une dune ou une plage, un muret sur un trottoir, un chemin, un accotement, un quai ou une plage.',
         'sea_needs_flat' => 'Une côte reste à un seul niveau : choisissez ce régime pour l’eau.',
         'water_mode_missing' => 'Cette voie porte de l’eau : choisissez son régime (rivière, canal ou un seul niveau).',

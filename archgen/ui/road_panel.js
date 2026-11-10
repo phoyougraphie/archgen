@@ -722,6 +722,16 @@
       svg('line', { x1: x, y1: z, x2: x, y2: z - h, class: 's-pole', 'stroke-width': 2.5 }, g);
       svg('line', { x1: x, y1: z - h + 0.4 * s, x2: x + dir * 2.6 * s, y2: z - h + 0.4 * s, class: 's-pole', 'stroke-width': 1.5 }, g);
       svg('line', { x1: x + dir * 0.2 * s, y1: z - h + 1.1 * s, x2: x + dir * 3.4 * s, y2: z - h + 1.1 * s, class: 's-wire', 'stroke-width': 1 }, g);
+    } else if (it.kind === 'bench') {
+      // Banc vu en bout (AG-120) : assise de 0,40 m, dossier côté chaussée.
+      svg('rect', { x: x - 0.2 * s, y: z - 0.47 * s, width: 0.4 * s, height: Math.max(2, 0.05 * s), class: 's-trunk' }, g);
+      svg('rect', { x: x + dir * 0.18 * s - 0.02 * s, y: z - h, width: Math.max(2, 0.04 * s), height: h - 0.5 * s, class: 's-trunk' }, g);
+      svg('rect', { x: x - 0.03 * s, y: z - 0.42 * s, width: Math.max(2, 0.06 * s), height: 0.42 * s, class: 's-steel' }, g);
+    } else if (it.kind === 'bin') {
+      svg('rect', { x: x - 0.25 * s, y: z - h, width: 0.5 * s, height: h, rx: 2, class: 's-steel' }, g);
+    } else if (it.kind === 'bike_rack') {
+      // Arceau en U renversé de 0,80 m, vu de face dans la coupe.
+      svg('path', { d: 'M' + (x - 0.4 * s) + ' ' + z + 'L' + (x - 0.4 * s) + ' ' + (z - h) + 'L' + (x + 0.4 * s) + ' ' + (z - h) + 'L' + (x + 0.4 * s) + ' ' + z, class: 's-pole', fill: 'none', 'stroke-width': 2 }, g);
     }
   }
 
