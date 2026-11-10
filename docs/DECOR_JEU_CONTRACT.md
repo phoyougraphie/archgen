@@ -34,7 +34,7 @@ Ce qui reste hors périmètre :
 | D-29 | Quelles UV ? | **Projection cubique** : chaque face est projetée sur le plan de l'axe le plus proche de sa normale, avec 1 m = 1 unité d'UV, en coordonnées locales du bâtiment. | Dépliage par façade : coutures plus propres, mais coûteux à écrire. |
 | D-30 | Quels matériaux ? | **Métal-rugosité glTF**. La couleur de base est la sRGB du catalogue, teintes ADR-51 comprises. Deux clés facultatives s'ajoutent au catalogue, `roughness` (0,85 par défaut) et `metallic` (0 par défaut). Le verre a une opacité de 0,35 et une rugosité de 0,05. Une `surface` (face simple, Shell) est double face ; un `solid` ne l'est pas. | Matériaux texturés : hors périmètre tant que les matières sont unies. |
 | D-31 | Quels niveaux de détail ? | **Trois fichiers** : `<nom>_LOD0.glb` (le bâtiment tel que réglé), `<nom>_LOD1.glb` (le même plan recalculé au réglage ARCHGEN `lod: 0`, sans détails) et `<nom>_LOD2.glb` (les volumes simples). Dans Unreal, LOD1 et LOD2 s'ajoutent par « Import LOD Level ». | Une seule scène avec l'extension `MSFT_lod`, que les importeurs lisent mal. |
-| D-32 | Quelles collisions ? | Des **boîtes convexes** : une par niveau et par volume, et un prisme convexe par toit. Elles sont rangées dans des nœuds `UCX_<nom>_NN`, sans matériau, dans le fichier LOD0. | Collision complexe (« Use Complex as Simple ») : plus lourde à l'exécution. |
+| D-32 | Quelles collisions ? | L'**enveloppe convexe** des murs et du toit, dans un nœud `UCX_<nom>_00` sans matériau, ajouté au fichier LOD0. Ce choix a été revu à AG-117 : il remplace les boîtes par niveau et le prisme de toit initialement prévus, car il épouse aussi les mansardes et les croupes. | Collision complexe (« Use Complex as Simple ») : plus lourde à l'exécution. |
 
 ## 1. Triangulation et écriture glTF — AG-115
 
@@ -70,8 +70,14 @@ Ce qui reste hors périmètre :
 
 - **LOD0** : le plan du bâtiment.
 - **LOD1** : le plan recalculé au réglage `lod: 0`, sans changer ni la graine ni le reste. Si le bâtiment est déjà au réglage `lod: 0`, LOD1 n'est pas écrit et le rapport le dit.
-- **LOD2** : une boîte par volume, de l'emprise jusqu'au haut du dernier niveau, plus un prisme de toit. Le toit plat n'a pas de prisme. Les mansardes et croupes sont simplifiées à un prisme à deux pans de même faîtage.
-- **Collisions** : les mêmes formes que LOD2, en nœuds `UCX_` sans matériau, ajoutées au fichier LOD0. Un balcon ou un détail n'a pas de collision.
+- **LOD2** : l'enveloppe convexe des sommets des murs et du toit. Les détails, les balcons et les cheminées sont exclus. Une face au-dessus du haut des murs prend la matière du toit ; les autres prennent celle des murs.
+- **Collisions** : la même enveloppe, en nœud `UCX_<nom>_00` sans matériau, ajouté au fichier LOD0. Un balcon ou un détail n'a pas de collision. Un plan entièrement plat est refusé (`export_volume`).
+- **Fait (AG-117).** `Gltf::ConvexHull` (incrémental, points les plus lointains d'abord), `Gltf::Volumes`, `Gltf::LodSet` :
+  - `LodSet.lod1_plan(config, materials)` recalcule le bâtiment au réglage `lod: 0`, sans rien changer d'autre ; sa valeur est nil s'il y est déjà ;
+  - `LodSet.building(name:, plan:, lod1:, materials:)` rend les fichiers LOD0, LOD1 et LOD2 avec leurs comptes ;
+  - avertissements `W_EXPORT_LOD` : `lod1_skipped` (fichier LOD1 non écrit) et `lod_not_decreasing` (triangles qui ne décroissent pas).
+  - LOD2 compte 16 à 32 triangles selon le style.
+  - Sonde Blender 5.2, haussmannien : 2 084, puis 448, puis 32 triangles, nœud `UCX_haussmann_00` lu. Sa reconnaissance comme collision dans Unreal reste à prouver (H38).
 - **Contrôle** : le nombre de triangles décroît de LOD0 à LOD1 puis à LOD2. Sinon, un avertissement est émis (`W_EXPORT_LOD`).
 
 ## 4. Commande d'export — AG-118

@@ -227,7 +227,7 @@ Contrat : [DECOR_JEU_CONTRACT](../docs/DECOR_JEU_CONTRACT.md). Décisions : ADR-
 |---|---|---|---|
 | **AG-115 — Triangulation et écriture glTF** | AG-109, ADR-54 | `adapters/gltf` : oreilles, normales plates, axes Y, maillages partagés, GLB déterministe. | Octets identiques, n − 2 triangles, refus localisé. U78 vert ; sonde Blender. |
 | **AG-116 — UV et matériaux PBR** | AG-115 | Projection cubique 1 m ; métal-rugosité, `roughness`/`metallic` facultatifs au catalogue ; verre ; double face. | UV, matériaux, teintes. U79 vert ; sonde Blender. |
-| **AG-117 — LOD et collisions** | AG-116 | LOD0, LOD1 (`lod: 0`), LOD2 volumes ; boîtes `UCX_`. | Triangles décroissants, collisions convexes. U80. |
+| **AG-117 — LOD et collisions** | AG-116 | LOD0, LOD1 (`lod: 0`), LOD2 enveloppe convexe ; collision `UCX_`. | Triangles décroissants, collisions convexes. U80 vert ; sonde Blender. |
 | **AG-118 — Commande d'export** | AG-117 | Clic droit → Exporter pour un moteur de jeu… ; bâtiment ou rue ; refus réseau et terrain ; rapport. | Modèle intact, hôte factice. U81. |
 | **AG-119 — Guide, RBZ 0.23.0** | AG-118 | Section Décor de jeu ; journal ; RBZ. | Version installée ; recette H38 à la main. |
 

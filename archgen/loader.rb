@@ -111,6 +111,8 @@ module Archgen
     EXPORT = %w[
       adapters/gltf/triangulator
       adapters/gltf/glb_writer
+      adapters/gltf/volumes
+      adapters/gltf/lod_set
     ].freeze
 
     def self.load_core

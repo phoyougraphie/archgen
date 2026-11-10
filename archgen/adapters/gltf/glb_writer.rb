@@ -76,6 +76,15 @@ module Archgen
           @roots << push_node(node_hash(name, matrix: matrix, children: children))
         end
 
+        # Ajoute à la racine de la scène un maillage fait de triangles (volume LOD2, collision `UCX_`).
+        # `material` rend l'id de matière d'un triangle, ou nil pour un maillage sans matériau.
+        def add_triangles(name:, triangles:, material: ->(_tri) {})
+          vertices = triangles.flatten(1)
+          faces = triangles.each_index.map { |i| { 'indices' => [3 * i, (3 * i) + 1, (3 * i) + 2], 'material' => material.call(triangles[i]) } }
+          mesh = add_mesh(name, [[name, { 'type' => 'solid', 'vertices' => vertices, 'faces' => faces }, IDENTITY]])
+          @roots << push_node(node_hash(name, mesh: mesh))
+        end
+
         # Rend Result.ok({ 'bytes', 'stats' }) ou un diagnostic E_EXPORT localisé.
         def to_glb
           json = document
@@ -172,8 +181,10 @@ module Archgen
           normal = accessor(group[:normals], 'VEC3')
           uv = accessor(group[:uvs], 'VEC2')
           indices = index_accessor(group[:indices])
-          { 'attributes' => { 'NORMAL' => normal, 'POSITION' => position, 'TEXCOORD_0' => uv }, 'indices' => indices,
-            'material' => material_index(material, double, group[:owner]), 'mode' => TRIANGLES }
+          primitive = { 'attributes' => { 'NORMAL' => normal, 'POSITION' => position, 'TEXCOORD_0' => uv }, 'indices' => indices,
+                        'mode' => TRIANGLES }
+          primitive['material'] = material_index(material, double, group[:owner]) unless material.nil?
+          primitive
         end
 
         # Un matériau glTF par matière et par face simple ou double (D-30) ; la double face prend un suffixe.
