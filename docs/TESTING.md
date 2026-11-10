@@ -64,6 +64,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U58-U61 | Volumes modernes (AG-090 à AG-093) : bandeaux et murs-rideaux, montants et vitres ; pilotis (RDC ouvert, poteaux, sous-face, omis en rangée) ; sheds vitrés, rangée à angle, débord refusé ; trame qui saute les baies, brise-soleil. |
 | U62-U65 | Ville mixte (AG-095 à AG-098) : entrées du clic droit selon la sélection ; style propre d'un bâtiment, voisins inchangés, refus d'un style inconnu, révision figée ; porte, commerces et largeurs tirés, réglage propre prioritaire ; stores au-dessus des vitrines, pergola interrompue devant la porte, refus sans commerce. |
 | U66-U67 | Dalle et seuils (AG-100) : face à z = 0 en Shell, dalle sous z = 0 en Structural, seuil sous la porte, rien sans le réglage ni sur pilotis. T tolérants (AG-101) : bout sur la chaussée, léger dépassement, vrai croisement, voies écartées. |
+| U68 | Carrefours depuis Tracer une voie (AG-102) : voie à l'écart reste seule ; voie qui finit sur une autre : un réseau à deux voies, une opération, voie touchée remplacée ; autre hauteur refusée sans écrire. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

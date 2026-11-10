@@ -178,6 +178,13 @@
         el.roadResult.textContent += ' Pente jusqu’à ' + fmt(m.grade_max_percent) + ' %, déblai ' + fmt(m.cut_max_m) + ' m, remblai ' + fmt(m.fill_max_m) + ' m.';
       }
       el.roadResult.textContent += waterSummary(m, road.locks || []);
+      // AG-102 : rejoindre d'autres voies en fait un réseau, carrefours compris.
+      if (road.merge && road.merge.count) {
+        el.roadResult.textContent += ' Elle rejoint ' + road.merge.count + (road.merge.count > 1 ? ' voies ou réseaux' : ' voie ou réseau') + ' : ensemble, ils formeront un réseau avec ses carrefours.';
+      }
+      if (road.merge && road.merge.refused) {
+        road.merge.refused.forEach(function (d) { node('li', { className: 'is-error' }, el.roadDiag, d.message); });
+      }
       state.digest = road.road_digest;
     } else {
       el.roadResult.textContent = 'Cette voie ne peut pas être créée :';

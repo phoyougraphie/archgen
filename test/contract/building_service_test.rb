@@ -294,6 +294,7 @@ class BuildingServiceTest < Minitest::Test
   def test_real_composition_publishes_only_implemented_profiles
     registry = Archgen::Composition.registry
     assert registry.ok?, registry.errors.map(&:to_h).inspect
-    assert_equal %w[brutalist haussmann toulousain], registry.value.active_profiles.map(&:id)
+    # Les styles régionaux et modernes (AG-075 et suivants) s'ajoutent ; les trois premiers restent publiés.
+    assert_empty %w[brutalist haussmann toulousain] - registry.value.active_profiles.map(&:id)
   end
 end

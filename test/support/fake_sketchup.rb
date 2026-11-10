@@ -268,7 +268,8 @@ module FakeSketchUp
       @transform = transform
       @parent = parent
       @persistent_id = persistent_id
-      @transformation = Transformation.new(IDENTITY)
+      # Comme SketchUp : la racine garde la transformation donnée à l'insertion.
+      @transformation = transform.is_a?(Transformation) ? transform : Transformation.new(IDENTITY)
       @valid = true
     end
 
@@ -417,6 +418,10 @@ module FakeSketchUp
 
     def each(&block)
       model.instances.each(&block)
+    end
+
+    def erase_entities(list)
+      list.each { |i| model.instances.delete(i) }
     end
   end
 end

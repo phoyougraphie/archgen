@@ -30,6 +30,8 @@ Quand une voie tracée avec **Tracer une voie** croise une voie ou un réseau AR
 
 Guide, journal, **RBZ 0.20.0** ; recette **H35** à la main.
 
+- **Fait (AG-100 à AG-103).** `wall_builder.ground`, `road_network` (portée = demi-chaussée + 1 m, croisement près d'un bout ramené au bout), `core/road_merge` (contacts et réseau, pur) et `RoadService#merge_for` / `NetworkService#create_replacing` ; annonce au panneau de voie. Un défaut des doubles de test (`to_a` des entités) masquait les racines : le service parcourt maintenant les entités par `each`. RBZ 0.20.0. **Recette H35 dans SketchUp non faite.**
+
 ## Tests
 
 U66 dalle et seuils ; U67 tolérance des T ; U68 fusion en réseau (contrat de service).

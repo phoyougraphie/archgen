@@ -87,10 +87,32 @@ module Archgen
           problem = context_problem(model) || origin_problem(origin_m)
           return Core::Result.fail([problem]) if problem
 
+          # AG-102 : une voie qui en touche d'autres forme avec elles un réseau, en une opération.
+          merge = merge_for(model, computed.value.settings, origin_m)
+          return merge unless merge.ok?
+          return network_service.create_replacing(model: model, merge: merge.value) if merge.value
+
           written = @guard.run(model, labels[:create]) do
             write_new_root(model, computed.value, origin_m, ground && { terrain: terrain, grid: ground.value })
           end
           written.ok? ? Core::Result.ok(written.value, computed.diagnostics) : written
+        end
+
+        # AG-102 : voies et réseaux ARCHGEN du modèle que la voie tracée touche ; nil s'il n'y en a pas.
+        # Public : le panneau l'annonce avant d'écrire.
+        def merge_for(model, settings, origin_m)
+          return Core::Result.ok(nil) unless instance_of?(RoadService)
+
+          roots = []
+          model.entities.each { |e| root = merge_root(e) and roots << root }
+          return Core::Result.ok(nil) if roots.empty?
+
+          Core::RoadMerge.call(settings, origin_m, roots, width: ->(profile) { profile_width(profile) })
+        end
+
+        def profile_width(profile)
+          effective = Composition.road_profile_intake.profile(profile)
+          effective.ok? ? effective.value['bands'].sum { |b| b['width_m'] } : 0.0
         end
 
         def load(model:, persistent_id:)
@@ -139,6 +161,25 @@ module Archgen
         end
 
         private
+
+        def merge_root(entity)
+          return nil unless entity.respond_to?(:get_attribute) && (!entity.respond_to?(:valid?) || entity.valid?)
+
+          road = entity.get_attribute(RoadRepository::DICTIONARY, 'road_json')
+          network = entity.get_attribute(NetworkRepository::DICTIONARY, 'network_json')
+          json = road || network
+          return nil unless json
+
+          parsed = Core::StrictJson.parse(json)
+          return nil unless parsed.ok?
+
+          Core::RoadMerge::Root.new(ref: entity, kind: road ? 'road' : 'network', settings: parsed.value, matrix: entity.transformation.to_a)
+        end
+
+        def network_service
+          NetworkService.new(intake: Composition.road_network_intake, bands: @bands, items: @items, materials: @materials,
+                             material_revision: @material_revision, host: @host, writer: @writer, limits: @limits)
+        end
 
         # Libellés d'Annuler, matière d'écriture : un réseau (NetworkService) remplace ceux-ci.
         def labels

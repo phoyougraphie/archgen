@@ -133,7 +133,19 @@ module Archgen
 
         # Un refus de la voie n'est pas un refus de la coupe : il voyage dans son propre bloc.
         road = road_preview(payload)
-        Core::Result.ok(section.value.merge('road' => road && summary(road), 'ground' => ground_state), section.diagnostics)
+        body = road && summary(road)
+        body['merge'] = merge_state(road) if body && body['ok']
+        Core::Result.ok(section.value.merge('road' => body, 'ground' => ground_state), section.diagnostics)
+      end
+
+      # AG-102 : une voie tracée qui touche d'autres voies ARCHGEN formera avec elles un réseau.
+      def merge_state(road)
+        return nil unless @mode == 'trace' && @service.respond_to?(:merge_for)
+
+        merge = @service.merge_for(model, road.value.settings, @session.origin_m)
+        return { 'refused' => merge.errors.map { |d| Messages.to_h(d) } } unless merge.ok?
+
+        merge.value ? { 'count' => merge.value.absorbed.size } : nil
       end
 
       def section_for(profile)

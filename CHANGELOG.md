@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 0.20.0
+
+Carrefours sans réseau, dalle et seuils (AG-100 à AG-103). Recette H35 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Carrefours depuis Tracer une voie** : une voie qui en touche d'autres forme avec elles un réseau et ses carrefours, en une opération (AG-102).
+- **Dalle de rez-de-chaussée et seuils** pour ce qui est créé ; l'existant garde son plan (AG-100, ADR-50).
+
+**Corrections**
+
+- **Carrefours en T** : un bout posé sur la chaussée de l'autre voie, ou qui la dépasse un peu, fait un T ; il fallait le poser à 1 m de son axe (AG-101).
+
 ## 0.19.0
 
 Ville mixte (AG-095 à AG-099). Moteur de géométrie 1 inchangé ; l'existant garde son plan. Recette H34 dans SketchUp à faire.

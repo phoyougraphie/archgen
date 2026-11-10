@@ -32,7 +32,23 @@ module Archgen
                           settings.diagnostics + plan.diagnostics)
         end
 
+        # AG-102 : le réseau des voies fusionnées remplace leurs racines, en une seule opération.
+        def create_replacing(model:, merge:)
+          computed = preview(tree: merge.tree)
+          return computed unless computed.ok?
+
+          written = @guard.run(model, labels[:create]) do
+            model.entities.erase_entities(merge.absorbed)
+            write_new_root(model, computed.value, merge.origin)
+          end
+          written.ok? ? Core::Result.ok(written.value, computed.diagnostics + [merged_notice(merge)]) : written
+        end
+
         private
+
+        def merged_notice(merge)
+          Core::Diagnostic.warning('W_ROAD_COMPOSITION', '/trace', reason: 'roads_merged', count: merge.absorbed.size)
+        end
 
         def labels
           { create: 'ARCHGEN : créer un réseau de voies', regenerate: 'ARCHGEN : régénérer le réseau de voies', kind: 'network',
