@@ -187,6 +187,12 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 - **Temps :** 2 km de boulevard planté s'écrivent en moins d'une demi-seconde, 2 km de voie ferrée double en moins de 3 s.
 - **Plots de chaussée :** ajoutez l'élément « Plot de chaussée » à une voie, une bande d'arrêt ou une bande dérasée : il se pose sur la **limite gauche** de cette bande, blanc ou rétroréfléchissant, tous les 12 m par défaut. Pour marquer la ligne entre deux voies, posez-le sur la voie de droite.
 - **Balise de l'eau :** la surface de l'eau est sous la balise de la chaussée ; les portes d'écluse sous celle du mobilier.
+- **Mobilier urbain (0.24.0).** Sur un trottoir, un chemin, un accotement, une bande plantée ou un terre-plein, ajoutez un **Banc**, une **Corbeille**, une **Attache vélos** (réglez le nombre d'**Arceaux**, de 1 à 10), un **Arrêt de bus** ou un **Panneau**.
+  - **Pose :** au pas, comme un lampadaire, ou à des **Positions** précises. Tapez les distances en mètres depuis le début de la voie, séparées par des points-virgules : « 12 ; 48,5 ». La liste **Pose** passe d'un mode à l'autre. Un arrêt de bus et un panneau se posent toujours à des positions.
+  - **Arrêt de bus :** l'abri vitré s'appuie au fond du trottoir et s'ouvre vers la chaussée. Il demande un trottoir de 1,6 m ; sinon, choisissez **Mât seul**. Un zigzag jaune de 12 m marque la voie de circulation voisine, s'il y en a une. Un arbre ou un lampadaire à moins de 2 m de l'abri est signalé.
+  - **Panneau :** stop, cédez le passage, sens interdit, limitation, obligation, indication, danger ou passage piéton. Ce sont des formes et des couleurs, sans texte ni chiffre. **Sens** : vu par ceux qui suivent le tracé, ou par ceux qui viennent en face.
+  - Le type **Rue avec arrêt de bus** montre tout cela d'un coup.
+  - Dans un réseau, les positions se comptent sur chaque voie entière ; un objet qui tomberait dans un carrefour n'est pas posé.
 - **Hors de portée :** pas de fil de caténaire ; un réseau de voies reste horizontal ; pas de pont ni de confluence ; largeur d'un cours d'eau constante. **Carrefours sans réseau (0.20.0) :** une voie tracée qui croise une voie ou un réseau ARCHGEN, ou s'arrête dessus, forme avec eux un réseau et ses carrefours ; l'aperçu l'annonce, et Annuler défait tout en une fois. Une voie qui suit le terrain ne peut pas y entrer (un réseau reste horizontal). Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.
 ## Tracer un réseau de voies et ses carrefours
 

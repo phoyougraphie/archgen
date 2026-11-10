@@ -93,6 +93,13 @@ Nouveaux types dans `road_items.v1.json`, avec leur copie embarquée identique (
 - L'aperçu de coupe montre les objets à l'échelle, à côté du personnage de repère.
 - Un préréglage « Rue avec arrêt de bus » s'ajoute à ceux de l'éditeur.
 - Guide, journal, **RBZ 0.24.0**. Recette **H39** à faire à la main.
+- **Fait (AG-124).** Ce qui est livré :
+  - une ligne d'élément à six colonnes : liste **Pose** (au pas ou positions) pour les objets répétés, champ **Positions m**, **Arceaux**, **Sens** ;
+  - le dessin de l'abri, du mât et des plaques dans la coupe ;
+  - le préréglage `arret-bus` (copies identiques) ;
+  - le catalogue envoyé au panneau porte le nombre d'arceaux ;
+  - le guide, le journal et la version 0.24.0, avec le RBZ.
+  - Le dessin du panneau n'a pas été vu à l'écran : seule la syntaxe est vérifiée.
 
 ## Tests
 

@@ -1,5 +1,17 @@
 # Journal des versions
 
+## 0.24.0
+
+Mobilier urbain (AG-120 à AG-124, ADR-55). Recette H39 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Bancs, corbeilles et attaches vélos** dans la coupe des voies ; nombre d'arceaux réglable.
+- **Pose à des positions** : distances depuis le début de la voie, pour tout objet posé à l'unité, lampadaires compris ; voies seules et réseaux.
+- **Arrêt de bus** : abri vitré au fond du trottoir, ouvert vers la chaussée, ou mât seul ; zigzag jaune sur la voie voisine ; trottoir de 1,6 m exigé ; proximité d'un arbre ou d'un lampadaire signalée.
+- **Huit panneaux** sans texte, tournés dans le sens choisi.
+- **Éditeur de voie** : champs Positions, Pose, Sens et Arceaux ; dessins dans la coupe ; type « Rue avec arrêt de bus ».
+
 ## 0.23.0
 
 Décor de jeu (AG-115 à AG-119, ADR-54). Recette H38 dans SketchUp et Unreal à faire.

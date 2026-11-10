@@ -8,7 +8,7 @@ class RoadProfileTest < Minitest::Test
 
   BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank cliff rocks dune beach sea].freeze
   ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud bench bin bike_rack bus_stop sign].freeze
-  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
+  PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage arret-bus].freeze
   STEP = 0.001
 
   def intake
@@ -75,7 +75,7 @@ class RoadProfileTest < Minitest::Test
 
   # --- Préréglages
 
-  def test_the_seventeen_presets_are_valid_without_warning
+  def test_the_eighteen_presets_are_valid_without_warning
     presets = Archgen::Composition.road_presets.fetch('presets')
     assert_equal PRESETS, presets.map { |p| p['id'] }
     presets.each do |preset|

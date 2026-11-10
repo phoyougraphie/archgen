@@ -355,7 +355,8 @@ module Archgen
         @items.fetch('items').map do |kind, e|
           { 'kind' => kind, 'label' => e['label'], 'variants' => e['variants'].map { |id, v| { 'id' => id, 'label' => v['label'] } },
             'default_variant' => e['default_variant'], 'default_height_m' => e['default_height_m'], 'repeat' => e['repeat'],
-            'default_spacing_m' => e['default_spacing_m'], 'height_variation' => e['height_variation'] }
+            'default_spacing_m' => e['default_spacing_m'], 'height_variation' => e['height_variation'],
+            'default_count' => e['default_count'], 'min_count' => e['min_count'], 'max_count' => e['max_count'] }
         end
       end
 

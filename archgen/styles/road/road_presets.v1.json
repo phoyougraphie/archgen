@@ -191,6 +191,7 @@
         { "type": "beach", "width_m": 50, "slope_percent": 4 },
         { "type": "sea", "width_m": 200 }
       ] }
-    }
+    },
+    {"id": "arret-bus", "profile": {"road_profile_version": 1, "name": "Rue avec arrêt de bus", "bands": [{"type": "sidewalk", "width_m": 3, "items": [{"kind": "lamp", "variant": "heritage", "height_m": 5, "spacing_m": 22}, {"kind": "bus_stop", "variant": "shelter", "height_m": 2.5, "positions_m": [40]}]}, {"type": "lane", "width_m": 3}, {"type": "lane", "width_m": 3}, {"type": "parking", "width_m": 2}, {"type": "sidewalk", "width_m": 2.5, "items": [{"kind": "bin", "variant": "bin", "height_m": 0.9, "spacing_m": 40}, {"kind": "bike_rack", "variant": "hoop", "height_m": 0.75, "spacing_m": 30, "count": 4}, {"kind": "sign", "variant": "crossing", "height_m": 2.3, "positions_m": [20], "facing": "backward"}]}]}}
   ]
 }

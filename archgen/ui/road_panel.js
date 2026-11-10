@@ -459,13 +459,33 @@
       options(variant, c.variants.map(function (v) { return [v.id, v.label]; }), item.variant);
       variant.addEventListener('change', function () { item.variant = variant.value; custom(); requestPreview(true); });
       field(row, 'Haut. m', item.height_m, c.label + ' ' + (j + 1) + ', hauteur en mètres', function (v) { item.height_m = v; });
-      if (c.repeat === 'spaced') {
-        field(row, 'Pas m', item.spacing_m, c.label + ' ' + (j + 1) + ', pas en mètres', function (v) { item.spacing_m = v; });
+      var name = c.label + ' ' + (j + 1);
+      // Pose (docs/MOBILIER_CONTRACT.md §2, AG-124) : au pas, ou à des positions depuis le début de la voie.
+      if (item.positions_m) {
+        positionsField(row, item, name);
+      } else if (c.repeat === 'spaced') {
+        field(row, 'Pas m', item.spacing_m, name + ', pas en mètres', function (v) { item.spacing_m = v; });
       } else {
         node('span', { className: 'hint' }, row, 'continu');
       }
+      if (c.repeat === 'spaced') {
+        var mode = node('select', { 'aria-label': name + ', pose' }, node('label', {}, row, 'Pose'));
+        options(mode, [['spaced', 'Au pas'], ['positions', 'Positions']], item.positions_m ? 'positions' : 'spaced');
+        mode.addEventListener('change', function () {
+          if (mode.value === 'positions') { delete item.spacing_m; item.positions_m = [10]; } else { delete item.positions_m; item.spacing_m = c.default_spacing_m; }
+          custom(); renderList(); requestPreview(true);
+        });
+      } else {
+        node('span', {}, row);
+      }
       if (c.height_variation) {
-        field(row, 'Variation', item.height_variation || 0, c.label + ' ' + (j + 1) + ', variation de hauteur, de 0 à 0,3', function (v) { item.height_variation = v; });
+        field(row, 'Variation', item.height_variation || 0, name + ', variation de hauteur, de 0 à 0,3', function (v) { item.height_variation = v; });
+      } else if (c.default_count) {
+        field(row, 'Arceaux', item.count || c.default_count, name + ', nombre d’arceaux, de ' + c.min_count + ' à ' + c.max_count, function (v) { item.count = Math.round(v); });
+      } else if (item.kind === 'sign') {
+        var facing = node('select', { 'aria-label': name + ', sens' }, node('label', {}, row, 'Sens'));
+        options(facing, [['forward', 'Sens du tracé'], ['backward', 'Autre sens']], item.facing || 'forward');
+        facing.addEventListener('change', function () { item.facing = facing.value; custom(); requestPreview(true); });
       } else {
         node('span', {}, row);
       }
@@ -481,8 +501,25 @@
       var c = state.items[kind.value];
       var item = { kind: c.kind, variant: c.default_variant, height_m: c.default_height_m };
       if (c.repeat === 'spaced') { item.spacing_m = c.default_spacing_m; }
+      if (c.repeat === 'positions') { item.positions_m = [10]; }
+      if (c.default_count) { item.count = c.default_count; }
       band.items.push(item);
       custom(); renderList(); requestPreview(true);
+    });
+  }
+
+  // Positions en mètres, séparées par des points-virgules : « 12 ; 48,5 ».
+  function positionsField(row, item, name) {
+    var l = node('label', {}, row, 'Positions m');
+    var input = node('input', { 'aria-label': name + ', positions en mètres depuis le début de la voie, séparées par des points-virgules',
+      value: item.positions_m.map(function (p) { return L.formatNumber(p); }).join(' ; ') }, l);
+    input.addEventListener('input', function () {
+      var parts = input.value.split(';').map(function (t) { return L.parseDecimal(t.trim()); });
+      var bad = parts.length === 0 || parts.some(function (v) { return v === null; });
+      input.classList.toggle('is-invalid', bad);
+      state.localError = bad ? 'Saisissez des distances en mètres séparées par des points-virgules.' : null;
+      if (!bad) { item.positions_m = parts; custom(); }
+      requestPreview(false);
     });
   }
 
@@ -729,6 +766,30 @@
       svg('rect', { x: x - 0.03 * s, y: z - 0.42 * s, width: Math.max(2, 0.06 * s), height: 0.42 * s, class: 's-steel' }, g);
     } else if (it.kind === 'bin') {
       svg('rect', { x: x - 0.25 * s, y: z - h, width: 0.5 * s, height: h, rx: 2, class: 's-steel' }, g);
+    } else if (it.kind === 'bus_stop') {
+      // Abri vu en bout (AG-124) : fond vitré loin de la chaussée, toit, banc ; ou mât et plaque.
+      if (it.variant === 'shelter') {
+        svg('rect', { x: x - dir * 0.7 * s - 1, y: z - h, width: 2, height: h, class: 's-glass' }, g);
+        svg('rect', { x: x - 0.75 * s, y: z - h, width: 1.5 * s, height: Math.max(2, 0.1 * s), class: 's-steel' }, g);
+        svg('line', { x1: x + dir * 0.7 * s, y1: z, x2: x + dir * 0.7 * s, y2: z - h, class: 's-pole', 'stroke-width': 1.5 }, g);
+        svg('rect', { x: x - dir * 0.5 * s - 0.15 * s, y: z - 0.47 * s, width: 0.3 * s, height: Math.max(2, 0.05 * s), class: 's-trunk' }, g);
+      } else {
+        svg('line', { x1: x, y1: z, x2: x, y2: z - 2.6 * s, class: 's-pole', 'stroke-width': 2 }, g);
+        svg('rect', { x: x - 0.2 * s, y: z - 2.6 * s, width: 0.4 * s, height: 0.4 * s, class: 's-sign-blue' }, g);
+      }
+    } else if (it.kind === 'sign') {
+      // Panneau vu de face dans la coupe : mât et plaque à sa forme et ses couleurs (D-36).
+      svg('line', { x1: x, y1: z, x2: x, y2: z - h, class: 's-pole', 'stroke-width': 1.5 }, g);
+      var shapes = { stop: [8, 22.5, 'red'], give_way: [3, -90, 'white'], prohibition: [16, 0, 'red'], limit: [16, 0, 'white'],
+        mandatory: [16, 0, 'blue'], information: [4, 45, 'blue'], danger: [3, 90, 'white'], crossing: [4, 45, 'blue'] };
+      var sh = shapes[it.variant] || shapes.limit;
+      var r = 0.35 * s;
+      var pts = [];
+      for (var k = 0; k < sh[0]; k++) {
+        var a = (sh[1] * Math.PI / 180) + (2 * Math.PI * k / sh[0]);
+        pts.push((x - r * Math.cos(a)) + ',' + (z - h + r - r * Math.sin(a)));
+      }
+      svg('polygon', { points: pts.join(' '), class: 's-sign-' + sh[2] }, g);
     } else if (it.kind === 'bike_rack') {
       // Arceau en U renversé de 0,80 m, vu de face dans la coupe.
       svg('path', { d: 'M' + (x - 0.4 * s) + ' ' + z + 'L' + (x - 0.4 * s) + ' ' + (z - h) + 'L' + (x + 0.4 * s) + ' ' + (z - h) + 'L' + (x + 0.4 * s) + ' ' + z, class: 's-pole', fill: 'none', 'stroke-width': 2 }, g);

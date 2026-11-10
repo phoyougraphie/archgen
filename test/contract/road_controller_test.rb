@@ -23,7 +23,7 @@ class RoadControllerTest < Minitest::Test
   def test_init_gives_catalogues_presets_and_the_starting_profile
     r = call('init')
     assert r['ok']
-    assert_equal 17, r['result']['presets'].size
+    assert_equal 18, r['result']['presets'].size
     assert_equal 24, r['result']['bands'].size
     assert_equal 15, r['result']['items'].size
     assert_equal 'Rue de ville', r['result']['profile']['name']

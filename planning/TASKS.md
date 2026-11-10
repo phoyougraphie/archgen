@@ -241,7 +241,7 @@ Contrat : [MOBILIER_CONTRACT](../docs/MOBILIER_CONTRACT.md). Décisions : ADR-55
 | **AG-121 — Pose à des positions** | AG-120 | `positions_m` pour tout élément ponctuel ; refus hors tronçon, avec un pas, positions exigées. | Pose exacte sur droite et arc. U83 vert. |
 | **AG-122 — Arrêt de bus** | AG-121 | Abri ouvert vers la chaussée, mât seul ; bande de 1,6 m ; marquage jaune ; proximité. | U84 vert. |
 | **AG-123 — Panneaux** | AG-121 | Huit plaques, sens `forward`/`backward`, mât. | U85 vert. |
-| **AG-124 — Éditeur, RBZ 0.24.0** | AG-122, AG-123 | Types, Positions et Sens dans l'éditeur ; préréglage arrêt de bus ; guide, journal, RBZ. | U86 ; recette H39 à la main. |
+| **AG-124 — Éditeur, RBZ 0.24.0** | AG-122, AG-123 | Types, Positions et Sens dans l'éditeur ; préréglage arrêt de bus ; guide, journal, RBZ. | U86 vert ; recette H39 à la main (à faire). |
 
 ## J21 — Intérieur
 
