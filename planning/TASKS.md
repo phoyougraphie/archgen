@@ -221,14 +221,16 @@ Contrat : [TEINTES_ABORDS_CONTRACT](../docs/TEINTES_ABORDS_CONTRACT.md). Décisi
 
 ## J21 — Intérieur
 
-Contrat : [INTERIEUR_CONTRACT](../docs/INTERIEUR_CONTRACT.md). Décisions : ADR-52 (option des deux modes) ; D-23 à D-26 selon ADR-48, révisables.
+**Reporté le 2026-11-10 (ADR-53)** : aucun ticket J21 ne démarre avant EXT-06, EXT-12, EXT-09, EXT-08 et J22. À la reprise, l'intérieur se crée au cas par cas, au clic droit, jamais pour une rue entière.
+
+Contrat : [INTERIEUR_CONTRACT](../docs/INTERIEUR_CONTRACT.md). Décisions : ADR-52 (option des deux modes), ADR-53 (report, cas par cas) ; D-23 à D-26 selon ADR-48, révisables.
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
-| **AG-110 — Planchers et calque Intérieur** | AG-109, ADR-52 | `interior.floors` ; catégories `floor`, `stair`, `partition` ; tag ARCHGEN Intérieur. | Planchers Shell, Structural inchangé, existant inchangé. U74. |
+| **AG-110 — Planchers et calque Intérieur** | J22, ADR-52, ADR-53 | `interior.floors` ; catégories `floor`, `stair`, `partition` ; tag ARCHGEN Intérieur. | Planchers Shell, Structural inchangé, existant inchangé. U74. |
 | **AG-111 — Escalier et trémies** | AG-110 | `interior.stair` : deux volées par étage, trémie découpée, placement D-24. | Marches égales, trémie, refus localisés. U75. |
 | **AG-112 — Cloisons et pièces** | AG-111 | `interior.rooms` : enfilade sur les trumeaux, portes, cage fermée. | Baies évitées, commerce ouvert. U76. |
-| **AG-113 — Intérieur dans les rues** | AG-112 | Gabarit de rue, mur mitoyen, porche, parcelle au clic droit, budgets. | Rue, parcelle, budget. U77. |
-| **AG-114 — Panneaux, RBZ 0.23.0** | AG-113 | Section Intérieur aux panneaux ; guide, journal, RBZ. | Version installée ; recette H37 à la main. |
+| **AG-113 — Créer l'intérieur au clic droit** | AG-112 | Clic droit ARCHGEN → Créer / Retirer l'intérieur, sur un seul bâtiment ; dans une rue, personnalisation de la parcelle ; mur mitoyen, porche, budgets. Pas de bloc au gabarit de rue. | Une maison, voisines inchangées, un Undo, budget. U77. |
+| **AG-114 — Panneau, RBZ** | AG-113 | Section Intérieur au panneau du bâtiment seulement ; guide, journal, RBZ. | Version installée ; recette H37 à la main. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

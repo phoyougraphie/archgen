@@ -2,6 +2,10 @@
 
 **Demande du propriétaire (2026-11-10).** « On fait tout ce qui est non fait », l'intérieur compris (EXT-05), avant les emprises non rectangulaires (J22) puis EXT-06, 12, 09 et 08. Cadrage validé le même jour (« Oui, cadre J21 »).
 
+**Statut : reporté (2026-11-10).** Le propriétaire a reporté tout l'intérieur : « REPORTE tout ce qui a trait a l'interieur ». Les chantiers prioritaires sont EXT-06 (décor de jeu), EXT-12 (mobilier urbain), EXT-09 (cartographie), EXT-08 (quartier), puis J22 (emprises non rectangulaires), puis J21 (intérieur). Le contrat reste valable pour la reprise ; aucun code n'est écrit.
+
+**Au cas par cas (2026-11-10).** L'intérieur se crée maison par maison, jamais pour toute une rue d'un coup : clic droit sur un bâtiment ARCHGEN → **Créer l'intérieur** (et **Retirer l'intérieur**). Le gabarit de rue ne porte pas de bloc `interior`.
+
 **Périmètre.** Le PRD excluait l'intérieur et l'ADR-01 réservait le nom « Interior » à un mode. ADR-52 ouvre l'intérieur comme une **option des deux modes**, Shell et Structural. C'est un décor pour la maquette et l'image, pas un plan d'aménagement : pas de conformité réglementaire, pas de calcul.
 
 **Choix de détail.** Ils sont pris selon ADR-48, recommandation appliquée, et restent révisables par le propriétaire (D-23 à D-26 ci-dessous).
@@ -56,15 +60,16 @@ Chaque réglage est une clé facultative du bloc `interior` : absent, le plan es
 - Une cloison ne passe jamais devant une baie ni dans la cage. Une pièce de moins de 2,0 m de large est fondue avec sa voisine.
 - `rooms` exige `floors`, sinon `rooms_without_floors`.
 
-## 4. Intérieur dans les rues — AG-113
+## 4. Intérieur au cas par cas, au clic droit — AG-113
 
-- Le bloc `interior` du gabarit de rue s'applique à chaque maison. Dans une rangée, la cage s'appuie sur un mur mitoyen (D-24) et évite le passage d'un porche.
-- Les budgets de faces d'un ensemble s'appliquent tels quels. Au-delà, le refus est localisé et dit de retirer les pièces ou l'escalier.
-- La personnalisation d'une parcelle au clic droit peut ajouter ou retirer l'intérieur de cette seule maison.
+- Jamais à l'ensemble d'une rue : le gabarit de rue n'a pas de bloc `interior`, et le panneau de rue n'a pas de section Intérieur.
+- Clic droit sur un bâtiment ARCHGEN, isolé ou maison d'une rue → **Créer l'intérieur** : une seule opération Undo, sur ce seul bâtiment ; **Retirer l'intérieur** l'enlève. Dans une rue, la réponse est stockée comme personnalisation de cette parcelle.
+- Dans une rangée, la cage s'appuie sur un mur mitoyen (D-24) et évite le passage d'un porche.
+- Les budgets de faces de l'ensemble s'appliquent tels quels. Au-delà, le refus est localisé et dit de retirer les pièces ou l'escalier.
 
 ## 5. Panneaux, version — AG-114
 
-- Section **Intérieur** au panneau du bâtiment et à celui de la rue, avec trois cases : Planchers, Escalier, Pièces. Escalier et Pièces cochent Planchers.
+- Section **Intérieur** au panneau du bâtiment seulement, avec trois cases : Planchers, Escalier, Pièces. Escalier et Pièces cochent Planchers.
 - Guide, journal, **RBZ 0.23.0** ; recette **H37** à la main.
 
 ## Tests
@@ -72,4 +77,4 @@ Chaque réglage est une clé facultative du bloc `interior` : absent, le plan es
 - U74 : planchers et tag.
 - U75 : escalier, trémie et refus.
 - U76 : cloisons, portes, baies évitées, rez-de-chaussée commercial.
-- U77 : rue et parcelle, budget.
+- U77 : clic droit sur une maison de rue, les voisines inchangées, budget.
