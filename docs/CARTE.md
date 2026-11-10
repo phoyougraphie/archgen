@@ -140,6 +140,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 AG-123 — Le repère d'un objet suit la chaussée la plus proche (Y vers elle) ; un panneau doit suivre le sens de circulation : RoadItems.side remplace « toward » pour lui seul, la plaque étant symétrique en Y.
     - 2026-11-10 AG-124 — Pas de Node.js sur le poste et JScript ne lit pas l'ES5 du panneau : la syntaxe se vérifie en servant archgen/ui en local et en lisant chaque fichier par new Function dans le navigateur intégré. RBZ 0.24.0 installé.
     - 2026-11-10 EXT-09 cadré — Pas de réseau dans le noyau : l'utilisateur fournit les fichiers. Deux pièges vus au cadrage : un réseau ARCHGEN plafonne à 24 voies (il faut découper un quartier OSM), et la convergence des méridiens Lambert-93 atteint 5° en Bretagne (il faut tourner le terrain, pas seulement le décaler). Bâtiments OSM en rectangles orientés tant que J22 n'est pas fait.
+    - 2026-11-11 D-38 révisée — Le propriétaire veut le téléchargement OpenStreetMap. AGENTS interdit le réseau au noyau, pas à l'adaptateur : Overpass est appelé par l'adaptateur (hôtes fermés, confirmation, seule l'emprise part), la réponse est enregistrée et lue comme un fichier local (ADR-57).
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -292,12 +293,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-122 Arrêt de bus — abri au fond de la bande, marquage dérivé sur la voie contiguë, bande de 1,6 m, avertissement de proximité. U84 vert.
     - [fait] AG-123 Panneaux — clé facing (forward par défaut), orientation par RoadItems.side, haut de plaque à la hauteur. U85 vert.
     - [fait] AG-124 Éditeur, RBZ 0.24.0 — Pose, Positions, Sens, Arceaux, dessins, préréglage arret-bus ; RBZ 0.24.0 installé ; H39 à faire. U86 vert.
-  - J25 Cartographie — ADR-56, D-38 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - J25 Cartographie — ADR-56, ADR-57 (D-38 : téléchargement OpenStreetMap), D-39 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
     - [afaire] AG-125 Lecture et projection — .osm et GeoJSON, clés fermées, XXE refusé, plan tangent local.
     - [afaire] AG-126 Voies en réseaux — table des types, simplification, rayons, réseaux de 24.
     - [afaire] AG-127 Bâtiments — rectangle orienté, niveaux, graine, façade vers la voie.
     - [afaire] AG-128 Terrain ASCII Grid — Lambert-93, échelle, convergence, maillage.
-    - [afaire] AG-129 Commande, RBZ 0.25.0 — panneau, aperçu, attribution ; H40 à faire.
+    - [afaire] AG-129 Téléchargement, commande, RBZ 0.25.0 — Overpass dans l'adaptateur, panneau, aperçu, attribution ; H40 à faire.
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

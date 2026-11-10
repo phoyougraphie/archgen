@@ -245,7 +245,7 @@ Contrat : [MOBILIER_CONTRACT](../docs/MOBILIER_CONTRACT.md). Décisions : ADR-55
 
 ## J25 — Cartographie
 
-Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions : ADR-56 (fichiers locaux) ; D-38 à D-43 selon ADR-48, révisables.
+Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions : ADR-56 (fichiers locaux), ADR-57 (D-38 révisée : téléchargement OpenStreetMap) ; D-39 à D-43 selon ADR-48, révisables.
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
@@ -253,7 +253,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-126 — Voies en réseaux** | AG-125 | Table des types, simplification, rayons, réseaux de 24 voies, écartés comptés. | U88. |
 | **AG-127 — Bâtiments** | AG-125 | Rectangle orienté ≥ 85 %, niveaux, graine, façade vers la voie, écartés. | U89. |
 | **AG-128 — Terrain ASCII Grid** | AG-125 | Lambert-93, échelle et convergence, NODATA, maillage, un Undo. | U90. |
-| **AG-129 — Commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 ; recette H40 à la main. |
+| **AG-129 — Téléchargement, commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Téléchargement Overpass (adaptateur, hôtes fermés, confirmation, fichier enregistré) ; panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 ; recette H40 à la main. |
 
 ## J21 — Intérieur
 

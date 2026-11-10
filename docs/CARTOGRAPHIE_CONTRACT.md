@@ -2,7 +2,9 @@
 
 **Demande du propriétaire (2026-11-10).** « ext 06 12 09 08 sont les chantiers prioritaires », dans cet ordre. EXT-06 et EXT-12 sont faits (0.23.0, 0.24.0). Le cadrage d'EXT-09 a été validé le même jour (« Go »).
 
-**Périmètre.** EXT-09 importe un quartier réel à partir de **fichiers locaux** que l'utilisateur a téléchargés lui-même :
+**Révision du propriétaire (2026-11-11).** D-38 : « openstreetmap ». ARCHGEN **télécharge** l'extrait OpenStreetMap lui-même (ADR-57). Le fichier local reste possible.
+
+**Périmètre.** EXT-09 importe un quartier réel à partir d'un **extrait OpenStreetMap téléchargé par ARCHGEN**, ou de fichiers locaux :
 
 - les voies et les bâtiments d'un extrait OpenStreetMap, au format `.osm` (XML) ou GeoJSON ;
 - éventuellement, un modèle numérique de terrain au format ASCII Grid (`.asc`), celui que l'IGN distribue pour le RGE ALTI.
@@ -11,7 +13,7 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 
 **Hors périmètre :**
 
-- le téléchargement : ARCHGEN n'ouvre aucune connexion, comme l'exigent AGENTS et SECURITY_PERFORMANCE ;
+- tout autre service en ligne que l'API Overpass d'OpenStreetMap ; tout téléchargement du terrain ;
 - les projections nationales exactes (Lambert-93, UTM) ;
 - l'eau, les voies ferrées, la végétation et les points d'intérêt ;
 - la mise à jour d'un import déjà fait ;
@@ -23,7 +25,7 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 
 | N° | Question | Choix appliqué | Autre option |
 |---|---|---|---|
-| D-38 | D'où viennent les données ? | **D'un fichier local** choisi par l'utilisateur : `.osm` exporté depuis openstreetmap.org, GeoJSON (Overpass, QGIS), `.asc` pour le terrain. Le **mode local** est le seul mode. | Un téléchargement direct par l'API Overpass : réseau, disponibilité et quotas. |
+| D-38 | D'où viennent les données ? | **Tranchée par le propriétaire (2026-11-11) : OpenStreetMap, téléchargé par ARCHGEN** depuis l'API Overpass, sur une emprise de 2 × 2 km au plus. Le fichier reçu est enregistré à côté du modèle, et l'import se fait depuis ce fichier. Un `.osm` ou un GeoJSON local reste accepté (mode local), et le terrain `.asc` reste local. | Fichier local seulement (recommandation d'origine). |
 | D-39 | Quelle projection ? | **Plan tangent local** (équirectangulaire autour d'une origine), en mètres. L'origine est la géolocalisation du modèle SketchUp si elle existe, sinon le centre de l'emprise du fichier ; dans ce dernier cas, l'origine est enregistrée sur la racine. Sur 2 km, l'écart avec une projection conforme reste sous 0,1 %. | Lambert-93 ou UTM exacts : une bibliothèque de projection à embarquer. |
 | D-40 | Que devient une voie OSM ? | Chaque `highway` connu donne une voie ARCHGEN avec un **type tout prêt** selon une table fermée (§2). Les voies reliées forment des **réseaux** de 24 voies au plus, avec leurs carrefours. Une valeur inconnue est ignorée et comptée dans le rapport. | Une coupe calculée tag par tag (`lanes`, `sidewalk`, `width`) : plus fidèle, beaucoup plus de cas. |
 | D-41 | Que devient un bâtiment OSM ? | Son contour est remplacé par le **rectangle orienté** qui l'enveloppe au plus juste, si le contour en remplit au moins 85 %. Le nombre de niveaux vient de `building:levels`, sinon de `height` ÷ 3 m, sinon 3. Le style est choisi pour tout l'import. Les autres contours sont écartés et comptés ; ils attendent J22. | Un bâtiment générique en volume extrudé, hors style. |
@@ -41,6 +43,15 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
   - arrondi au millimètre.
 - Ce résultat est déterministe : le même fichier et la même origine donnent les mêmes points.
 - Résultat : `{ origin, ways: [...], buildings: [...], skipped: {raison => nombre} }`.
+
+### Téléchargement OpenStreetMap (ADR-57), dans l'adaptateur
+
+- **Le noyau ne touche pas le réseau** (AGENTS §2). Seul l'adaptateur SketchUp envoie la requête (`Sketchup::Http::Request`, sans bloquer l'interface), puis remet les octets reçus au lecteur pur.
+- **Hôtes fermés**, en HTTPS seulement : `overpass-api.de` en premier, `overpass.kumi.systems` en secours. Aucun hôte ne vient d'un profil, d'un fichier ou d'une réponse.
+- **Requête fixe** : voies `highway` et contours `building` dans une emprise sud, ouest, nord, est, sortie `xml`, `timeout:25`. L'emprise est calculée depuis la géolocalisation du modèle ou un point saisi (latitude, longitude), et sa taille (au plus 2 × 2 km).
+- **Ce qui part sur le réseau** : l'emprise et l'en-tête `User-Agent: ARCHGEN/<version>`. Rien d'autre : ni nom de document, ni identifiant, ni chemin. Avant l'envoi, le panneau montre l'hôte et l'emprise, et demande une confirmation à chaque téléchargement.
+- **Réponse** : statut 200 exigé ; 50 Mo au plus ; contenu lu par le lecteur pur comme un `.osm`. Les erreurs sont localisées (`map_download`) : délai, statut 429 (quota d'Overpass, réessayer plus tard), taille, hors ligne. Aucune nouvelle tentative automatique.
+- **Provenance** : la réponse est enregistrée en `<modèle>_osm_<date>.osm` à côté du fichier SKP (dans le dossier choisi si le modèle n'est pas enregistré). La racine d'import garde l'hôte, la date, l'emprise et l'empreinte SHA-256 du fichier. Un nouvel import du même fichier donne le même résultat.
 
 ## 2. Voies → réseaux — AG-126
 
@@ -76,7 +87,8 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 ## 5. Commande, version — AG-129
 
 - **Extensions → ARCHGEN → Importer une carte…** Le panneau propose :
-  - le fichier de carte et, facultatif, le fichier de terrain ;
+  - **Télécharger depuis OpenStreetMap** : centre (géolocalisation du modèle ou latitude, longitude), taille, confirmation ; ou un fichier de carte local ;
+  - le fichier de terrain, facultatif ;
   - les couches à importer : Voies, Bâtiments, Terrain ;
   - le style des bâtiments ;
   - un **aperçu chiffré** avant écriture : voies, réseaux, bâtiments, objets écartés avec leurs raisons, attribution.
@@ -89,4 +101,4 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 - **U88** : table des voies, simplification, rayons, réseaux reliés et découpés à 24, écartés comptés.
 - **U89** : rectangle orienté (rectangle tourné, L refusé à 0,85), niveaux, graine stable, façade vers la voie.
 - **U90** : ASCII Grid (en-têtes, NODATA, alignement, refus hors emprise), maillage.
-- **U91** : panneau et service d'import avec doubles (aperçu, un Undo, refus sans résidu, attribution sur la racine).
+- **U91** : panneau et service d'import avec doubles (aperçu, un Undo, refus sans résidu, attribution sur la racine) ; téléchargement avec un client HTTP factice (requête fixe, hôtes fermés, en-têtes, statut 429, taille, fichier enregistré et empreinte).
