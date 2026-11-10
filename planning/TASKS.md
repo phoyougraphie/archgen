@@ -231,6 +231,18 @@ Contrat : [DECOR_JEU_CONTRACT](../docs/DECOR_JEU_CONTRACT.md). Décisions : ADR-
 | **AG-118 — Commande d'export** | AG-117 | Clic droit → Exporter pour un moteur de jeu… ; bâtiment ou rue ; refus réseau et terrain ; rapport. | Modèle intact, hôte factice. U81 vert ; H38 à faire. |
 | **AG-119 — Guide, RBZ 0.23.0** | AG-118 | Section Décor de jeu ; journal ; RBZ. | Version installée ; recette H38 à la main (à faire). |
 
+## J24 — Mobilier urbain
+
+Contrat : [MOBILIER_CONTRACT](../docs/MOBILIER_CONTRACT.md). Décisions : ADR-55 (dans la coupe) ; D-33 à D-37 selon ADR-48, révisables.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-120 — Catalogue et formes** | AG-119, ADR-55 | `bench`, `bin`, `bike_rack`, `bus_stop`, `sign` au catalogue ; formes ; matières bleu, verre, jaune ; bandes admises. | Solides fermés, définitions partagées, copies identiques. U82. |
+| **AG-121 — Pose à des positions** | AG-120 | `positions_m` pour tout élément ponctuel ; refus hors tronçon, avec un pas, positions exigées. | Pose exacte sur droite et arc. U83. |
+| **AG-122 — Arrêt de bus** | AG-121 | Abri ouvert vers la chaussée, mât seul ; bande de 1,6 m ; marquage jaune ; proximité. | U84. |
+| **AG-123 — Panneaux** | AG-121 | Huit plaques, sens `forward`/`backward`, mât. | U85. |
+| **AG-124 — Éditeur, RBZ 0.24.0** | AG-122, AG-123 | Types, Positions et Sens dans l'éditeur ; préréglage arrêt de bus ; guide, journal, RBZ. | U86 ; recette H39 à la main. |
+
 ## J21 — Intérieur
 
 **Reporté le 2026-11-10 (ADR-53)** : aucun ticket J21 ne démarre avant EXT-06, EXT-12, EXT-09, EXT-08 et J22. À la reprise, l'intérieur se crée au cas par cas, au clic droit, jamais pour une rue entière.
