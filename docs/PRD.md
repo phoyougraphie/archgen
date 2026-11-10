@@ -11,7 +11,7 @@
 | P05 | Modifier / rouvrir | Sélectionner une racine ARCHGEN ; recharger les paramètres après sauvegarde du SKP ; changer style, mode ou dimensions. |
 | P06 | Régénérer / annuler | Conserver la racine et son placement ; isoler les copies ; confirmation de remplacement ; une entrée Undo et Redo vérifié. |
 | P07 | Reproduire | Configuration effective, seed et versions identiques ⇒ même plan canonique ; identité et placement indépendants. |
-| P08 | Exploiter | Faces visibles orientées, matériaux nommés et pièces organisées ; un aller-retour export hôte sur un outil cible documenté. |
+| P08 | Exploiter | Faces visibles orientées, matériaux nommés et pièces organisées ; un aller-retour export hôte sur un outil cible documenté ; après J20, un export glTF pour moteur de jeu ([ADR-54](DECISIONS.md), [contrat](DECOR_JEU_CONTRACT.md)). |
 | P09 | Gérer les erreurs | Champ et cause expliqués ; aucune modification du modèle sur rejet ; échec d'écriture restauré. |
 
 **Inclus.** SketchUp Desktop 2026 sous Windows ([ADR-26](DECISIONS.md)) ; une génération à la fois au niveau racine du modèle ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; toit plat, deux pans, croupe, mansarde ; matériaux unis embarqués ; LOD 0 et 1 ; haussmannien, toulousain et brutaliste. Les réglages sont une liste fermée, détaillée par [le contrat de configuration](CONFIG_SCHEMA.md). Le nombre de champs affichés vient de l'utilité du parcours, pas d'un quota.

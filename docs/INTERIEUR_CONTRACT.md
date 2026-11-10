@@ -70,7 +70,7 @@ Chaque réglage est une clé facultative du bloc `interior` : absent, le plan es
 ## 5. Panneaux, version — AG-114
 
 - Section **Intérieur** au panneau du bâtiment seulement, avec trois cases : Planchers, Escalier, Pièces. Escalier et Pièces cochent Planchers.
-- Guide, journal, **RBZ 0.23.0** ; recette **H37** à la main.
+- Guide, journal, RBZ à la reprise ; recette **H37** à la main.
 
 ## Tests
 

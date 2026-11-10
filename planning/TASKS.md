@@ -219,6 +219,18 @@ Contrat : [TEINTES_ABORDS_CONTRACT](../docs/TEINTES_ABORDS_CONTRACT.md). Décisi
 | **AG-108 — Dalle pour l'existant, RBZ 0.21.0** | AG-107 | Case au panneau de rue ; guide, journal, RBZ. | Version installée ; recette H36 à la main. |
 | **AG-109 — Talus entre voisins dans une rue** | AG-108 | Relevé devant et derrière chaque parcelle ; talus avant et arrière ; soutènement aux limites mitoyennes ; RBZ 0.22.0. | Talus, soutènement, refus hors rue droite. U73. |
 
+## J23 — Décor de jeu
+
+Contrat : [DECOR_JEU_CONTRACT](../docs/DECOR_JEU_CONTRACT.md). Décisions : ADR-54 (adaptateur glTF séparé) ; D-27 à D-32 selon ADR-48, révisables. Passe avant J21 et J22 (ADR-53).
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-115 — Triangulation et écriture glTF** | AG-109, ADR-54 | `adapters/gltf` : oreilles, normales plates, axes Y, maillages partagés, GLB déterministe. | Octets identiques, n − 2 triangles, refus localisé. U78. |
+| **AG-116 — UV et matériaux PBR** | AG-115 | Projection cubique 1 m ; métal-rugosité, `roughness`/`metallic` facultatifs au catalogue ; verre ; double face. | UV, matériaux, teintes. U79. |
+| **AG-117 — LOD et collisions** | AG-116 | LOD0, LOD1 (`lod: 0`), LOD2 volumes ; boîtes `UCX_`. | Triangles décroissants, collisions convexes. U80. |
+| **AG-118 — Commande d'export** | AG-117 | Clic droit → Exporter pour un moteur de jeu… ; bâtiment ou rue ; refus réseau et terrain ; rapport. | Modèle intact, hôte factice. U81. |
+| **AG-119 — Guide, RBZ 0.23.0** | AG-118 | Section Décor de jeu ; journal ; RBZ. | Version installée ; recette H38 à la main. |
+
 ## J21 — Intérieur
 
 **Reporté le 2026-11-10 (ADR-53)** : aucun ticket J21 ne démarre avant EXT-06, EXT-12, EXT-09, EXT-08 et J22. À la reprise, l'intérieur se crée au cas par cas, au clic droit, jamais pour une rue entière.

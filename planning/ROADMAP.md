@@ -25,7 +25,8 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J18 — Ville mixte | J17, ADR-49 | AG-095–099 | Clic droit Modifier, style par bâtiment, rez-de-chaussée variés, stores et pergolas ; RBZ 0.19.0. |
 | J19 — Carrefours sans réseau, dalle et seuils | J18, ADR-50 | AG-100–103 | Dalle et seuils, T tolérants, carrefours depuis Tracer une voie ; RBZ 0.20.0. |
 | J20 — Teintes et abords | J19, ADR-51 | AG-104–109 | Teintes par bâtiment, perrons et rampes, garde-corps, tour d'îlot ; RBZ 0.21.0 ; talus en rue droite, RBZ 0.22.0. |
-| Priorité — EXT-06, EXT-12, EXT-09, EXT-08 | J20, ADR-53 | à cadrer, dans cet ordre | Décor de jeu, mobilier urbain, cartographie, quartier. |
+| J23 — Décor de jeu (EXT-06) | J20, ADR-53, ADR-54 | AG-115–119 | Export glTF : triangles, UV, PBR, axes, collisions, trois LOD ; clic droit ; RBZ 0.23.0. |
+| Priorité, suite — EXT-12, EXT-09, EXT-08 | J23 | à cadrer, dans cet ordre | Mobilier urbain, cartographie, quartier. |
 | J22 — Emprises non rectangulaires | priorité ci-dessus | à cadrer | Emprises en L, en T et polygonales. |
 | J21 — Intérieur (EXT-05), **reporté** | J22, ADR-52, ADR-53 | AG-110–114 | Planchers, escalier à deux volées et trémies, pièces en enfilade ; au cas par cas, au clic droit ; RBZ à la reprise. |
 | J20+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
