@@ -219,4 +219,16 @@ Contrat : [TEINTES_ABORDS_CONTRACT](../docs/TEINTES_ABORDS_CONTRACT.md). Décisi
 | **AG-108 — Dalle pour l'existant, RBZ 0.21.0** | AG-107 | Case au panneau de rue ; guide, journal, RBZ. | Version installée ; recette H36 à la main. |
 | **AG-109 — Talus entre voisins dans une rue** | AG-108 | Relevé devant et derrière chaque parcelle ; talus avant et arrière ; soutènement aux limites mitoyennes ; RBZ 0.22.0. | Talus, soutènement, refus hors rue droite. U73. |
 
+## J21 — Intérieur
+
+Contrat : [INTERIEUR_CONTRACT](../docs/INTERIEUR_CONTRACT.md). Décisions : ADR-52 (option des deux modes) ; D-23 à D-26 selon ADR-48, révisables.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-110 — Planchers et calque Intérieur** | AG-109, ADR-52 | `interior.floors` ; catégories `floor`, `stair`, `partition` ; tag ARCHGEN Intérieur. | Planchers Shell, Structural inchangé, existant inchangé. U74. |
+| **AG-111 — Escalier et trémies** | AG-110 | `interior.stair` : deux volées par étage, trémie découpée, placement D-24. | Marches égales, trémie, refus localisés. U75. |
+| **AG-112 — Cloisons et pièces** | AG-111 | `interior.rooms` : enfilade sur les trumeaux, portes, cage fermée. | Baies évitées, commerce ouvert. U76. |
+| **AG-113 — Intérieur dans les rues** | AG-112 | Gabarit de rue, mur mitoyen, porche, parcelle au clic droit, budgets. | Rue, parcelle, budget. U77. |
+| **AG-114 — Panneaux, RBZ 0.23.0** | AG-113 | Section Intérieur aux panneaux ; guide, journal, RBZ. | Version installée ; recette H37 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

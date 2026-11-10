@@ -25,7 +25,7 @@ Un jalon se ferme sur une preuve (test, rapport ou démonstration). Développer 
 | J18 — Ville mixte | J17, ADR-49 | AG-095–099 | Clic droit Modifier, style par bâtiment, rez-de-chaussée variés, stores et pergolas ; RBZ 0.19.0. |
 | J19 — Carrefours sans réseau, dalle et seuils | J18, ADR-50 | AG-100–103 | Dalle et seuils, T tolérants, carrefours depuis Tracer une voie ; RBZ 0.20.0. |
 | J20 — Teintes et abords | J19, ADR-51 | AG-104–109 | Teintes par bâtiment, perrons et rampes, garde-corps, tour d'îlot ; RBZ 0.21.0 ; talus en rue droite, RBZ 0.22.0. |
-| J21 — Intérieur (EXT-05) | J20 | à cadrer | Planchers, cloisons, pièces, escaliers et trémies. |
+| J21 — Intérieur (EXT-05) | J20, ADR-52 | AG-110–114 | Planchers, escalier à deux volées et trémies, pièces en enfilade, rues ; RBZ 0.23.0. |
 | J22 — Emprises non rectangulaires | J21 | à cadrer | Emprises en L, en T et polygonales ; puis EXT-06, 12, 09 et 08. |
 | J20+ — Bibliothèque, intérieur, ville, mobilier | J5 + contrats par capacité | EXT-01–06, EXT-08, EXT-09, EXT-12 | Voir [extensions](../docs/FUTURE.md) ; aucune dépendance de livraison inverse. |
 

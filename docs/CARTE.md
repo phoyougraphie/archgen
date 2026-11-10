@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J20 fini : RBZ 0.22.0 installé (teintes, perrons et rampes, garde-corps, tour d'îlot, talus en rue droite). Suite : J21 intérieur (à cadrer), J22 emprises non rectangulaires, puis EXT-06, 12, 09, 08. Recettes H26 à H36 à la main. Commits non poussés depuis 34f74cf. (→ docs/TEINTES_ABORDS_CONTRACT.md)
+  - Prochaine action — J21 cadré (intérieur, ADR-52, D-23 à D-26 révisables) ; prochain ticket AG-110 Planchers. Puis J22 emprises non rectangulaires, puis EXT-06, 12, 09, 08. Recettes H26 à H36 à la main. Commits non poussés depuis 34f74cf. (→ docs/INTERIEUR_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -125,6 +125,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 J20 cadré — Le propriétaire demande tout le non-fait et des teintes faciles. Constat : le moteur ne garde la seed d'une parcelle que si elle change la géométrie ; avec des teintes elle doit rester. Balcons sans garde-corps ; seuil haut seulement signalé. Intérieur et emprises non rectangulaires renvoyés à J21 et J22.
     - 2026-11-10 AG-104 à AG-108 — Les teintes sont des variantes `id~niveau.n` déduites du catalogue, pas des matériaux ajoutés ; la seed d'une parcelle doit alors compter dans la clé de partage. Perron, rampe et garde-corps s'écrivent à la création, comme la dalle. Le talus en rue est renvoyé à AG-109 : il faut relever au-delà de la parcelle et fermer chaque limite mitoyenne par un soutènement. RBZ 0.21.0 installé.
     - 2026-11-10 AG-109 — Le soutènement se calcule chez la parcelle de gauche, sur sa propre grille : le profil de la voisine suit la même droite du terrain, la plateforme décalée de l'écart. Il faut donc toutes les plateformes avant de tracer. Deux tests de site_write, non relancés à AG-105, attendaient encore l'avertissement du seuil : réglés sur « Rien ». RBZ 0.22.0 installé.
+    - 2026-11-10 J21 cadré — Le PRD excluait l'intérieur : ADR-52 l'ouvre comme option des deux modes plutôt que comme le mode « Interior » réservé, pour ne pas doubler solveurs et migrations. Quatre choix de détail appliqués selon ADR-48 (D-23 à D-26) : escalier contre le mur latéral sans baie ou mitoyen, pièces en enfilade sur les trumeaux. Matières déjà au catalogue.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -265,7 +266,13 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-107 Tour d'îlot — EnsembleVariety.closing : écart sur tout le tour. U72 vert.
     - [fait] AG-108 Dalle pour l'existant, RBZ 0.21.0 — case au panneau de rue ; RBZ 0.21.0 ; H36 à faire.
     - [fait] AG-109 Talus entre voisins dans une rue — SurveyGrid.plan_row, EmbankmentBuilder (façades choisies, soutènements), refus à angle ; RBZ 0.22.0. U73 vert.
-  - J21+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
+  - J21 Intérieur — ADR-52, D-23 à D-26. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
+    - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
+    - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.
+    - [afaire] AG-112 Cloisons et pièces — enfilade sur les trumeaux, portes.
+    - [afaire] AG-113 Intérieur dans les rues — gabarit, mitoyen, porche, parcelle, budgets.
+    - [afaire] AG-114 Panneaux, RBZ 0.23.0 — section Intérieur ; H37 à faire.
+  - J22+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.
 - Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
   - Fonctions P01–P09 — Résultats observables de la V0.1
     - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
