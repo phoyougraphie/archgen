@@ -97,6 +97,23 @@ module Archgen
           load_record(model, record.value)
         end
 
+        # Export glTF (AG-118) : relit l'unique racine sélectionnée et recalcule ses plans,
+        # assise comprise si elle est enregistrée. Lecture seule : ni opération, ni écriture.
+        def export_source(model:)
+          loaded = load_selection(model: model)
+          return loaded unless loaded.ok?
+
+          config = loaded.value.config
+          plan = Core::GeometryEngine.generate(config, materials: @materials)
+          return plan unless plan.ok?
+
+          site = kept_site(model, loaded.value.record, config, plan.value)
+          return site unless site.ok?
+
+          Core::Result.ok({ 'name' => loaded.value.record.instance.name.to_s, 'config' => config, 'plan' => plan.value,
+                            'site_plan' => site.value&.site_plan }, loaded.diagnostics + plan.diagnostics + site.diagnostics)
+        end
+
         # Remplace la géométrie d'une seule instance : racine, placement, nom, tag et
         # attributs tiers sont conservés ; l'ancienne définition n'est jamais touchée.
         def regenerate(model:, target:, draft:)

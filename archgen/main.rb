@@ -10,6 +10,7 @@ Archgen::Loader.load_internal('ui/panel')
 Archgen::Loader.load_internal('ui/street_panel')
 Archgen::Loader.load_internal('ui/parcel_panel')
 Archgen::Loader.load_internal('ui/context_menu')
+Archgen::Loader.load_internal('ui/export_command')
 Archgen::Loader.load_internal('ui/road_panel')
 Archgen::Loader.load_internal('ui/network_panel')
 

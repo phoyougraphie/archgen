@@ -97,6 +97,7 @@ module Archgen
       adapters/sketchup/network_repository
       adapters/sketchup/network_service
       adapters/sketchup/street_tool
+      adapters/sketchup/export_service
       ui/target_tokens
       ui/confirmation_tokens
       ui/messages

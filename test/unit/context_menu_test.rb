@@ -21,11 +21,11 @@ class ContextMenuTest < Minitest::Test
   end
 
   def test_a_building_root_offers_to_edit_it
-    assert_equal [['Modifier ce bâtiment', :edit_building]], entries(Root.new({ 'archgen.building' => { 'config_json' => '{}' } }))
+    assert_equal [['Modifier ce bâtiment', :edit_building], ['Exporter pour un moteur de jeu…', :export_game]], entries(Root.new({ 'archgen.building' => { 'config_json' => '{}' } }))
   end
 
   def test_a_street_root_offers_to_edit_the_street
-    assert_equal [['Modifier cette rue', :edit_street]], entries(Root.new({ 'archgen.ensemble' => { 'ensemble_json' => '{}' } }))
+    assert_equal [['Modifier cette rue', :edit_street], ['Exporter pour un moteur de jeu…', :export_game]], entries(Root.new({ 'archgen.ensemble' => { 'ensemble_json' => '{}' } }))
   end
 
   def test_anything_else_offers_nothing

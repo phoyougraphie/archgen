@@ -10,7 +10,7 @@ module Archgen
 
       module_function
 
-      # [[libellé, action]] ; action : :edit_building, :edit_street, :customize_parcel.
+      # [[libellé, action]] ; action : :edit_building, :edit_street, :customize_parcel, :export_game (AG-118).
       def entries(model)
         out = []
         out << ['Personnaliser ce bâtiment', :customize_parcel] if parcel_picked?(model)
@@ -20,6 +20,7 @@ module Archgen
         item = selection.first
         out << ['Modifier ce bâtiment', :edit_building] if root_with?(item, BUILDING, 'config_json')
         out << ['Modifier cette rue', :edit_street] if root_with?(item, ENSEMBLE, 'ensemble_json')
+        out << ['Exporter pour un moteur de jeu…', :export_game] if out.any?
         out
       end
 
@@ -49,6 +50,7 @@ module Archgen
         when :edit_building then Panel.show('edit')
         when :edit_street then StreetPanel.show('edit')
         when :customize_parcel then ParcelPanel.show
+        when :export_game then ExportCommand.run
         end
       end
     end

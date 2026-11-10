@@ -63,6 +63,7 @@ module Archgen
           @views = []
           @binary = +''.b
           @definition_meshes = {}
+          @shared_meshes = {}
           @triangles = 0
           @mesh_triangles = []
           @vertices = 0
@@ -70,19 +71,23 @@ module Archgen
 
         # Lève ExportError, localisée, que l'appelant rend par `GlbWriter.failure`.
         # Ajoute un objet ARCHGEN sous un nœud racine ; `matrix` (colonnes, mètres, repère SketchUp) le place.
-        def add(name:, nodes:, definitions:, matrix: nil)
+        # `share` : clé d'un plan répété (rue) ; ses maillages ne sont écrits qu'une fois.
+        def add(name:, nodes:, definitions:, matrix: nil, share: nil)
           @definitions = definitions
+          @share = share
           children = nodes.map { |node| convert(node) }
           @roots << push_node(node_hash(name, matrix: matrix, children: children))
         end
 
         # Ajoute à la racine de la scène un maillage fait de triangles (volume LOD2, collision `UCX_`).
         # `material` rend l'id de matière d'un triangle, ou nil pour un maillage sans matériau.
-        def add_triangles(name:, triangles:, material: ->(_tri) {})
+        def add_triangles(name:, triangles:, material: ->(_tri) {}, matrix: nil, share: nil)
           vertices = triangles.flatten(1)
           faces = triangles.each_index.map { |i| { 'indices' => [3 * i, (3 * i) + 1, (3 * i) + 2], 'material' => material.call(triangles[i]) } }
-          mesh = add_mesh(name, [[name, { 'type' => 'solid', 'vertices' => vertices, 'faces' => faces }, IDENTITY]])
-          @roots << push_node(node_hash(name, mesh: mesh))
+          cached = share && @shared_meshes[[:triangles, share]]
+          mesh = cached || add_mesh(name, [[name, { 'type' => 'solid', 'vertices' => vertices, 'faces' => faces }, IDENTITY]])
+          @shared_meshes[[:triangles, share]] = mesh if share
+          @roots << push_node(node_hash(name, mesh: mesh, matrix: matrix))
         end
 
         # Rend Result.ok({ 'bytes', 'stats' }) ou un diagnostic E_EXPORT localisé.
@@ -111,7 +116,9 @@ module Archgen
               raise ExportError.new('export_primitive', node['id'])
             end
 
-            mesh = add_mesh(node['id'], [[node['id'], primitive, IDENTITY]])
+            key = @share && [@share, node['id']]
+            mesh = (key && @shared_meshes[key]) || add_mesh(node['id'], [[node['id'], primitive, IDENTITY]])
+            @shared_meshes[key] = mesh if key
             return push_node(node_hash(node['id'], mesh: mesh))
           end
 
@@ -122,7 +129,8 @@ module Archgen
         # Une définition partagée devient un seul maillage, référencé par chaque instance.
         def convert_instance(node, primitive)
           id = primitive['definition_id']
-          mesh = @definition_meshes[id] ||= begin
+          # Clé par plan : deux plans de rue peuvent nommer pareil des définitions différentes.
+          mesh = @definition_meshes[[@share || @roots.size, id]] ||= begin
             parts = []
             flatten(definition(id, node['id']), IDENTITY, parts)
             add_mesh(id, parts)

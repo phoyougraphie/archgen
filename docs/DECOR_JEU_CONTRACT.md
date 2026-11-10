@@ -87,6 +87,15 @@ Ce qui reste hors périmètre :
 - Un réseau de routes ou un terrain sélectionné seul est refusé (`export_unsupported`).
 - L'export n'est pas une opération du modèle : pas d'Undo, et le document est intact. Un fichier existant n'est remplacé qu'après la confirmation de la boîte de dialogue.
 - Le rapport affiche les triangles par fichier et le chemin.
+- **Fait (AG-118).** Ce qui est livré :
+  - `Adapters::SketchUp::ExportService` : `export(model:, path:)`, `existing(chosen)` et `paths` ;
+  - `UI::ExportCommand`, avec l'entrée de clic droit sur un bâtiment ou une rue ;
+  - `export_source(model:)` dans chacun des deux services : relecture de la racine, plans recalculés, assise enregistrée comprise (le relevé du terrain ne fait que lire), sans aucune opération.
+  - Dans une rue, chaque maison est un nœud racine, placé par la matrice de sa parcelle à la hauteur de son assise. Le plan d'une maison répétée n'a qu'un maillage, et chaque maison a sa collision `UCX_<rue>_NN`.
+  - LOD1 de la rue : la même rue avec `building.lod: 0` ; il est sauté si les parcelles changent ou si le nombre de faces ne baisse pas.
+  - Refus `export_selection` (rien ou plusieurs objets) et `export_unsupported` (route, réseau) ; note `street_ground_excluded`.
+  - La boîte propose `<nom>_LOD0.glb`. Si le fichier LOD1 ou LOD2 existe déjà à côté, une confirmation supplémentaire est demandée.
+  - Non essayé dans SketchUp ni dans Unreal : recette H38.
 
 ## 5. Guide, version — AG-119
 

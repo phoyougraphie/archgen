@@ -75,6 +75,22 @@ module Archgen
           record.ok? ? load_record(model, record.value) : record
         end
 
+        # Export glTF (AG-118) : plans de la rue enregistrée, assise comprise, et la même rue au réglage
+        # `lod: 0` (nil si elle y est déjà ou si ce réglage est refusé). Lecture seule.
+        def export_source(model:)
+          loaded = load_selection(model: model)
+          return loaded unless loaded.ok?
+
+          computed = preview(tree: loaded.value.settings)
+          return computed unless computed.ok?
+
+          site = kept_site(model, loaded.value.record, computed.value)
+          return site unless site.ok?
+
+          Core::Result.ok({ 'name' => loaded.value.record.instance.name.to_s, 'plan' => computed.value.plan, 'site_plan' => site.value&.site_plan,
+                            'lod1_plan' => lod0_plan(loaded.value.settings, computed.value.plan) }, computed.diagnostics + site.diagnostics)
+        end
+
         # Régénère tout l'ensemble dans une définition fraîche ; une copie garde la sienne.
         # `changes` : champs à modifier, fusionnés sur les réglages enregistrés ; `replace` : réglages complets.
         # `operation` : nom de l'entrée d'Annuler (AG-069 : personnaliser un bâtiment).
@@ -165,6 +181,16 @@ module Archgen
 
         def stale(reason, **params)
           Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/target', reason: reason, **params)])
+        end
+
+        def lod0_plan(settings, plan)
+          low = preview(tree: Core::Merge.leaves(settings, 'building' => { 'lod' => 0 }))
+          return nil unless low.ok?
+
+          low = low.value.plan
+          same_parcels = low['parcels'].map { |p| p['id'] } == plan['parcels'].map { |p| p['id'] }
+          faces = ->(p) { p['definitions'].values.sum { |row| row.dig('metrics', 'expanded_face_count').to_i } }
+          same_parcels && faces.call(low) < faces.call(plan) ? low : nil
         end
 
         def compute(settings)
