@@ -78,6 +78,7 @@ module Archgen
       core/road_engine
       core/road_network_engine
       core/road_merge
+      core/map_roads
       geometry/embankment_builder
       geometry/site_planner
       composition

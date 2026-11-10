@@ -145,6 +145,7 @@ module Archgen
         'lod_not_decreasing' => 'Les triangles ne décroissent pas d’un niveau de détail au suivant (%{value}).',
         'map_file' => 'Le fichier de carte n’est pas lisible (%{reason_detail}) : prenez un extrait .osm ou un GeoJSON.',
         'map_coordinates' => 'Le fichier de carte contient une coordonnée hors des bornes, ligne %{line}.',
+        'map_too_large' => 'La carte donne %{value} éléments : %{limit} au plus. Prenez une zone plus petite.',
         'map_empty' => 'Le fichier de carte ne contient ni voie ni bâtiment.',
         'export_selection' => 'Sélectionnez un seul bâtiment ou une seule rue ARCHGEN, puis relancez l’export.',
         'export_unsupported' => 'Les routes, réseaux et terrains ne s’exportent pas encore : sélectionnez un bâtiment ou une rue.',

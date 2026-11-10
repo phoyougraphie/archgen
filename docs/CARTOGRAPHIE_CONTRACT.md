@@ -76,6 +76,13 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 - **Rayons** : le rayon de chaque sommet est le plus grand de 0, 5 ou 10 m que la voie accepte. Une voie encore refusée est écartée et nommée dans le rapport.
 - **Réseaux** : les voies reliées par un nœud OSM commun forment un réseau. Au-delà de 24 voies, le réseau est coupé en morceaux de 24 voies, dans l'ordre d'un parcours en largeur. Les croisements entre deux morceaux deviennent des carrefours sans réseau (0.20.0).
 - Les voies à niveaux (`bridge`, `tunnel`, `layer`) sont écartées et comptées : ponts et tunnels ne viennent pas d'OSM dans ce lot.
+- **Fait (AG-126).** `Core::MapRoads` rend `{ networks, road_count, skipped }`, avec des réglages de réseau prêts pour `RoadNetworkIntake`. Choix et écarts :
+  - **Points partagés** : un point commun à deux voies (nœud OSM partagé) n'est jamais retiré par la simplification, sinon le carrefour disparaîtrait.
+  - **Rayon uniforme** : il est le même à tous les sommets d'une voie, le plus grand de 10, 5 ou 0 m qui passe. Ce n'est pas un rayon choisi sommet par sommet : c'est plus simple, au prix de virages parfois plus serrés.
+  - **Contrôle du rayon** : il se fait sur le tracé ramené à son premier point, car une voie seule part de son origine.
+  - **Écartés comptés** : `highway_unknown`, `level`, `too_short` (moins de 1 m) et `trace_refused`.
+  - **Plafond** : au-delà de 400 tronçons, l'import est refusé avec `map_too_large`.
+  - **Identifiants** : `w<id OSM>-<n°>`.
 
 ## 3. Bâtiments — AG-127
 
