@@ -66,6 +66,12 @@ Nouveaux types dans `road_items.v1.json`, avec leur copie embarquée identique (
 - `pole` : mât de 2,6 m et plaque carrée bleue de 0,4 m, sans abri.
 - Un marquage jaune « zigzag » simplifié est posé sur la voie de circulation voisine. Cette bande est extrudée sur 12 m à 0,01 m au-dessus de la surface, centrée sur l'arrêt. Il est absent s'il n'y a pas de voie de circulation contiguë.
 - Avertissement `W_ROAD_CLEARANCE` si un arbre ou un lampadaire de la même bande est à moins de 2 m de l'abri.
+- **Fait (AG-122).** Ce qui est livré :
+  - `RoadSection` pose l'abri en travers, fond à 0,30 m du bord opposé à la chaussée, et ajoute un élément dérivé `bus_marking` sur la voie contiguë, à 0,60 m de son bord. Le marquage partage les positions de l'arrêt.
+  - Une bande voisine qui n'est pas une voie de circulation (stationnement, piste cyclable) ne reçoit pas de marquage.
+  - L'intake refuse un abri sur une bande trop étroite (`bus_stop_band_too_narrow`) ; le mât seul passe.
+  - L'avertissement `bus_stop_clearance` mesure l'écart le long de la voie comme sur une droite : moins de 1,5 + 2 m du centre de l'abri.
+  - Un refus de position hors voie n'est émis que sur l'arrêt, pas sur son marquage.
 
 ## 4. Panneaux — AG-123
 

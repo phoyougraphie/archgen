@@ -62,6 +62,31 @@ module Archgen
          S.box(x - 0.06, x - 0.04, y - 0.2, y + 0.2, STOP_MAST_M - 0.4, STOP_MAST_M, 'blue')]
       end
 
+      # Zigzag jaune de 12 m (docs/MOBILIER_CONTRACT.md §3) : six traits de 2 m, ±0,40 m, larges de 0,12 m,
+      # épais de 0,01 m, posés sur la voie.
+      def bus_marking
+        points = (0..6).map { |k| [-6.0 + (2.0 * k), k.even? ? -0.4 : 0.4] }
+        points.each_cons(2).map { |a, b| strip(a, b, 0.06, 0.01, 'yellow') }
+      end
+
+      # Trait plat de a à b (plan XY), demi-largeur w, de z = 0 à z = h.
+      def strip(a, b, w, h, part)
+        len = Math.hypot(b[0] - a[0], b[1] - a[1])
+        n = [-(b[1] - a[1]) / len * w, (b[0] - a[0]) / len * w]
+        quad = [[a[0] - n[0], a[1] - n[1]], [b[0] - n[0], b[1] - n[1]], [b[0] + n[0], b[1] + n[1]], [a[0] + n[0], a[1] + n[1]]]
+        builder = MeshBuilder.new('solid')
+        low = quad.map { |x, y| [x, y, 0.0] }
+        high = quad.map { |x, y| [x, y, h] }
+        builder.add_face(low.reverse, S.material(part))
+        builder.add_face(high, S.material(part))
+        4.times do |i|
+          j = (i + 1) % 4
+          builder.add_face([low[i], low[j], high[j], high[i]], S.material(part))
+        end
+        primitive = builder.to_primitive
+        S.normal_out?(primitive) ? primitive : S.flip(primitive)
+      end
+
       # Plaques sans texte (D-36) : [côtés, rotation en degrés, rayon, fond, liseré, symbole].
       SIGNS = {
         'stop' => [8, 22.5, 0.35 / Math.cos(Math::PI / 8), 'red', 'white', nil],
@@ -120,7 +145,7 @@ module Archgen
       end
 
       def shift(primitive, x, y)
-        primitive.merge('vertices' => primitive['vertices'].map { |v| [v[0] + x, v[1] + y, v[2]] })
+        primitive.merge('vertices' => primitive['vertices'].map { |v| Core::Quant.q3([v[0] + x, v[1] + y, v[2]]) })
       end
     end
   end

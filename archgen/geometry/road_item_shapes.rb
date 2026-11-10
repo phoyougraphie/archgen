@@ -38,6 +38,7 @@ module Archgen
                  when 'bike_rack' then RoadFurnitureShapes.bike_rack(height, count || 1)
                  when 'bus_stop' then RoadFurnitureShapes.bus_stop(variant, height)
                  when 'sign' then RoadFurnitureShapes.sign(variant, height)
+                 when 'bus_marking' then RoadFurnitureShapes.bus_marking
                  else raise ArgumentError, "Objet sans forme : #{kind}"
                  end
         solids.each_with_index.map do |primitive, i|

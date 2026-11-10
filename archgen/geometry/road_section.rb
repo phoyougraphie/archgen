@@ -181,13 +181,41 @@ module Archgen
       def placed_items(profile, rows, catalogue)
         profile['bands'].each_with_index.flat_map do |band, i|
           count = band['items'].size
-          band['items'].each_with_index.map do |item, j|
+          band['items'].each_with_index.flat_map do |item, j|
             entry = catalogue.fetch(item['kind'])
             # Un plot de chaussée marque la limite gauche de sa bande (D-10, ADR-42).
             x = entry['placement'] == 'band_left' ? rows[i]['x0_m'] : rows[i]['x0_m'] + (band['width_m'] * (j + 1) / (count + 1))
-            placed(item, entry, rows, i, j, x)
+            x = shelter_x(rows, i, x) if item['kind'] == 'bus_stop' && item['variant'] == 'shelter'
+            out = placed(item, entry, rows, i, j, x)
+            item['kind'] == 'bus_stop' ? [out] + bus_marking(rows, out) : [out]
           end
         end
+      end
+
+      # Abri (docs/MOBILIER_CONTRACT.md §3) : son fond à 0,30 m du bord opposé à la chaussée, 1,40 m de profondeur.
+      SHELTER_BACK_M = 0.3
+      SHELTER_DEPTH_M = 1.4
+      MARKING_INSET_M = 0.6
+
+      def shelter_x(rows, own, x)
+        side = toward(rows, own, x)
+        return x unless side
+
+        reach = SHELTER_BACK_M + (SHELTER_DEPTH_M / 2)
+        side == 'right' ? rows[own]['x0_m'] + reach : rows[own]['x1_m'] - reach
+      end
+
+      # Marquage jaune sur la voie de circulation contiguë, côté chaussée ; rien sans voie contiguë.
+      def bus_marking(rows, stop)
+        side = stop['toward']
+        k = side == 'right' ? stop['band'] + 1 : stop['band'] - 1
+        lane = side && k.between?(0, rows.size - 1) ? rows[k] : nil
+        return [] unless lane && lane['type'] == 'lane'
+
+        edge = side == 'right' ? lane['x0_m'] : lane['x1_m']
+        x = edge + (side == 'right' ? MARKING_INSET_M : -MARKING_INSET_M)
+        [stop.merge('kind' => 'bus_marking', 'variant' => 'zigzag', 'band' => k, 'x_m' => q(x),
+                    'z_m' => q(z_at(lane['surface'], x)), 'height_m' => 0.01).tap { |m| m.delete('count') }]
       end
 
       def placed(item, entry, rows, band, index, x)

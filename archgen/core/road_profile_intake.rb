@@ -7,6 +7,10 @@ module Archgen
     # dans une plage : une valeur hors plage est refusée sur son chemin.
     class RoadProfileIntake
       SUPPORTED_VERSION = 1
+      # Abri d'arrêt de bus (docs/MOBILIER_CONTRACT.md §3).
+      SHELTER_MIN_BAND_M = 1.6
+      SHELTER_HALF_M = 1.5
+      SHELTER_CLEAR_M = 2.0
 
       # schema : road-profile V1 ; bands, items : contenu des catalogues road_bands et road_items.
       def initialize(schema, bands:, items:)
@@ -36,7 +40,7 @@ module Archgen
         return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
 
         value = Canonical.deep_freeze(effective(tree))
-        Result.ok(value, (clearance_warnings(value) + composition_warnings(value)).sort_by(&:sort_key))
+        Result.ok(value, (clearance_warnings(value) + composition_warnings(value) + shelter_warnings(value)).sort_by(&:sort_key))
       end
 
       private
@@ -65,6 +69,9 @@ module Archgen
           if allowed && !allowed.include?(band['type'])
             out << Diagnostic.error('E_ROAD_ITEM', "#{item_path}/kind", reason: 'item_band_mismatch', kind: item['kind'], band: band['type'], allowed: allowed)
             next
+          end
+          if item['kind'] == 'bus_stop' && item.fetch('variant', 'shelter') == 'shelter' && band['width_m'] < SHELTER_MIN_BAND_M
+            out << Diagnostic.error('E_ROAD_ITEM', item_path, reason: 'bus_stop_band_too_narrow', value: band['width_m'], min: SHELTER_MIN_BAND_M)
           end
           out << if entry['accepts_items']
                    item_problems(item, item_path)
@@ -237,6 +244,33 @@ module Archgen
           left = pair[1]
           pair
         end
+      end
+
+      # Arbre ou lampadaire de la même bande à moins de 2 m d'un abri, compté le long de la voie
+      # comme sur une droite (docs/MOBILIER_CONTRACT.md §3).
+      def shelter_warnings(profile)
+        profile['bands'].each_with_index.flat_map do |band, i|
+          stops = band['items'].each_with_index.select { |item, _| item['kind'] == 'bus_stop' && item['variant'] == 'shelter' }
+          stops.flat_map do |stop, j|
+            band['items'].each_with_index.filter_map do |item, k|
+              next unless %w[tree lamp].include?(item['kind'])
+
+              near = stop['positions_m'].find { |p| close_to?(item, p) }
+              next unless near
+
+              Diagnostic.warning('W_ROAD_CLEARANCE', "/bands/#{i}/items/#{j}", reason: 'bus_stop_clearance', kind: item['kind'], item_number: k + 1, value: near)
+            end
+          end
+        end
+      end
+
+      def close_to?(item, position)
+        reach = SHELTER_HALF_M + SHELTER_CLEAR_M
+        return item['positions_m'].any? { |s| (s - position).abs < reach } if item.key?('positions_m')
+
+        spacing = item['spacing_m']
+        rank = [((position - (spacing / 2)) / spacing).round, 0].max
+        ((spacing / 2) + (rank * spacing) - position).abs < reach
       end
 
       # Couronne d'arbre au-dessus d'une voie, trop basse (contrat : W_ROAD_CLEARANCE).

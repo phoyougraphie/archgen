@@ -260,6 +260,9 @@ module Archgen
       # Une position au-delà de la voie tracée (docs/MOBILIER_CONTRACT.md §2) ; `prefix` : chemin de la voie.
       def position_problems(section, length, prefix = '')
         section['items'].filter_map do |item|
+          # Le marquage suit son arrêt de bus : un seul refus, sur l'arrêt.
+          next if item['kind'] == 'bus_marking'
+
           far = Array(item['positions_m']).find { |s| s > length + 1e-6 }
           next unless far
 
