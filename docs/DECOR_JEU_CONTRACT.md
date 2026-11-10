@@ -45,6 +45,12 @@ Ce qui reste hors périmètre :
 - La hiérarchie des nœuds suit celle du plan, avec les mêmes noms : façades, toit, détails, maisons d'une rue.
 - Le fichier contient un en-tête GLB, un bloc JSON trié et un bloc binaire aligné sur 4 octets. Les flottants sont arrondis au dix-millième de mètre, et le résultat est déterministe à l'octet près.
 - Le service rend le nombre de triangles, de sommets, de maillages et de matériaux pour chaque fichier.
+- **Fait (AG-115).** `Adapters::Gltf::Triangulator` et `GlbWriter` (liste `Loader::EXPORT`, hors noyau) :
+  - `GlbWriter.building(plan, name:)` rend `{ 'bytes', 'stats' }` ou `E_EXPORT` (`export_face`, `export_primitive`, `export_definition`, avec l'id de la pièce) ;
+  - une scène peut recevoir plusieurs objets (`add`), pour la rue d'AG-118 ;
+  - deux comptes : `triangle_count` (tampon, maillage partagé compté une fois) et `drawn_triangle_count` (affichage) ;
+  - en AG-115, un matériau ne porte que son nom ; la couleur et le PBR viennent avec AG-116.
+  - Sonde Blender 5.2 en ligne de commande, haussmannien : 46 maillages importés, 1 996 triangles comme annoncé, boîte 12,3 × 10,05 × 16,41 m, Z en haut après conversion par Blender.
 
 ## 2. UV et matériaux PBR — AG-116
 

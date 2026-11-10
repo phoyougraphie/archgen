@@ -70,6 +70,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U71 | Garde-corps (AG-106) : sans la clé, balcon inchangé ; barreaux à 1 m sur trois côtés, un barreau partagé ; muret plein de la matière du mur ; « Aucun » non écrit. |
 | U72 | Tour d'îlot (AG-107, dans ensemble_variety_test) : sur un îlot carré, douze graines, écart d'un niveau au plus entre voisines, retour à la première compris ; échoue sans le correctif. |
 | U73 | Talus en rue (AG-109, dans ensemble_site_test et ensemble_site_write_test) : rangée droite étagée, talus devant, côté libre aux bouts seulement, soubassement mitoyen, soutènement dans le plan de la limite ; rue à angle refusée ; relevé élargi par le service. |
+| U78 | Export glTF (AG-115, gltf_export_test) : oreilles sur face concave et sommet aligné (n − 2, normale gardée), face dégénérée refusée avec sa pièce, GLB valide et identique à l'octet, axes Y en haut et −y, maillage partagé par les barreaux avec matrice convertie. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

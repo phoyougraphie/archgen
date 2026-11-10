@@ -107,12 +107,22 @@ module Archgen
       ui/network_controller
     ].freeze
 
+    # Export glTF (ADR-54) : Ruby pur, hors noyau ; chargé par main.rb et ses tests.
+    EXPORT = %w[
+      adapters/gltf/triangulator
+      adapters/gltf/glb_writer
+    ].freeze
+
     def self.load_core
       CORE.each { |path| load_internal(path) }
     end
 
     def self.load_adapter
       ADAPTER.each { |path| load_internal(path) }
+    end
+
+    def self.load_export
+      EXPORT.each { |path| load_internal(path) }
     end
 
     def self.load_internal(relative)
