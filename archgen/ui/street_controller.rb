@@ -18,7 +18,7 @@ module Archgen
       VARIETY_ROOFS = %w[flat gable mansard].freeze
       MAX_REMEMBERED = 32
       DEFAULT_SETTINGS = {
-        'building' => { 'profile' => { 'id' => 'haussmann' }, 'mode' => 'shell', 'lod' => 0 },
+        'building' => { 'profile' => { 'id' => 'haussmann' }, 'mode' => 'shell', 'lod' => 0, 'structure' => { 'ground_slab' => true } },
         'parcel' => { 'target_width_m' => 12.0, 'depth_m' => 9.0, 'bay_width_m' => 3.0 },
         'layout' => { 'street_width_m' => 12.0 },
         'access' => { 'count' => 'auto', 'width_m' => 3.5, 'height_m' => 2.7 }

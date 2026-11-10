@@ -138,4 +138,21 @@ class EnsembleVarietyTest < Minitest::Test
     assert_equal ['/variety/roofs/1', 'variety_style_roof', 'mansard'], [r.errors.first.path, r.errors.first.params['reason'], r.errors.first.params['allowed']]
     assert plan(settings({ 'levels' => { 'min' => 5, 'max' => 7 }, 'roofs' => %w[mansard] }, profile: 'haussmann', building: strict))
   end
+
+  # U72 — Tour d'îlot (docs/TEINTES_ABORDS_CONTRACT.md, AG-107) : la dernière parcelle respecte aussi l'écart avec la première.
+  def test_a_closed_block_respects_the_step_all_the_way_round
+    square = [[0, 0], [60, 0], [60, 60], [0, 60]]
+    (1..12).each do |seed|
+      value = settings({ 'levels' => { 'min' => 1, 'max' => 15, 'max_step' => 1 } }, points: square, closed: true, seed: seed)
+      parcels = EnsembleVariety.assign(value, EnsembleEngine.layout_for(value, registry: registry).value['parcels'])
+      parcels.group_by { |p| p['id'].split('/').first }.each_value do |row|
+        levels = row.map { |p| p['variety']['levels'] }
+        next if levels.size < 3
+
+        ring = levels + [levels.first]
+        assert(ring.each_cons(2).all? { |a, b| (a - b).abs <= 1 }, "seed #{seed} : #{levels.inspect}")
+      end
+    end
+  end
 end
+

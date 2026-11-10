@@ -44,6 +44,10 @@ L'aperçu à droite est recalculé à chaque changement, sans rien écrire dans 
 
 **Volumes modernes (0.18.0) :** la liste **Baies des étages** propose **En bandeau** (une longue fenêtre par étage) ou **Mur-rideau** (vitré du plancher au plafond) ; le rez-de-chaussée garde sa porte. **Pilotis** ouvre le rez-de-chaussée sur des poteaux (bâtiment seul ; dans une rue, ils sont omis et signalés). Le type de toit **Sheds** fait des dents vitrées. **Trame structurelle** montre poteaux et planchers en façade ; **Brise-soleil** pose une casquette au-dessus des fenêtres. Sept styles : **Bauhaus**, **Moderniste**, **Mid-century**, **Contemporain minimaliste**, **Industriel**, **High-tech**, **Bioclimatique**. Les volumes assemblés (deux blocs de hauteurs différentes) viendront plus tard.
 
+**Teintes (0.21.0) :** la liste **Teintes** (Légères, Marquées, Fortes) donne à chaque bâtiment une nuance de ses murs, menuiseries et volets, et une autre pour sa porte d'entrée. Elle est tirée de la graine : changer la graine change les nuances. Dans une rue, chaque maison a la sienne. Le toit et les vitres ne changent pas.
+
+**Garde-corps (0.21.0) :** un balcon reçoit un garde-corps de 1 m, à **Barreaux** (couleur des menuiseries) ou **Plein** (couleur du mur), selon la liste **Garde-corps des balcons**. Un nouveau bâtiment ou une nouvelle rue a des barreaux ; un bâtiment d'avant garde son balcon tel quel.
+
 **Dalle et seuils (0.20.0) :** un nouveau bâtiment ou une nouvelle rue a une dalle au rez-de-chaussée et un seuil sous chaque porte d'entrée, pour qu'aucun vide ne reste entre la rue et la maison ; la case **Dalle de rez-de-chaussée et seuils** les retire. Un bâtiment créé avant garde sa géométrie.
 
 **Ville mixte (0.19.0) :** un **clic droit** sur un bâtiment seul donne **ARCHGEN → Modifier ce bâtiment**, et sur une rue **ARCHGEN → Modifier cette rue**. Dans une rue ouverte, **Personnaliser ce bâtiment** propose maintenant un **Style** : un bâtiment peut être Flamand ou Bauhaus au milieu d'une rue haussmannienne, les autres ne changent pas. Au panneau de rue, **Rez-de-chaussée variés** tire la place de la porte et la largeur des fenêtres de chaque bâtiment, et **Part de commerces** met en commerce une partie des rez-de-chaussée (tirés, toujours les mêmes pour la même graine). **Devanture** pose un **store banne** au-dessus de chaque vitrine ou une **pergola** devant la boutique, interrompue devant la porte de l'immeuble. Les styles Haussmannien, Toulousain et Brutaliste cochent le vitrage par défaut ; un bâtiment créé avant la version 0.11.0 le garde décoché.
@@ -85,7 +89,7 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 **À savoir**
 
 - **Le terrain n'est jamais modifié, ni creusé.** Un déblai est annoncé mais pas montré.
-- **Aucun escalier n'est généré.** Si le seuil est à plus de 20 cm du sol, un avertissement le signale. Une porte enterrée est refusée : remontez la plateforme ou changez la travée d'entrée.
+- **Devant la porte (0.21.0) :** si le seuil est au-dessus du terrain, un **Perron** de marches égales (0,17 m au plus) monte jusqu'à lui, ou une **Rampe** à 5 % longe la façade après un palier. Une rampe trop longue pour la façade est refusée. **Rien** garde l'ancien avertissement au-delà de 20 cm. Un terrain adapté avant garde sa géométrie jusqu'à ce qu'on le réadapte. Une porte enterrée est refusée : remontez la plateforme ou changez la travée d'entrée.
 - **Limites :** 6 m de variation sous le bâtiment et 3 000 points de relevé. Au-delà, ARCHGEN refuse et dit quoi changer. Un terrain qui manque sous le bâtiment est refusé, sans altitude inventée.
 - **Sur un terrain très détaillé, SketchUp se fige pendant le relevé et Windows peut afficher « Ne répond pas ».** Attendez, ne fermez pas la fenêtre, car le travail non enregistré serait perdu. Mesures sur 100 000 faces, pour chaque relevé comme pour chaque adaptation : environ 1 s pour un bâtiment de 12 × 9 m, 8 s avec un talus, 1 min à 1 min 30 pour le plus grand bâtiment. Enregistrez avant, et gardez le pas de 2 m ou plus.
 - **Après un déplacement,** l'assise est signalée périmée au rechargement de la sélection. Relevez puis adaptez de nouveau. **Régénérer** relit aussi le terrain à l'emplacement actuel : l'altitude peut donc changer.
@@ -146,7 +150,7 @@ Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain,
 
 **Durée.** Le relevé traverse tout ce qui est au-dessus du terrain, et SketchUp ne répond plus pendant ce temps : ne fermez pas la fenêtre. Sur une longue rue, augmentez le pas.
 
-**Limites.** Soubassement seulement, pas de talus entre voisins. Pas d'escalier ni de rampe : un seuil haut est signalé, pas résolu. Un terrain modifié n'est vu qu'au relevé suivant.
+**Limites.** Soubassement seulement, pas de talus entre voisins. La liste **Devant les portes** pose un perron ou une rampe devant chaque porte au-dessus du terrain ; ils ne connaissent pas les voies et peuvent empiéter sur un trottoir sans recul. Un terrain modifié n'est vu qu'au relevé suivant.
 
 ## Tracer une voie
 
@@ -218,7 +222,7 @@ Dans cet export, les espaces et les accents des noms de matériaux deviennent `_
 
 ## Limites de cette version
 
-- Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur, de vitrage ni de garde-corps.
+- Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur ; des garde-corps seulement aux balcons.
 - Pas de calcul de structure ni de conformité réglementaire. Les styles sont des simplifications, pas des restitutions historiques.
 - Le champ « Variation des baies » décale chaque fenêtre au hasard, par pas de 5 mm, d'au plus la valeur saisie ; la graine change le tirage. Une variation de moins de 5 mm ne décale rien.
 - Les anciennes définitions restent dans le fichier après une régénération, pour permettre Annuler. **Fenêtre → Infos sur le modèle → Statistiques → Purger les éléments inutilisés** les retire.

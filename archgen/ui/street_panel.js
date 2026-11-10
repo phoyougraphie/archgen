@@ -17,7 +17,7 @@
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'), siteEntrance: byId('s-site-entrance'),
     glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), stepped_gable: byId('s-stepped'), cladding: byId('s-cladding'), timber_frame: byId('s-timber'), classical: byId('s-classical'), pilotis: byId('s-pilotis'), structural_grid: byId('s-structural_grid'), sun_shades: byId('s-sun_shades'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
-    shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), tint: byId('s-tint'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
+    shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), tint: byId('s-tint'), groundSlab: byId('s-ground-slab'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
@@ -39,7 +39,7 @@
 
   // Un champ vide laisse la valeur du style ; une saisie illisible n'est jamais envoyée.
   function settings() {
-    var building = { profile: { id: el.profile.value }, mode: el.mode.value, lod: Number(el.lod.value) };
+    var building = { profile: { id: el.profile.value }, mode: el.mode.value, lod: Number(el.lod.value), structure: { ground_slab: el.groundSlab.checked } };
     var levels = {};
     var count = number(el.count);
     var height = number(el.height);
@@ -458,6 +458,7 @@ function runSite(message, action, payload) {
     el.profile.value = building.profile.id;
     el.mode.value = building.mode || 'shell';
     el.lod.value = String(building.lod === undefined ? 0 : building.lod);
+    el.groundSlab.checked = Boolean(building.structure && building.structure.ground_slab); // AG-108 : une rue d'avant peut la recevoir
     setOptional(el.count, levels.count);
     setOptional(el.height, levels.height_m);
     setOptional(el.target, values.parcel.target_width_m);

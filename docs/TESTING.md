@@ -68,6 +68,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U69 | Teintes (AG-104) : 0 non écrit et plan inchangé ; variantes `id~L.n` bornées et reproductibles ; seeds différentes, teintes différentes ; couleur proche du catalogue ; porte distincte des fenêtres ; voisines d'une rue différentes. |
 | U70 | Perron et rampe (AG-105, dans site_planner_test) : 4 marches égales jusqu'au seuil pour 0,588 m, avertissement levé ; rien près du sol ; terrain enregistré sans la clé relu ; rampe de 4 m pour 0,20 m le long de la façade ; rampe trop longue refusée. |
 | U71 | Garde-corps (AG-106) : sans la clé, balcon inchangé ; barreaux à 1 m sur trois côtés, un barreau partagé ; muret plein de la matière du mur ; « Aucun » non écrit. |
+| U72 | Tour d'îlot (AG-107, dans ensemble_variety_test) : sur un îlot carré, douze graines, écart d'un niveau au plus entre voisines, retour à la première compris ; échoue sans le correctif. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

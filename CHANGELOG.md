@@ -1,5 +1,24 @@
 # Journal des versions
 
+## 0.21.0
+
+Teintes et abords (AG-104 à AG-108). Recette H36 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Teintes** : chaque bâtiment tire une nuance de ses murs, menuiseries, volets et de sa porte ; voisines différentes dans une rue (AG-104, ADR-51).
+- **Perron ou rampe** devant une porte au-dessus du terrain (AG-105).
+- **Garde-corps des balcons**, à barreaux ou plein (AG-106).
+- **Dalle et seuils** possibles sur une rue d'avant, par une case du panneau de rue (AG-108).
+
+**Corrections**
+
+- **Tour d'îlot** : la dernière parcelle d'un contour fermé respecte aussi l'écart de hauteur avec la première (AG-107). Un îlot varié d'avant peut changer de hauteurs à sa prochaine régénération.
+
+**Reste à faire**
+
+- Talus entre voisins dans une rue (AG-109).
+
 ## 0.20.0
 
 Carrefours sans réseau, dalle et seuils (AG-100 à AG-103). Recette H35 dans SketchUp à faire.

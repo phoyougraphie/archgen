@@ -52,13 +52,22 @@ module Archgen
         roofs = variety['roofs']
         seed = settings['seed']
         previous = {}
+        first = {}
+        # AG-107 : un contour fermé rejoint sa première parcelle ; il reste au plus `restant × écart` pour y revenir.
+        sizes = parcels.group_by { |p| p['id'].split('/').first }.transform_values(&:size)
+        seen = Hash.new(0)
+        closed = settings.dig('trace', 'closed')
         parcels.map do |parcel|
           row = parcel['id'].split('/').first
+          index = seen[row]
+          seen[row] += 1
           pick = {}
           if levels
             lo, hi = window(levels, previous[row])
+            lo, hi = closing(levels, lo, hi, first[row], sizes[row] - index) if closed && first.key?(row) && sizes[row] > 2
             pick['levels'] = lo + (DeterministicRandom.unit(seed, "parcel/#{parcel['id']}/levels") * (hi - lo + 1)).floor
             previous[row] = pick['levels']
+            first[row] ||= pick['levels']
           end
           pick['roof'] = roofs[(DeterministicRandom.unit(seed, "parcel/#{parcel['id']}/roof") * roofs.size).floor] if roofs
           ground = ground_pick(variety['ground'], settings, parcel) if variety['ground']
@@ -88,6 +97,14 @@ module Archgen
         out
       end
       private_class_method :ground_pick
+
+      # Fenêtre réduite pour que les `remaining` pas jusqu'à la première parcelle restent possibles.
+      # Jamais vide : la voisine précédente était elle-même à `remaining + 1` pas au plus de la première.
+      def closing(levels, lo, hi, start, remaining)
+        step = levels.fetch('max_step', DEFAULT_STEP)
+        [[lo, start - (remaining * step)].max, [hi, start + (remaining * step)].min]
+      end
+      private_class_method :closing
 
       # Fenêtre permise : la fourchette, réduite à ± l'écart autour de la voisine. Elle n'est jamais vide,
       # la voisine étant elle-même dans la fourchette.

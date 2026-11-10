@@ -40,15 +40,20 @@ Selon `features.balcony_rail`, un balcon reçoit sur ses trois côtés libres un
 
 - **Fait (AG-106).** `DetailSolver.balcony_rails` (bande intérieure au contour, onglets compris), liste **Garde-corps des balcons** au panneau du bâtiment.
 
-## 4. Talus entre voisins, tour d'îlot — AG-107
+## 4. Tour d'îlot — AG-107 ; talus entre voisins — AG-109
 
 - Sur un terrain, deux parcelles voisines dont les plateformes diffèrent sont raccordées par un **talus** (pente 1 / 1,5 au plus) ou, faute de place, par un **mur de soutènement** de la matière du soubassement, entre leurs limites.
-- Dans un îlot à hauteurs variées, le contrôle d'écart avec la voisine porte aussi sur la dernière et la première parcelle du tour.
+- Dans un îlot à hauteurs variées, le contrôle d'écart avec la voisine porte aussi sur la dernière et la première parcelle du tour : chaque tirage reste à `restant × écart` au plus de la première parcelle.
+
+- **Fait (AG-107, tour d'îlot).** `EnsembleVariety.closing`. Correction de comportement : un îlot varié d'avant peut changer de hauteurs à sa prochaine régénération.
+- **Talus, renvoyé à AG-109.** Il demande un relevé devant et derrière chaque parcelle (aujourd'hui limité à la parcelle) et un mur de soutènement au droit de chaque limite mitoyenne entre deux talus, simple seulement sur une rue droite. Il reste refusé (`embankment_in_row`).
 
 ## 5. Existant, version — AG-108
 
-Case **Dalle et seuils** au panneau de rue : une rue d'avant peut la recevoir. Guide (dont la ligne « pas de vitrage », périmée depuis J11), journal, **RBZ 0.21.0** ; recette **H36** à la main.
+Case **Dalle de rez-de-chaussée et seuils** au panneau de rue : une rue d'avant peut la recevoir ; décochée, rien ne s'écrit. Guide (dont la ligne « pas de vitrage », périmée depuis J11), journal, **RBZ 0.21.0** ; recette **H36** à la main.
+
+- **Fait (AG-108).** Case au panneau de rue, gabarit de départ avec la dalle ; RBZ 0.21.0. **Recette H36 dans SketchUp non faite.**
 
 ## Tests
 
-U69 teintes ; U70 perron et rampe ; U71 garde-corps ; U72 talus et tour d'îlot.
+U69 teintes ; U70 perron et rampe ; U71 garde-corps ; U72 tour d'îlot.
