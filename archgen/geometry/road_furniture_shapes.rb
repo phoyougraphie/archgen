@@ -106,8 +106,11 @@ module Archgen
         builder = MeshBuilder.new('solid')
         near = points.map { |y, z| [x0.to_f, y.to_f, z.to_f] }
         far = points.map { |y, z| [x1.to_f, y.to_f, z.to_f] }
-        builder.add_face(near, S.material(part))
-        builder.add_face(far.reverse, S.material(part))
+        # Le plan n'accepte que des faces de 3 ou 4 sommets : les bouts sont découpés en éventail.
+        (1...(points.size - 1)).each do |k|
+          builder.add_face([near[0], near[k], near[k + 1]], S.material(part))
+          builder.add_face([far[0], far[k + 1], far[k]], S.material(part))
+        end
         points.size.times do |i|
           j = (i + 1) % points.size
           builder.add_face([near[j], near[i], far[i], far[j]], S.material(part))

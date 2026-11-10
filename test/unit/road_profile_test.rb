@@ -7,7 +7,7 @@ class RoadProfileTest < Minitest::Test
   include Archgen::Core
 
   BAND_TYPES = %w[lane hard edge parking tram_lane tram rail cycle sidewalk path track median verge plant ditch bank water quay riverbank cliff rocks dune beach sea].freeze
-  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud bench bin bike_rack].freeze
+  ITEM_KINDS = %w[tree lamp bollard pole hedge fence guard sand_fence low_wall road_stud bench bin bike_rack bus_stop sign].freeze
   PRESETS = %w[autoroute nationale campagne rural boulevard ville mixte tram fer verte pieton canal riviere fleuve falaises dunes plage].freeze
   STEP = 0.001
 
@@ -67,7 +67,7 @@ class RoadProfileTest < Minitest::Test
     items.each do |kind, entry|
       assert entry['variants'].key?(entry['default_variant']), kind
       assert entry['default_height_m'].between?(entry['min_height_m'], entry['max_height_m']), kind
-      assert_includes %w[spaced continuous], entry['repeat'], kind
+      assert_includes %w[spaced continuous positions], entry['repeat'], kind
       assert entry['default_spacing_m'] >= entry['min_spacing_m'], kind if entry['repeat'] == 'spaced'
     end
     assert_equal %w[tree], items.select { |_, e| e['height_variation'] }.keys
@@ -119,11 +119,13 @@ class RoadProfileTest < Minitest::Test
       entry = items.fetch(kind)
       # Ganivelle et muret ne vont que sur certaines bandes (EAU_CONTRACT) : la première qu'ils acceptent.
       host = entry.key?('bands') ? entry['bands'].first : 'plant'
+      # Arrêt de bus et panneau se posent à des positions (MOBILIER_CONTRACT §2).
+      at = entry['repeat'] == 'positions' ? { 'positions_m' => [5] } : {}
       [entry['min_height_m'], entry['max_height_m']].each do |h|
-        accepted(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }])))
+        accepted(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }.merge(at)])))
       end
       [entry['min_height_m'] - STEP, entry['max_height_m'] + STEP].each do |h|
-        assert_refused(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }])), 'E_ROAD_ITEM', '/bands/0/items/0/height_m', 'height_range')
+        assert_refused(profile(band(host, nil, [{ 'kind' => kind, 'height_m' => h }.merge(at)])), 'E_ROAD_ITEM', '/bands/0/items/0/height_m', 'height_range')
       end
     end
   end

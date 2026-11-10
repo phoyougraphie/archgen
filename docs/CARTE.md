@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-120 fait (bancs, corbeilles, attaches vélos posables au pas). Prochain ticket AG-121 Pose à des positions (et entrées bus_stop, sign). Puis AG-122 à 124, EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 et H38 à la main. Commits non poussés depuis 34f74cf. (→ docs/MOBILIER_CONTRACT.md)
+  - Prochaine action — AG-121 fait (pose à des positions ; arrêt de bus et panneau au catalogue). Prochain ticket AG-122 Arrêt de bus (largeur, marquage, proximité). Puis AG-123, 124, EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 et H38 à la main. Commits non poussés depuis 34f74cf. (→ docs/MOBILIER_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -135,6 +135,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 AG-119 — Le guide promettait « aucune garantie pour les moteurs de jeu » : la section Exporter est réécrite avec le parcours Unreal et son repli de collision, marqué non vérifié. RBZ 0.23.0 installé.
     - 2026-11-10 EXT-12 cadré — FUTURE hésitait entre un module séparé et la coupe : la coupe gagne, car elle a déjà catalogue fermé, formes, définitions partagées, plafonds et éditeur. Il manquait la pose à un endroit précis (un arrêt de bus ne se répète pas tous les 28 m) : nouveau mode positions_m. Feux et croix de passage à niveau donnent déjà le modèle mât + plaque.
     - 2026-11-10 AG-120 — Un élément qui n'est pas « spaced » est traité comme continu par le moteur : arrêt de bus et panneau n'entrent au catalogue qu'avec positions_m (AG-121), leurs formes étant déjà testées. Le schéma borne count à 10 avant l'intake : un dépassement sort en E_SCHEMA.
+    - 2026-11-10 AG-121 — Positions mesurées sur l'axe et non sur la ligne de pose : c'est la longueur lue au tracé, identique pour toutes les bandes. Le plan refuse les faces de plus de 4 sommets : plaques de panneau en éventail. Le relevé des messages lit les chaînes entre « error( » : bâtir le chemin avant l'appel.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -283,7 +284,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-119 Guide, RBZ 0.23.0 — section « Pour un moteur de jeu » (Unreal, Blender), journal ; RBZ 0.23.0 installé ; H38 à faire.
   - J24 Mobilier urbain — ADR-55, D-33 à D-37. AG-120 à 124. (→ docs/MOBILIER_CONTRACT.md)
     - [fait] AG-120 Catalogue et formes — RoadFurnitureShapes ; bench, bin, bike_rack au catalogue avec count ; matières bleu, verre, jaune ; dessin de coupe. U82 vert.
-    - [afaire] AG-121 Pose à des positions — positions_m pour tout élément ponctuel.
+    - [fait] AG-121 Pose à des positions — positions_m mesurées sur l'axe, voie seule et réseau ; bus_stop et sign au catalogue ; refus. U83 vert.
     - [afaire] AG-122 Arrêt de bus — abri ouvert vers la chaussée, mât seul, marquage.
     - [afaire] AG-123 Panneaux — huit plaques sans texte, sens.
     - [afaire] AG-124 Éditeur, RBZ 0.24.0 — Positions, Sens, préréglage ; H39 à faire.

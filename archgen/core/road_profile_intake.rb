@@ -153,7 +153,22 @@ module Archgen
         out.concat(height_problems(item, entry, path))
         out.concat(spacing_problems(item, entry, path))
         out.concat(count_problems(item, entry, path))
+        out.concat(position_problems(item, entry, path))
         out
+      end
+
+      # Pose à des positions (docs/MOBILIER_CONTRACT.md §2, AG-121) ; la longueur se vérifie au moteur.
+      def position_problems(item, entry, path)
+        unless item.key?('positions_m')
+          return [] unless entry['repeat'] == 'positions'
+
+          return [Diagnostic.error('E_ROAD_ITEM', path, reason: 'positions_required', kind: item['kind'])]
+        end
+        return [Diagnostic.error('E_ROAD_ITEM', "#{path}/positions_m", reason: 'continuous_item', kind: item['kind'])] if entry['repeat'] == 'continuous'
+        return [Diagnostic.error('E_ROAD_ITEM', "#{path}/spacing_m", reason: 'positions_with_spacing', kind: item['kind'])] if item.key?('spacing_m')
+        return [] if item['positions_m'].each_cons(2).all? { |a, b| b > a }
+
+        [Diagnostic.error('E_ROAD_ITEM', "#{path}/positions_m", reason: 'positions_order')]
       end
 
       # Arceaux d'une attache vélos (docs/MOBILIER_CONTRACT.md, AG-120).
@@ -204,7 +219,11 @@ module Archgen
         entry = @items.fetch(item['kind'])
         out = { 'kind' => item['kind'], 'variant' => item.fetch('variant', entry['default_variant']),
                 'height_m' => Quant.q(item.fetch('height_m', entry['default_height_m']).to_f) }
-        out['spacing_m'] = Quant.q(item.fetch('spacing_m', entry['default_spacing_m']).to_f) if entry['repeat'] == 'spaced'
+        if item.key?('positions_m')
+          out['positions_m'] = item['positions_m'].map { |s| Quant.q(s.to_f) }
+        elsif entry['repeat'] == 'spaced'
+          out['spacing_m'] = Quant.q(item.fetch('spacing_m', entry['default_spacing_m']).to_f)
+        end
         out['height_variation'] = Quant.q(item.fetch('height_variation', 0).to_f) if entry['height_variation']
         out['count'] = item.fetch('count', entry['default_count']) if entry['default_count']
         out

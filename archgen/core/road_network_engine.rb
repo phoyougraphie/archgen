@@ -84,6 +84,9 @@ module Archgen
       end
 
       def build_plan(roads, nodes, junction_faces, pieces, items, limits, lights, bridges = [])
+        far = roads.each_with_index.flat_map { |road, i| RoadEngine.position_problems(road.section, road.chain.last, "/roads/#{i}") }
+        return Result.fail(far) unless far.empty?
+
         estimate = roads.each_with_index.sum do |road, i|
           pieces[i].sum { |from, to| Geometry::RoadRibbons.face_estimate(N.piece_stations(road, from, to).size, road.line) }
         end + junction_faces.sum(&:size)
@@ -105,7 +108,8 @@ module Archgen
             Geometry::RoadRibbons.sweep(water, stations, water_line, road.ax) unless water_line.empty?
             tag = "#{road.id}.#{k + 1}"
             if gaps.empty?
-              piece_items = Geometry::RoadItems.call(stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+              piece_items = Geometry::RoadItems.call(stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'],
+                                                                         from_m: from, to_end: (to - road.chain.last).abs < 1e-6)
               RoadEngine.lift_instances(piece_items, stations) if profile
               merge_items(placed, piece_items, tag)
             else
@@ -263,7 +267,8 @@ module Archgen
           next if b - a < 0.5
 
           part_stations = stations_for.call(a, b)
-          part = Geometry::RoadItems.call(part_stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'])
+          part = Geometry::RoadItems.call(part_stations, road.section, items: items, ax: road.ax, seed: road.settings['seed'],
+                                                                     from_m: a, to_end: (b - road.chain.last).abs < 1e-6)
           RoadEngine.lift_instances(part, part_stations) if profile
           others = { definitions: part[:definitions], instances: part[:instances], sleepers: [],
                      linear: part[:linear].reject { |n| n['id'].start_with?('rail/') } }

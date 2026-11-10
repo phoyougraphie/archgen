@@ -38,6 +38,9 @@ module Archgen
         estimate = Geometry::RoadRibbons.face_estimate(stations.size, line + water_line)
         return Result.fail([budget('road_faces', limits[:unique], estimate)]) if estimate > limits[:unique]
 
+        far = position_problems(section, Geometry::RoadItems.polyline_length(stations.map(&:point)))
+        return Result.fail(far) unless far.empty?
+
         count = item_estimate(stations, section, ax)
         return Result.fail([budget('road_items', limits[:items], count)]) if count > limits[:items]
 
@@ -243,12 +246,25 @@ module Archgen
       def item_estimate(stations, section, ax)
         section['items'].sum do |item|
           length = Geometry::RoadItems.polyline_length(Geometry::RoadItems.offset_line(stations, ax - item['x_m']))
-          if item['repeat'] == 'spaced'
+          if item['repeat'] == 'positions'
+            item['positions_m'].size
+          elsif item['repeat'] == 'spaced'
             Geometry::RoadSection.count_over(item['spacing_m'], length)
           else
             post = Geometry::RoadItems.linear_spec(item['kind'], item['variant'], item['height_m'])[:post]
             post ? (length / post[2]).floor + 2 : 0
           end
+        end
+      end
+
+      # Une position au-delà de la voie tracée (docs/MOBILIER_CONTRACT.md §2) ; `prefix` : chemin de la voie.
+      def position_problems(section, length, prefix = '')
+        section['items'].filter_map do |item|
+          far = Array(item['positions_m']).find { |s| s > length + 1e-6 }
+          next unless far
+
+          path = "#{prefix}/profile/bands/#{item.fetch('band')}/items/#{item.fetch('index')}/positions_m"
+          Diagnostic.error('E_ROAD_ITEM', path, reason: 'position_out_of_road', value: far, limit: Quant.q(length))
         end
       end
 

@@ -49,10 +49,16 @@ Nouveaux types dans `road_items.v1.json`, avec leur copie embarquée identique (
 
 ## 2. Pose à des positions — AG-121
 
-- `positions_m: [s1, s2, …]`, de 1 à 50 valeurs en ordre croissant, mesurées sur la ligne de pose depuis le début du tronçon. Une valeur au-delà du tronçon est refusée (`position_out_of_road`).
+- `positions_m: [s1, s2, …]`, de 1 à 50 valeurs en ordre strictement croissant (`positions_order`), mesurées **sur l'axe de la voie tracée** depuis son début, puis reportées sur la ligne de pose au même endroit. Une valeur au-delà de la voie est refusée (`position_out_of_road`). Revu à AG-121 : le contrat disait « sur la ligne de pose », mais l'axe est la longueur que l'on lit au tracé, la même pour toutes les bandes.
 - On donne `positions_m` ou `spacing_m`, jamais les deux (`positions_with_spacing`). `bus_stop` et `sign` exigent `positions_m` (`positions_required`).
 - Un élément continu n'accepte pas `positions_m` (`continuous_item`).
-- Un réseau découpe ses voies en tronçons : les positions se mesurent sur la voie telle que tracée, comme les éléments répétés aujourd'hui.
+- Un réseau découpe ses voies en tronçons : les positions se mesurent sur la voie entière telle que tracée, et chacune n'est posée qu'une fois. Comme un élément répété, une position qui tombe dans l'emprise d'un carrefour ou d'un passage à niveau n'est pas posée.
+- **Fait (AG-121).** Ce qui est livré :
+  - `RoadItems.place_at` (paramètres `from_m` et `to_end` pour les tronçons), `RoadEngine.position_problems` (voie seule et réseau), contrôles d'intake, clé `positions_m` au schéma de coupe ;
+  - `bus_stop` et `sign` au catalogue, en mode `positions` ;
+  - le budget d'objets compte les positions.
+  - Les plaques de panneau sont découpées en éventail, car le plan n'accepte que des faces de 3 ou 4 sommets.
+  - L'éditeur n'a pas encore de champ Positions (AG-124) : y ajouter un arrêt de bus donne pour l'instant le refus `positions_required`.
 
 ## 3. Arrêt de bus — AG-122
 

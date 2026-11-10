@@ -193,9 +193,10 @@ module Archgen
       def placed(item, entry, rows, band, index, x)
         out = { 'band' => band, 'index' => index, 'kind' => item['kind'], 'variant' => item['variant'],
                 'x_m' => q(x), 'z_m' => q(z_at(rows[band]['surface'], x)), 'height_m' => item['height_m'],
-                'repeat' => entry['repeat'], 'toward' => toward(rows, band, x) }
+                'repeat' => item.key?('positions_m') ? 'positions' : entry['repeat'], 'toward' => toward(rows, band, x) }
         out['count'] = item['count'] if item.key?('count')
-        if entry['repeat'] == 'spaced'
+        out['positions_m'] = item['positions_m'] if item.key?('positions_m')
+        if out['repeat'] == 'spaced'
           out['spacing_m'] = item['spacing_m']
           out['count_per_100m'] = count_over(item['spacing_m'])
         end

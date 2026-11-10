@@ -48,14 +48,18 @@ module Archgen
 
       # Retourne { definitions:, instances:, linear:, sleepers: } en données de plan.
       # stations : RoadAxis ; section : RoadSection ; ax : x de l'axe dans la coupe ; seed : réglage de la voie.
-      def call(stations, section, items:, ax:, seed:)
+      # from_m : abscisse du premier point des stations sur la voie tracée (tronçon de réseau) ;
+      # to_end : le tronçon finit la voie, une position à son bout y est posée.
+      def call(stations, section, items:, ax:, seed:, from_m: 0.0, to_end: true)
         definitions = {}
         instances = []
         linear = []
         section['items'].each do |item|
           offset = ax - item['x_m']
           line = offset_line(stations, offset)
-          if item['repeat'] == 'spaced'
+          if item['repeat'] == 'positions'
+            place_at(item, stations, line, from_m, to_end, definitions, instances)
+          elsif item['repeat'] == 'spaced'
             place_spaced(item, line, items, seed, definitions, instances)
           else
             sweep_linear(item, stations, offset, line, definitions, instances, linear)
@@ -116,6 +120,47 @@ module Archgen
           point, dir = point_at(line, s)
           instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
         end
+      end
+
+      # Pose à des positions (docs/MOBILIER_CONTRACT.md §2, AG-121) : distances mesurées sur l'axe de la voie
+      # tracée, reportées sur la ligne de pose au même endroit ; rang = rang de la position.
+      def place_at(item, stations, line, from_m, to_end, definitions, instances)
+        axis = stations.map(&:point)
+        length = polyline_length(axis)
+        id = definition_id(item['kind'], item['variant'], item['height_m'], item['count'])
+        item['positions_m'].each_with_index do |s, rank|
+          local = s - from_m
+          next if local < -1e-9 || local > length + 1e-9 || (!to_end && local > length - 1e-9)
+
+          i, t = locate(axis, local)
+          a = line[i]
+          b = line[i + 1]
+          len = Math.hypot(b[0] - a[0], b[1] - a[1])
+          dir = len < 1e-12 ? axis_dir(axis, i) : [(b[0] - a[0]) / len, (b[1] - a[1]) / len]
+          point = [a[0] + ((b[0] - a[0]) * t), a[1] + ((b[1] - a[1]) * t)]
+          definitions[id] ||= RoadItemShapes.definition(item['kind'], item['variant'], item['height_m'], count: item['count'])
+          instances << instance("#{item['kind']}/#{item['band']}/#{item['index']}/#{rank}", id, point, dir, item['z_m'], item['toward'])
+        end
+      end
+
+      # Segment et fraction de l'axe à l'abscisse s.
+      def locate(axis, s)
+        walked = 0.0
+        axis.each_cons(2).with_index do |(a, b), i|
+          len = Math.hypot(b[0] - a[0], b[1] - a[1])
+          next if len < 1e-12
+          return [i, ((s - walked) / len).clamp(0.0, 1.0)] if s <= walked + len + 1e-9
+
+          walked += len
+        end
+        [axis.size - 2, 1.0]
+      end
+
+      def axis_dir(axis, i)
+        a = axis[i]
+        b = axis[i + 1]
+        len = Math.hypot(b[0] - a[0], b[1] - a[1])
+        [(b[0] - a[0]) / len, (b[1] - a[1]) / len]
       end
 
       # Variation : h(1 − v), h ou h(1 + v), tirée par une clé stable (contrat).

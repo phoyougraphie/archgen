@@ -25,7 +25,7 @@ class RoadControllerTest < Minitest::Test
     assert r['ok']
     assert_equal 17, r['result']['presets'].size
     assert_equal 24, r['result']['bands'].size
-    assert_equal 13, r['result']['items'].size
+    assert_equal 15, r['result']['items'].size
     assert_equal 'Rue de ville', r['result']['profile']['name']
     lane = r['result']['bands'].find { |b| b['type'] == 'lane' }
     assert_equal [2.5, 4.5, 'Voie de circulation'], lane.values_at('min_width_m', 'max_width_m', 'label')
