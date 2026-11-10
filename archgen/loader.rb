@@ -30,6 +30,8 @@ module Archgen
       core/road_network_intake
       core/trace_session
       core/site_assise
+      core/map_projection
+      core/map_reader
       geometry/types
       geometry/road_section
       geometry/road_axis

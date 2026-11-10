@@ -249,7 +249,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 
 | Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
 |---|---|---|---|
-| **AG-125 — Lecture et projection** | AG-124, ADR-56 | Lecteur pur `.osm` et GeoJSON, clés fermées, refus de fichier, plan tangent local. | Distances à 0,1 %, XXE refusé, déterminisme. U87. |
+| **AG-125 — Lecture et projection** | AG-124, ADR-56 | Lecteur pur `.osm` et GeoJSON, clés fermées, refus de fichier, plan tangent local. | Distances à 0,1 %, XXE refusé, déterminisme. U87 vert. |
 | **AG-126 — Voies en réseaux** | AG-125 | Table des types, simplification, rayons, réseaux de 24 voies, écartés comptés. | U88. |
 | **AG-127 — Bâtiments** | AG-125 | Rectangle orienté ≥ 85 %, niveaux, graine, façade vers la voie, écartés. | U89. |
 | **AG-128 — Terrain ASCII Grid** | AG-125 | Lambert-93, échelle et convergence, NODATA, maillage, un Undo. | U90. |

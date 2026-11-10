@@ -34,7 +34,7 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 
 ## 1. Lecture et projection — AG-125
 
-- Un lecteur pur, dans le noyau, lit `.osm` XML (`node`, `way`, `tag`) et GeoJSON (`LineString`, `Polygon`, `MultiPolygon`). Il garde seulement les clés de la liste fermée : `highway`, `name`, `building`, `building:levels`, `height`, `lanes`. Le reste est ignoré.
+- Un lecteur pur, dans le noyau, lit `.osm` XML (`node`, `way`, `tag`) et GeoJSON (`LineString`, `Polygon`, `MultiPolygon`). Il garde seulement les clés de la liste fermée : `highway`, `name`, `building`, `building:levels`, `height`, `lanes`, plus `bridge`, `tunnel` et `layer`, ajoutées à AG-125 pour pouvoir écarter les voies à niveaux en AG-126. Le reste est ignoré.
 - Fichiers refusés : plus de 50 Mo, XML avec entités externes ou DTD (XXE), coordonnées hors des bornes WGS 84. Raison `map_file`, avec la ligne.
 - Projection D-39 :
   - x = R · Δλ · cos φ₀ ;
@@ -43,6 +43,13 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
   - arrondi au millimètre.
 - Ce résultat est déterministe : le même fichier et la même origine donnent les mêmes points.
 - Résultat : `{ origin, ways: [...], buildings: [...], skipped: {raison => nombre} }`.
+
+- **Fait (AG-125).** `Core::MapReader` et `Core::MapProjection` sont des modules purs, sans lecture de fichier ni réseau.
+  - Le XML est lu par un balayage borné des balises, sans parseur XML externe : REXML n'est pas garanti dans le Ruby de SketchUp. Toute déclaration `<!DOCTYPE` ou `<!ENTITY` est refusée, avec sa ligne.
+  - Le GeoJSON passe par `StrictJson` (50 Mo, profondeur 64).
+  - Un anneau de bâtiment n'est retenu que s'il est fermé et a au moins quatre références.
+  - Comptés dans `skipped` : `missing_nodes`, `relation`, `multipolygon`, `geometry`, `other`.
+  - Code `E_MAP`, raisons `map_file` (avec `reason_detail` : `too_large`, `invalid_utf8`, `doctype`, `not_osm`, `json`, `not_geojson`), `map_coordinates` (avec la ligne) et `map_empty`.
 
 ### Téléchargement OpenStreetMap (ADR-57), dans l'adaptateur
 

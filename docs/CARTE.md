@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — EXT-09 cadré (J25, fichiers locaux, ADR-56, D-38 à D-43 révisables) ; prochain ticket AG-125 Lecture et projection. Puis EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - Prochaine action — AG-125 fait (lecture des cartes et projection, sans commande visible). Prochain ticket AG-126 Voies en réseaux. Puis AG-127 à 129, EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -141,6 +141,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 AG-124 — Pas de Node.js sur le poste et JScript ne lit pas l'ES5 du panneau : la syntaxe se vérifie en servant archgen/ui en local et en lisant chaque fichier par new Function dans le navigateur intégré. RBZ 0.24.0 installé.
     - 2026-11-10 EXT-09 cadré — Pas de réseau dans le noyau : l'utilisateur fournit les fichiers. Deux pièges vus au cadrage : un réseau ARCHGEN plafonne à 24 voies (il faut découper un quartier OSM), et la convergence des méridiens Lambert-93 atteint 5° en Bretagne (il faut tourner le terrain, pas seulement le décaler). Bâtiments OSM en rectangles orientés tant que J22 n'est pas fait.
     - 2026-11-11 D-38 révisée — Le propriétaire veut le téléchargement OpenStreetMap. AGENTS interdit le réseau au noyau, pas à l'adaptateur : Overpass est appelé par l'adaptateur (hôtes fermés, confirmation, seule l'emprise part), la réponse est enregistrée et lue comme un fichier local (ADR-57).
+    - 2026-11-11 AG-125 — REXML n'est plus une bibliothèque par défaut de Ruby 3 et peut manquer dans SketchUp : le XML OSM, très régulier, se lit par un balayage de balises, ce qui rend le refus du DOCTYPE trivial. Dans un bloc scan, un autre scan écrase Regexp.last_match : capturer d'abord.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -294,7 +295,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-123 Panneaux — clé facing (forward par défaut), orientation par RoadItems.side, haut de plaque à la hauteur. U85 vert.
     - [fait] AG-124 Éditeur, RBZ 0.24.0 — Pose, Positions, Sens, Arceaux, dessins, préréglage arret-bus ; RBZ 0.24.0 installé ; H39 à faire. U86 vert.
   - J25 Cartographie — ADR-56, ADR-57 (D-38 : téléchargement OpenStreetMap), D-39 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
-    - [afaire] AG-125 Lecture et projection — .osm et GeoJSON, clés fermées, XXE refusé, plan tangent local.
+    - [fait] AG-125 Lecture et projection — Core::MapReader (balayage XML borné, StrictJson), MapProjection, E_MAP. U87 vert.
     - [afaire] AG-126 Voies en réseaux — table des types, simplification, rayons, réseaux de 24.
     - [afaire] AG-127 Bâtiments — rectangle orienté, niveaux, graine, façade vers la voie.
     - [afaire] AG-128 Terrain ASCII Grid — Lambert-93, échelle, convergence, maillage.
