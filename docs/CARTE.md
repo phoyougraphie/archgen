@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J24 fini : RBZ 0.24.0 installé (mobilier urbain). Suite : cadrer EXT-09 cartographie, puis EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/FUTURE.md)
+  - Prochaine action — EXT-09 cadré (J25, fichiers locaux, ADR-56, D-38 à D-43 révisables) ; prochain ticket AG-125 Lecture et projection. Puis EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -139,6 +139,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 AG-122 — Le marquage est un élément dérivé de la coupe, posé à la cote de la voie et non du trottoir : une seule définition, quelle que soit la bordure. Un sommet décalé après la quantification est refusé par le plan : requantifier après tout décalage.
     - 2026-11-10 AG-123 — Le repère d'un objet suit la chaussée la plus proche (Y vers elle) ; un panneau doit suivre le sens de circulation : RoadItems.side remplace « toward » pour lui seul, la plaque étant symétrique en Y.
     - 2026-11-10 AG-124 — Pas de Node.js sur le poste et JScript ne lit pas l'ES5 du panneau : la syntaxe se vérifie en servant archgen/ui en local et en lisant chaque fichier par new Function dans le navigateur intégré. RBZ 0.24.0 installé.
+    - 2026-11-10 EXT-09 cadré — Pas de réseau dans le noyau : l'utilisateur fournit les fichiers. Deux pièges vus au cadrage : un réseau ARCHGEN plafonne à 24 voies (il faut découper un quartier OSM), et la convergence des méridiens Lambert-93 atteint 5° en Bretagne (il faut tourner le terrain, pas seulement le décaler). Bâtiments OSM en rectangles orientés tant que J22 n'est pas fait.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -291,6 +292,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-122 Arrêt de bus — abri au fond de la bande, marquage dérivé sur la voie contiguë, bande de 1,6 m, avertissement de proximité. U84 vert.
     - [fait] AG-123 Panneaux — clé facing (forward par défaut), orientation par RoadItems.side, haut de plaque à la hauteur. U85 vert.
     - [fait] AG-124 Éditeur, RBZ 0.24.0 — Pose, Positions, Sens, Arceaux, dessins, préréglage arret-bus ; RBZ 0.24.0 installé ; H39 à faire. U86 vert.
+  - J25 Cartographie — ADR-56, D-38 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+    - [afaire] AG-125 Lecture et projection — .osm et GeoJSON, clés fermées, XXE refusé, plan tangent local.
+    - [afaire] AG-126 Voies en réseaux — table des types, simplification, rayons, réseaux de 24.
+    - [afaire] AG-127 Bâtiments — rectangle orienté, niveaux, graine, façade vers la voie.
+    - [afaire] AG-128 Terrain ASCII Grid — Lambert-93, échelle, convergence, maillage.
+    - [afaire] AG-129 Commande, RBZ 0.25.0 — panneau, aperçu, attribution ; H40 à faire.
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.
@@ -489,7 +496,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
   - EXT-06 Décor de jeu — Cadré (J23) : export glTF depuis le plan, UV, PBR, collision convexe, trois LOD. (→ docs/DECOR_JEU_CONTRACT.md)
   - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. Détail en AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
   - EXT-08 Quartier — Première partie cadrée : rues variées (AG-061 à 063, D-13 à D-16) ; commerces et personnalisation d'une parcelle cadrés (J11) ; ensuite densité, styles mêlés. (→ docs/RUE_VARIEE_CONTRACT.md)
-  - EXT-09 Cartographie — Import géospatial, terrain importé, licences.
+  - EXT-09 Cartographie — Cadré (J25) : fichiers OSM et ASCII Grid locaux, réseaux, rectangles, terrain, attribution. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
   - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
   - EXT-12 Mobilier urbain — Cadré (J24) dans la coupe : arrêts de bus, panneaux, attaches vélos, bancs, corbeilles. (→ docs/MOBILIER_CONTRACT.md)
