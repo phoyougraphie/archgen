@@ -206,4 +206,16 @@ Contrat : [CARREFOURS_DALLE_CONTRACT](../docs/CARREFOURS_DALLE_CONTRACT.md). Dé
 | **AG-102 — Carrefours depuis Tracer une voie** | AG-101 | Voies touchées fusionnées en un réseau, une opération. | Fusion, refus. U68. |
 | **AG-103 — RBZ 0.20.0** | AG-102 | Guide, journal, RBZ. | Version installée ; recette H35 à la main. |
 
+## J20 — Teintes et abords
+
+Contrat : [TEINTES_ABORDS_CONTRACT](../docs/TEINTES_ABORDS_CONTRACT.md). Décisions : ADR-51 (teintes tirées par bâtiment) ; détails selon ADR-48.
+
+| Ticket | Dépendances | Périmètre / résultat attendu | Acceptation et preuve |
+|---|---|---|---|
+| **AG-104 — Teintes** | AG-103, ADR-51 | `materials.tint` ; variantes de mur, menuiserie, volets et porte, tirées par bâtiment. | Variantes bornées, existant inchangé. U69. |
+| **AG-105 — Escaliers et rampes** | AG-104 | Perron ou rampe devant une porte au-dessus du sol. | Marches, rampe, refus. U70. |
+| **AG-106 — Garde-corps** | AG-105 | Garde-corps des balcons, barreaux ou plein. | Garde-corps. U71. |
+| **AG-107 — Talus entre voisins, tour d'îlot** | AG-106 | Talus ou soutènement entre plateformes ; écart contrôlé sur tout le tour. | Talus, refus. U72. |
+| **AG-108 — Dalle pour l'existant, RBZ 0.21.0** | AG-107 | Case au panneau de rue ; guide, journal, RBZ. | Version installée ; recette H36 à la main. |
+
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

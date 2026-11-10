@@ -48,10 +48,10 @@ module Archgen
       end
 
       # Deux parcelles de même clé ont le même plan. Reculs et travées arrière n'étant pas dans la
-      # configuration, ils entrent ici. La seed n'y entre que si le jitter ou les cheminées la rendent géométrique.
+      # configuration, ils entrent ici. La seed n'y entre que si le jitter, les cheminées ou les teintes (AG-104) la font compter.
       def share_key(ready)
         data = ready.config.to_h
-        seeded = data.dig('facade', 'jitter_m').positive? || (data['features']['chimneys'] && data['lod'] == 1)
+        seeded = data.dig('facade', 'jitter_m').positive? || (data['features']['chimneys'] && data['lod'] == 1) || data.dig('facade', 'tint')
         ignored = seeded ? %w[name] : %w[name seed]
         Canonical.digest('config' => data.reject { |key, _| ignored.include?(key) }, 'row' => ready.row.transform_keys(&:to_s))
       end

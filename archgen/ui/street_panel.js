@@ -17,7 +17,7 @@
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
     terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'),
     glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), stepped_gable: byId('s-stepped'), cladding: byId('s-cladding'), timber_frame: byId('s-timber'), classical: byId('s-classical'), pilotis: byId('s-pilotis'), structural_grid: byId('s-structural_grid'), sun_shades: byId('s-sun_shades'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
-    shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
+    shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), tint: byId('s-tint'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
     roofs: Array.prototype.slice.call(document.querySelectorAll('input[data-roof]')),
     siteStep: byId('s-site-step'), siteSurvey: byId('site-survey'), siteAdapt: byId('site-adapt'), siteRemove: byId('site-remove'), siteLines: byId('site-lines')
@@ -81,6 +81,7 @@
     if (Object.keys(features).length) { building.features = features; }
     if (state.touched.shop) { building.ground_floor = el.shop.checked ? 'shop' : 'dwelling'; }
     if (state.touched.shop_front) { building.features = building.features || {}; building.features.shop_front = el.shopFront.value; }
+    if (state.touched.tint) { building.facade = building.facade || {}; building.facade.tint = parseInt(el.tint.value, 10); }
     if (el.shop.checked && number(el.shopHeight) !== null) { building.shop = { height_m: number(el.shopHeight) }; }
   }
 
@@ -94,6 +95,7 @@
     ['muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical', 'pilotis', 'structural_grid', 'sun_shades'].forEach(function (key) {
       el[key].checked = stored[key] !== undefined ? stored[key] : sameRevision && Boolean(hints[key]);
     });
+    el.tint.value = String(building && building.facade && building.facade.tint || 0);
     el.shop.checked = Boolean(building) && building.ground_floor === 'shop';
     el.shopFront.value = stored.shop_front || (sameRevision && hints.shop_front) || 'none';
     el.shopHeight.value = building && building.shop && building.shop.height_m !== undefined ? decimal(building.shop.height_m) : '';
@@ -591,6 +593,7 @@ function runSite(message, action, payload) {
     el.shopHeight.placeholder = hints.shop_height_m === undefined ? '' : decimal(hints.shop_height_m);
   });
   el.shopFront.addEventListener('change', function () { state.touched.shop_front = true; requestPreview(); });
+  el.tint.addEventListener('change', function () { state.touched.tint = true; requestPreview(); });
   el.ground.addEventListener('change', requestPreview);
   Array.prototype.slice.call(document.querySelectorAll('input[data-detail]')).forEach(function (box) {
     box.addEventListener('change', function () { state.touched[box.getAttribute('data-detail')] = true; showShopHeight(); requestPreview(); });

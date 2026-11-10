@@ -12,7 +12,7 @@ module Archgen
       # `row` : bâtiment de rangée d'un ensemble, voie à part. Sans lui, le plan d'un bâtiment
       # seul reste identique (docs/ENSEMBLE_CONTRACT.md).
       def generate(config, materials: nil, row: nil)
-        input = config.geometry_input
+        input = Tint.apply(config.geometry_input)
         dropped = row && input['features']['pilotis']
         input = Canonical.deep_freeze(input.merge('features' => input['features'].reject { |key, _| key == 'pilotis' })) if dropped
         result = generate_input(input, materials, row)

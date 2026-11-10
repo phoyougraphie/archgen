@@ -241,6 +241,7 @@
       case 'list': return L.parseList(text);
       case 'select': return text;
       case 'select-int': return L.parseInteger(text);
+      case 'tint': return L.parseInteger(text);
       case 'check': return field.checked;
       case 'ground': return field.checked ? 'shop' : 'dwelling';
       default: return text.trim() === '' ? null : text;
@@ -790,6 +791,7 @@
       case 'arch': field.value = value || 'flat'; break;
       case 'ribbon': field.value = value || 'bays'; break;
       case 'shopfront': field.value = value || 'none'; break;
+      case 'tint': field.value = String(value || 0); break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }

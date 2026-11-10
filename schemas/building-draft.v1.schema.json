@@ -168,6 +168,11 @@
             "band",
             "curtain"
           ]
+        },
+        "tint": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
         }
       },
       "additionalProperties": false

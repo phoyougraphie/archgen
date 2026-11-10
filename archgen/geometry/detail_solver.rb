@@ -296,7 +296,8 @@ module Archgen
         recess = config['mode'] == 'structural' ? [FRAME_MAX_RECESS_M, wall - FRAME_BAR_M].min : 0.0
         entrance = entrance_u(openings)
         openings.reject { |opening| opening.kind == 'porch' }.map do |opening|
-          definition_id = frame_definition(opening, material, glass, definitions, door_side(opening, entrance), rows)
+          own = opening.kind == 'door' ? config['materials']['door'] || material : material # AG-104 : porte teinte à part
+          definition_id = frame_definition(opening, own, glass, definitions, door_side(opening, entrance), rows)
           facade = footprint.facade(opening.facade_id)
           Node.leaf("frame/#{opening.facade_id}/#{opening.level_index}/#{opening.bay_index}", 'frame',
                     { 'type' => 'instance', 'definition_id' => definition_id, 'matrix' => frame_matrix(facade, opening, recess) })

@@ -123,6 +123,7 @@ module Archgen
 
         merged = Merge.leaves(start, draft.reject { |k, _| %w[roof schema_version profile].include?(k) })
         merged = merged.merge('structure' => merged['structure'].reject { |key, value| key == 'ground_slab' && value != true })
+        merged = merged.merge('facade' => merged['facade'].reject { |key, value| key == 'tint' && !Tint::LEVELS.cover?(value) }) # AG-104 : 0 n'est pas écrit
         merged = with_shop(with_glazing(merged.merge(
                                 'schema_version' => 1,
                                 'name' => canonical_name(merged['name']),

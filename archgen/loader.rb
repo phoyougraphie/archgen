@@ -18,6 +18,7 @@ module Archgen
       core/constraint_validator
       core/intake
       core/deterministic_random
+      core/tint
       core/style_registry
       core/fidelity_rules
       core/config_resolver

@@ -83,7 +83,7 @@ module Archgen
         end
 
         def entry(id)
-          @catalog.fetch(id) { raise WriteError, "Matériau absent du catalogue : #{id}" }
+          Core::Tint.entry(@catalog, id) || raise(WriteError, "Matériau absent du catalogue : #{id}")
         end
 
         def rgb(id)

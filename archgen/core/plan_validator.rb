@@ -111,7 +111,7 @@ module Archgen
 
       def check_material(id, material)
         return problem(id, 'missing_material') unless material.is_a?(String)
-        return if @materials.nil? || @materials.key?(material)
+        return if @materials.nil? || Tint.entry(@materials, material)
 
         problem(id, 'unknown_material', material: material)
       end
