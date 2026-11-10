@@ -217,6 +217,6 @@ Contrat : [TEINTES_ABORDS_CONTRACT](../docs/TEINTES_ABORDS_CONTRACT.md). Décisi
 | **AG-106 — Garde-corps** | AG-105 | Garde-corps des balcons, barreaux ou plein. | Garde-corps. U71. |
 | **AG-107 — Tour d'îlot** | AG-106 | Écart de hauteur contrôlé sur tout le tour d'un îlot varié. | Tour sans saut. U72. |
 | **AG-108 — Dalle pour l'existant, RBZ 0.21.0** | AG-107 | Case au panneau de rue ; guide, journal, RBZ. | Version installée ; recette H36 à la main. |
-| **AG-109 — Talus entre voisins dans une rue** | AG-108 | Relevé devant et derrière chaque parcelle ; talus avant et arrière ; soutènement aux limites mitoyennes. | Talus, soutènement, refus hors rue droite. |
+| **AG-109 — Talus entre voisins dans une rue** | AG-108 | Relevé devant et derrière chaque parcelle ; talus avant et arrière ; soutènement aux limites mitoyennes ; RBZ 0.22.0. | Talus, soutènement, refus hors rue droite. U73. |
 
 **Définition de terminé.** Livrable revu et intégré, preuve liée au ticket, test de non-régression pertinent, contrats à jour et aucune régression connue bloquante. Si un prérequis échoue, consigner cause, preuve et prochaine étape. Le simple affichage d'un rendu ne valide pas les ouvertures, le rollback ou les unités.

@@ -89,7 +89,7 @@ class SiteWriteTest < Minitest::Test
   def test_preview_writes_nothing
     before = snapshot
     count = @model.operations.size
-    preview = @service.preview_site(model: @model, target: @root.target, terrain: @ref, site: {})
+    preview = @service.preview_site(model: @model, target: @root.target, terrain: @ref, site: { 'entrance' => 'none' }) # AG-105 : sans perron
     assert preview.ok?, preview.errors.map(&:to_h).inspect
     assert_equal count, @model.operations.size
     assert_equal before, snapshot
@@ -174,7 +174,11 @@ class SiteWriteTest < Minitest::Test
   end
 
   def test_warnings_reach_the_caller
-    assert(adapted.diagnostics.any? { |d| d.code == 'W_SITE_DOOR_GAP' })
+    assert(adapted('entrance' => 'none').diagnostics.any? { |d| d.code == 'W_SITE_DOOR_GAP' }) # AG-105 : sans perron
+  end
+
+  def test_default_steps_resolve_the_high_door
+    assert(adapted.diagnostics.none? { |d| d.code == 'W_SITE_DOOR_GAP' })
   end
 
   # --- Refus avant toute opération

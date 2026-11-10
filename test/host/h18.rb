@@ -388,7 +388,8 @@ module ArchgenH18Probe
     before = snapshot
     small = retain(@refusal_terrain, root)
     refused('terrain trop petit : localisé sur la parcelle', service.preview_site(model: model, target: target, terrain: small, site: {}), 'E_SITE_SURVEY')
-    refused('talus', service.preview_site(model: model, target: target, terrain: small, site: { 'earthwork' => 'embankment' }), 'E_STREET_SITE', 'embankment_in_row')
+    # AG-109 : le talus est permis sur une rangée droite ; son relevé élargi sort de ce terrain trop petit.
+    refused('talus : relevé élargi hors du terrain', service.preview_site(model: model, target: target, terrain: small, site: { 'earthwork' => 'embankment' }), 'E_SITE_SURVEY')
     model.selection.clear
     model.selection.add(root)
     bad = service.retain_terrain(model: model)

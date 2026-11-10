@@ -150,7 +150,9 @@ Remplacer un ensemble adapté garde son assise et relève de nouveau le terrain,
 
 **Durée.** Le relevé traverse tout ce qui est au-dessus du terrain, et SketchUp ne répond plus pendant ce temps : ne fermez pas la fenêtre. Sur une longue rue, augmentez le pas.
 
-**Limites.** Soubassement seulement, pas de talus entre voisins. La liste **Devant les portes** pose un perron ou une rampe devant chaque porte au-dessus du terrain ; ils ne connaissent pas les voies et peuvent empiéter sur un trottoir sans recul. Un terrain modifié n'est vu qu'au relevé suivant.
+**Talus (0.22.0).** Sur une rangée droite, la liste **Terrassement** propose **Talus** : chaque maison a un talus devant et derrière, et sur son côté libre en bout de rangée. Entre deux voisines à des hauteurs différentes, un **mur de soutènement** ferme la limite mitoyenne, devant et derrière ; le côté mitoyen garde son soubassement. Le relevé s'étend devant et derrière les parcelles : le terrain doit les déborder. Une rue à angle ou un îlot sont refusés : choisissez Soubassement.
+
+**Limites.** La liste **Devant les portes** pose un perron ou une rampe devant chaque porte au-dessus du terrain ; ils ne connaissent pas les voies et peuvent empiéter sur un trottoir sans recul. Un terrain modifié n'est vu qu'au relevé suivant.
 
 ## Tracer une voie
 

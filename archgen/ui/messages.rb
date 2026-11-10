@@ -250,6 +250,7 @@ module Archgen
         'toe_not_found' => 'Le talus n’atteint pas le terrain de ce côté, qui descend trop vite. Raidissez la pente ou choisissez le soubassement.',
         'door_buried' => 'Le terrain dépasse le seuil de la porte de %{value} m. Remontez la plateforme ou changez la travée d’entrée.',
         'embankment_in_row' => 'Un talus déborderait chez le voisin : dans un ensemble, seul le soubassement est possible.',
+        'embankment_bend' => 'Le talus n’est possible que sur une rangée droite : ces parcelles sont à un angle (%{ids}). Choisissez Soubassement.',
         'passage_buried' => 'Le terrain dépasse le sol de ce passage de %{value} m. Remontez la plateforme.',
         'passage_gap' => 'Le sol de ce passage est à %{value} m au-dessus du terrain : aucune rampe n’est générée.',
         'door_gap_many' => '%{count} parcelles ont un seuil au-dessus du terrain, jusqu’à %{value} m : aucun escalier n’est généré.',

@@ -11,33 +11,44 @@ module Archgen
       TOE_M = 0.05
       MARCH_PER_STEP = 4
       BISECTIONS = 16
+      WALL_FROM_M = 0.01
+      WALL_AREA_M2 = 1e-4
 
       Ray = Struct.new(:origin, :tip, :reach, keyword_init: true)
 
-      def self.call(footprint:, grid:, settings:, platform:)
-        new(footprint, grid, settings, platform).call
+      # sloped : façades en talus (toutes pour un bâtiment seul). right_dz : en rangée, écart de plateforme
+      # avec la voisine de droite ; un soutènement ferme alors la limite mitoyenne devant et derrière (AG-109).
+      def self.call(footprint:, grid:, settings:, platform:, sloped: FACADE_ORDER, right_dz: nil)
+        new(footprint, grid, settings, platform, sloped, right_dz).call
       end
 
-      def initialize(footprint, grid, settings, platform)
+      def initialize(footprint, grid, settings, platform, sloped = FACADE_ORDER, right_dz = nil)
         @footprint = footprint
         @grid = grid
         @ratio = settings['embankment_ratio']
         @march = settings.dig('survey', 'step_m') / MARCH_PER_STEP
         @platform = platform
+        @sloped = sloped
+        @right_dz = right_dz
+        @wall_material = settings['plinth_material']
         @missing = []
         @unreached = []
       end
 
-      # Result<{ nodes:, reach_m: }> ; toutes les façades sont parcourues pour tout signaler.
+      # Result<{ nodes:, walls:, reach_m: }> ; toutes les façades sont parcourues pour tout signaler.
       def call
-        rings = FACADE_ORDER.to_h { |id| [id, facade_rays(id)] }
+        rings = @sloped.to_h { |id| [id, facade_rays(id)] }
+        walls = @right_dz && @right_dz.abs > WALL_FROM_M ? party_walls : []
         problems = diagnostics
         return Core::Result.fail(problems) unless problems.empty?
 
         nodes = FACADE_ORDER.each_with_index.filter_map do |id, index|
-          facade_node(id, rings[id] + rings[FACADE_ORDER[(index + 1) % FACADE_ORDER.size]].first(1))
+          next unless rings[id]
+
+          following = rings[FACADE_ORDER[(index + 1) % FACADE_ORDER.size]]
+          facade_node(id, rings[id] + (following ? following.first(1) : []))
         end
-        Core::Result.ok(nodes: nodes, reach_m: Core::Quant.q(rings.values.flatten.map(&:reach).max))
+        Core::Result.ok(nodes: nodes, walls: walls, reach_m: Core::Quant.q(rings.values.flatten.map(&:reach).max || 0.0))
       end
 
       private
@@ -57,7 +68,8 @@ module Archgen
         facade = @footprint.facade(id)
         normal = [facade.normal[0], facade.normal[1]]
         rays = stations(facade).map { |u| ray(facade.point(u, 0.0), normal, id) }
-        rays + corner_rays(facade, normal, id)
+        following = FACADE_ORDER[(FACADE_ORDER.index(id) + 1) % FACADE_ORDER.size]
+        @sloped.include?(following) ? rays + corner_rays(facade, normal, id) : rays
       end
 
       def corner_rays(facade, normal, id)
@@ -134,6 +146,50 @@ module Archgen
           value.nil? || value.negative? ? low = middle : high = middle
         end
         high
+      end
+
+      # Sur la limite mitoyenne de droite, devant puis derrière : entre le profil de ce talus et celui de
+      # la voisine, posée `right_dz` plus haut ou plus bas. Les deux suivent la même droite du terrain.
+      def party_walls
+        front = @footprint.facade('front')
+        rear = @footprint.facade('rear')
+        [['front', front, front.point(front.length_m, 0.0)], ['rear', rear, rear.point(0.0, 0.0)]].filter_map do |side, facade, origin|
+          normal = [facade.normal[0], facade.normal[1]]
+          mine = ray(origin, normal, "party/#{side}")
+          theirs = with_platform(@platform + @right_dz) { ray(origin, normal, "party/#{side}") }
+          next unless mine && theirs
+
+          wall_node(side, mine, theirs)
+        end
+      end
+
+      def with_platform(value)
+        saved = @platform
+        @platform = value
+        yield
+      ensure
+        @platform = saved
+      end
+
+      def wall_node(side, mine, theirs)
+        dz = @right_dz
+        a0 = [mine.origin[0], mine.origin[1], 0.0]
+        b0 = [mine.origin[0], mine.origin[1], dz]
+        b1 = [theirs.tip[0], theirs.tip[1], Core::Quant.q(theirs.tip[2] + dz)]
+        triangles = [[a0, mine.tip, b1], [a0, b1, b0]].select { |points| points.uniq.size == 3 && area(points) > WALL_AREA_M2 }
+        return nil if triangles.empty?
+
+        mesh = MeshBuilder.new('surface')
+        triangles.each { |points| mesh.add_face(points, @wall_material) }
+        Node.leaf("site/retaining/#{side}", 'plinth', mesh.to_primitive)
+      end
+
+      def area(points)
+        a, b, c = points
+        u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
+        v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+        cross = [(u[1] * v[2]) - (u[2] * v[1]), (u[2] * v[0]) - (u[0] * v[2]), (u[0] * v[1]) - (u[1] * v[0])]
+        Math.sqrt(cross.sum { |c2| c2 * c2 }) / 2.0
       end
 
       def facade_node(id, chain)

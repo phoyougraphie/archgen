@@ -123,10 +123,14 @@ class EnsembleSiteWriteTest < Minitest::Test
     assert_refused @service.preview_site(model: @model, target: @target, terrain: @ref, site: {}), 'E_SITE_TRANSFORM'
   end
 
-  def test_embankment_is_refused_before_any_ray
+  # AG-109 : sur une rangée droite, le talus est permis ; le relevé s'élargit devant et derrière.
+  def test_embankment_on_a_straight_row_is_previewed_with_a_wider_survey
+    plinth = @service.preview_site(model: @model, target: @target, terrain: @ref, site: {})
+    assert plinth.ok?, plinth.diagnostics.map(&:to_h).inspect
+    rays = @model.ray_count
     result = @service.preview_site(model: @model, target: @target, terrain: @ref, site: { 'earthwork' => 'embankment' })
-    assert_refused result, 'E_STREET_SITE', 'embankment_in_row'
-    assert_equal 0, @model.ray_count
+    assert result.ok?, result.diagnostics.map(&:to_h).inspect
+    assert_operator @model.ray_count - rays, :>, rays, 'relevé élargi'
   end
 
   # --- Écrire

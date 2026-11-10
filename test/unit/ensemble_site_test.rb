@@ -215,14 +215,47 @@ class EnsembleSiteTest < Minitest::Test
 
   # --- Refus et avertissements, localisés sur la parcelle.
 
-  def test_embankment_is_refused
-    settings = settings_for(STREET)
+  # --- U73 : talus en rangée droite et soutènement mitoyen (docs/TEINTES_ABORDS_CONTRACT.md, AG-109).
+
+  def test_embankment_is_refused_at_a_bend
+    settings = settings_for(ELBOW)
     plan = EnsembleEngine.call(settings, registry: registry, intake: intake).value
     layout = EnsembleEngine.layout_for(settings, registry: registry).value
     refused = EnsembleSite.requests(plan, layout, site('earthwork' => 'embankment'))
     refute refused.ok?
     assert_equal 'E_STREET_SITE', refused.errors.first.code
     assert_equal '/site/earthwork', refused.errors.first.path
+    assert_equal 'embankment_bend', refused.errors.first.params['reason']
+  end
+
+  def site_nodes(result, parcel)
+    result.value['definitions'].fetch(parcel['site_definition_id'])['nodes'].first['children']
+  end
+
+  def test_a_straight_row_gets_front_and_rear_embankments_and_retaining_walls
+    result = ok_site(STREET, { 'earthwork' => 'embankment' }) { |x, y| 100.0 + (0.08 * x) + (0.05 * y) }
+    parcels = result.value['parcels']
+    assert_operator parcels.size, :>, 2
+    levels = parcels.map { |p| p['platform_z_m'] }
+    assert_operator levels.uniq.size, :>, 1, 'plateformes étagées'
+    parcels.each_with_index do |parcel, i|
+      ids = site_nodes(result, parcel).map { |n| n['id'] }
+      assert_includes ids, 'site/embankment'
+      assert_includes ids, 'site/plinth', 'côté mitoyen en soubassement'
+      walls = site_nodes(result, parcel).find { |n| n['id'] == 'site/retaining' }
+      if i < parcels.size - 1 && (levels[i + 1] - levels[i]).abs > 0.01
+        refute_nil walls, "soutènement à droite de #{parcel['id']}"
+        walls['children'].each do |wall|
+          xs = wall['primitive']['vertices'].map { |v| v[0].round(6) }.uniq
+          assert_equal 1, xs.size, 'dans le plan de la limite mitoyenne'
+          assert(wall['primitive']['faces'].all? { |f| f['material'] == 'concrete' })
+        end
+      end
+      embankment = site_nodes(result, parcel).find { |n| n['id'] == 'site/embankment' }['children'].map { |n| n['id'] }
+      assert_includes embankment, 'site/embankment/front'
+      assert_equal i.zero?, embankment.include?('site/embankment/left')
+      assert_equal i == parcels.size - 1, embankment.include?('site/embankment/right')
+    end
   end
 
   def test_the_survey_budget_is_checked_before_any_ray

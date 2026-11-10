@@ -13,9 +13,11 @@ module Archgen
 
       # Ce qu'il faut relever, avant tout rayon : [{ 'id', 'matrix', 'axes' }].
       def requests(plan, layout, site)
-        return Result.fail([embankment_problem]) if site['earthwork'] == 'embankment'
+        bend = site['earthwork'] == 'embankment' ? embankment_problem(layout['parcels']) : nil
+        return Result.fail([bend]) if bend
 
-        planned = layout['parcels'].map { |parcel| axes_for(parcel, site) }
+        ends = row_ends(layout['parcels'])
+        planned = layout['parcels'].map { |parcel| axes_for(parcel, site, ends.fetch(parcel['id'], [])) }
         errors = planned.each_with_index.flat_map { |result, i| result.errors.map { |d| ParcelBuilding.relocate(d, layout['parcels'][i]) } }
         return Result.fail(errors) unless errors.empty?
 
@@ -31,19 +33,59 @@ module Archgen
 
       # grids : { id => SurveyGrid }. root_z_m : le Z de la racine, qui décide de l'étagement.
       def call(settings:, site:, plan:, layout:, grids:, root_z_m:, registry:, intake:, materials:, limits: EnsembleEngine::DEFAULT_LIMITS)
-        built = plan['parcels'].zip(layout['parcels']).map { |placed, parcel| parcel_site(settings, site, plan, placed, parcel, grids.fetch(placed['id']), registry, intake, materials) }
+        pairs = plan['parcels'].zip(layout['parcels'])
+        prepared = pairs.map { |placed, parcel| prepare(settings, site, parcel, grids.fetch(placed['id']), registry, intake) }
+        errors = prepared.flat_map(&:errors)
+        return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
+
+        parties = parties_for(layout['parcels'], prepared.map { |p| p.value[:assise]['platform_z_m'] }, site)
+        built = pairs.each_with_index.map do |(placed, parcel), i|
+          parcel_site(site, plan, placed, parcel, grids.fetch(placed['id']), prepared[i].value, materials, parties[i])
+        end
         errors = built.flat_map(&:errors)
         return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
 
         assemble(built, settings.dig('trace', 'closed'), plan, grids, root_z_m, limits)
       end
 
-      def axes_for(parcel, site)
+      def axes_for(parcel, site, ends = [])
         xs = [0.0, parcel['width_m'], parcel['delta_left_m'], parcel['width_m'] - parcel['delta_right_m']]
-        SurveyGrid.plan_box(x_min_m: xs.min, x_max_m: xs.max, depth_m: parcel['depth_m'], settings: site)
+        return SurveyGrid.plan_box(x_min_m: xs.min, x_max_m: xs.max, depth_m: parcel['depth_m'], settings: site) unless site['earthwork'] == 'embankment'
+
+        SurveyGrid.plan_row(x_min_m: xs.min, x_max_m: xs.max, depth_m: parcel['depth_m'], settings: site, left: ends.include?(:left), right: ends.include?(:right))
       end
 
-      def parcel_site(settings, site, plan, placed, parcel, grid, registry, intake, materials)
+      # Premier et dernier de chaque rangée : leur côté extérieur n'a pas de voisin.
+      def row_ends(parcels)
+        out = Hash.new { |hash, key| hash[key] = [] }
+        parcels.group_by { |parcel| row_of(parcel) }.each_value do |row|
+          out[row.first['id']] << :left
+          out[row.last['id']] << :right
+        end
+        out
+      end
+
+      def row_of(parcel)
+        parcel['id'].split('/').first
+      end
+      private_class_method :row_of
+
+      # AG-109 : façades en talus et écart de plateforme avec la voisine de droite (même rangée).
+      def parties_for(parcels, platforms, site)
+        return parcels.map { nil } unless site['earthwork'] == 'embankment'
+
+        ends = row_ends(parcels)
+        parcels.each_with_index.map do |parcel, i|
+          mine = ends.fetch(parcel['id'], [])
+          sloped = %w[front rear] + (mine.include?(:right) ? %w[right] : []) + (mine.include?(:left) ? %w[left] : [])
+          following = parcels[i + 1]
+          right_dz = following && row_of(following) == row_of(parcel) ? Quant.q(platforms[i + 1] - platforms[i]) : nil
+          { sloped: Geometry::FACADE_ORDER & sloped, right_dz: right_dz }
+        end
+      end
+      private_class_method :parties_for
+
+      def prepare(settings, site, parcel, grid, registry, intake)
         ready = ParcelBuilding.prepare(settings, parcel, registry: registry, intake: intake)
         return ready unless ready.ok?
 
@@ -51,8 +93,13 @@ module Archgen
         assise = SiteAssise.for_ring(grid, site, ring: footprint.ring)
         return relocated(assise, parcel) unless assise.ok?
 
-        planned = Geometry::SitePlanner.call(plan: plan['definitions'].fetch(placed['definition_id']), config: ready.value.config.to_h, grid: grid, settings: site,
-                                             assise: assise.value, materials: materials, footprint: footprint, passage: parcel['porch'])
+        Result.ok({ ready: ready.value, footprint: footprint, assise: assise.value })
+      end
+      private_class_method :prepare
+
+      def parcel_site(site, plan, placed, parcel, grid, prepared, materials, party)
+        planned = Geometry::SitePlanner.call(plan: plan['definitions'].fetch(placed['definition_id']), config: prepared[:ready].config.to_h, grid: grid, settings: site,
+                                             assise: prepared[:assise], materials: materials, footprint: prepared[:footprint], passage: parcel['porch'], party: party)
         planned.ok? ? Result.ok(planned.value, planned.diagnostics.map { |d| ParcelBuilding.relocate(d, parcel) }) : relocated(planned, parcel)
       end
       private_class_method :parcel_site
@@ -144,8 +191,13 @@ module Archgen
       end
       private_class_method :points_problem
 
-      def embankment_problem
-        Diagnostic.error('E_STREET_SITE', '/site/earthwork', reason: 'embankment_in_row')
+      # AG-109 : talus seulement sur une rangée droite de parcelles rectangulaires ; un coude ou un îlot
+      # donnerait des talus voisins qui ne se rejoignent pas.
+      def embankment_problem(parcels)
+        bent = parcels.reject { |p| p['delta_left_m'].abs < Quant::EPSILON && p['delta_right_m'].abs < Quant::EPSILON }
+        return nil if bent.empty?
+
+        Diagnostic.error('E_STREET_SITE', '/site/earthwork', reason: 'embankment_bend', ids: bent.map { |p| p['id'] }.first(5))
       end
       private_class_method :embankment_problem
     end

@@ -46,7 +46,11 @@ Selon `features.balcony_rail`, un balcon reçoit sur ses trois côtés libres un
 - Dans un îlot à hauteurs variées, le contrôle d'écart avec la voisine porte aussi sur la dernière et la première parcelle du tour : chaque tirage reste à `restant × écart` au plus de la première parcelle.
 
 - **Fait (AG-107, tour d'îlot).** `EnsembleVariety.closing`. Correction de comportement : un îlot varié d'avant peut changer de hauteurs à sa prochaine régénération.
-- **Talus, renvoyé à AG-109.** Il demande un relevé devant et derrière chaque parcelle (aujourd'hui limité à la parcelle) et un mur de soutènement au droit de chaque limite mitoyenne entre deux talus, simple seulement sur une rue droite. Il reste refusé (`embankment_in_row`).
+- **Talus en rue — AG-109, fait.** `earthwork: embankment` est permis sur une rangée de parcelles rectangulaires (rue droite) ; une parcelle à angle refuse l'ensemble (`embankment_bend`).
+  - Relevé (`SurveyGrid.plan_row`) : marge du talus devant et derrière ; sur les côtés, seulement au bout de la rangée.
+  - Talus (`EmbankmentBuilder`, façades choisies) : devant, derrière et sur le côté libre d'un bout ; l'éventail d'angle n'est tracé que vers une façade en talus. Le côté mitoyen garde son soubassement.
+  - Soutènement : sur la limite mitoyenne de droite, devant et derrière, entre le profil de ce talus et celui de la voisine (même droite du terrain, plateforme décalée de l'écart) ; matière du soubassement, catégorie `plinth`. Rien sous 0,01 m d'écart.
+  - Les plateformes de toutes les parcelles sont calculées avant de tracer, pour connaître celle de la voisine.
 
 ## 5. Existant, version — AG-108
 
@@ -56,4 +60,4 @@ Case **Dalle de rez-de-chaussée et seuils** au panneau de rue : une rue d'avant
 
 ## Tests
 
-U69 teintes ; U70 perron et rampe ; U71 garde-corps ; U72 tour d'îlot.
+U69 teintes ; U70 perron et rampe ; U71 garde-corps ; U72 tour d'îlot ; U73 talus en rue.

@@ -15,7 +15,7 @@
     accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'), accessHeight: byId('s-access-height'),
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
-    terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'), siteEntrance: byId('s-site-entrance'),
+    terrain: byId('s-terrain'), siteRetain: byId('site-retain'), sitePolicy: byId('s-site-policy'), siteOffset: byId('s-site-offset'), siteMaterial: byId('s-site-material'), siteEntrance: byId('s-site-entrance'), siteEarthwork: byId('s-site-earthwork'),
     glazing: byId('s-glazing'), chimneys: byId('s-chimneys'), genoise: byId('s-genoise'), stepped_gable: byId('s-stepped'), cladding: byId('s-cladding'), timber_frame: byId('s-timber'), classical: byId('s-classical'), pilotis: byId('s-pilotis'), structural_grid: byId('s-structural_grid'), sun_shades: byId('s-sun_shades'), muntins: byId('s-muntins'), shutters: byId('s-shutters'), dormers: byId('s-dormers'), shop: byId('s-shop'), shopHeight: byId('s-shop-height'),
     shopHeightField: byId('s-shop-height-field'), shopFront: byId('s-shopfront'), tint: byId('s-tint'), groundSlab: byId('s-ground-slab'), ground: byId('s-ground'), shopShare: byId('s-shopshare'), custom: byId('s-custom'), customField: byId('s-custom-field'), customLabel: byId('s-custom-label'),
     variety: byId('s-variety'), vmin: byId('s-vmin'), vmax: byId('s-vmax'), vstep: byId('s-vstep'), seed: byId('s-seed'),
@@ -383,6 +383,7 @@ function fillSite(values) {
   el.siteOffset.value = decimal(values.platform.offset_m);
   el.siteMaterial.value = values.plinth_material;
   el.siteEntrance.value = values.entrance || 'none';
+  el.siteEarthwork.value = values.earthwork || 'plinth';
   el.siteStep.value = decimal(values.survey.step_m);
 }
 
@@ -390,7 +391,7 @@ function siteValues() {
   var offset = number(el.siteOffset);
   var step = number(el.siteStep);
   if (offset === null || isNaN(offset) || step === null || isNaN(step)) { return null; }
-  return { platform: { policy: el.sitePolicy.value, offset_m: offset }, plinth_material: el.siteMaterial.value, entrance: el.siteEntrance.value, survey: { step_m: step } };
+  return { platform: { policy: el.sitePolicy.value, offset_m: offset }, plinth_material: el.siteMaterial.value, entrance: el.siteEntrance.value, earthwork: el.siteEarthwork.value, survey: { step_m: step } };
 }
 
 function showSiteState(site) {

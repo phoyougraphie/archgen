@@ -23,14 +23,15 @@ module Archgen
       # plan : GeometryPlan validé ; config : configuration effective du bâtiment.
       # materials : le catalogue complet, terre comprise ; nil ne contrôle pas les identifiants.
       # footprint : le trapèze d'une parcelle, rectangle du bâtiment seul sinon. passage : le porche d'une parcelle.
-      def call(plan:, config:, grid:, settings:, assise:, materials: nil, footprint: nil, passage: nil)
+      # party : en rangée à talus, { sloped: façades en talus, right_dz: écart avec la voisine de droite } (AG-109).
+      def call(plan:, config:, grid:, settings:, assise:, materials: nil, footprint: nil, passage: nil, party: nil)
         footprint ||= FootprintSolver.call(width_m: plan['metrics']['width_m'], depth_m: plan['metrics']['depth_m'])
         platform = assise['platform_z_m']
         height = ->(facade, u) { terrain_height(grid, facade, u, platform) }
         door = passage ? passage_diagnostic(passage, footprint, grid, platform) : door_diagnostic(plan, footprint, height)
         return Core::Result.fail([door]) if door&.error?
 
-        earthwork = earthwork_nodes(footprint, grid, settings, platform)
+        earthwork = earthwork_nodes(footprint, grid, settings, platform, party)
         return earthwork unless earthwork.ok?
 
         gap = passage ? passage_gap(passage, footprint, grid, platform) : door_gap(plan, footprint, height)
@@ -183,12 +184,15 @@ module Archgen
       private_class_method :warnings
 
       # Result<{ nodes:, reach_m: }> : un groupe de soubassement ou de talus, absent s'il est vide.
-      def earthwork_nodes(footprint, grid, settings, platform)
+      def earthwork_nodes(footprint, grid, settings, platform, party = nil)
         if settings['earthwork'] == 'embankment'
-          built = EmbankmentBuilder.call(footprint: footprint, grid: grid, settings: settings, platform: platform)
+          sloped = party ? party[:sloped] : FACADE_ORDER
+          built = EmbankmentBuilder.call(footprint: footprint, grid: grid, settings: settings, platform: platform, sloped: sloped, right_dz: party && party[:right_dz])
           return built unless built.ok?
 
-          return Core::Result.ok(nodes: wrap('site/embankment', 'embankment', built.value[:nodes]), reach_m: built.value[:reach_m])
+          strips = (FACADE_ORDER - sloped).filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, settings['plinth_material'], nil) }
+          nodes = wrap('site/embankment', 'embankment', built.value[:nodes]) + wrap('site/retaining', 'plinth', built.value[:walls]) + wrap('site/plinth', 'plinth', strips)
+          return Core::Result.ok(nodes: nodes, reach_m: built.value[:reach_m])
         end
         even = footprint.trapezoid? ? settings.dig('survey', 'step_m') : nil
         strips = FACADE_ORDER.filter_map { |id| plinth_strip(footprint.facade(id), grid, platform, settings['plinth_material'], even) }

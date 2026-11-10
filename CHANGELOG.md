@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.22.0
+
+Talus dans une rue (AG-109). Recette H36 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Talus en rangée droite** : talus devant et derrière chaque maison, et sur le côté libre des bouts ; mur de soutènement sur chaque limite mitoyenne entre deux plateformes ; relevé élargi devant et derrière. Rue à angle et îlot refusés (`embankment_bend`).
+
 ## 0.21.0
 
 Teintes et abords (AG-104 à AG-108). Recette H36 dans SketchUp à faire.
@@ -14,10 +22,6 @@ Teintes et abords (AG-104 à AG-108). Recette H36 dans SketchUp à faire.
 **Corrections**
 
 - **Tour d'îlot** : la dernière parcelle d'un contour fermé respecte aussi l'écart de hauteur avec la première (AG-107). Un îlot varié d'avant peut changer de hauteurs à sa prochaine régénération.
-
-**Reste à faire**
-
-- Talus entre voisins dans une rue (AG-109).
 
 ## 0.20.0
 

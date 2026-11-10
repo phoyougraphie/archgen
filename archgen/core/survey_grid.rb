@@ -35,6 +35,23 @@ module Archgen
                                                                               limit: Limits::SITE_MAX_SURVEY_POINTS, value: points, hint: HINT)])
       end
 
+      # AG-109 : parcelle d'une rangée à talus. Marge du talus devant et derrière ; sur les côtés,
+      # seulement au bout de la rangée (`left`, `right`), le côté mitoyen gardant son soubassement.
+      def self.plan_row(x_min_m:, x_max_m:, depth_m:, settings:, left:, right:)
+        step = settings.dig('survey', 'step_m')
+        margin = margin_m(settings)
+        outer = [((margin / step) - NOISE).ceil, 0].max
+        inner = axis(x_max_m - x_min_m, step, 0.0).map { |x| Quant.q(x + x_min_m) }
+        xs = (left ? (1..outer).map { |i| Quant.q(x_min_m - (i * step)) }.reverse : []) + inner +
+             (right ? (1..outer).map { |i| Quant.q(x_max_m + (i * step)) } : [])
+        ys = axis(depth_m, step, margin)
+        points = xs.size * ys.size
+        return Result.ok('xs_m' => xs, 'ys_m' => ys) if points <= Limits::SITE_MAX_SURVEY_POINTS
+
+        Result.fail([Diagnostic.error('E_SITE_BUDGET', '/site/survey/step_m', reason: 'survey_points',
+                                                                              limit: Limits::SITE_MAX_SURVEY_POINTS, value: points, hint: HINT)])
+      end
+
       # Abscisses d'un bord, à intervalles égaux au plus égaux au pas, extrémités comprises.
       def self.even_stations(length, step)
         count = [((length / step) - NOISE).ceil, 1].max
