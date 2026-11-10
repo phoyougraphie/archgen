@@ -261,9 +261,11 @@ class EnsembleSiteTest < Minitest::Test
   end
 
   def test_door_gap_warns_on_each_parcel
-    result = ok_site(STREET) { |_x, y| 100.0 + (0.1 * y) }
+    result = ok_site(STREET, { 'entrance' => 'none' }) { |_x, y| 100.0 + (0.1 * y) }
     warnings = result.diagnostics.select { |d| d.code == 'W_SITE_DOOR_GAP' }
     assert_equal 4, warnings.size
+    stepped = ok_site(STREET) { |_x, y| 100.0 + (0.1 * y) } # AG-105 : perron par défaut, seuils résolus
+    assert_empty(stepped.diagnostics.select { |d| d.code == 'W_SITE_DOOR_GAP' })
     assert(warnings.all? { |d| d.path.start_with?('/parcels/') })
   end
 

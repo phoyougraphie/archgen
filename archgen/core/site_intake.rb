@@ -14,8 +14,11 @@ module Archgen
         'earthwork' => 'plinth',
         'embankment_ratio' => 1.5,
         'plinth_material' => 'concrete',
+        'entrance' => 'steps', # AG-105 : écrit à la création ; absent d'un terrain enregistré, rien ne change
         'survey' => { 'step_m' => 2.0 }
       }.freeze
+      # Clés venues après coup : absentes d'un terrain enregistré, elles ne sont pas une altération.
+      OPTIONAL = %w[entrance].freeze
 
       # schemas : { 'site' => Hash, 'survey' => Hash } ; materials : le catalogue des identifiants.
       def initialize(schemas, materials:)
@@ -74,7 +77,7 @@ module Archgen
       end
 
       def finish(effective)
-        problems = missing_fields(DEFAULTS, effective, ROOT)
+        problems = missing_fields(DEFAULTS.reject { |key, _| OPTIONAL.include?(key) }, effective, ROOT)
         problems << unknown_material(effective) if effective.key?('plinth_material') && !@materials.key?(effective['plinth_material'])
         problems.empty? ? Result.ok(Canonical.deep_freeze(effective)) : Result.fail(problems)
       end

@@ -208,7 +208,7 @@ class EmbankmentTest < Minitest::Test
   def test_door_rules_still_apply
     result = plan_site({ 'platform' => { 'offset_m' => -0.5 } }, facade: { 'entry_bay' => 3 }) { |x, _y| 100.0 + (0.08 * x) }
     assert_refused result, 'E_SITE_DOOR_BURIED', '/site/platform'
-    warned = plan_site { |x, _y| 100.0 + (0.08 * x) }
+    warned = plan_site({ 'entrance' => 'none' }) { |x, _y| 100.0 + (0.08 * x) } # AG-105 : sans perron
     assert(warned.warnings.any? { |d| d.code == 'W_SITE_DOOR_GAP' })
   end
 

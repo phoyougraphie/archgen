@@ -61,7 +61,7 @@ class PanelAssetsTest < Minitest::Test
   def test_every_terrain_field_has_a_known_path_and_message
     html = read_utf8(*UI_DIR, 'panel.html')
     paths = html.scan(/data-site-path="([^"]+)"/).flatten
-    assert_equal 6, paths.size
+    assert_equal 7, paths.size # AG-105 : Devant la porte
     schema = JSON.parse(read_utf8('schemas', 'site-settings.v1.schema.json'))
     paths.each do |path|
       refute_nil path.split('/').drop(1).reduce(schema) { |s, key| s.fetch('properties').fetch(key) }, path
@@ -73,7 +73,7 @@ class PanelAssetsTest < Minitest::Test
     html = read_utf8(*UI_DIR, 'street_panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten
     labels = html.scan(/<label for="([^"]+)"/).flatten
-    assert_equal 45, ids.size, '8 champs de variété depuis AG-063, 4 de détails depuis AG-067, 1 de réglages propres depuis AG-069, 3 depuis AG-073, 1 depuis AG-078, 2 depuis AG-082, 1 depuis AG-085, 1 depuis AG-089, 3 depuis AG-094, 3 depuis AG-099, 1 depuis AG-104'
+    assert_equal 46, ids.size, '8 champs de variété depuis AG-063, 4 de détails depuis AG-067, 1 de réglages propres depuis AG-069, 3 depuis AG-073, 1 depuis AG-078, 2 depuis AG-082, 1 depuis AG-085, 1 depuis AG-089, 3 depuis AG-094, 3 depuis AG-099, 2 depuis AG-104 et AG-105'
     assert_empty ids - labels
   end
 

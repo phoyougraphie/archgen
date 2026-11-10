@@ -48,6 +48,13 @@
         }
       },
       "additionalProperties": false
+    },
+    "entrance": {
+      "enum": [
+        "steps",
+        "ramp",
+        "none"
+      ]
     }
   },
   "additionalProperties": false

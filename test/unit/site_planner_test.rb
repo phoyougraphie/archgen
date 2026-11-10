@@ -222,7 +222,7 @@ class SitePlannerTest < Minitest::Test
   # --- Porte et baies
 
   def test_door_far_above_the_ground_warns_with_its_height
-    result = site
+    result = site('entrance' => 'none') # AG-105 : avec un perron, le seuil est résolu
     warning = result.warnings.find { |d| d.code == 'W_SITE_DOOR_GAP' }
     refute_nil warning
     assert_in_delta 0.588, warning.params['value'], 1e-5
@@ -379,4 +379,56 @@ class SitePlannerTest < Minitest::Test
     Geo.find_node(plan['nodes'], 'site/platform')['primitive']['faces'].first['indices'] = [0, 1, 2, 9]
     assert_includes reasons(plan), 'invalid_indices'
   end
+
+  # --- U70 : perron et rampe devant la porte (docs/TEINTES_ABORDS_CONTRACT.md, AG-105).
+
+  def entrance(result)
+    group = result.value['nodes'].first['children'].find { |n| n['id'] == 'site/entrance' }
+    group ? group['children'] : []
+  end
+
+  def box(node)
+    node['primitive']['vertices'].transpose.map(&:minmax)
+  end
+
+  def test_a_high_door_gets_steps_up_to_the_threshold
+    result = site
+    steps = entrance(result)
+    assert_equal 4, steps.size, '0,588 m en marches de 0,17 m au plus'
+    assert_empty result.warnings.select { |d| d.code == 'W_SITE_DOOR_GAP' }
+    tops = steps.map { |n| box(n)[2][1] }
+    assert_in_delta 0.0, tops.last, 1e-6
+    tops.each_cons(2) { |a, b| assert_in_delta 0.147, b - a, 1e-3 }
+    door = plan_site.value && building.last['openings'].find { |o| o['kind'] == 'door' }
+    x = box(steps.first)[0]
+    assert_in_delta door['u_min_m'] - 0.15, x[0], 1e-6
+    assert_in_delta door['u_max_m'] + 0.15, x[1], 1e-6
+    assert_in_delta(-4 * 0.28, box(steps.first)[1][0], 1e-6)
+    assert(steps.all? { |n| n['primitive']['faces'].all? { |f| f['material'] == 'concrete' } })
+  end
+
+  def test_no_steps_for_a_door_at_ground_level_or_a_stored_site_without_the_key
+    door_center = 4.65
+    tree = slope { |x, _y| 100.0 + (0.08 * x) }
+    flat = site(tree, 'platform' => { 'offset_m' => (100.0 + (0.08 * door_center) + 0.04) - 100.96 })
+    assert_empty entrance(flat)
+    stored = intake.stored_settings(intake.settings({}).value.reject { |k, _| k == 'entrance' })
+    assert stored.ok?, stored.diagnostics.map(&:to_h).inspect
+  end
+
+  def test_a_ramp_runs_along_the_facade_or_is_refused_when_too_long
+    refused = plan_site(fixture_json('examples', 'terrain', 'pente-8pct-12x9.json'), 'entrance' => 'ramp')
+    assert_refused refused, 'E_SITE_ENTRANCE', '/site/entrance', 'ramp_too_long'
+    door_center = 4.65
+    tree = slope { |x, _y| 100.0 + (0.08 * x) }
+    result = site(tree, 'entrance' => 'ramp', 'platform' => { 'offset_m' => (100.0 + (0.08 * door_center) + 0.20) - 100.96 })
+    landing, ramp = entrance(result)
+    assert_equal 'site/entrance/ramp', ramp['id']
+    x, y, z = box(ramp)
+    assert_in_delta 4.0, x[1] - x[0], 1e-3, '0,20 m à 5 %'
+    assert_in_delta(-1.2, y[0], 1e-6)
+    assert_in_delta 0.0, z[1], 1e-6
+    assert_in_delta 0.0, box(landing)[2][1], 1e-6
+  end
 end
+

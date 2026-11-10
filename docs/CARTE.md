@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — J20 cadré (teintes et abords) ; AG-104 Teintes fait ; en cours : AG-105 Escaliers et rampes. Puis J21 intérieur, J22 emprises non rectangulaires, puis EXT-06, 12, 09, 08. (→ docs/TEINTES_ABORDS_CONTRACT.md)
+  - Prochaine action — J20 cadré (teintes et abords) ; AG-104 Teintes fait ; AG-105 fait ; en cours : AG-106 Garde-corps. Puis J21 intérieur, J22 emprises non rectangulaires, puis EXT-06, 12, 09, 08. (→ docs/TEINTES_ABORDS_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -258,8 +258,8 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-103 RBZ 0.20.0 — RBZ 0.20.0 ; H35 à faire.
   - J20 Teintes et abords — ADR-51. AG-104 à 108. (→ docs/TEINTES_ABORDS_CONTRACT.md)
     - [fait] AG-104 Teintes — facade.tint, core/tint, variantes id~L.n ; listes aux panneaux du bâtiment et de la rue. U69 vert.
-    - [encours] AG-105 Escaliers et rampes — perron ou rampe devant la porte.
-    - [afaire] AG-106 Garde-corps — balcons, barreaux ou plein.
+    - [fait] AG-105 Escaliers et rampes — site.entrance (steps, ramp, none), SitePlanner.entrance_nodes. U70 vert.
+    - [encours] AG-106 Garde-corps — balcons, barreaux ou plein.
     - [afaire] AG-107 Talus entre voisins, tour d'îlot — talus ou soutènement ; écart sur tout le tour.
     - [afaire] AG-108 Dalle pour l'existant, RBZ 0.21.0 — case au panneau de rue ; H36 à faire.
   - J21+ Extensions — EXT-01 à 06, 08, 09 et 12 ; voir branche Extensions.

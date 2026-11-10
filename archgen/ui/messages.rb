@@ -55,7 +55,7 @@ module Archgen
         '/features/cornice' => 'Corniche', '/features/balcony' => 'Balcon', '/features/surrounds' => 'Encadrements',
         '/facade/tint' => 'Teintes', '/features/glazing' => 'Vitrage', '/features/chimneys' => 'Cheminées', '/features/muntins' => 'Petits bois', '/features/shutters' => 'Volets', '/features/dormers' => 'Lucarnes', '/features/genoise' => 'Génoise', '/roof/ridge' => 'Faîtage', '/features/stepped_gable' => 'Pignon à redents', '/features/cladding' => 'Bardage', '/features/timber_frame' => 'Pan de bois', '/features/classical' => 'Ornements classiques', '/facade/ribbon' => 'Baies en bandeau', '/features/pilotis' => 'Pilotis', '/style' => 'Style', '/structure/ground_slab' => 'Dalle et seuils', '/features/shop_front' => 'Devanture', '/materials/awning' => 'Toile du store', '/features/structural_grid' => 'Trame structurelle', '/features/sun_shades' => 'Brise-soleil', '/facade/arch' => 'Arcs', '/materials/timber' => 'Matériau du pan de bois', '/materials/cladding' => 'Matériau du bardage', '/materials/shutters' => 'Matériau des volets', '/facade/muntin_rows' => 'Rangs de petits bois', '/materials/glass' => 'Matériau du verre', '/ground_floor' => 'Rez-de-chaussée', '/shop' => 'Commerce', '/shop/height_m' => 'Hauteur du commerce',
         '/site/platform' => 'Plateforme', '/site/platform/policy' => 'Altitude de plateforme', '/site/platform/offset_m' => 'Décalage de plateforme',
-        '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement',
+        '/site/earthwork' => 'Terrassement', '/site/embankment_ratio' => 'Pente du talus', '/site/plinth_material' => 'Matériau du soubassement', '/site/entrance' => 'Devant la porte',
         '/site/terrain' => 'Terrain', '/site/placement' => 'Placement', '/site/survey' => 'Relevé du terrain', '/site/survey/step_m' => 'Pas du relevé'
       }.freeze
 
@@ -136,6 +136,7 @@ module Archgen
         'shop_front_without_shop' => 'Un store ou une pergola demande un rez-de-chaussée commerçant.',
         'awning_material_required' => 'Le store demande sa toile.',
         'awning_material_without_awning' => 'Une toile est donnée sans store.',
+        'ramp_too_long' => 'La rampe ferait %{value} m et la façade n’offre que %{limit} m à côté de la porte : choisissez un perron ou abaissez la plateforme.',
         'ground_slab_false_written' => 'Une dalle décochée ne s’enregistre pas : retirez ce champ.',
         'roads_merged' => 'Cette voie rejoint %{count} voie(s) ou réseau(x) : elles forment maintenant un réseau avec ses carrefours.',
         'network_on_terrain' => 'Une voie qui suit le terrain ne peut pas entrer dans un réseau (il reste horizontal) : tracez-la à l’écart ou à plat.',
@@ -253,7 +254,7 @@ module Archgen
         'passage_gap' => 'Le sol de ce passage est à %{value} m au-dessus du terrain : aucune rampe n’est générée.',
         'door_gap_many' => '%{count} parcelles ont un seuil au-dessus du terrain, jusqu’à %{value} m : aucun escalier n’est généré.',
         'terrain_above_many' => 'Le terrain traverse %{count} bâtiments, jusqu’à %{value} m au-dessus de leur plateforme.',
-        'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : aucun escalier n’est généré.',
+        'door_gap' => 'Le seuil de la porte est à %{value} m au-dessus du terrain : choisissez Perron ou Rampe devant la porte.',
         'terrain_above_platform' => 'Le terrain dépasse la plateforme de %{value} m et traverse le bâtiment. Baies touchées : %{count}.',
         'site_faces' => 'Le terrassement est trop détaillé. Augmentez le pas du relevé.',
         'total_faces' => 'Le bâtiment et son terrassement dépassent la limite de %{limit} faces. Augmentez le pas du relevé ou réduisez le niveau de détail.',

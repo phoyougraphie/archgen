@@ -19,10 +19,15 @@ Réglage `facade.tint` : entier de 1 à 3 (légères, marquées, fortes) ; « To
 
 Aujourd'hui un seuil à plus de 20 cm du sol est signalé, pas résolu. Désormais, devant une porte d'entrée dont le seuil dépasse le sol fini :
 
-- jusqu'à 0,02 m : rien ;
-- au-delà : un **perron** de marches de 0,17 m au plus (giron 0,28 m), de la largeur de la porte + 0,30 m, posé sur le sol devant la porte ;
-- réglage `features.entrance` : `steps` (défaut quand la clé manque et qu'un seuil dépasse) ou `ramp` (rampe de pente 5 % au plus, palier de 1,20 m ; refus localisé si elle ne tient pas dans le recul devant la façade). Dans une rue, le recul est la marge avant de la parcelle.
-- Les marches ne débordent jamais sur une voie ARCHGEN : sinon avertissement et marches omises.
+- jusqu'à 0,05 m : rien (le seuil de 0,03 m suffit) ;
+- au-delà, selon le réglage du terrain `site.entrance` :
+  - `steps` : un **perron** de marches égales de 0,17 m au plus (giron 0,28 m), la dernière au niveau du seuil, de la largeur de la porte + 0,15 m de chaque côté ;
+  - `ramp` : un palier de 1,20 m devant la porte, puis une rampe de 5 % le long de la façade, du côté le plus long ; refus `ramp_too_long` si la façade n'offre pas la longueur ;
+  - `none` : rien, l'avertissement du seuil haut reste.
+- Matière du soubassement, dans le plan d'assise (catégorie `plinth`). Le perron et la rampe ne connaissent pas les voies : dans une rue sans recul, ils sont sur le trottoir.
+- `entrance` est écrit à `steps` quand on adapte au terrain (valeur de départ de l'assise) ; absent d'un terrain enregistré, il n'est pas exigé et rien ne change.
+
+- **Fait (AG-105).** `SitePlanner.entrance_nodes` (marches, palier, rampe), `SiteIntake` (défaut, clé facultative à la relecture), listes **Devant la porte** aux panneaux du bâtiment et de la rue.
 
 ## 3. Garde-corps — AG-106
 

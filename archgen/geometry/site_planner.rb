@@ -9,6 +9,13 @@ module Archgen
       TOE_M = 0.05
       DOOR_BURIED_M = 0.02
       DOOR_GAP_M = 0.20
+      # AG-105 : perron ou rampe devant une porte au-dessus du terrain (docs/TEINTES_ABORDS_CONTRACT.md).
+      STEP_FROM_M = 0.05
+      RISER_M = 0.17
+      TREAD_M = 0.28
+      STEP_SIDE_M = 0.15
+      RAMP_SLOPE = 0.05
+      RAMP_WIDTH_M = 1.20
       HINT = 'increase_survey_step'
 
       module_function
@@ -27,7 +34,11 @@ module Archgen
         return earthwork unless earthwork.ok?
 
         gap = passage ? passage_gap(passage, footprint, grid, platform) : door_gap(plan, footprint, height)
-        built = build(footprint, settings, config, assise, earthwork.value, gap, buried_openings(plan, footprint, height), passage)
+        entrance = passage ? Core::Result.ok([]) : entrance_nodes(plan, footprint, settings, gap)
+        return entrance unless entrance.ok?
+
+        door = nil if door && !entrance.value.empty? # le seuil haut est résolu
+        built = build(footprint, settings, config, assise, earthwork.value, gap, buried_openings(plan, footprint, height), passage, entrance.value)
         problems = budget_problems(built['metrics'], plan['metrics'])
         problems = Core::SitePlanValidator.call(built, materials: materials) if problems.empty?
         return Core::Result.fail(problems) unless problems.empty?
@@ -190,9 +201,77 @@ module Archgen
       end
       private_class_method :wrap
 
-      def build(footprint, settings, config, assise, earthwork, gap, buried, passage = nil)
+      # Marches de RISER_M au plus, la dernière au niveau du seuil ; ou palier et rampe le long de la
+      # façade, du côté le plus long. Matière du soubassement.
+      def entrance_nodes(plan, footprint, settings, gap)
+        kind = settings['entrance']
+        door = door_opening(plan)
+        return Core::Result.ok([]) unless door && %w[steps ramp].include?(kind) && gap && gap > STEP_FROM_M + Core::Quant::EPSILON
+
+        facade = footprint.facade(door['facade_id'])
+        u0 = Core::Quant.q([door['u_min_m'] - STEP_SIDE_M, 0.0].max)
+        u1 = Core::Quant.q([door['u_max_m'] + STEP_SIDE_M, facade.length_m].min)
+        bottom = Core::Quant.q(-gap - TOE_M)
+        material = settings['plinth_material']
+        return Core::Result.ok(steps(facade, u0, u1, gap, bottom, material)) if kind == 'steps'
+
+        ramp(facade, u0, u1, gap, bottom, material)
+      end
+      private_class_method :entrance_nodes
+
+      def steps(facade, u0, u1, gap, bottom, material)
+        count = (gap / RISER_M).ceil
+        (1..count).map do |j|
+          top = Core::Quant.q(-gap + (gap * j / count))
+          d0 = Core::Quant.q(-(count - j + 1) * TREAD_M)
+          d1 = Core::Quant.q(-(count - j) * TREAD_M)
+          Node.leaf("site/entrance/step/#{j}", 'plinth', Boxes.on_facade(facade, u0, u1, bottom, top, d0, d1, material))
+        end
+      end
+      private_class_method :steps
+
+      def ramp(facade, u0, u1, gap, bottom, material)
+        length = Core::Quant.q(gap / RAMP_SLOPE)
+        middle = (u0 + u1) / 2.0
+        l0 = Core::Quant.q([[middle - (RAMP_WIDTH_M / 2.0), 0.0].max, u0].min)
+        l1 = Core::Quant.q([[middle + (RAMP_WIDTH_M / 2.0), facade.length_m].min, u1].max)
+        right = facade.length_m - l1
+        room = [right, l0].max
+        if room + Core::Quant::EPSILON < length
+          return Core::Result.fail([Core::Diagnostic.error('E_SITE_ENTRANCE', '/site/entrance', reason: 'ramp_too_long', value: length, limit: Core::Quant.q(room))])
+        end
+
+        near, far = right >= l0 ? [l1, l1 + length] : [l0, l0 - length]
+        landing = Node.leaf('site/entrance/landing', 'plinth', Boxes.on_facade(facade, l0, l1, bottom, 0.0, -RAMP_WIDTH_M, 0.0, material))
+        slope = Node.leaf('site/entrance/ramp', 'plinth', sloped(facade, near, Core::Quant.q(far), gap, bottom, material))
+        Core::Result.ok([landing, slope])
+      end
+      private_class_method :ramp
+
+      # Solide à dessus incliné : de z = 0 en `near` à z = -gap en `far`, sur RAMP_WIDTH_M devant la façade.
+      def sloped(facade, near, far, gap, bottom, material)
+        corners = [[near, 0.0], [far, 0.0], [far, -RAMP_WIDTH_M], [near, -RAMP_WIDTH_M]]
+        ring = corners.map { |u, d| facade.point(u, 0.0, d)[0, 2] }
+        tops = corners.map { |u, _| u == near ? 0.0 : Core::Quant.q(-gap) }
+        area = ring.each_index.sum { |i| (ring[i][0] * ring[(i + 1) % 4][1]) - (ring[(i + 1) % 4][0] * ring[i][1]) }
+        if area.negative?
+          ring.reverse!
+          tops.reverse!
+        end
+        low = ring.map { |x, y| [x, y, bottom] }
+        high = ring.each_with_index.map { |(x, y), i| [x, y, tops[i]] }
+        mesh = MeshBuilder.new('solid')
+        mesh.add_face(low.reverse, material)
+        mesh.add_face(high, material)
+        4.times { |i| mesh.add_face([low[i], low[(i + 1) % 4], high[(i + 1) % 4], high[i]], material) }
+        mesh.to_primitive
+      end
+      private_class_method :sloped
+
+      def build(footprint, settings, config, assise, earthwork, gap, buried, passage = nil, entrance = [])
         material = settings['plinth_material']
         children = [Node.leaf('site/platform', 'platform', platform_primitive(footprint, config, material, passage))] + earthwork[:nodes]
+        children << Node.group('site/entrance', 'plinth', entrance) unless entrance.empty?
         nodes = [Node.group('site', 'site', children)]
         {
           'schema_version' => SCHEMA_VERSION, 'units' => 'm', 'nodes' => nodes,

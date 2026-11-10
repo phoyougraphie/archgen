@@ -145,10 +145,10 @@ class DialogSiteTest < Minitest::Test
   end
 
   def test_survey_reports_warnings_with_french_messages
-    response = survey
+    response = survey(retain, { 'entrance' => 'none' })
     warning = response['diagnostics'].find { |d| d['code'] == 'W_SITE_DOOR_GAP' }
     refute_nil warning
-    assert_includes warning['message'], 'aucun escalier'
+    assert_includes warning['message'], 'Perron'
   end
 
   def test_survey_without_a_terrain_is_explained
