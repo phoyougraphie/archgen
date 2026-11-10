@@ -264,9 +264,10 @@ module Archgen
         Messages.value_text(value, path)
       end
 
-      # ADR-50 : un nouveau bâtiment reçoit la dalle et les seuils, que le panneau peut décocher.
+      # ADR-50 : un nouveau bâtiment reçoit la dalle et les seuils, que le panneau peut décocher ;
+      # AG-106 : et des garde-corps à barreaux s'il a des balcons.
       def creation_draft(draft)
-        Core::Merge.leaves({ 'structure' => { 'ground_slab' => true } }, draft)
+        Core::Merge.leaves({ 'structure' => { 'ground_slab' => true }, 'features' => { 'balcony_rail' => 'bars' } }, draft)
       end
 
       def generate(payload)

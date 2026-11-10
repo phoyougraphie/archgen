@@ -156,6 +156,7 @@ module Archgen
         %w[pilotis structural_grid sun_shades].each { |key| features.delete(key) unless features[key] }
         # AG-098 : devanture ; « none » n'est pas écrit ; la toile seulement avec un store.
         features.delete('shop_front') unless %w[awning pergola].include?(features['shop_front'])
+        features.delete('balcony_rail') unless %w[bars solid].include?(features['balcony_rail']) # AG-106
         if features['shop_front'] == 'awning'
           materials['awning'] ||= DEFAULT_AWNING
         else

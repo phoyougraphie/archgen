@@ -243,6 +243,7 @@
       case 'select-int': return L.parseInteger(text);
       case 'tint': return L.parseInteger(text);
       case 'entrance': return text;
+      case 'rail': return text;
       case 'check': return field.checked;
       case 'ground': return field.checked ? 'shop' : 'dwelling';
       default: return text.trim() === '' ? null : text;
@@ -794,6 +795,7 @@
       case 'shopfront': field.value = value || 'none'; break;
       case 'tint': field.value = String(value || 0); break;
       case 'entrance': field.value = value || 'none'; break;
+      case 'rail': field.value = value || 'none'; break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }

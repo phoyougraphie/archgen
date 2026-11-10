@@ -369,6 +369,12 @@
             "awning",
             "pergola"
           ]
+        },
+        "balcony_rail": {
+          "enum": [
+            "bars",
+            "solid"
+          ]
         }
       },
       "additionalProperties": false,

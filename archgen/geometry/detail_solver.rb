@@ -78,6 +78,12 @@ module Archgen
       BALCONY_DEPTH_M = 0.90
       BALCONY_THICKNESS_M = 0.12
       BALCONY_LEVELS = [2, 5].freeze
+      # AG-106 : garde-corps de balcon (docs/TEINTES_ABORDS_CONTRACT.md).
+      RAIL_HEIGHT_M = 1.00
+      RAIL_TOP_M = 0.05
+      RAIL_SOLID_M = 0.10
+      BAR_M = 0.02
+      BAR_SPACING_M = 0.12
       SURROUND_BAR_M = 0.04
       SURROUND_DEPTH_M = 0.03
       HEAD_MARGIN_M = 0.10
@@ -136,6 +142,7 @@ module Archgen
         nodes += dormer_nodes(footprint, levels, config, dormers.value, definitions) if dormers
         built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
         nodes += built_balconies
+        nodes += balcony_rails(footprint, balcony_levels, config, definitions) if features['balcony_rail'] && !built_balconies.empty?
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings += dormers.warnings if dormers
         porch_warning = features['classical'] ? OrnamentSolver.porch_warning(footprint, openings, config) : nil
@@ -585,6 +592,65 @@ module Archgen
         end
       end
       private_class_method :mitred_balconies
+
+      # Main courante et barreaux (une définition partagée), ou muret plein, sur les trois côtés
+      # libres du balcon ; le côté du mur reste ouvert.
+      def balcony_rails(footprint, balcony_levels, config, definitions)
+        margin = config['facade']['margin_m']
+        ring = footprint.trapezoid? ? mitred_ring(footprint, margin, BALCONY_DEPTH_M) : rect_ring(footprint, margin)
+        return [] unless ring
+
+        segments = [[ring[3], ring[0]], [ring[0], ring[1]], [ring[1], ring[2]]]
+        solid = config['features']['balcony_rail'] == 'solid'
+        balcony_levels.flat_map do |level|
+          z = level.base_z_m
+          segments.each_with_index.flat_map do |(p, q), i|
+            id = "balcony/#{level.index}/rail/#{i}"
+            next [Node.leaf(id, 'balcony', Boxes.prism(band(p, q, RAIL_SOLID_M), z, z + RAIL_HEIGHT_M, config['materials']['wall']))] if solid
+
+            material = config['materials']['frames']
+            top = Node.leaf(id, 'balcony', Boxes.prism(band(p, q, RAIL_TOP_M), z + RAIL_HEIGHT_M - RAIL_TOP_M, z + RAIL_HEIGHT_M, material))
+            [top] + bars(p, q, z, material, definitions).each_with_index.map { |matrix, k| Node.leaf("#{id}/bar/#{k}", 'balcony', matrix) }
+          end
+        end
+      end
+      private_class_method :balcony_rails
+
+      def rect_ring(footprint, margin)
+        x0 = margin
+        x1 = footprint.width_m - margin
+        [[x0, -BALCONY_DEPTH_M], [x1, -BALCONY_DEPTH_M], [x1, 0.0], [x0, 0.0]]
+      end
+      private_class_method :rect_ring
+
+      # Bande de largeur `width` à gauche du segment p→q (vers l'intérieur d'un contour antihoraire).
+      def band(p, q, width)
+        length = Math.hypot(q[0] - p[0], q[1] - p[1])
+        n = [-(q[1] - p[1]) / length * width, (q[0] - p[0]) / length * width]
+        [p, q, [q[0] + n[0], q[1] + n[1]], [p[0] + n[0], p[1] + n[1]]].map { |x, y| [Core::Quant.q(x), Core::Quant.q(y)] }
+      end
+      private_class_method :band
+
+      # Instances d'un barreau carré, centrées dans la bande de la main courante.
+      def bars(p, q, z, material, definitions)
+        height = Core::Quant.q(RAIL_HEIGHT_M - RAIL_TOP_M)
+        id = "balcony/bar/#{micrometres(height)}/#{material}"
+        half = BAR_M / 2.0
+        definitions[id] ||= [Node.leaf('bar', 'balcony', Boxes.solid(-half, half, -half, half, 0.0, height, material))]
+        length = Math.hypot(q[0] - p[0], q[1] - p[1])
+        count = (length / BAR_SPACING_M).floor
+        return [] if count < 1
+
+        inward = [-(q[1] - p[1]) / length * (RAIL_TOP_M / 2.0), (q[0] - p[0]) / length * (RAIL_TOP_M / 2.0)]
+        step = length / count
+        (0...count).map do |k|
+          t = ((k + 0.5) * step) / length
+          x = p[0] + ((q[0] - p[0]) * t) + inward[0]
+          y = p[1] + ((q[1] - p[1]) * t) + inward[1]
+          { 'type' => 'instance', 'definition_id' => id, 'matrix' => [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, x, y, z, 1.0].map { |c| Core::Quant.q(c) } }
+        end
+      end
+      private_class_method :bars
 
       # De marge à marge, comme ailleurs, mais sans franchir l'onglet d'un angle rentrant.
       def mitred_ring(footprint, margin, depth)

@@ -31,7 +31,14 @@ Aujourd'hui un seuil à plus de 20 cm du sol est signalé, pas résolu. Désorma
 
 ## 3. Garde-corps — AG-106
 
-Chaque balcon reçoit un garde-corps de 1,00 m : main courante et barreaux (matière des menuiseries), ou plein (matière du mur) selon `features.balcony_rail` : `bars` (défaut) ou `solid`. Le toit-terrasse accessible n'existe pas encore : rien n'y est ajouté.
+Selon `features.balcony_rail`, un balcon reçoit sur ses trois côtés libres un garde-corps de 1,00 m :
+
+- `bars` : main courante de 0,05 m et barreaux carrés de 0,02 m tous les 0,12 m environ, une seule définition partagée, matière des menuiseries ;
+- `solid` : muret de 0,10 m, matière du mur.
+
+« Aucun » n'est pas écrit. Absente, le balcon reste tel quel. Comme la dalle (ADR-50), `bars` est écrit à la création d'un bâtiment ou d'une rue ; il ne compte que s'il y a des balcons. Le toit-terrasse accessible n'existe pas encore : rien n'y est ajouté.
+
+- **Fait (AG-106).** `DetailSolver.balcony_rails` (bande intérieure au contour, onglets compris), liste **Garde-corps des balcons** au panneau du bâtiment.
 
 ## 4. Talus entre voisins, tour d'îlot — AG-107
 
