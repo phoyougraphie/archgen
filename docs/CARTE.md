@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-118 fait : clic droit ARCHGEN → Exporter pour un moteur de jeu… (bâtiment ou rue, trois .glb). Prochain ticket AG-119 Guide et RBZ 0.23.0. Puis EXT-12, EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 à la main, H38 import Unreal. Commits non poussés depuis 34f74cf. (→ docs/DECOR_JEU_CONTRACT.md)
+  - Prochaine action — J23 fini : RBZ 0.23.0 installé (export pour moteur de jeu). Suite : cadrer EXT-12 mobilier urbain, puis EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 et H38 (import Unreal) à la main. Commits non poussés depuis 34f74cf. (→ docs/FUTURE.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -132,6 +132,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 AG-116 — Le Structural a aussi des surfaces (toits) : la double face se règle par primitive, d'où deux variantes d'un même matériau, suffixée pour qu'un importeur qui fusionne par nom ne les confonde pas. Le verre n'apparaît qu'avec glazing coché et une matière glass.
     - 2026-11-10 AG-117 — Les boîtes et prismes prévus ne suivaient pas mansardes et croupes : l'enveloppe convexe des murs et du toit les remplace, pour LOD2 comme pour la collision (D-32 revu). Dans l'ordre naturel, les sommets de la grille des murs restaient dans l'enveloppe (88 triangles) ; traiter les plus lointains d'abord la ramène à 32.
     - 2026-11-10 AG-118 — Les ids de définitions de détail peuvent se répéter d'un plan de maison à l'autre : le cache de maillages glTF est donc indexé par plan. Le bâtiment créé sans réglage reste au niveau de détail 0, si bien qu'un test qui attend LOD1 doit demander lod 1. L'export relit et recalcule tout, sans ouvrir d'opération.
+    - 2026-11-10 AG-119 — Le guide promettait « aucune garantie pour les moteurs de jeu » : la section Exporter est réécrite avec le parcours Unreal et son repli de collision, marqué non vérifié. RBZ 0.23.0 installé.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -272,12 +273,12 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-107 Tour d'îlot — EnsembleVariety.closing : écart sur tout le tour. U72 vert.
     - [fait] AG-108 Dalle pour l'existant, RBZ 0.21.0 — case au panneau de rue ; RBZ 0.21.0 ; H36 à faire.
     - [fait] AG-109 Talus entre voisins dans une rue — SurveyGrid.plan_row, EmbankmentBuilder (façades choisies, soutènements), refus à angle ; RBZ 0.22.0. U73 vert.
-  - J23 Décor de jeu — ADR-54, D-27 à D-32. AG-115 à 119. (→ docs/DECOR_JEU_CONTRACT.md)
+  - J23 Décor de jeu, fait — ADR-54, D-27 à D-32. AG-115 à 119 ; RBZ 0.23.0 ; H38 à faire. (→ docs/DECOR_JEU_CONTRACT.md)
     - [fait] AG-115 Triangulation et écriture glTF — adapters/gltf (Loader::EXPORT), oreilles, axes Y, maillages partagés, GLB déterministe, E_EXPORT. U78 vert ; Blender lit le fichier.
     - [fait] AG-116 UV et matériaux PBR — projection cubique 1 m, métal-rugosité linéaire, verre BLEND, double face suffixée, roughness/metallic au catalogue. U79 vert ; Blender relit tout.
     - [fait] AG-117 LOD et collisions — LodSet : LOD0 + UCX_, LOD1 au réglage lod 0, LOD2 enveloppe convexe (16 à 32 triangles), W_EXPORT_LOD. U80 vert ; Blender lit les trois.
     - [fait] AG-118 Commande d'export — clic droit « Exporter pour un moteur de jeu… », ExportService, export_source des deux services, maillages partagés par maison, refus route et réseau. U81 vert ; H38 à faire.
-    - [afaire] AG-119 Guide, RBZ 0.23.0 — section Décor de jeu ; H38 à faire.
+    - [fait] AG-119 Guide, RBZ 0.23.0 — section « Pour un moteur de jeu » (Unreal, Blender), journal ; RBZ 0.23.0 installé ; H38 à faire.
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

@@ -220,11 +220,34 @@ SketchUp réalise l'export ; ses formats dépendent de votre édition. Le parcou
 1. **Fichier → Exporter → Modèle 3D**, format OBJ, unités **mètres**. L'OBJ ne contient aucune unité : avec les unités du modèle, un gabarit en millimètres donne un bâtiment 1 000 fois trop grand dans Blender.
 2. Dans Blender : **Fichier → Importer → Wavefront (.obj)**, axe avant Y, axe haut Z, échelle 1.
 
-Dans cet export, les espaces et les accents des noms de matériaux deviennent `_`, par exemple `ARCHGEN_B_ton_brut`, et l'import Blender donne un seul objet. Aucune garantie n'est donnée pour les UV, les moteurs de jeu ou les collisions.
+Dans cet export, les espaces et les accents des noms de matériaux deviennent `_`, par exemple `ARCHGEN_B_ton_brut`, et l'import Blender donne un seul objet.
+
+### Pour un moteur de jeu (0.23.0)
+
+1. Sélectionnez un bâtiment ou une rue ARCHGEN.
+2. Faites un clic droit → **ARCHGEN → Exporter pour un moteur de jeu…**
+3. Choisissez le dossier. Le nom proposé est `<nom>_LOD0.glb`.
+
+Trois fichiers glTF binaires sont écrits côte à côte, en mètres, avec l'axe Y vers le haut :
+
+- **`_LOD0`** : le bâtiment tel que réglé, avec sa collision, un nœud `UCX_<nom>_00` sans matériau ;
+- **`_LOD1`** : le même bâtiment sans détails. Ce fichier n'est pas écrit s'il est déjà sans détails ;
+- **`_LOD2`** : un volume simple, murs et toit.
+
+**Ce que contiennent les fichiers.** Les matériaux sont de type PBR, avec la couleur du catalogue, teintes comprises. Le verre est transparent, le zinc et le métal foncé sont métalliques. Les UV sont à l'échelle 1 m : une texture répétée tous les mètres tombe à la bonne taille. Une maison répétée dans une rue n'est stockée qu'une fois.
+
+**Pour une rue**, chaque maison est un objet, avec son assise et sa propre collision. Le terrain et les routes ne sont pas exportés. Une route ou un réseau seuls sont refusés.
+
+**Le modèle n'est pas modifié**, et rien n'apparaît dans Annuler. L'export recalcule le bâtiment depuis ses réglages : **une retouche faite à la main dans SketchUp n'est pas exportée**.
+
+**Dans Unreal Engine 5.8.** Importez `_LOD0.glb` en glTF, à l'échelle 1. Ouvrez le Static Mesh, puis **LOD Settings → Import LOD Level** pour ajouter `_LOD1` et `_LOD2`. Si la collision `UCX_` n'est pas reconnue, réglez **Collision Complexity** sur **Use Complex Collision As Simple**. Ces étapes n'ont pas encore été vérifiées dans Unreal (recette H38).
+
+**Dans Blender 5.2.** **Fichier → Importer → glTF 2.0** ; l'échelle et les axes sont justes sans réglage.
 
 ## Limites de cette version
 
 - Emprise rectangulaire et ouvertures rectangulaires. Pas d'intérieur ; des garde-corps seulement aux balcons.
+- Export pour moteur de jeu : matières unies, sans textures peintes ; le terrain, les routes et les retouches manuelles ne sont pas exportés.
 - Pas de calcul de structure ni de conformité réglementaire. Les styles sont des simplifications, pas des restitutions historiques.
 - Le champ « Variation des baies » décale chaque fenêtre au hasard, par pas de 5 mm, d'au plus la valeur saisie ; la graine change le tirage. Une variation de moins de 5 mm ne décale rien.
 - Les anciennes définitions restent dans le fichier après une régénération, pour permettre Annuler. **Fenêtre → Infos sur le modèle → Statistiques → Purger les éléments inutilisés** les retire.

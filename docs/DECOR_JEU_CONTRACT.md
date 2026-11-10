@@ -109,6 +109,7 @@ Ce qui reste hors périmètre :
   - vérifier l'échelle, les axes, les matériaux, les LOD et les collisions.
 
   Tant que H38 n'est pas faite, la reconnaissance des `UCX_` par l'importeur glTF d'Unreal n'est pas affirmée. Si elle échoue, le repli est écrit dans le guide : collision complexe.
+- **Fait (AG-119).** Section « Pour un moteur de jeu » du guide (Unreal 5.8, Blender 5.2, limites), journal et README ; version 0.23.0, RBZ construit et installé. **Recette H38 non faite.**
 
 ## Tests
 

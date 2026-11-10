@@ -1,5 +1,17 @@
 # Journal des versions
 
+## 0.23.0
+
+Décor de jeu (AG-115 à AG-119, ADR-54). Recette H38 dans SketchUp et Unreal à faire.
+
+**Ajouts**
+
+- **Exporter pour un moteur de jeu** au clic droit d'un bâtiment ou d'une rue : trois fichiers glTF binaires (`_LOD0`, `_LOD1`, `_LOD2`), en mètres, axe Y en haut.
+- **Matériaux PBR** : couleur du catalogue et teintes, verre transparent, zinc et métal foncé métalliques ; UV à 1 m.
+- **Collision** convexe `UCX_` par bâtiment dans le LOD0 ; volume simple au LOD2.
+- **Rue** : une maison par objet, avec son assise ; plans répétés stockés une fois ; terrain et routes non exportés.
+- Le catalogue des matières accepte `roughness` et `metallic`, facultatifs.
+
 ## 0.22.0
 
 Talus dans une rue (AG-109). Recette H36 dans SketchUp à faire.
