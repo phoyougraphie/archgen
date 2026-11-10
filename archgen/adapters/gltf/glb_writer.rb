@@ -32,13 +32,16 @@ module Archgen
         ARRAY_BUFFER = 34_962
         ELEMENT_ARRAY_BUFFER = 34_963
         TRIANGLES = 4
+        DEFAULT_ROUGHNESS = 0.85
+        DEFAULT_METALLIC = 0.0
+        DOUBLE_SUFFIX = ' (double face)'
         IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0].freeze
         # SketchUp (x, y, z), Z vers le haut → glTF (x, z, −y), Y vers le haut.
         AXES = [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]].freeze
 
         # Un bâtiment seul : un nœud racine nommé, le plan dessous.
-        def self.building(plan, name:)
-          scene = new
+        def self.building(plan, name:, materials:)
+          scene = new(materials: materials)
           scene.add(name: name, nodes: plan['nodes'], definitions: plan['definitions'] || {})
           scene.to_glb
         rescue ExportError => e
@@ -49,7 +52,9 @@ module Archgen
           Core::Result.fail([Core::Diagnostic.error('E_EXPORT', '/export', reason: error.reason, id: error.id)])
         end
 
-        def initialize
+        # `materials` : catalogue fusionné (bâtiment et assise), teintes `id~L.n` comprises (ADR-51).
+        def initialize(materials:)
+          @catalog = materials
           @roots = []
           @nodes = []
           @meshes = []
@@ -142,34 +147,74 @@ module Archgen
               points = face['indices'].map { |i| vertices.fetch(i) }
               triangles = Triangulator.call(points) || raise(ExportError.new('export_face', owner))
               normal = unit(Triangulator.newell(points)) || raise(ExportError.new('export_face', owner))
-              group = groups[face['material']] ||= { positions: [], normals: [], indices: [] }
+              key = [face['material'], primitive['type'] == 'surface']
+              group = groups[key] ||= { positions: [], normals: [], uvs: [], indices: [], owner: owner }
               base = group[:positions].size
               points.each do |p|
                 group[:positions] << axes(p).map { |c| c.round(POSITION_DECIMALS) + 0.0 }
                 group[:normals] << axes(normal).map { |c| c.round(NORMAL_DECIMALS) + 0.0 }
+                group[:uvs] << box_uv(p, normal).map { |c| c.round(POSITION_DECIMALS) + 0.0 }
               end
               triangles.each { |tri| group[:indices].concat(tri.map { |i| base + i }) }
             end
           end
           before = @triangles
-          primitives = groups.map { |material, group| write_primitive(material, group) }
+          primitives = groups.map { |(material, double), group| write_primitive(material, double, group) }
           @mesh_triangles << (@triangles - before)
           @meshes << { 'name' => name, 'primitives' => primitives }
           @meshes.size - 1
         end
 
-        def write_primitive(material, group)
+        def write_primitive(material, double, group)
           @triangles += group[:indices].size / 3
           @vertices += group[:positions].size
           position = accessor(group[:positions], 'VEC3', bounds: true)
           normal = accessor(group[:normals], 'VEC3')
+          uv = accessor(group[:uvs], 'VEC2')
           indices = index_accessor(group[:indices])
-          { 'attributes' => { 'NORMAL' => normal, 'POSITION' => position }, 'indices' => indices,
-            'material' => material_index(material), 'mode' => TRIANGLES }
+          { 'attributes' => { 'NORMAL' => normal, 'POSITION' => position, 'TEXCOORD_0' => uv }, 'indices' => indices,
+            'material' => material_index(material, double, group[:owner]), 'mode' => TRIANGLES }
         end
 
-        def material_index(id)
-          @materials[id] ||= @materials.size
+        # Un matériau glTF par matière et par face simple ou double (D-30) ; la double face prend un suffixe.
+        def material_index(id, double, owner)
+          key = [id, double]
+          return @materials[key][:index] if @materials.key?(key)
+
+          entry = Core::Tint.entry(@catalog, id) || raise(ExportError.new('export_material', owner))
+          @materials[key] = { index: @materials.size, value: pbr(id, entry, double) }
+          @materials[key][:index]
+        end
+
+        def pbr(id, entry, double)
+          alpha = entry.fetch('alpha', 1.0).to_f
+          color = entry.fetch('srgb').delete_prefix('#').scan(/../).map { |pair| linear(pair.to_i(16) / 255.0) }
+          material = {
+            'name' => double ? "#{id}#{DOUBLE_SUFFIX}" : id,
+            'pbrMetallicRoughness' => {
+              'baseColorFactor' => (color + [alpha]).map { |c| c.round(NORMAL_DECIMALS) + 0.0 },
+              'metallicFactor' => entry.fetch('metallic', DEFAULT_METALLIC).to_f,
+              'roughnessFactor' => entry.fetch('roughness', DEFAULT_ROUGHNESS).to_f
+            }
+          }
+          material['alphaMode'] = 'BLEND' if alpha < 1.0
+          material['doubleSided'] = true if double
+          material
+        end
+
+        def linear(c)
+          c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055)**2.4
+        end
+
+        # Projection cubique (D-29) : plan de l'axe dominant, 1 m = 1 unité, image à l'endroit vue de dehors.
+        def box_uv(p, normal)
+          axis = (0..2).max_by { |i| normal[i].abs }
+          positive = normal[axis] >= 0
+          case axis
+          when 0 then [positive ? p[1] : -p[1], -p[2]]
+          when 1 then [positive ? -p[0] : p[0], -p[2]]
+          else [p[0], positive ? -p[1] : p[1]]
+          end
         end
 
         def accessor(rows, type, bounds: false)
@@ -214,7 +259,7 @@ module Archgen
         end
 
         def document
-          materials = @materials.keys.map { |id| { 'name' => id } }
+          materials = @materials.values.sort_by { |m| m[:index] }.map { |m| m[:value] }
           doc = {
             'asset' => { 'generator' => "ARCHGEN #{Archgen::VERSION}", 'version' => '2.0' },
             'scene' => 0,

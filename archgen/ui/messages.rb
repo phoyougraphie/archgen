@@ -139,6 +139,7 @@ module Archgen
         'ramp_too_long' => 'La rampe ferait %{value} m et la façade n’offre que %{limit} m à côté de la porte : choisissez un perron ou abaissez la plateforme.',
         'export_face' => 'La pièce %{id} a une face dégénérée : elle ne peut pas être découpée en triangles pour l’export.',
         'export_primitive' => 'La pièce %{id} a une forme que l’export ne sait pas écrire.',
+        'export_material' => 'La pièce %{id} utilise une matière absente du catalogue : l’export ne peut pas la décrire.',
         'export_definition' => 'La pièce %{id} renvoie à une définition absente du plan.',
         'ground_slab_false_written' => 'Une dalle décochée ne s’enregistre pas : retirez ce champ.',
         'roads_merged' => 'Cette voie rejoint %{count} voie(s) ou réseau(x) : elles forment maintenant un réseau avec ses carrefours.',

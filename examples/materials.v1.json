@@ -88,7 +88,8 @@
     "glass": {
       "label": "Verre",
       "srgb": "#9FB8C4",
-      "alpha": 0.35
+      "alpha": 0.35,
+      "roughness": 0.05
     },
     "limestone": {
       "label": "Pierre calcaire",
@@ -96,7 +97,9 @@
     },
     "zinc": {
       "label": "Zinc",
-      "srgb": "#717E88"
+      "srgb": "#717E88",
+      "metallic": 0.9,
+      "roughness": 0.5
     },
     "brick_foraine": {
       "label": "Brique foraine",
@@ -108,7 +111,9 @@
     },
     "dark_metal": {
       "label": "Métal foncé",
-      "srgb": "#3D4145"
+      "srgb": "#3D4145",
+      "metallic": 1.0,
+      "roughness": 0.45
     }
   }
 }

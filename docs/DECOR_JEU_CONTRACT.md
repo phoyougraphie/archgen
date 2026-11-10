@@ -57,6 +57,14 @@ Ce qui reste hors périmètre :
 - Les UV suivent D-29 : u et v sont des mètres le long des deux axes du plan de projection. Une texture répétée de 1 m tombe donc à l'échelle.
 - Les matériaux suivent D-30, avec un matériau glTF par matière utilisée, nommé par son id ARCHGEN (`id~L.n` pour une teinte). Les clés `roughness` et `metallic` du catalogue sont facultatives et versionnées : le schéma du catalogue les accepte, et elles sont absentes partout au départ, sauf le verre et les métaux du catalogue s'il y en a.
 - Le verre est en mode alpha `BLEND`.
+- **Fait (AG-116).** Ce qui est livré :
+  - `GlbWriter.building(plan, name:, materials:)` reçoit le catalogue fusionné, teintes résolues par `Tint.entry`, et écrit l'attribut `TEXCOORD_0` ;
+  - les UV sont orientées pour que l'image soit à l'endroit vue de dehors : u suit la façade de gauche à droite, v descend avec la hauteur, et vu de dessus u = x, v = −y ;
+  - la couleur sRGB du catalogue est convertie en linéaire, comme glTF l'exige ;
+  - un même matériau peut exister en simple et en double face : la variante double face reçoit le suffixe « (double face) » ;
+  - une matière absente du catalogue donne l'erreur `export_material`.
+  - Catalogue : `roughness` 0,05 pour le verre ; `metallic` 0,9 et `roughness` 0,5 pour le zinc ; 1,0 et 0,45 pour le métal foncé.
+  - Sonde Blender 5.2 sur un haussmannien vitré : chaque matériau est relu avec sa couleur, sa rugosité, son métal, son opacité et sa double face ; aucun maillage sans UV.
 
 ## 3. Niveaux de détail et collisions — AG-117
 

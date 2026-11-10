@@ -28,7 +28,7 @@ class GltfExportTest < Minitest::Test
   end
 
   def export(built)
-    result = Writer.building(built, name: 'maison')
+    result = Writer.building(built, name: 'maison', materials: TestData.materials)
     assert result.ok?, result.errors.map(&:to_h).inspect
     result.value
   end
@@ -115,7 +115,7 @@ class GltfExportTest < Minitest::Test
     built = JSON.parse(JSON.generate(plan))
     leaf = all_nodes(built).find { |n| n['primitive'] && n['primitive']['type'] != 'instance' }
     leaf['primitive']['vertices'] = leaf['primitive']['vertices'].map { |v| [v[0], 0.0, 0.0] }
-    result = Writer.building(built, name: 'maison')
+    result = Writer.building(built, name: 'maison', materials: TestData.materials)
     refute result.ok?
     error = result.errors.first
     assert_equal ['E_EXPORT', 'export_face', leaf['id']], [error.code, error.params['reason'], error.params['id']]

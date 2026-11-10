@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-115 fait (écriture glTF, sans commande visible). Prochain ticket AG-116 UV et matériaux PBR. Puis AG-117 à 119, EXT-12, EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECOR_JEU_CONTRACT.md)
+  - Prochaine action — AG-116 fait (UV et PBR, sans commande visible). Prochain ticket AG-117 LOD et collisions. Puis AG-118, 119, EXT-12, EXT-09, EXT-08, J22, J21 (reporté). Recettes H26 à H36 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECOR_JEU_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -129,6 +129,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-10 J21 reporté — Le propriétaire reporte tout l'intérieur et précise qu'il se fera maison par maison, au clic droit (Créer l'intérieur), jamais pour une rue entière : AG-113 et AG-114 réécrits, pas de bloc interior au gabarit de rue (ADR-53). Priorité : EXT-06, 12, 09, 08, puis J22, puis J21.
     - 2026-11-10 EXT-06 cadré — Les faces du plan sont des boucles simples (la grille de découpe remplace les trous) : une triangulation par oreilles suffit. Lire le plan plutôt que le modèle rend l'export testable sans SketchUp et identique à l'octet ; les retouches à la main ne passent pas. Unreal 5.8 et Blender 5.2 sont installés ; la reconnaissance des UCX_ en glTF reste à prouver (H38).
     - 2026-11-10 AG-115 — Un nœud glTF n'a qu'un parent : une définition partagée devient un maillage aplati (instances internes cuites), et chaque instance un nœud qui le référence avec sa matrice conjuguée par le changement d'axes. Le plan est gelé : un test qui l'altère le recopie d'abord. Blender 5.2 en ligne de commande suffit à valider le fichier.
+    - 2026-11-10 AG-116 — Le Structural a aussi des surfaces (toits) : la double face se règle par primitive, d'où deux variantes d'un même matériau, suffixée pour qu'un importeur qui fusionne par nom ne les confonde pas. Le verre n'apparaît qu'avec glazing coché et une matière glass.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -271,7 +272,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-109 Talus entre voisins dans une rue — SurveyGrid.plan_row, EmbankmentBuilder (façades choisies, soutènements), refus à angle ; RBZ 0.22.0. U73 vert.
   - J23 Décor de jeu — ADR-54, D-27 à D-32. AG-115 à 119. (→ docs/DECOR_JEU_CONTRACT.md)
     - [fait] AG-115 Triangulation et écriture glTF — adapters/gltf (Loader::EXPORT), oreilles, axes Y, maillages partagés, GLB déterministe, E_EXPORT. U78 vert ; Blender lit le fichier.
-    - [afaire] AG-116 UV et matériaux PBR — projection cubique 1 m, métal-rugosité, verre.
+    - [fait] AG-116 UV et matériaux PBR — projection cubique 1 m, métal-rugosité linéaire, verre BLEND, double face suffixée, roughness/metallic au catalogue. U79 vert ; Blender relit tout.
     - [afaire] AG-117 LOD et collisions — LOD0, LOD1 lod 0, LOD2 volumes, UCX_.
     - [afaire] AG-118 Commande d'export — clic droit, bâtiment ou rue, rapport, modèle intact.
     - [afaire] AG-119 Guide, RBZ 0.23.0 — section Décor de jeu ; H38 à faire.
