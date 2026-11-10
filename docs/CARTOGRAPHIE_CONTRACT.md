@@ -90,6 +90,15 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 - Chaque bâtiment est une racine ARCHGEN ordinaire, modifiable au clic droit, placée et tournée selon son rectangle. La façade avant est le côté le plus proche d'une voie importée, sinon le côté le plus long.
 - **Graine** : les 32 premiers bits du hachage de l'id OSM. Deux imports donnent les mêmes bâtiments.
 - Écartés et comptés : contours non rectangulaires, trop petits ou trop grands, bâtiments qui se chevauchent après simplification.
+- **Fait (AG-127).** `Core::MapBuildings` rend, pour chaque bâtiment accepté :
+  - un brouillon de création (nom, profil, mode, graine, emprise, niveaux) qui passe `ConfigResolver` ;
+  - `origin_m`, le coin gauche de la façade avant ;
+  - `x_axis`, le long de la façade, l'intérieur étant à +Y.
+
+  Précisions :
+  - Une voie compte pour la façade si le milieu d'un côté est à 30 m au plus.
+  - Deux bâtiments mitoyens qui se touchent sont acceptés. Un chevauchement de plus de 1 % du plus petit écarte le second, dans l'ordre des identifiants.
+  - Comptés dans `skipped` : `degenerate`, `not_rectangular`, `size`, `levels` (hors 1 à 15) et `overlap`. Au-delà de 300 bâtiments, l'import est refusé avec `map_too_large`.
 
 ## 4. Terrain — AG-128
 
