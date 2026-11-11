@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.28.0 : un carrefour peut toucher un virage (ADR-60). Suite : EXT-08 quartier, J22, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/VOIRIE_CONTRACT.md)
+  - Prochaine action — 0.29.0 : trois styles (front de mer et villa de La Baule, maison moderne), balcons à tous les étages (ADR-61). Suite : maisons isolées en rue (jardins), EXT-08 quartier, J22, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -149,6 +149,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-130 — Essai réel : 10 rues sur 300 en réseaux (carrefours dans des virages, trop proches, trop aigus) ; la moitié au mieux après retouches. Une rue à plat ne peut pas échouer : mode simple par défaut. « Ajouter du contexte » de SketchUp demande un abonnement. point_to_latlong rend [longitude, latitude] et le nord est tourné (1,14° ici).
     - 2026-11-11 AG-131 — Pas de bibliothèque d'images en Ruby ni de mosaïque SketchUp sans abonnement : chaque tuile devient une image SketchUp posée à sa place. Carte OSM niveau 18, photo IGN niveau 19 ; serveurs de tuiles servis une image à la fois, avec cache. La carte retombe exactement sous les rues importées.
     - 2026-11-11 AG-132 — Le carrefour suppose des branches droites : plutôt que de le courber, la voie est redressée sur la seule zone coupée et raccordée à la courbe après la coupe ; le raccord est vérifié (45° au plus, aucun bord qui recule).
+    - 2026-11-11 AG-133 — Les balcons n'existaient qu'aux niveaux 2 et 5 : option « tous les étages » ajoutée avant le profil du front de mer (règle 5). Le porche d'îlot ne tient pas sous 2,8 m : accès par interruption. Une rue de maisons reste mitoyenne.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -310,6 +311,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-130 Mode simple, RBZ 0.26.0 — rues à plat MapStreets, 300 bâtiments les plus proches, un clic depuis la géolocalisation, nord du modèle, sans dialogue ; essai réel 192 rues + 130 bâtiments. U92 vert.
     - [fait] AG-131 Fond de plan à l'échelle, RBZ 0.27.0 — tuiles OSM (carte) et IGN (photo) au sol, deux balises, cache ; essai réel 20 + 72 images alignées. U93 vert.
     - [fait] AG-132 Carrefour sur un virage, RBZ 0.28.0 — branche redressée jusqu'à sa coupe, raccord à la courbe (45° au plus). U94 vert. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-133 Styles côtiers et maison moderne, RBZ 0.29.0 — front de mer et villa de La Baule, maison moderne ; balcons à tous les étages. U95, U52 verts. 35 styles. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

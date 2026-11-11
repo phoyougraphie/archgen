@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.29.0
+
+Styles côtiers et maison moderne (AG-133, ADR-61).
+
+**Ajouts**
+
+- **Côtier — front de mer (La Baule)** : immeuble blanc de huit niveaux, balcons filants à chaque étage, toit plat.
+- **Maison individuelle moderne** : enduit blanc, bardage bois à l'étage, grandes baies, toit plat.
+- **Côtier — villa balnéaire (La Baule, Pornichet)** : pignon pentu sur rue, pan de bois à l'étage, ardoise, cheminées.
+- Option **Étages des balcons** : 2e et 5e niveaux (comme avant) ou tous les étages.
+
 ## 0.28.0
 
 Carrefour sur un virage (AG-132, ADR-60).

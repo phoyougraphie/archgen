@@ -31,6 +31,9 @@
     "industriel": { "1": "gap" },
     "high_tech": { "1": "gap" },
     "bioclimatique": { "1": "gap" },
+    "baule_front_de_mer": { "1": "gap" },
+    "maison_moderne": { "1": "gap" },
+    "baule_villa": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

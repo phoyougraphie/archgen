@@ -7,7 +7,7 @@ require_relative '../test_helper'
 class RegionalProfilesTest < Minitest::Test
   include Archgen::Core
 
-  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste industriel high_tech bioclimatique].freeze
+  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste industriel high_tech bioclimatique baule_front_de_mer maison_moderne baule_villa].freeze
   STREET = [[0, 0], [48, 0]].freeze
   CORNER = [[0, 0], [40, 0], [40, 30]].freeze
   BLOCK = [[0, 0], [40, 0], [40, 40], [0, 40]].freeze
@@ -54,10 +54,11 @@ class RegionalProfilesTest < Minitest::Test
 
   def test_rules_warn_out_of_range_and_refuse_in_strict_fidelity
     REGIONAL.each do |id|
-      high = resolve('profile' => { 'id' => id }, 'levels' => { 'count' => 9 })
+      over = id == 'baule_front_de_mer' ? 13 : 9
+      high = resolve('profile' => { 'id' => id }, 'levels' => { 'count' => over })
       assert high.ok?
       assert(high.diagnostics.any? { |d| d.path.start_with?('/levels') }, id)
-      strict = resolve('profile' => { 'id' => id }, 'levels' => { 'count' => 9 }, 'fidelity' => 'strict')
+      strict = resolve('profile' => { 'id' => id }, 'levels' => { 'count' => over }, 'fidelity' => 'strict')
       refute strict.ok?, id
     end
   end

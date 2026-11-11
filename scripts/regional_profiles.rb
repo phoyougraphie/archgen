@@ -403,6 +403,46 @@ PROFILES = {
       'features' => { 'glazing' => true, 'cladding' => true, 'sun_shades' => true }
     },
     'rules' => rules(levels: [1, 4], roofs: %w[gable flat], ratio: [0.8, 1.6], walls: %w[light_render natural_wood])
+  },
+  # AG-133 (ADR-61) : styles côtiers de la presqu'île guérandaise.
+  'baule_front_de_mer' => {
+    'label' => 'Côtier — front de mer (La Baule)', 'period' => 'Immeuble balnéaire du front de mer, 1955-1980', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'requires' => %w[flat balcony glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 22, 'depth_m' => 14 },
+      'levels' => { 'count' => 8, 'height_m' => 2.8, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 6, 'window_width_m' => 1.8, 'window_height_m' => 2.2, 'sill_m' => 0.3, 'entry_bay' => 2, 'door_width_m' => 1.4, 'door_height_m' => 2.4 },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'painted_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'balcony' => true, 'balcony_levels' => 'all', 'balcony_rail' => 'solid' }
+    },
+    'rules' => rules(levels: [4, 12], roofs: %w[flat], ratio: [0.8, 1.6], walls: %w[light_render concrete])
+  },
+  'maison_moderne' => {
+    'label' => 'Maison individuelle moderne', 'period' => 'Maison individuelle contemporaine, depuis 2000', 'regions' => %w[france], 'typologies' => %w[residential], 'family' => 'modern_modular',
+    'requires' => %w[flat cladding glazing],
+    'defaults' => {
+      'footprint' => { 'width_m' => 12, 'depth_m' => 9 },
+      'levels' => { 'count' => 2, 'height_m' => 2.7, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.8, 'window_height_m' => 2.1, 'sill_m' => 0.3, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.2 },
+      'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'dark_metal', 'glass' => 'glass', 'cladding' => 'natural_wood' },
+      'features' => { 'glazing' => true, 'cladding' => true }
+    },
+    'rules' => rules(levels: [1, 2], roofs: %w[flat gable], ratio: [0.5, 1.6], walls: %w[light_render concrete natural_wood])
+  },
+  'baule_villa' => {
+    'label' => 'Côtier — villa balnéaire (La Baule, Pornichet)', 'period' => 'Villa balnéaire néo-régionaliste, 1880-1939', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential], 'family' => 'timber_vernacular',
+    'requires' => %w[gable cross_ridge timber_frame glazing muntins chimneys],
+    'defaults' => {
+      'footprint' => { 'width_m' => 10, 'depth_m' => 11 },
+      'levels' => { 'count' => 2, 'height_m' => 2.9, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.5, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.6, 'pitch_deg' => 50, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'dark_wood' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true, 'chimneys' => true }
+    },
+    'rules' => rules(levels: [1, 3], roofs: %w[gable hip], ratio: [1.1, 1.8], walls: %w[light_render red_brick granite])
   }
 }.freeze
 

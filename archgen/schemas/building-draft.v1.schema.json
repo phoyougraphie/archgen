@@ -339,6 +339,12 @@
             "bars",
             "solid"
           ]
+        },
+        "balcony_levels": {
+          "enum": [
+            "noble",
+            "all"
+          ]
         }
       },
       "additionalProperties": false

@@ -59,9 +59,24 @@ Le panneau propose déjà tous les styles actifs ; la liste devient longue : gro
 
 - **Fait (AG-078).** Le panneau du bâtiment et celui de la rue reçoivent, avec chaque style, le libellé de sa famille et rangent la liste en groupes ; même ordre dans les deux. Case Génoise aux trois panneaux (champ `genoise` des réglages propres). RBZ 0.14.0. **Recette H29 dans SketchUp non faite** (laissée au propriétaire).
 
+## 5. Styles côtiers et maison moderne — AG-133 (ADR-61)
+
+**Balcons à tous les étages.** Option `features.balcony_levels` : `noble` (défaut, niveaux d'index 2 et 5, non écrite dans la configuration) ou `all` (un balcon au plancher de chaque étage au-dessus du rez-de-chaussée, façade avant). Mêmes balcons, garde-corps et refus qu'avant (`balcony_over_opening`). Liste « Étages des balcons » au panneau du bâtiment.
+
+| Profil | Famille | Volume et toit | Matières | Détails |
+|---|---|---|---|---|
+| **Côtier — front de mer (La Baule)** `baule_front_de_mer` | Moderne modulaire | 8 niveaux de 2,8 m (4 à 12), 22 × 14 m, toit plat ; portes-fenêtres de 1,8 × 2,2 m | Enduit clair, menuiseries peintes claires | Balcons filants à chaque étage, garde-corps plein, vitrage |
+| **Maison individuelle moderne** `maison_moderne` | Moderne modulaire | 2 niveaux de 2,7 m (1 à 2), 12 × 9 m, toit plat (deux pans permis) ; baies de 1,8 × 2,1 m | Enduit clair en bas, bardage bois naturel à l'étage, menuiseries anthracite | Bardage, vitrage |
+| **Côtier — villa balnéaire (La Baule, Pornichet)** `baule_villa` | Pan de bois | 2 niveaux de 2,9 m (1 à 3), 10 × 11 m, deux pans à 50°, débord 0,6 m, faîtage perpendiculaire (pignon sur rue) | Enduit clair, pan de bois sombre, ardoise | Pan de bois, petits bois, cheminées, vitrage |
+
+- Accès d'îlot : interruption pour les trois (le porche ne tient pas sous un rez-de-chaussée de 2,8 m).
+- **Fait (AG-133).** Profils écrits par `scripts/regional_profiles.rb`, vérifiés par U52 en bâtiment seul, rue, rue à angle et îlot ; U95 pour les balcons. RBZ 0.29.0. **Vu dans SketchUp : non** (laissé au propriétaire).
+- **Limite.** Une rue de maisons est une rangée mitoyenne ; des maisons isolées, avec jardin et retrait, demandent une capacité d'ensemble à part.
+
 ## Tests
 
 - **U51** génoises : rangs et saillies, toits pris en charge, refus et avertissement, rangée d'angle.
+- **U95** balcons à tous les étages : sept balcons sur un immeuble de huit niveaux ; `noble` garde 2 et 5 et n'est pas écrit.
 - **U52** profils régionaux : chaque profil valide, ses règles, ses défauts en bâtiment, rue et îlot sous le budget.
 - Ensembles types d'avant : mêmes empreintes.
 

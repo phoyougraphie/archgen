@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "maison_moderne",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "modern_modular",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Maison individuelle moderne",
+  "context": {
+    "period": "Maison individuelle contemporaine, depuis 2000",
+    "regions": [
+      "france"
+    ],
+    "typologies": [
+      "residential"
+    ]
+  },
+  "requires": [
+    "flat",
+    "cladding",
+    "glazing"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 12,
+      "depth_m": 9
+    },
+    "levels": {
+      "count": 2,
+      "height_m": 2.7,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.8,
+      "window_height_m": 2.1,
+      "sill_m": 0.3,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.2
+    },
+    "roof": {
+      "type": "flat",
+      "overhang_m": 0.0,
+      "pitch_deg": 0
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "concrete",
+      "frames": "dark_metal",
+      "glass": "glass",
+      "cladding": "natural_wood"
+    },
+    "features": {
+      "glazing": true,
+      "cladding": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 0.5,
+        "max": 1.6
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "flat",
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "concrete",
+          "natural_wood"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

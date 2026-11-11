@@ -78,6 +78,7 @@ module Archgen
       BALCONY_DEPTH_M = 0.90
       BALCONY_THICKNESS_M = 0.12
       BALCONY_LEVELS = [2, 5].freeze
+      # AG-133 : balcons filants à chaque étage au-dessus du rez-de-chaussée (immeuble balnéaire).
       # AG-106 : garde-corps de balcon (docs/TEINTES_ABORDS_CONTRACT.md).
       RAIL_HEIGHT_M = 1.00
       RAIL_TOP_M = 0.05
@@ -109,7 +110,7 @@ module Archgen
         features = config['features']
         problems = []
         problems.concat(cornice_problems(config, levels, openings)) if features['cornice']
-        balcony_levels = features['balcony'] ? levels.select { |l| BALCONY_LEVELS.include?(l.index) } : []
+        balcony_levels = features['balcony'] ? levels.select { |l| balcony_level?(l, features) } : []
         problems.concat(balcony_problems(config, balcony_levels, openings))
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
@@ -251,6 +252,11 @@ module Archgen
         end
       end
       private_class_method :fascia_problems
+
+      def balcony_level?(level, features)
+        features['balcony_levels'] == 'all' ? level.index >= 1 : BALCONY_LEVELS.include?(level.index)
+      end
+      private_class_method :balcony_level?
 
       def balcony_warning(balcony_levels)
         reason = balcony_levels.empty? ? 'no_balcony_level' : 'balcony_no_room'

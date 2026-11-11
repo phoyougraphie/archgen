@@ -375,6 +375,11 @@
             "bars",
             "solid"
           ]
+        },
+        "balcony_levels": {
+          "enum": [
+            "all"
+          ]
         }
       },
       "additionalProperties": false,
