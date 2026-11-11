@@ -98,9 +98,11 @@ module Archgen
           return Result.fail([Diagnostic.error('E_STREET_PARCEL', "/parcels/#{parcel['id']}/detached/side_gap_m", reason: 'detached_too_narrow', id: parcel['id'],
                                                                                                                     min: DETACHED_MIN_WIDTH_M, value: Quant.q(x1 - x0))])
         end
-        if spec['front_setback_m'] + spec['building_depth_m'] > parcel['depth_m'] + Quant::EPSILON
+        wing = settings.dig('building', 'wing')
+        wing_depth = wing ? wing['depth_m'] : 0.0
+        if spec['front_setback_m'] + spec['building_depth_m'] + wing_depth > parcel['depth_m'] + Quant::EPSILON
           return Result.fail([Diagnostic.error('E_STREET_PARCEL', '/parcel/detached/building_depth_m', reason: 'detached_too_deep',
-                                                                                                       limit: Quant.q(parcel['depth_m'] - spec['front_setback_m']))])
+                                                                                                       limit: Quant.q(parcel['depth_m'] - spec['front_setback_m'] - wing_depth))])
         end
 
         Result.ok({ 'x_m' => Quant.q(x0), 'width_m' => Quant.q(x1 - x0), 'setback_m' => spec['front_setback_m'], 'depth_m' => spec['building_depth_m'] })

@@ -73,7 +73,9 @@ Le panneau propose déjà tous les styles actifs ; la liste devient longue : gro
 - **Fait (AG-133).** Profils écrits par `scripts/regional_profiles.rb`, vérifiés par U52 en bâtiment seul, rue, rue à angle et îlot ; U95 pour les balcons. RBZ 0.29.0. **Vu dans SketchUp : non** (laissé au propriétaire).
 - **Recadrage (AG-134, ADR-62)**, sur photos du front de mer : option `features.balcony_depth_m` (0,6 à 2,5 m, défaut 0,90 non écrit), champ « Profondeur des balcons » au panneau du bâtiment ; balcons de 1,8 m à barreaux, baies de 2,0 m, commerce de 3,6 m. Reportés : garde-corps vitré, attique en retrait, balcons d'angle, bow-windows.
 - **Attique et verre (AG-135, ADR-63).** `levels.attic_setback_m` et garde-corps `glass` ; le front de mer prend un attique de 2,5 m et un garde-corps vitré. Champs « Retrait de l'attique » et « Vitré » au panneau du bâtiment.
-- **Bâtiments isolés (AG-136, ADR-64).** Voir [ENSEMBLE_CONTRACT](ENSEMBLE_CONTRACT.md), Bâtiments isolés ; reportés : balcons d'angle, bow-windows.
+- **Bâtiments isolés (AG-136, ADR-64).** Voir [ENSEMBLE_CONTRACT](ENSEMBLE_CONTRACT.md), Bâtiments isolés.
+- **Balcons d'angle et bow-windows (AG-137, ADR-65).** Case « Balcons qui tournent l'angle », liste « Bow-window » (travée centrale, travées des bouts) au panneau du bâtiment.
+- **Ailes en L, T, U (AG-138, AG-139, ADR-66).** Liste « Forme » et dimensions de l'aile au panneau du bâtiment ; l'import de carte reconnaît les contours en L, T et U.
 
 ## Tests
 

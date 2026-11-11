@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.32.0
+
+Balcons d'angle, bow-windows, bâtiments en L, T et U (AG-137 à AG-139 ; ADR-65, ADR-66).
+
+**Ajouts**
+
+- **Balcons qui tournent l'angle** sur un bâtiment seul ou isolé.
+- **Bow-windows** sur la travée centrale ou les travées des bouts.
+- **Forme** du bâtiment : rectangle, L, T ou U (ailes vers le jardin).
+- **Import de carte** : les bâtiments en L, T et U ne sont plus ignorés.
+
 ## 0.31.0
 
 Attique, garde-corps vitré, bâtiments isolés (AG-135, AG-136 ; ADR-63, ADR-64).

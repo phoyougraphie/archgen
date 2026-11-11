@@ -22,6 +22,8 @@ module Archgen
       end
 
       def generate_input(input, materials, row)
+        return winged(input, materials, row) if input['wing']
+
         setback = input.dig('levels', 'attic_setback_m').to_f
         return attic(input, materials, row, setback) if setback.positive?
 
@@ -152,26 +154,105 @@ module Archgen
       end
       private_class_method :stack
 
-      # Nœuds déplacés de `offset` (mètres) et renommés « attic/… » ; maillages requantifiés.
-      def shifted(nodes, offset)
+      # Nœuds déplacés de `offset` (mètres), renommés « <prefix>/… » ; `turn` : demi-tour autour de Z
+      # avant le déplacement (aile tournée vers le jardin). Maillages requantifiés.
+      def shifted(nodes, offset, prefix: 'attic', turn: false)
         dx, dy, dz = offset
+        s = turn ? -1.0 : 1.0
         nodes.map do |node|
-          moved = node.merge('id' => "attic/#{node['id']}", 'children' => shifted(node['children'], offset))
+          moved = node.merge('id' => "#{prefix}/#{node['id']}", 'children' => shifted(node['children'], offset, prefix: prefix, turn: turn))
           primitive = node['primitive']
           next moved unless primitive
 
           moved['primitive'] = if primitive['type'] == 'instance'
                                  m = primitive['matrix'].dup
+                                 [0, 1, 4, 5, 8, 9, 12, 13].each { |i| m[i] = Quant.q(m[i] * s) } if turn
                                  m[12] = Quant.q(m[12] + dx)
                                  m[13] = Quant.q(m[13] + dy)
                                  m[14] = Quant.q(m[14] + dz)
-                                 primitive.merge('matrix' => m)
+                                 primitive.merge('matrix' => m.map { |c| c.zero? ? 0.0 : c })
                                else
-                                 primitive.merge('vertices' => primitive['vertices'].map { |x, y, z| Quant.q3([x + dx, y + dy, z + dz]) })
+                                 primitive.merge('vertices' => primitive['vertices'].map { |x, y, z| Quant.q3([(s * x) + dx, (s * y) + dy, z + dz]) })
                                end
           moved
         end
       end
+
+      # --- Ailes (AG-138, ADR-66) : formes en L, en T et en U
+
+      # Le corps tel qu'il serait seul, plus une ou deux ailes accolées à son mur arrière, tournées vers
+      # le jardin (leur façade avant regarde l'arrière), faîtage perpendiculaire à celui du corps.
+      def winged(input, materials, row)
+        wing = input['wing']
+        return Result.fail([wing_error('wing_in_row')]) if row
+
+        width = input['footprint']['width_m']
+        depth = input['footprint']['depth_m']
+        positions = wing['position'] == 'both' ? %w[left right] : [wing['position']]
+        ww = wing['width_m']
+        if ww * positions.size > width + Quant::EPSILON
+          return Result.fail([wing_error('wing_too_wide', limit: Quant.q(width / positions.size))])
+        end
+
+        main = generate_input(input.reject { |k, _| k == 'wing' }, materials, nil)
+        return main unless main.ok?
+
+        levels = input['levels']
+        count = wing['levels'] || levels['count']
+        heights = levels['heights_m'] || []
+        roof = input['roof']
+        roof = roof.merge('ridge' => 'perpendicular') if roof['type'] == 'gable'
+        wing_input = input.reject { |k, _| %w[wing shop ground_floor].include?(k) }.merge(
+          'footprint' => { 'width_m' => ww, 'depth_m' => wing['depth_m'] },
+          'levels' => { 'count' => count, 'height_m' => levels['height_m'], 'heights_m' => heights.first(count) },
+          'facade' => input['facade'].merge('entry_bay' => nil, 'front_bays' => [(input['facade']['front_bays'] * ww / width).floor, 1].max),
+          'roof' => roof,
+          'features' => input['features'].reject { |k, _| %w[balcony balcony_wrap bow_window pilotis shop_front].include?(k) }
+        )
+        built = generate_input(wing_input, materials, nil)
+        return built unless built.ok?
+
+        parts = positions.map do |pos|
+          x = case pos
+              when 'left' then 0.0
+              when 'right' then width - ww
+              else (width - ww) / 2.0
+              end
+          ["wing/#{pos}", built.value, [Quant.q(x + ww), Quant.q(depth + wing['depth_m']), 0.0]]
+        end
+        plan = joined(main.value, parts)
+        problems = PlanValidator.call(plan, materials: materials)
+        return Result.fail(problems) unless problems.empty?
+
+        Result.ok(Canonical.deep_freeze(plan), main.diagnostics + built.diagnostics)
+      end
+      private_class_method :winged
+
+      def wing_error(reason, **params)
+        Diagnostic.error('E_ROOF_GEOMETRY', '/wing', reason: reason, **params)
+      end
+      private_class_method :wing_error
+
+      def joined(main, parts)
+        root = main['nodes'].first
+        extra = parts.map { |prefix, plan, offset| Geometry::Node.group(prefix, 'building', shifted(plan['nodes'].first['children'], offset, prefix: prefix, turn: true)) }
+        nodes = [root.merge('children' => root['children'] + extra)]
+        definitions = parts.reduce(main['definitions']) { |acc, (_, plan, _)| acc.merge(plan['definitions']) }
+        definition_faces = definitions.transform_values { |list| count_faces(list) }
+        own = count_faces(nodes)
+        openings = main['openings'] + parts.flat_map { |prefix, plan, _| plan['openings'].map { |o| o.merge('id' => "#{prefix}/#{o['id']}") } }
+        metrics = main['metrics'].merge(
+          'wall_top_z_m' => ([main] + parts.map { |p| p[1] }).map { |p| p['metrics']['wall_top_z_m'] }.max,
+          'roof_top_z_m' => ([main] + parts.map { |p| p[1] }).map { |p| p['metrics']['roof_top_z_m'] }.max,
+          'opening_count' => openings.size,
+          'unique_face_count' => own + definition_faces.values.sum,
+          'expanded_face_count' => own + instance_definitions(nodes).sum { |id| definition_faces.fetch(id) },
+          'wall_cell_count' => main['metrics']['wall_cell_count'] + parts.sum { |p| p[1]['metrics']['wall_cell_count'] },
+          'detail_definition_count' => definitions.size
+        )
+        main.merge('nodes' => nodes, 'definitions' => definitions, 'openings' => openings, 'metrics' => metrics)
+      end
+      private_class_method :joined
       private_class_method :shifted
 
       def plan_digest(plan)

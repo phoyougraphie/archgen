@@ -54,6 +54,15 @@ L'aperçu à droite est recalculé à chaque changement, sans rien écrire dans 
 
 **Limites :** emprise de 60 × 60 m, 15 niveaux, 60 m sous toit, 90 m au sommet, 720 ouvertures. Au-delà, ARCHGEN refuse sans modifier le modèle.
 
+### Formes, balcons d'angle, bow-windows (0.32.0)
+
+- **Forme** : rectangle, en L (aile à gauche ou à droite), en T ou en U ; réglez la largeur et la profondeur de l'aile. Les ailes partent du mur arrière, côté jardin. Bâtiment seul ou rue de bâtiments isolés seulement.
+- **Balcons qui tournent l'angle** : les balcons longent aussi les deux côtés (bâtiment seul ou isolé).
+- **Bow-window** : avancée vitrée aux étages, sur la travée centrale ou sur les travées des bouts ; pas avec des balcons au même niveau ni avec des volets.
+- **Retrait de l'attique** (0.31.0) et garde-corps **Vitré**.
+
+L'import de carte transforme désormais les bâtiments en L, T ou U en corps et ailes.
+
 ## Modifier un bâtiment
 
 1. Sélectionnez un seul bâtiment ARCHGEN, au niveau du modèle.

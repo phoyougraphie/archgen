@@ -27,12 +27,26 @@ class MapBuildingsTest < Minitest::Test
     assert_equal [9.0, 12.0], [rect[:width], rect[:height]].map { |s| s.round(6) }.sort
   end
 
-  def test_an_l_shape_is_refused_below_eighty_five_percent
+  # AG-139 : un L devient un corps et une aile ; une croix ne s'en approche pas assez et reste comptée.
+  def test_an_l_shape_becomes_a_body_with_a_wing
     ell = [[0, 0], [20, 0], [20, 8], [8, 8], [8, 20], [0, 20]]
     assert_operator MapBuildings.oriented_rectangle(ell)[:fill], :<, 0.85
     value = convert([building(1, ell)])
-    assert_empty value['buildings']
-    assert_equal({ 'not_rectangular' => 1 }, value['skipped'])
+    assert_equal 1, value['buildings'].size
+    draft = value['buildings'].first['draft']
+    wing = draft['wing']
+    assert wing, draft.inspect
+    assert_includes %w[left right], wing['position']
+    assert_in_delta 20.0, draft['footprint']['depth_m'] + wing['depth_m'], 0.01
+    assert_in_delta 8.0, draft['footprint']['depth_m'], 0.7
+    assert_in_delta 8.0, wing['width_m'], 0.7
+    resolved = ConfigResolver.resolve(draft.merge('profile' => { 'id' => 'maison_moderne' }), registry: Archgen::Composition.registry.value, intake: Archgen::Composition.intake)
+    assert resolved.ok?, resolved.errors.map(&:to_h).inspect
+    assert GeometryEngine.generate(resolved.value).ok?
+    tee = [[0, 0], [24, 0], [24, 8], [16, 8], [16, 20], [8, 20], [8, 8], [0, 8]]
+    assert_equal 'center', convert([building(2, tee)])['buildings'].first.dig('draft', 'wing', 'position')
+    cross = [[10, 0], [18, 0], [18, 10], [28, 10], [28, 18], [18, 18], [18, 28], [10, 28], [10, 18], [0, 18], [0, 10], [10, 10]]
+    assert_equal({ 'not_rectangular' => 1 }, convert([building(3, cross)])['skipped'])
   end
 
   def test_levels_from_tags_then_height_then_default

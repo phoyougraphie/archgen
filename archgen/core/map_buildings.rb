@@ -17,6 +17,12 @@ module Archgen
       MAX_BUILDINGS = 300
       FRONT_REACH_M = 30.0
       OVERLAP_RATIO = 0.01
+      # AG-139 (ADR-66) : un contour qui ne remplit pas son rectangle est essayé en corps + ailes.
+      MIN_SHAPE_FIT = 0.80
+      SHAPE_CELLS = 60
+      MIN_MAIN_DEPTH_M = 4.0
+      MIN_WING_WIDTH_M = 3.0
+      MIN_WING_DEPTH_M = 2.0
 
       # map : MapReader ; roads : polylignes en mètres (voies importées) ; style : identifiant de profil.
       def call(map, style:, roads: [], mode: 'shell')
@@ -32,7 +38,12 @@ module Archgen
 
           rect = oriented_rectangle(building['ring_m'])
           next skipped['degenerate'] += 1 unless rect
-          next skipped['not_rectangular'] += 1 if rect[:fill] < MIN_FILL
+
+          shape = nil
+          if rect[:fill] < MIN_FILL
+            shape = shaped(building['ring_m'], rect[:corners], roads)
+            next skipped['not_rectangular'] += 1 unless shape
+          end
 
           sides = [rect[:width], rect[:height]]
           next skipped['size'] += 1 unless sides.all? { |s| s.between?(MIN_SIDE_M, MAX_SIDE_M) }
@@ -43,7 +54,7 @@ module Archgen
           corners = rect[:corners]
           next skipped['overlap'] += 1 if placed.any? { |other| overlap?(corners, other[:corners]) }
 
-          placed << { building: building, corners: corners, levels: levels }
+          placed << { building: building, corners: corners, levels: levels, shape: shape }
         end
         out = placed.map { |p| entry(p, style, mode, roads) }
         Result.ok({ 'buildings' => out, 'skipped' => skipped.sort.to_h })
@@ -97,7 +108,8 @@ module Archgen
       def entry(placed, style, mode, roads)
         corners = placed[:corners]
         sides = (0...4).map { |i| [corners[i], corners[(i + 1) % 4]] }
-        front = front_side(sides, roads)
+        shape = placed[:shape]
+        front = shape ? shape[:front] : front_side(sides, roads)
         a, b = sides[front]
         width = Math.hypot(b[0] - a[0], b[1] - a[1])
         depth = Math.hypot(corners[(front + 2) % 4][0] - b[0], corners[(front + 2) % 4][1] - b[1])
@@ -108,8 +120,97 @@ module Archgen
         draft = { 'schema_version' => 1, 'name' => name_of(building), 'profile' => { 'id' => style }, 'mode' => mode,
                   'seed' => seed, 'footprint' => { 'width_m' => Quant.q(width), 'depth_m' => Quant.q(depth) },
                   'levels' => { 'count' => placed[:levels] } }
+        if shape
+          draft['footprint']['depth_m'] = shape[:depth]
+          draft['wing'] = shape[:wing]
+        end
         { 'id' => building['id'], 'draft' => draft, 'origin_m' => a.map { |c| Quant.q(c) },
           'x_axis' => x_axis.map { |c| Quant.q(c) }, 'front' => front }
+      end
+
+      # Corps + ailes (AG-139) : dans le repère de la façade avant (x le long, y vers l'arrière), le
+      # contour est échantillonné sur une grille ; le corps prend toute la largeur sur une profondeur,
+      # une ou deux ailes (gauche, droite, centre, les deux) le prolongent vers l'arrière. La meilleure
+      # combinaison est gardée si elle recouvre le contour à MIN_SHAPE_FIT près (intersection sur union).
+      def shaped(ring, corners, roads)
+        sides = (0...4).map { |i| [corners[i], corners[(i + 1) % 4]] }
+        front = front_side(sides, roads)
+        a, b = sides[front]
+        width = Math.hypot(b[0] - a[0], b[1] - a[1])
+        c = corners[(front + 2) % 4]
+        depth = Math.hypot(c[0] - b[0], c[1] - b[1])
+        return nil if width < MIN_SIDE_M || depth < MIN_MAIN_DEPTH_M + MIN_WING_DEPTH_M
+
+        x_axis = [(b[0] - a[0]) / width, (b[1] - a[1]) / width]
+        y_axis = [-x_axis[1], x_axis[0]]
+        step = [width, depth].max / SHAPE_CELLS
+        cols = (width / step).ceil
+        rows = (depth / step).ceil
+        grid = (0...rows).map do |r|
+          (0...cols).map do |k|
+            x = (k + 0.5) * step
+            y = (r + 0.5) * step
+            inside?([a[0] + (x * x_axis[0]) + (y * y_axis[0]), a[1] + (x * x_axis[1]) + (y * y_axis[1])], ring)
+          end
+        end
+        best = best_shape(grid, step, width, depth)
+        return nil unless best && best[:score] >= MIN_SHAPE_FIT
+
+        { front: front, depth: Quant.q(best[:main]), wing: best[:wing] }
+      end
+
+      def best_shape(grid, step, width, depth)
+        rows = grid.size
+        cols = grid.first.size
+        best = nil
+        min_main = (MIN_MAIN_DEPTH_M / step).ceil
+        max_main = rows - (MIN_WING_DEPTH_M / step).ceil
+        (min_main..max_main).each do |m|
+          behind = (m...rows).to_a
+          share = (0...cols).map { |k| behind.count { |r| grid[r][k] }.fdiv(behind.size) >= 0.5 }
+          left = share.take_while(&:itself).size
+          right = share.reverse.take_while(&:itself).size
+          mid = cols / 2
+          centre = share[mid] ? (mid - share[0..mid].reverse.take_while(&:itself).size + 1..mid + share[mid..].take_while(&:itself).size - 1) : nil
+          options = []
+          options << ['left', [[0, left]]] if left.positive? && left < cols
+          options << ['right', [[cols - right, cols]]] if right.positive? && right < cols
+          if centre && centre.first.positive? && centre.last < cols - 1
+            half = [mid - centre.first, centre.last - mid].min
+            options << ['center', [[mid - half, mid + half + 1]]] if half.positive?
+          end
+          if left.positive? && right.positive? && left + right < cols
+            each = [left, right].min
+            options << ['both', [[0, each], [cols - each, cols]]]
+          end
+          options.each do |pos, spans|
+            wing_cols = spans.first[1] - spans.first[0]
+            ww = wing_cols * step
+            next if ww < MIN_WING_WIDTH_M
+
+            model = (0...rows).map { |r| (0...cols).map { |k| r < m || spans.any? { |s0, s1| k >= s0 && k < s1 } } }
+            inter = 0
+            union = 0
+            rows.times { |r| cols.times { |k| inter += 1 if model[r][k] && grid[r][k]; union += 1 if model[r][k] || grid[r][k] } }
+            score = union.zero? ? 0 : inter.fdiv(union)
+            next if best && score <= best[:score]
+
+            wing_width = pos == 'center' ? wing_cols * step : ww
+            best = { score: score, main: [m * step, depth].min,
+                     wing: { 'position' => pos, 'width_m' => Quant.q([wing_width, width / (pos == 'both' ? 2 : 1)].min), 'depth_m' => Quant.q(depth - (m * step)) } }
+          end
+        end
+        best
+      end
+
+      def inside?(point, ring)
+        x, y = point
+        inside = false
+        ring.each_with_index do |p, i|
+          q = ring[(i + 1) % ring.size]
+          inside = !inside if ((p[1] > y) != (q[1] > y)) && (x < (((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1])) + p[0])
+        end
+        inside
       end
 
       def front_side(sides, roads)

@@ -245,10 +245,25 @@
       case 'entrance': return text;
       case 'rail': return text;
       case 'balconies': return text;
+      case 'bow': return text;
+      case 'wing': return wingValue(text);
       case 'check': return field.checked;
       case 'ground': return field.checked ? 'shop' : 'dwelling';
       default: return text.trim() === '' ? null : text;
     }
+  }
+
+  // AG-138 : la forme envoie l'aile entière ; « none » la retire.
+  function wingValue(position) {
+    var width = L.parseDecimal(document.getElementById('f-wing-width').value);
+    var depth = L.parseDecimal(document.getElementById('f-wing-depth').value);
+    return { position: position, width_m: width === null ? 4 : width, depth_m: depth === null ? 5 : depth };
+  }
+
+  function writeWing(field, value) {
+    field.value = value ? value.position : 'none';
+    document.getElementById('f-wing-width').value = value ? String(value.width_m).replace('.', ',') : '';
+    document.getElementById('f-wing-depth').value = value ? String(value.depth_m).replace('.', ',') : '';
   }
 
   function onFieldInput(event) {
@@ -798,6 +813,8 @@
       case 'entrance': field.value = value || 'none'; break;
       case 'rail': field.value = value || 'none'; break;
       case 'balconies': field.value = value || 'noble'; break;
+      case 'bow': field.value = value || 'none'; break;
+      case 'wing': writeWing(field, value); break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }
   }
@@ -886,6 +903,9 @@
 
   fields.forEach(function (field) {
     field.addEventListener(L.isToggle(field.dataset.kind) || field.tagName === 'SELECT' ? 'change' : 'input', onFieldInput);
+  });
+  ['f-wing-width', 'f-wing-depth'].forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () { onFieldInput({ target: document.getElementById('f-wing') }); });
   });
   el.profile.addEventListener('change', onProfileChange);
   el.roof.addEventListener('change', onRoofChange);

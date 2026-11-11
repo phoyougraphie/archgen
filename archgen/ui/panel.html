@@ -33,6 +33,9 @@
       <legend>Dimensions</legend>
       <div class="field"><label for="f-width">Largeur (m)</label><input id="f-width" data-path="/footprint/width_m" data-kind="number" inputmode="decimal"></div>
       <div class="field"><label for="f-depth">Profondeur (m)</label><input id="f-depth" data-path="/footprint/depth_m" data-kind="number" inputmode="decimal"></div>
+      <div class="field"><label for="f-wing">Forme</label><select id="f-wing" data-path="/wing" data-kind="wing"><option value="none">Rectangle</option><option value="left">En L, aile à gauche</option><option value="right">En L, aile à droite</option><option value="center">En T</option><option value="both">En U</option></select></div>
+      <div class="field"><label for="f-wing-width">Largeur de l’aile (m)</label><input id="f-wing-width" inputmode="decimal" placeholder="4"></div>
+      <div class="field"><label for="f-wing-depth">Profondeur de l’aile (m)</label><input id="f-wing-depth" inputmode="decimal" placeholder="5"></div>
       <div class="field"><label for="f-count">Niveaux, RDC inclus</label><input id="f-count" data-path="/levels/count" data-kind="int" inputmode="numeric"></div>
       <div class="field"><label for="f-height">Hauteur courante (m)</label><input id="f-height" data-path="/levels/height_m" data-kind="number" inputmode="decimal"></div>
     </fieldset>
@@ -84,6 +87,8 @@
         <div class="field"><label for="f-mframes">Cadres</label><select id="f-mframes" data-path="/materials/frames" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field check"><input type="checkbox" id="f-cornice" data-path="/features/cornice" data-kind="check"><label for="f-cornice">Corniche</label></div>
         <div class="field check"><input type="checkbox" id="f-balcony" data-path="/features/balcony" data-kind="check"><label for="f-balcony">Balcon</label></div>
+        <div class="field check"><input type="checkbox" id="f-balcony-wrap" data-path="/features/balcony_wrap" data-kind="check"><label for="f-balcony-wrap">Balcons qui tournent l’angle</label></div>
+        <div class="field"><label for="f-bow">Bow-window</label><select id="f-bow" data-path="/features/bow_window" data-kind="bow"><option value="none">Aucun</option><option value="center">Travée centrale</option><option value="ends">Travées des bouts</option></select></div>
         <div class="field check"><input type="checkbox" id="f-surrounds" data-path="/features/surrounds" data-kind="check"><label for="f-surrounds">Encadrements</label></div>
       </fieldset>
       <fieldset>

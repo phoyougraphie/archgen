@@ -100,7 +100,8 @@ Chaque parcelle reçoit une configuration effective complète : largeur W, profo
 - retrait + profondeur du bâtiment ≤ profondeur du terrain (`detached_too_deep`) ;
 - travées : la largeur de travée de la rue en façade, la moitié du nombre qui tient en profondeur sur chaque côté ;
 - un îlot fermé n'a aucun accès ; deux bâtiments identiques partagent leur définition ;
-- l'étagement sur terrain est refusé (`detached_site_unavailable`, `E_STREET_SITE`).
+- l'étagement sur terrain est refusé (`detached_site_unavailable`, `E_STREET_SITE`) ;
+- une aile (ADR-66) prolonge le bâtiment vers le fond : retrait + profondeur + profondeur de l'aile ≤ profondeur du terrain ; en rangée, une aile est refusée (`wing_in_row`).
 
 Panneau de rue : case « Bâtiments isolés sur leur terrain », écart (3 m), retrait (5 m), profondeur du bâtiment (10 m) ; cochée, une profondeur de terrain de moins de 20 m passe à 25 m. Tests U98.
 

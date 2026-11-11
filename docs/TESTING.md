@@ -91,6 +91,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U96 | Profondeur des balcons (AG-134, balcony_levels_test) : 1,8 m du style écrite et posée ; 0,90 m non écrite. |
 | U97 | Attique et verre (AG-135, attic_test) : attique reculé de 2,5 m au-dessus du corps, garde-corps de terrasse, refus à un niveau et trop profond, attique en rue à angle ; garde-corps vitré sans barreaux. |
 | U98 | Bâtiments isolés (AG-136, detached_test) : retrait et largeur exacts, bâtiments jamais en contact, définition partagée ; trois styles en angle et en îlot sans accès ; refus trop étroit et trop profond. |
+| U99 | Formes et avancées (AG-137, AG-138, shapes_and_bays_test) : balcon en U de −1,8 à L + 1,8 le long des côtés, repli en rangée ; bow-windows empilés sur la travée centrale ou les bouts, une dalle haute ; refus balcon, volets ; ailes gauche, droite, centre, les deux à leur place exacte ; « none » retire aile et bow-window ; aile refusée en rangée, permise en rue isolée. U89 : L en corps + aile, T au centre, croix refusée (AG-139). |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

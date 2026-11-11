@@ -78,6 +78,12 @@ module Archgen
       BALCONY_DEPTH_M = 0.90
       BALCONY_THICKNESS_M = 0.12
       BALCONY_LEVELS = [2, 5].freeze
+      # AG-137 : bow-window, avancée vitrée d'un étage à l'autre devant une baie.
+      BOW_DEPTH_M = 0.70
+      BOW_SIDE_M = 0.30
+      BOW_SLAB_M = 0.15
+      BOW_POST_M = 0.06
+      BOW_PANE_M = 0.02
       # AG-133 : balcons filants à chaque étage au-dessus du rez-de-chaussée (immeuble balnéaire).
       # AG-106 : garde-corps de balcon (docs/TEINTES_ABORDS_CONTRACT.md).
       RAIL_HEIGHT_M = 1.00
@@ -114,7 +120,11 @@ module Archgen
         problems = []
         problems.concat(cornice_problems(config, levels, openings)) if features['cornice']
         balcony_levels = features['balcony'] ? levels.select { |l| balcony_level?(l, features) } : []
-        problems.concat(balcony_problems(config, balcony_levels, openings))
+        # AG-137 : balcons qui tournent l'angle, sur un bâtiment seul et rectangulaire seulement.
+        wrap = features['balcony_wrap'] && !row && !footprint.trapezoid?
+        problems.concat(balcony_problems(config, balcony_levels, openings, wrap))
+        bows = features['bow_window'] ? bow_openings(openings, config) : []
+        problems.concat(bow_problems(config, bows, balcony_levels, features))
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
@@ -144,10 +154,13 @@ module Archgen
         nodes << fascia_node if fascia_node
         nodes += chimneys(footprint, levels, config, roof_top_z_m, row, cross) if features['chimneys'] && roof_top_z_m
         nodes += dormer_nodes(footprint, levels, config, dormers.value, definitions) if dormers
-        built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config) : []
+        built_balconies = features['balcony'] ? balconies(footprint, balcony_levels, config, wrap) : []
         nodes += built_balconies
-        nodes += balcony_rails(footprint, balcony_levels, config, definitions) if features['balcony_rail'] && !built_balconies.empty?
+        nodes += balcony_rails(footprint, balcony_levels, config, definitions, wrap) if features['balcony_rail'] && !built_balconies.empty?
+        nodes += bow_windows(footprint, bows, levels, config)
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/balcony_wrap', reason: 'balcony_wrap_in_row') if features['balcony'] && features['balcony_wrap'] && !wrap
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/bow_window', reason: 'no_bow_window') if features['bow_window'] && bows.empty?
         warnings += dormers.warnings if dormers
         porch_warning = features['classical'] ? OrnamentSolver.porch_warning(footprint, openings, config) : nil
         warnings << porch_warning if porch_warning
@@ -297,11 +310,12 @@ module Archgen
       private_class_method :cornice_problems
 
       # Une dalle de balcon passerait devant la baie ou l'encadrement du dessous.
-      def balcony_problems(config, balcony_levels, openings)
+      def balcony_problems(config, balcony_levels, openings, wrap = false)
         head = config['features']['surrounds'] ? SURROUND_BAR_M : 0.0
+        faced = wrap ? openings.select { |o| %w[front left right].include?(o.facade_id) } : front(openings)
         balcony_levels.flat_map do |level|
           bottom = level.base_z_m - BALCONY_THICKNESS_M
-          front(openings).filter_map do |opening|
+          faced.filter_map do |opening|
             next unless opening.z_max_m + head > bottom + EPS && opening.z_min_m < level.base_z_m - EPS
 
             Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/balcony', reason: 'balcony_over_opening', id: opening.id, level: level.index)
@@ -585,10 +599,17 @@ module Archgen
       private_class_method :mitred_cornice
 
       # Du premier au dernier axe de travée plus un demi-pas : de la marge à la marge.
-      def balconies(footprint, balcony_levels, config)
+      def balconies(footprint, balcony_levels, config, wrap = false)
         facade = footprint.facade('front')
         margin = config['facade']['margin_m']
         return mitred_balconies(footprint, balcony_levels, margin, config) if footprint.trapezoid?
+
+        if wrap
+          ring = wrap_ring(footprint, balcony_depth(config), margin)
+          return balcony_levels.map do |level|
+            Node.leaf("balcony/#{level.index}", 'balcony', wrap_slab(ring, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m, balcony_material(config)))
+          end
+        end
 
         balcony_levels.map do |level|
           Node.leaf("balcony/#{level.index}", 'balcony',
@@ -610,12 +631,17 @@ module Archgen
 
       # Main courante et barreaux (une définition partagée), ou muret plein, sur les trois côtés
       # libres du balcon ; le côté du mur reste ouvert.
-      def balcony_rails(footprint, balcony_levels, config, definitions)
+      def balcony_rails(footprint, balcony_levels, config, definitions, wrap = false)
         margin = config['facade']['margin_m']
         ring = footprint.trapezoid? ? mitred_ring(footprint, margin, balcony_depth(config)) : rect_ring(footprint, margin, balcony_depth(config))
         return [] unless ring
 
         segments = [[ring[3], ring[0]], [ring[0], ring[1]], [ring[1], ring[2]]]
+        if wrap
+          u = wrap_ring(footprint, balcony_depth(config), margin)
+          # Bord extérieur du U, avec ses deux retours contre les murs latéraux.
+          segments = [[u[6], u[7]], [u[7], u[0]], [u[0], u[1]], [u[1], u[2]], [u[2], u[3]]]
+        end
         solid = config['features']['balcony_rail'] == 'solid'
         glass = config['features']['balcony_rail'] == 'glass'
         rails_on(segments, balcony_levels.map(&:base_z_m), config, definitions, solid, glass, ->(z) { balcony_levels.find { |l| l.base_z_m == z }.index })
@@ -649,6 +675,108 @@ module Archgen
         end
       end
       private_class_method :rails_on
+
+      # Balcon en U (AG-137) : devant la façade, d'un bout à l'autre plus la profondeur, et le long des
+      # deux murs latéraux jusqu'à `margin` du fond. Anneau direct, de 8 sommets.
+      def wrap_ring(footprint, depth, margin)
+        w = footprint.width_m
+        back = Core::Quant.q(footprint.depth_m - margin)
+        d = Core::Quant.q(depth)
+        [[-d, -d], [Core::Quant.q(w + d), -d], [Core::Quant.q(w + d), back], [w, back], [w, 0.0], [0.0, 0.0], [0.0, back], [-d, back]]
+      end
+      private_class_method :wrap_ring
+
+      # Dalle en U fermée : dessus et dessous en cinq quadrilatères (trois devant, un par côté), sans
+      # sommet en T ; contour extérieur et intérieur en faces verticales.
+      def wrap_slab(ring, z0, z1, material)
+        d0, w0 = ring[0]
+        wd = ring[1][0]
+        back = ring[2][1]
+        w = ring[3][0]
+        p = { o0: [d0, w0], o1: [0.0, w0], o2: [w, w0], o3: [wd, w0], a: [d0, 0.0], f0: [0.0, 0.0], f1: [w, 0.0], c: [wd, 0.0],
+              lb: [d0, back], li: [0.0, back], rb: [wd, back], ri: [w, back] }
+        quads = [%i[o0 o1 f0 a], %i[o1 o2 f1 f0], %i[o2 o3 c f1], %i[a f0 li lb], %i[f1 c rb ri]]
+        outline = %i[o0 o1 o2 o3 c rb ri f1 f0 li lb a]
+        mesh = MeshBuilder.new('solid')
+        quads.each do |quad|
+          mesh.add_face(quad.map { |k| p[k] + [z1] }, material)
+          mesh.add_face(quad.reverse.map { |k| p[k] + [z0] }, material)
+        end
+        outline.each_index do |n|
+          a = p[outline[n]]
+          b = p[outline[(n + 1) % outline.size]]
+          mesh.add_face([a + [z0], b + [z0], b + [z1], a + [z1]], material)
+        end
+        mesh.to_primitive
+      end
+      private_class_method :wrap_slab
+
+      # --- Bow-windows (AG-137, ADR-65)
+
+      # Fenêtres de façade, aux étages, des travées choisies : centre, ou les deux bouts.
+      def bow_openings(openings, config)
+        windows = front(openings).select { |o| o.kind == 'window' && o.level_index >= 1 }
+        bays = windows.map(&:bay_index).uniq.sort
+        return [] if bays.empty?
+
+        chosen = config['features']['bow_window'] == 'ends' ? [bays.first, bays.last].uniq : [bays[bays.size / 2]]
+        windows.select { |o| chosen.include?(o.bay_index) }
+      end
+      private_class_method :bow_openings
+
+      def bow_problems(config, bows, balcony_levels, features)
+        return [] if bows.empty?
+
+        out = []
+        clash = bows.map(&:level_index) & balcony_levels.map(&:index)
+        clash |= bows.map { |o| o.level_index + 1 } & balcony_levels.map(&:index)
+        out << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/bow_window', reason: 'bow_window_with_balcony', levels: clash.sort) unless clash.empty?
+        out << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/bow_window', reason: 'bow_window_with_shutters') if features['shutters']
+        margin = config['facade']['margin_m']
+        bows.each do |o|
+          next if o.u_min_m - BOW_SIDE_M >= margin - EPS
+
+          out << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/bow_window', reason: 'bow_window_facade_end', id: o.id)
+        end
+        out.uniq(&:to_h)
+      end
+      private_class_method :bow_problems
+
+      # Une avancée par travée : dalle basse à chaque étage, vitrage jusqu'à la dalle suivante,
+      # montants aux angles, dalle haute sur le dernier étage de la colonne.
+      def bow_windows(footprint, bows, levels, config)
+        return [] if bows.empty?
+
+        facade = footprint.facade('front')
+        wall = config['materials']['wall']
+        frames = config['materials']['frames']
+        glass = config['materials']['glass'] || 'glass'
+        by_level = levels.to_h { |l| [l.index, l] }
+        bows.group_by(&:bay_index).flat_map do |bay, column|
+          column = column.sort_by(&:level_index)
+          u0 = Core::Quant.q(column.map(&:u_min_m).min - BOW_SIDE_M)
+          u1 = Core::Quant.q(column.map(&:u_max_m).max + BOW_SIDE_M)
+          d = -BOW_DEPTH_M
+          column.each_with_index.flat_map do |o, k|
+            level = by_level.fetch(o.level_index)
+            above = column[k + 1] && by_level[column[k + 1].level_index]
+            z0 = level.base_z_m
+            top = above ? above.base_z_m - BOW_SLAB_M : level.top_z_m
+            id = "bow/#{bay}/#{o.level_index}"
+            parts = [
+              Node.leaf("#{id}/floor", 'balcony', Boxes.on_facade(facade, u0, u1, z0 - BOW_SLAB_M, z0, d, 0.0, wall)),
+              Node.leaf("#{id}/front", 'balcony', Boxes.on_facade(facade, u0 + BOW_POST_M, u1 - BOW_POST_M, z0, top, d, d + BOW_PANE_M, glass)),
+              Node.leaf("#{id}/left", 'balcony', Boxes.on_facade(facade, u0, u0 + BOW_PANE_M, z0, top, d + BOW_POST_M, 0.0, glass)),
+              Node.leaf("#{id}/right", 'balcony', Boxes.on_facade(facade, u1 - BOW_PANE_M, u1, z0, top, d + BOW_POST_M, 0.0, glass)),
+              Node.leaf("#{id}/post/0", 'balcony', Boxes.on_facade(facade, u0, u0 + BOW_POST_M, z0, top, d, d + BOW_POST_M, frames)),
+              Node.leaf("#{id}/post/1", 'balcony', Boxes.on_facade(facade, u1 - BOW_POST_M, u1, z0, top, d, d + BOW_POST_M, frames))
+            ]
+            parts << Node.leaf("#{id}/roof", 'balcony', Boxes.on_facade(facade, u0, u1, top, top + BOW_SLAB_M, d, 0.0, wall)) unless above
+            parts
+          end
+        end
+      end
+      private_class_method :bow_windows
 
       def rect_ring(footprint, margin, depth)
         x0 = margin

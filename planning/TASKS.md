@@ -261,6 +261,9 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-134 — Front de mer recadré, RBZ 0.30.0** | AG-133, ADR-62 | Profondeur des balcons réglable ; profil recadré sur photos. | U96, U95, U52 verts. |
 | **AG-135 — Attique et garde-corps vitré** | AG-134, ADR-63 | `levels.attic_setback_m`, corps et attique composés ; garde-corps `glass`. | U97 vert. |
 | **AG-136 — Bâtiments isolés, RBZ 0.31.0** | AG-135, ADR-64 | `parcel.detached`, bâtiment seul posé dans sa parcelle ; panneau de rue. | U98 vert ; rues, angles, îlots. |
+| **AG-137 — Balcons d'angle et bow-windows** | AG-136, ADR-65 | `features.balcony_wrap`, `features.bow_window`. | U99 vert. |
+| **AG-138 — Ailes en L, T, U** | AG-137, ADR-66 | `wing`, corps et ailes composés ; panneau Forme. | U99 vert. |
+| **AG-139 — Contours en L, T, U à l'import, RBZ 0.32.0** | AG-138, ADR-66 | Ajustement corps + ailes sur grille. | U89 vert. |
 
 ## J21 — Intérieur
 

@@ -153,6 +153,40 @@
           },
           "additionalProperties": false
         },
+        "wing": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "enum": [
+                "left",
+                "right",
+                "center",
+                "both"
+              ]
+            },
+            "width_m": {
+              "type": "number",
+              "minimum": 3,
+              "maximum": 40
+            },
+            "depth_m": {
+              "type": "number",
+              "minimum": 2,
+              "maximum": 40
+            },
+            "levels": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            }
+          },
+          "required": [
+            "position",
+            "width_m",
+            "depth_m"
+          ],
+          "additionalProperties": false
+        },
         "levels": {
           "type": "object",
           "properties": {
@@ -432,6 +466,15 @@
               "type": "number",
               "minimum": 0.6,
               "maximum": 2.5
+            },
+            "balcony_wrap": {
+              "type": "boolean"
+            },
+            "bow_window": {
+              "enum": [
+                "center",
+                "ends"
+              ]
             }
           },
           "additionalProperties": false

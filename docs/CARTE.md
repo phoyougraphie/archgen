@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.31.0 : attique, garde-corps vitré, bâtiments isolés (ADR-63, ADR-64). Suite possible : étagement des bâtiments isolés, balcons d'angle, bow-windows ; EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/ENSEMBLE_CONTRACT.md)
+  - Prochaine action — 0.32.0 : balcons d'angle, bow-windows, bâtiments en L, T, U, import des contours en L, T, U (ADR-65, ADR-66). À regarder dans SketchUp. Suite possible : étagement des bâtiments isolés, jonction des toits des ailes ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECISIONS.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -152,6 +152,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-133 — Les balcons n'existaient qu'aux niveaux 2 et 5 : option « tous les étages » ajoutée avant le profil du front de mer (règle 5). Le porche d'îlot ne tient pas sous 2,8 m : accès par interruption. Une rue de maisons reste mitoyenne.
     - 2026-11-11 AG-134 — Photos du propriétaire : la profondeur des balcons fait le style. Révision 1 du front de mer remplacée le jour même, jamais utilisée. Baies de 2,4 m refusées en parcelle d'angle par U52 : 2,0 m.
     - 2026-11-11 AG-135, AG-136 — Attique : deux plans validés empilés plutôt qu'un retrait appris par chaque solveur ; en angle, l'attique garde des travées de même largeur. Isolés : seul le placement change ; limite latérale prise au fond du bâtiment, sinon les parcelles d'angle rentrant étaient refusées.
+    - 2026-11-11 AG-137 à AG-139 — Une face de plan a 3 ou 4 sommets : la dalle en U est faite de cinq quadrilatères sans sommet en T. Les ailes sont des bâtiments seuls tournés d'un demi-tour (matrices d'instance comprises). Import : grille de 60 cases, intersection sur union ; une croix reste refusée.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -317,6 +318,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-134 Front de mer recadré, RBZ 0.30.0 — balcons de 1,8 m (profondeur réglable), barreaux, baies 2,0 m, commerce 3,6 m. U96 vert. Reportés : verre, attique, balcons d'angle. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
     - [fait] AG-135 Attique et garde-corps vitré — corps et attique composés en un plan ; terrasse bordée. U97 vert. (→ docs/DECISIONS.md)
     - [fait] AG-136 Bâtiments isolés, RBZ 0.31.0 — parcel.detached, bâtiment seul dans sa parcelle, îlot sans accès. U98 vert. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-137 Balcons d'angle et bow-windows — dalle en U, avancées vitrées empilées. U99 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-138 Ailes en L, T, U — corps + ailes tournées vers le jardin. U99 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-139 Contours en L, T, U à l'import, RBZ 0.32.0 — ajustement sur grille, 80 % au moins. U89 vert. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

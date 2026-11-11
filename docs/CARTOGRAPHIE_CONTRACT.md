@@ -200,6 +200,10 @@ Les images sont demandées une à la fois, avec `User-Agent: ARCHGEN/<version> (
 
 **Essai réel (2026-11-11), Montauban, 400 m** : 20 tuiles de carte et 72 de photo posées. Les rues importées au §6 tombent sur celles de la carte, rivière et ronds-points compris. La photo est nette (arbres, cours, toitures).
 
+## 8. Contours en L, T, U — AG-139 (ADR-66)
+
+Un contour dont le rectangle orienté remplit moins de 85 % est échantillonné sur 60 cases dans le repère de sa façade avant. Pour chaque profondeur de corps (4 m au moins, 2 m d'aile au moins), les colonnes remplies à moitié derrière le corps donnent une aile à gauche, à droite, au centre ou des deux côtés (3 m de large au moins). La combinaison qui recouvre le mieux le contour (intersection sur union) est gardée à partir de 0,80 ; sinon le bâtiment reste compté `not_rectangular`. Le brouillon reçoit `footprint.depth_m` (le corps) et `wing`. Tests U89.
+
 ## Tests
 
 - **U87** : lecture (`.osm`, GeoJSON, clés gardées, XXE refusé, taille), projection (distances connues à 0,1 % près sur 2 km, déterminisme).

@@ -125,6 +125,7 @@ module Archgen
         merged = merged.merge('structure' => merged['structure'].reject { |key, value| key == 'ground_slab' && value != true })
         merged = merged.merge('facade' => merged['facade'].reject { |key, value| key == 'tint' && !Tint::LEVELS.cover?(value) }) # AG-104 : 0 n'est pas écrit
         merged = merged.merge('levels' => merged['levels'].reject { |key, value| key == 'attic_setback_m' && !value.to_f.positive? }) # AG-135 : 0 n'est pas écrit
+        merged = merged.reject { |key, value| key == 'wing' && value['position'] == 'none' } # AG-138 : « none » retire l'aile
         merged = with_shop(with_glazing(merged.merge(
                                 'schema_version' => 1,
                                 'name' => canonical_name(merged['name']),
@@ -158,6 +159,8 @@ module Archgen
         # AG-098 : devanture ; « none » n'est pas écrit ; la toile seulement avec un store.
         features.delete('shop_front') unless %w[awning pergola].include?(features['shop_front'])
         features.delete('balcony_rail') unless %w[bars solid glass].include?(features['balcony_rail']) # AG-106, AG-135
+        features.delete('bow_window') unless %w[center ends].include?(features['bow_window']) # AG-137
+        features.delete('balcony_wrap') unless features['balcony_wrap'] # AG-137
         features.delete('balcony_levels') unless features['balcony_levels'] == 'all' # AG-133 : « noble » n'est pas écrit
         # AG-134 : profondeur du balcon ; 0,90 m, la valeur d'avant, n'est pas écrite.
         features.delete('balcony_depth_m') if features['balcony_depth_m'].nil? || (features['balcony_depth_m'] - 0.9).abs < 1e-9
