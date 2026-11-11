@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — AG-127 fait (bâtiments OSM en brouillons placés, sans commande visible). Prochain ticket AG-128 Terrain ASCII Grid. Puis AG-129, EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - Prochaine action — AG-128 fait (terrain ASCII Grid recalé, sans commande visible). Prochain ticket AG-129 Téléchargement OSM, commande d'import, RBZ 0.25.0. Puis EXT-08, J22, J21 (reporté). Recettes H26 à H36, H38 et H39 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -144,6 +144,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-125 — REXML n'est plus une bibliothèque par défaut de Ruby 3 et peut manquer dans SketchUp : le XML OSM, très régulier, se lit par un balayage de balises, ce qui rend le refus du DOCTYPE trivial. Dans un bloc scan, un autre scan écrase Regexp.last_match : capturer d'abord.
     - 2026-11-11 AG-126 — Simplifier chaque voie à part effaçait le nœud commun de deux rues qui se croisent, et avec lui le réseau : les points partagés sont fixés avant Douglas-Peucker. Une voie seule doit partir de [0, 0] : le rayon se vérifie sur le tracé ramené à son premier point.
     - 2026-11-11 AG-127 — Le rectangle d'aire minimale d'un polygone a un côté sur l'une de ses arêtes : essayer chaque direction d'arête suffit, sans enveloppe convexe. Des maisons de ville mitoyennes se touchent : seul un chevauchement de plus de 1 % écarte un bâtiment.
+    - 2026-11-11 AG-128 — Une dalle RGE ALTI de 1 km au pas de 1 m donnerait 2 millions de faces : la fenêtre se cale sur la carte et le pas grandit jusqu'à 250 × 250 points. Altitudes relatives à l'origine pour que voies et bâtiments, à z = 0, tombent au sol. Le point d'origine du Lambert-93 sert de témoin exact au test.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -300,7 +301,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-125 Lecture et projection — Core::MapReader (balayage XML borné, StrictJson), MapProjection, E_MAP. U87 vert.
     - [fait] AG-126 Voies en réseaux — Core::MapRoads : table, Douglas-Peucker gardant les points partagés, découpe à 64, rayon uniforme 10/5/0, réseaux de 24. U88 vert.
     - [fait] AG-127 Bâtiments — Core::MapBuildings : rectangle d'aire minimale, remplissage 85 %, niveaux, graine du hachage OSM, façade vers la voie, chevauchements. U89 vert.
-    - [afaire] AG-128 Terrain ASCII Grid — Lambert-93, échelle, convergence, maillage.
+    - [fait] AG-128 Terrain ASCII Grid — Core::MapTerrain : Lambert-93 IGN, échelle et convergence, fenêtre, pas jusqu'à 250², NODATA, altitudes relatives. U90 vert.
     - [afaire] AG-129 Téléchargement, commande, RBZ 0.25.0 — Overpass dans l'adaptateur, panneau, aperçu, attribution ; H40 à faire.
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.

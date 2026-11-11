@@ -107,6 +107,13 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 - Les points `NODATA` sont refusés au-delà de 1 % ; en deçà, ils sont comblés par la moyenne de leurs voisins.
 - Le maillage est fait de triangles par cellule, avec les arêtes intérieures adoucies, dans un groupe dédié à son propre calque. C'est une seule opération Undo.
 
+- **Fait (AG-128).** `Core::MapTerrain` (avec `Lambert93`) rend un nœud `terrain` (surface, matière `earth`) et ses mesures : pas, points, faces, altitude d'origine, NODATA comblés, γ et k. Précisions et écarts :
+  - **Fenêtre** : le fichier est découpé à l'emprise de la carte plus 20 m.
+  - **Pas** : au moins 2 m, et il grandit jusqu'à 250 × 250 points au plus (environ 124 000 faces). Le fichier lui-même peut compter jusqu'à 1 000 × 1 000 points.
+  - **Altitudes** : elles sont relatives à celle du terrain à l'origine de la carte, de sorte que voies et bâtiments, posés à z = 0, tombent sur le sol. L'altitude d'origine est rendue pour la racine.
+  - **Coordonnées** : `xllcorner` et `xllcenter` sont acceptés tous les deux.
+  - **Écriture renvoyée à AG-129** : l'écriture dans le groupe « ARCHGEN Terrain », l'adoucissement des arêtes et l'opération Undo relèvent du service d'import.
+
 ## 5. Commande, version — AG-129
 
 - **Extensions → ARCHGEN → Importer une carte…** Le panneau propose :
