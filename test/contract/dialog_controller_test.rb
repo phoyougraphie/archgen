@@ -143,7 +143,7 @@ class DialogControllerTest < Minitest::Test
   def test_init_gives_ordered_profiles_catalogues_and_limits
     result = call('init')['result']
     assert_equal 'new', result['mode']
-    assert_equal %w[haussmann toulousain provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque baule_villa baule_villa_toit baule_maison_de_ville maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste baule_front_de_mer maison_moderne industriel high_tech bioclimatique brutalist], result['profiles'].map { |p| p['id'] }
+    assert_equal %w[haussmann toulousain provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque baule_villa baule_villa_toit baule_maison_de_ville maison_romane maison_gothique chapelle eglise_romane eglise_gothique cathedrale renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste baule_front_de_mer maison_moderne industriel high_tech bioclimatique brutalist], result['profiles'].map { |p| p['id'] }
     result['profiles'].each do |profile|
       assert_equal registry.fetch(profile['id']).value.revision, profile['revision'], 'dernière révision seule (AG-064)'
       refute_empty profile['label']

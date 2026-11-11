@@ -23,6 +23,7 @@ module Archgen
 
       def generate_input(input, materials, row)
         return winged(input, materials, row) if input['wing']
+        return transepted(input, materials, row) if input['features']['transept']
 
         setback = input.dig('levels', 'attic_setback_m').to_f
         return attic(input, materials, row, setback) if setback.positive?
@@ -46,7 +47,10 @@ module Archgen
         openings = with_porch(openings, input, footprint, levels, row)
         return openings unless openings.ok?
 
-        openings = Result.ok(unblocked(openings.value, input['_blocked_rear'])) if input['_blocked_rear']
+        # Baies masquées : derrière une aile ou un bras de transept, sous une abside (AG-140, AG-144).
+        blocked = (input['_blocked_rear'] || []).map { |u0, u1, z| ['rear', u0, u1, z] } + (input['_blocked'] || [])
+        blocked += [['rear', -Float::INFINITY, Float::INFINITY, Float::INFINITY]] if input['features']['apse']
+        openings = Result.ok(unblocked(openings.value, blocked)) unless blocked.empty?
 
         assemble(input, footprint, levels, openings.value, materials, row)
       end
@@ -158,27 +162,82 @@ module Archgen
 
       # Nœuds déplacés de `offset` (mètres), renommés « <prefix>/… » ; `turn` : demi-tour autour de Z
       # avant le déplacement (aile tournée vers le jardin). Maillages requantifiés.
-      def shifted(nodes, offset, prefix: 'attic', turn: false)
+      # `quarter` : nombre de quarts de tour (sens direct) autour de Z, avant le déplacement (AG-144).
+      def shifted(nodes, offset, prefix: 'attic', turn: false, quarter: nil)
         dx, dy, dz = offset
-        s = turn ? -1.0 : 1.0
+        q = quarter || (turn ? 2 : 0)
+        c, s = [[1, 0], [0, 1], [-1, 0], [0, -1]][q % 4]
         nodes.map do |node|
-          moved = node.merge('id' => "#{prefix}/#{node['id']}", 'children' => shifted(node['children'], offset, prefix: prefix, turn: turn))
+          moved = node.merge('id' => "#{prefix}/#{node['id']}", 'children' => shifted(node['children'], offset, prefix: prefix, quarter: q))
           primitive = node['primitive']
           next moved unless primitive
 
           moved['primitive'] = if primitive['type'] == 'instance'
                                  m = primitive['matrix'].dup
-                                 [0, 1, 4, 5, 8, 9, 12, 13].each { |i| m[i] = Quant.q(m[i] * s) } if turn
+                                 # Lignes x et y de la matrice (rangée en colonnes) tournées.
+                                 [0, 4, 8, 12].each do |i|
+                                   x = m[i]
+                                   y = m[i + 1]
+                                   m[i] = Quant.q((c * x) - (s * y))
+                                   m[i + 1] = Quant.q((s * x) + (c * y))
+                                 end
                                  m[12] = Quant.q(m[12] + dx)
                                  m[13] = Quant.q(m[13] + dy)
                                  m[14] = Quant.q(m[14] + dz)
-                                 primitive.merge('matrix' => m.map { |c| c.zero? ? 0.0 : c })
+                                 primitive.merge('matrix' => m.map { |v| v.zero? ? 0.0 : v })
                                else
-                                 primitive.merge('vertices' => primitive['vertices'].map { |x, y, z| Quant.q3([(s * x) + dx, (s * y) + dy, z + dz]) })
+                                 primitive.merge('vertices' => primitive['vertices'].map { |x, y, z| Quant.q3([(c * x) - (s * y) + dx, (s * x) + (c * y) + dy, z + dz]) })
                                end
           moved
         end
       end
+
+      # --- Transept (AG-144, ADR-69)
+
+      TRANSEPT_WIDTH = 0.7
+      TRANSEPT_REACH = 0.5
+      TRANSEPT_AT = 0.62
+
+      # Deux bras accolés aux murs latéraux, vers le chœur : chacun est un bâtiment seul tourné d'un quart
+      # de tour, façade vers l'extérieur, faîtage perpendiculaire à la nef ; murs de jonction sans baie.
+      def transepted(input, materials, row)
+        return Result.fail([Diagnostic.error('E_ROOF_GEOMETRY', '/features/transept', reason: 'transept_in_row')]) if row
+
+        width = input['footprint']['width_m']
+        depth = input['footprint']['depth_m']
+        aw = Quant.q(width * TRANSEPT_WIDTH)
+        reach = Quant.q(width * TRANSEPT_REACH)
+        ya = Quant.q((depth * TRANSEPT_AT) - (aw / 2.0))
+        if ya < 2.0 || ya + aw > depth - 1.0
+          return Result.fail([Diagnostic.error('E_ROOF_GEOMETRY', '/features/transept', reason: 'transept_no_room', min_depth: Quant.q(width * 2.5))])
+        end
+
+        roof = input['roof']
+        roof = roof.merge('ridge' => 'perpendicular') if roof['type'] == 'gable'
+        arm_input = input.reject { |k, _| %w[wing shop ground_floor].include?(k) }.merge(
+          'footprint' => { 'width_m' => aw, 'depth_m' => reach },
+          'facade' => input['facade'].merge('entry_bay' => nil, 'front_bays' => 1, 'side_bays' => 0),
+          'roof' => roof,
+          'features' => input['features'].reject { |k, _| %w[transept apse bell_tower balcony balcony_wrap bow_window pilotis shop_front turret].include?(k) },
+          '_blocked_rear' => [[-Float::INFINITY, Float::INFINITY, Float::INFINITY]]
+        )
+        arm = generate_input(arm_input, materials, nil)
+        return arm unless arm.ok?
+
+        top = arm.value['metrics']['roof_top_z_m']
+        blocked = [['left', depth - ya - aw, depth - ya, top], ['right', ya, ya + aw, top]]
+        main = generate_input(input.merge('features' => input['features'].reject { |k, _| k == 'transept' }, '_blocked' => blocked), materials, nil)
+        return main unless main.ok?
+
+        # Gauche : un quart de tour en sens horaire (façade vers −x) ; droite : sens direct (façade vers +x).
+        parts = [['transept/left', arm.value, [-reach, ya + aw, 0.0], 3], ['transept/right', arm.value, [width + reach, ya, 0.0], 1]]
+        plan = joined(main.value, parts)
+        problems = PlanValidator.call(plan, materials: materials)
+        return Result.fail(problems) unless problems.empty?
+
+        Result.ok(Canonical.deep_freeze(plan), main.diagnostics + arm.diagnostics)
+      end
+      private_class_method :transepted
 
       # --- Ailes (AG-138, ADR-66) : formes en L, en T et en U
 
@@ -236,10 +295,10 @@ module Archgen
       end
       private_class_method :winged
 
-      # Baies de façade arrière retirées si elles touchent une bande [u0, u1] sous la cote z.
+      # Baies retirées si elles touchent une bande [u0, u1] de leur façade sous la cote z.
       def unblocked(openings, spans)
         openings.reject do |o|
-          o.facade_id == 'rear' && spans.any? { |u0, u1, z| o.u_max_m > u0 - 0.3 && o.u_min_m < u1 + 0.3 && o.z_min_m < z }
+          spans.any? { |f, u0, u1, z| o.facade_id == f && o.u_max_m > u0 - 0.3 && o.u_min_m < u1 + 0.3 && o.z_min_m < z }
         end
       end
       private_class_method :unblocked
@@ -251,7 +310,9 @@ module Archgen
 
       def joined(main, parts)
         root = main['nodes'].first
-        extra = parts.map { |prefix, plan, offset| Geometry::Node.group(prefix, 'building', shifted(plan['nodes'].first['children'], offset, prefix: prefix, turn: true)) }
+        extra = parts.map do |prefix, plan, offset, quarter|
+          Geometry::Node.group(prefix, 'building', shifted(plan['nodes'].first['children'], offset, prefix: prefix, quarter: quarter || 2))
+        end
         nodes = [root.merge('children' => root['children'] + extra)]
         definitions = parts.reduce(main['definitions']) { |acc, (_, plan, _)| acc.merge(plan['definitions']) }
         definition_faces = definitions.transform_values { |list| count_faces(list) }

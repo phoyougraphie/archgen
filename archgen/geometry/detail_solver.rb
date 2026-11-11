@@ -96,6 +96,15 @@ module Archgen
       BALCONETTE_RAIL_M = 0.75
       BALCONETTE_BAR_M = 0.02
       BALCONETTE_SPACING_M = 0.12
+      # AG-144 : clochers et abside.
+      TOWER_RATIO = { 'porch' => 0.35, 'corner' => 0.3, 'twin' => 0.28 }.freeze
+      TOWER_MIN_M = 3.0
+      TOWER_MAX_M = 8.0
+      TOWER_RISE = { 'porch' => 1.6, 'corner' => 1.6, 'twin' => 1.4 }.freeze
+      SPIRE_RATIO = 2.2
+      APSE_RADIUS = 0.8
+      APSE_HEIGHT = 0.75
+      APSE_SEGMENTS = 5
       # AG-133 : balcons filants à chaque étage au-dessus du rez-de-chaussée (immeuble balnéaire).
       # AG-106 : garde-corps de balcon (docs/TEINTES_ABORDS_CONTRACT.md).
       RAIL_HEIGHT_M = 1.00
@@ -141,6 +150,8 @@ module Archgen
         turret = features['turret'] && !row && !footprint.trapezoid?
         problems.concat(turret_problems(footprint, openings)) if turret
         problems.concat(balconette_problems(balcony_levels)) if features['balconettes']
+        towers = features['bell_tower'] ? tower_boxes(footprint, features['bell_tower']) : []
+        problems.concat(tower_problems(footprint, openings, towers, levels)) unless towers.empty?
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
@@ -177,6 +188,8 @@ module Archgen
         nodes += string_courses(footprint, levels, config, row, balcony_levels, bows) if features['string_courses']
         nodes += turret_nodes(levels, config) if turret
         nodes += balconettes(footprint, openings, config, bows) if features['balconettes']
+        nodes += tower_nodes(towers, levels, config, features['bell_tower']) unless towers.empty?
+        nodes += apse_nodes(footprint, levels, config) if features['apse'] && !footprint.trapezoid?
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/balcony_wrap', reason: 'balcony_wrap_in_row') if features['balcony'] && features['balcony_wrap'] && !wrap
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/bow_window', reason: 'no_bow_window') if features['bow_window'] && bows.empty?
@@ -952,6 +965,130 @@ module Archgen
         end
       end
       private_class_method :balconettes
+
+      # --- Clochers et abside (AG-144, ADR-69)
+
+      # Boîtes [x0, x1, y0, y1, côté] : tour-porche au milieu de la façade, tour d'angle à gauche, ou deux
+      # tours aux angles ; elles avancent devant la façade et restent dans la largeur du bâtiment.
+      def tower_boxes(footprint, kind)
+        w = footprint.width_m
+        s = Core::Quant.q((w * TOWER_RATIO.fetch(kind)).clamp(TOWER_MIN_M, TOWER_MAX_M))
+        case kind
+        when 'porch' then [[Core::Quant.q((w - s) / 2.0), Core::Quant.q((w + s) / 2.0), Core::Quant.q(-s * 0.6), Core::Quant.q(s * 0.4), s]]
+        when 'corner' then [[0.0, s, Core::Quant.q(-s * 0.5), Core::Quant.q(s * 0.5), s]]
+        else [[0.0, s, Core::Quant.q(-s * 0.5), Core::Quant.q(s * 0.5), s], [Core::Quant.q(w - s), w, Core::Quant.q(-s * 0.5), Core::Quant.q(s * 0.5), s]]
+        end
+      end
+      private_class_method :tower_boxes
+
+      # Une baie de façade coupée par une tour est refusée ; entièrement derrière elle, elle est cachée.
+      def tower_problems(footprint, openings, towers, levels)
+        return [Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/bell_tower', reason: 'bell_tower_too_wide')] if towers.sum { |t| t[1] - t[0] } > footprint.width_m + EPS
+
+        front(openings).filter_map do |o|
+          # Une baie entièrement derrière une tour est cachée (portail, baie haute sous la tour-porche).
+          next if towers.any? { |x0, x1, _, _, _| o.u_min_m >= x0 - EPS && o.u_max_m <= x1 + EPS }
+          next unless towers.any? { |x0, x1, _, _, _| o.u_max_m > x0 - TURRET_CLEAR_M && o.u_min_m < x1 + TURRET_CLEAR_M }
+
+          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/bell_tower', reason: 'bell_tower_over_opening', id: o.id)
+        end
+      end
+      private_class_method :tower_problems
+
+      def tower_nodes(towers, levels, config, kind)
+        wall = config['materials']['wall']
+        roof = config['materials']['roof']
+        dark = config['materials']['frames']
+        eave = levels.last.top_z_m
+        towers.each_with_index.flat_map do |(x0, x1, y0, y1, s), k|
+          top = Core::Quant.q(eave + (s * TOWER_RISE.fetch(kind)))
+          id = "tower/#{k}"
+          cx = (x0 + x1) / 2.0
+          nodes = [Node.leaf("#{id}/body", 'structure', Boxes.solid(x0, x1, y0, y1, 0.0, top, wall))]
+          if kind == 'twin'
+            # Tours de façade à terrasse : corniche débordante.
+            nodes << Node.leaf("#{id}/crown", 'cornice', Boxes.solid(x0 - 0.3, x1 + 0.3, y0 - 0.3, y1 + 0.3, top, Core::Quant.q(top + 0.5), wall))
+          else
+            e = TURRET_EAVE_M
+            apex = [Core::Quant.q(cx), Core::Quant.q((y0 + y1) / 2.0), Core::Quant.q(top + (s * SPIRE_RATIO))]
+            base = [[x0 - e, y0 - e], [x1 + e, y0 - e], [x1 + e, y1 + e], [x0 - e, y1 + e]].map { |x, y| [Core::Quant.q(x), Core::Quant.q(y), top] }
+            spire = MeshBuilder.new('solid')
+            spire.add_face(base.reverse, roof)
+            base.each_index { |i| spire.add_face([base[i], base[(i + 1) % 4], apex], roof) }
+            nodes << Node.leaf("#{id}/spire", 'roof_face', spire.to_primitive)
+          end
+          # Abat-sons sur les trois faces libres, sous le sommet.
+          h0 = Core::Quant.q(top - 2.6)
+          h1 = Core::Quant.q(top - 0.8)
+          half = Core::Quant.q(s * 0.15)
+          ym = (y0 + y1) / 2.0
+          nodes << Node.leaf("#{id}/belfry/front", 'frame', Boxes.solid(cx - half, cx + half, y0 - 0.05, y0, h0, h1, dark))
+          nodes << Node.leaf("#{id}/belfry/left", 'frame', Boxes.solid(x0 - 0.05, x0, ym - half, ym + half, h0, h1, dark))
+          nodes << Node.leaf("#{id}/belfry/right", 'frame', Boxes.solid(x1, x1 + 0.05, ym - half, ym + half, h0, h1, dark))
+          if kind == 'porch'
+            portal = [s * 0.45, 2.6].min / 2.0
+            nodes << Node.leaf("#{id}/portal", 'frame', Boxes.solid(cx - portal, cx + portal, y0 - 0.05, y0, 0.0, Core::Quant.q([4.5, eave * 0.6].min), dark))
+          end
+          nodes
+        end
+      end
+      private_class_method :tower_nodes
+
+      # Demi-polygone contre le mur du chevet, moins haut que la nef, couvert d'un demi-cône d'ardoise ;
+      # une baie étroite sur chaque pan.
+      def apse_nodes(footprint, levels, config)
+        w = footprint.width_m
+        d = footprint.depth_m
+        r = Core::Quant.q(w * APSE_RADIUS / 2.0)
+        cx = w / 2.0
+        h = Core::Quant.q(levels.last.top_z_m * APSE_HEIGHT)
+        ring = (0..APSE_SEGMENTS).map do |k|
+          a = Math::PI * k / APSE_SEGMENTS
+          [Core::Quant.q(cx + (r * Math.cos(a))), Core::Quant.q(d + (r * Math.sin(a)))]
+        end
+        wall = config['materials']['wall']
+        roof = config['materials']['roof']
+        centre = [Core::Quant.q(cx), d]
+        body = MeshBuilder.new('solid')
+        ring.each_cons(2) do |p, q|
+          body.add_face([p + [0.0], q + [0.0], q + [h], p + [h]], wall)
+          body.add_face([centre + [0.0], q + [0.0], p + [0.0]], wall)
+          body.add_face([centre + [h], p + [h], q + [h]], wall)
+        end
+        # Face contre le chevet, coupée au centre pour qu'aucun sommet ne tombe au milieu d'une arête.
+        body.add_face([ring.last + [0.0], centre + [0.0], centre + [h], ring.last + [h]], wall)
+        body.add_face([centre + [0.0], ring.first + [0.0], ring.first + [h], centre + [h]], wall)
+        apex = centre + [Core::Quant.q(h + (r * RoofSolver.slope(config['roof']['pitch_deg'] || 45)))]
+        cap = MeshBuilder.new('solid')
+        ring.each_cons(2) do |p, q|
+          cap.add_face([p + [h], q + [h], apex], roof)
+          cap.add_face([centre + [h], q + [h], p + [h]], roof)
+        end
+        cap.add_face([ring.last + [h], centre + [h], apex], roof)
+        cap.add_face([centre + [h], ring.first + [h], apex], roof)
+        nodes = [Node.leaf('apse/body', 'structure', body.to_primitive), Node.leaf('apse/roof', 'roof_face', cap.to_primitive)]
+        glass = config['materials']['glass'] || 'glass'
+        ring.each_cons(2).with_index do |(p, q), k|
+          length = Math.hypot(q[0] - p[0], q[1] - p[1])
+          t = [(q[0] - p[0]) / length, (q[1] - p[1]) / length]
+          n = [t[1], -t[0]]
+          n = [-n[0], -n[1]] if ((n[0] * ((p[0] + q[0]) / 2.0 - cx)) + (n[1] * ((p[1] + q[1]) / 2.0 - d))).negative?
+          m = [(p[0] + q[0]) / 2.0, (p[1] + q[1]) / 2.0]
+          half = [0.3, length * 0.2].min
+          a = [m[0] - (t[0] * half), m[1] - (t[1] * half)]
+          b = [m[0] + (t[0] * half), m[1] + (t[1] * half)]
+          pane = [a, b, [b[0] + (n[0] * 0.04), b[1] + (n[1] * 0.04)], [a[0] + (n[0] * 0.04), a[1] + (n[1] * 0.04)]].map { |x, y| [Core::Quant.q(x), Core::Quant.q(y)] }
+          pane = pane.reverse if signed_area(pane).negative?
+          nodes << Node.leaf("apse/glass/#{k}", 'frame', Boxes.prism(pane, Core::Quant.q(h * 0.3), Core::Quant.q(h * 0.8), glass))
+        end
+        nodes
+      end
+      private_class_method :apse_nodes
+
+      def signed_area(ring)
+        ring.each_index.sum { |i| (ring[i][0] * ring[(i + 1) % ring.size][1]) - (ring[(i + 1) % ring.size][0] * ring[i][1]) } / 2.0
+      end
+      private_class_method :signed_area
 
       def rect_ring(footprint, margin, depth)
         x0 = margin

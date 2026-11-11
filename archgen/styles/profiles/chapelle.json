@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "id": "chapelle",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "historic_monumental",
+    "revision": 1
+  },
+  "family_id": "historic_monumental",
+  "label": "Chapelle",
+  "context": {
+    "period": "Chapelle de campagne, XVe-XVIIe siècle",
+    "regions": [
+      "bretagne",
+      "france"
+    ],
+    "typologies": [
+      "religious"
+    ]
+  },
+  "requires": [
+    "gable",
+    "cross_ridge",
+    "arches",
+    "glazing",
+    "bell_tower",
+    "apse"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 7,
+      "depth_m": 14
+    },
+    "levels": {
+      "count": 1,
+      "height_m": 5.5,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 1,
+      "side_bays": 3,
+      "window_width_m": 0.8,
+      "window_height_m": 2.2,
+      "sill_m": 1.8,
+      "entry_bay": 0,
+      "door_width_m": 1.4,
+      "door_height_m": 2.8,
+      "arch": "pointed"
+    },
+    "structure": {
+      "wall_m": 0.6
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.2,
+      "pitch_deg": 50,
+      "ridge": "perpendicular"
+    },
+    "materials": {
+      "wall": "granite",
+      "roof": "slate",
+      "frames": "dark_wood",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "bell_tower": "porch",
+      "apse": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 2.0,
+        "max": 3.5
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 1
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "granite",
+          "schist",
+          "light_render",
+          "limestone"
+        ]
+      },
+      "kind": "soft"
+    }
+  ],
+  "palette": [
+    {
+    },
+    {
+      "materials": {
+        "wall": "schist"
+      }
+    },
+    {
+      "materials": {
+        "wall": "light_render"
+      }
+    },
+    {
+      "materials": {
+        "wall": "limestone"
+      }
+    }
+  ]
+}

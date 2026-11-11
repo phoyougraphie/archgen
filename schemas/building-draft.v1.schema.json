@@ -410,6 +410,20 @@
         "wall_dormers": {
           "type": "boolean"
         },
+        "bell_tower": {
+          "enum": [
+            "none",
+            "porch",
+            "corner",
+            "twin"
+          ]
+        },
+        "apse": {
+          "type": "boolean"
+        },
+        "transept": {
+          "type": "boolean"
+        },
         "string_courses": {
           "type": "boolean"
         },

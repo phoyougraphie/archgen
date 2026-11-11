@@ -36,6 +36,10 @@
     "baule_villa": { "1": "gap", "2": "gap" },
     "baule_villa_toit": { "1": "gap" },
     "baule_maison_de_ville": { "1": "gap" },
+    "chapelle": { "1": "gap" },
+    "eglise_romane": { "1": "gap" },
+    "eglise_gothique": { "1": "gap" },
+    "cathedrale": { "1": "gap" },
     "haussmann": { "1": "porch", "2": "porch", "3": "porch" },
     "toulousain": { "1": "porch", "2": "porch", "3": "porch" }
   }

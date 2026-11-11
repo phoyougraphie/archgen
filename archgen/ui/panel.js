@@ -246,6 +246,7 @@
       case 'rail': return text;
       case 'balconies': return text;
       case 'bow': return text;
+      case 'bell': return text;
       case 'wing': return wingValue(text);
       case 'check': return field.checked;
       case 'ground': return field.checked ? 'shop' : 'dwelling';
@@ -814,6 +815,7 @@
       case 'rail': field.value = value || 'none'; break;
       case 'balconies': field.value = value || 'noble'; break;
       case 'bow': field.value = value || 'none'; break;
+      case 'bell': field.value = value || 'none'; break;
       case 'wing': writeWing(field, value); break;
       default: field.value = value === undefined || value === null ? '' : String(value);
     }

@@ -268,6 +268,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-141 — Palettes et encadrements** | AG-140, ADR-67 | `palette` de profil tirée par la graine ; rôle `surrounds`. | U100 vert. |
 | **AG-142 — Maisons de La Baule, RBZ 0.33.0** | AG-141, ADR-67 | Villa r2, villa à quatre pans, maison de ville ; parcelle étroite en jardin. | U100, U52 verts. |
 | **AG-143 — Détails de La Baule, RBZ 0.34.0** | AG-142, ADR-68 | Bandeaux, lucarnes passantes, tourelle, balconnets, bow-window de rez-de-chaussée ; palettes. | U101, U52 verts. |
+| **AG-144 — Édifices religieux, RBZ 0.35.0** | AG-143, ADR-69 | Clochers, abside, transept ; chapelle, églises romane et gothique, cathédrale. | U102 vert. |
 
 ## J21 — Intérieur
 

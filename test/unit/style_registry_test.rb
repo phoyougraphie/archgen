@@ -49,7 +49,7 @@ class StyleRegistryTest < Minitest::Test
   # --- Chargement des fixtures
 
   def test_repository_profiles_load
-    assert_equal %w[alsacien art_deco art_nouveau baroque basque bauhaus baule_front_de_mer baule_maison_de_ville baule_villa baule_villa_toit bioclimatique bordelais_echoppe breton_bourg breton_longere brutalist colombages flamand haussmann high_tech industriel lyonnais maison_gothique maison_moderne maison_romane mediterraneen_andalou mediterraneen_cycladique mid_century minimaliste moderniste neoclassique normand parisien_faubourien provencal_mas provencal_village renaissance savoyard_chalet toulousain], registry.active_profiles.map(&:id)
+    assert_equal %w[alsacien art_deco art_nouveau baroque basque bauhaus baule_front_de_mer baule_maison_de_ville baule_villa baule_villa_toit bioclimatique bordelais_echoppe breton_bourg breton_longere brutalist cathedrale chapelle colombages eglise_gothique eglise_romane flamand haussmann high_tech industriel lyonnais maison_gothique maison_moderne maison_romane mediterraneen_andalou mediterraneen_cycladique mid_century minimaliste moderniste neoclassique normand parisien_faubourien provencal_mas provencal_village renaissance savoyard_chalet toulousain], registry.active_profiles.map(&:id)
   end
 
   def test_only_available_capabilities_are_published

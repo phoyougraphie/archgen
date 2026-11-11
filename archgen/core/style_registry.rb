@@ -13,7 +13,7 @@ module Archgen
     # incohérente bloque le registre plutôt que de publier un profil douteux.
     class StyleRegistry
       # Registre fermé des capacités connues du noyau, implémentées ou non.
-      KNOWN_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds glazing chimneys muntins shutters dormers genoise cross_ridge stepped_gable cladding timber_frame arches classical ribbon pilotis sawtooth structural_grid sun_shades shop_front].freeze
+      KNOWN_CAPABILITIES = %w[rectangle rect_opening flat gable hip mansard cornice balcony surrounds glazing chimneys muntins shutters dormers genoise cross_ridge stepped_gable cladding timber_frame arches classical ribbon pilotis sawtooth structural_grid sun_shades shop_front bell_tower apse transept].freeze
       RULE_PARAMS = {
         'window_ratio' => %w[max min], 'level_count' => %w[max min], 'roof_type' => %w[values],
         'material_allowed' => %w[role values], 'feature_chance' => %w[feature probability]

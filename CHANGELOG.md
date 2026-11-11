@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.35.0
+
+Édifices religieux (AG-144, ADR-69).
+
+**Ajouts**
+
+- Styles **Chapelle**, **Église romane**, **Église gothique** et **Cathédrale**, à placer avec le panneau du bâtiment.
+- **Clocher** : tour-porche à flèche, tour d'angle, ou deux tours de façade.
+- **Abside** au chevet et **transept**.
+
 ## 0.34.0
 
 Détails des maisons de La Baule (AG-143, ADR-68).

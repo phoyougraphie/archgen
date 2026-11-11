@@ -511,6 +511,68 @@ PROFILES = {
       { 'materials' => { 'wall' => 'schist' }, 'features' => { 'wall_dormers' => false } }
     ],
     'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[granite light_render schist])
+  },
+  # AG-144 (ADR-69) : édifices religieux, à placer comme bâtiments seuls. Nef à pignon sur rue, baies en
+  # arc sur les murs latéraux, clocher, abside au chevet, transept pour les grands édifices.
+  'chapelle' => {
+    'label' => 'Chapelle', 'period' => 'Chapelle de campagne, XVe-XVIIe siècle', 'regions' => %w[bretagne france], 'typologies' => %w[religious], 'family' => 'historic_monumental',
+    'requires' => %w[gable cross_ridge arches glazing bell_tower apse],
+    'defaults' => {
+      'footprint' => { 'width_m' => 7, 'depth_m' => 14 },
+      'levels' => { 'count' => 1, 'height_m' => 5.5, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 1, 'side_bays' => 3, 'window_width_m' => 0.8, 'window_height_m' => 2.2, 'sill_m' => 1.8, 'entry_bay' => 0, 'door_width_m' => 1.4, 'door_height_m' => 2.8, 'arch' => 'pointed' },
+      'structure' => { 'wall_m' => 0.6 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.2, 'pitch_deg' => 50, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'granite', 'roof' => 'slate', 'frames' => 'dark_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'bell_tower' => 'porch', 'apse' => true }
+    },
+    'palette' => [{}, { 'materials' => { 'wall' => 'schist' } }, { 'materials' => { 'wall' => 'light_render' } }, { 'materials' => { 'wall' => 'limestone' } }],
+    'rules' => rules(levels: [1, 1], roofs: %w[gable], ratio: [2.0, 3.5], walls: %w[granite schist light_render limestone])
+  },
+  'eglise_romane' => {
+    'label' => 'Église romane', 'period' => 'Église romane, XIe-XIIe siècle', 'regions' => %w[france], 'typologies' => %w[religious], 'family' => 'historic_monumental',
+    'requires' => %w[gable cross_ridge arches glazing bell_tower apse],
+    'defaults' => {
+      'footprint' => { 'width_m' => 11, 'depth_m' => 26 },
+      'levels' => { 'count' => 2, 'height_m' => 5.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 1, 'side_bays' => 5, 'window_width_m' => 1.0, 'window_height_m' => 2.0, 'sill_m' => 2.0, 'entry_bay' => 0, 'door_width_m' => 1.8, 'door_height_m' => 3.5, 'arch' => 'round' },
+      'structure' => { 'wall_m' => 0.8 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 30, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'terracotta_canal', 'frames' => 'dark_wood', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'bell_tower' => 'porch', 'apse' => true }
+    },
+    'palette' => [{}, { 'materials' => { 'wall' => 'blond_stone' } }, { 'materials' => { 'wall' => 'granite', 'roof' => 'slate' } }, { 'materials' => { 'roof' => 'slate' } }],
+    'rules' => rules(levels: [1, 3], roofs: %w[gable], ratio: [1.5, 3.0], walls: %w[limestone blond_stone granite golden_stone])
+  },
+  'eglise_gothique' => {
+    'label' => 'Église gothique', 'period' => 'Église gothique, XIIIe-XVe siècle', 'regions' => %w[france], 'typologies' => %w[religious], 'family' => 'historic_monumental',
+    'requires' => %w[gable cross_ridge arches glazing muntins bell_tower apse transept],
+    'defaults' => {
+      'footprint' => { 'width_m' => 14, 'depth_m' => 34 },
+      'levels' => { 'count' => 2, 'height_m' => 6.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 1, 'side_bays' => 6, 'window_width_m' => 1.4, 'window_height_m' => 3.6, 'sill_m' => 1.6, 'entry_bay' => 0, 'door_width_m' => 2.4, 'door_height_m' => 4.0, 'muntin_rows' => 4, 'arch' => 'pointed' },
+      'structure' => { 'wall_m' => 0.9 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 55, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'slate', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'bell_tower' => 'porch', 'apse' => true, 'transept' => true }
+    },
+    'palette' => [{}, { 'materials' => { 'wall' => 'granite' } }, { 'materials' => { 'wall' => 'blond_stone' } }],
+    'rules' => rules(levels: [2, 3], roofs: %w[gable], ratio: [2.0, 3.5], walls: %w[limestone granite blond_stone])
+  },
+  'cathedrale' => {
+    'label' => 'Cathédrale', 'period' => 'Cathédrale gothique, XIIe-XIVe siècle', 'regions' => %w[france], 'typologies' => %w[religious], 'family' => 'historic_monumental',
+    'requires' => %w[gable cross_ridge arches glazing muntins bell_tower apse transept],
+    'defaults' => {
+      'footprint' => { 'width_m' => 22, 'depth_m' => 58 },
+      'levels' => { 'count' => 3, 'height_m' => 6.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 1, 'side_bays' => 9, 'window_width_m' => 1.8, 'window_height_m' => 4.0, 'sill_m' => 1.4, 'entry_bay' => 0, 'door_width_m' => 3.0, 'door_height_m' => 4.0, 'muntin_rows' => 5, 'arch' => 'pointed' },
+      'structure' => { 'wall_m' => 1.0 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 55, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'limestone', 'roof' => 'slate', 'frames' => 'dark_metal', 'glass' => 'glass' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'bell_tower' => 'twin', 'apse' => true, 'transept' => true }
+    },
+    'palette' => [{}, { 'materials' => { 'wall' => 'blond_stone' } }, { 'materials' => { 'wall' => 'granite' } }],
+    'rules' => rules(levels: [3, 3], roofs: %w[gable], ratio: [2.0, 3.0], walls: %w[limestone blond_stone granite])
   }
 }.freeze
 

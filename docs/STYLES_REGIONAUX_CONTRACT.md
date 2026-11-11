@@ -77,6 +77,7 @@ Le panneau propose déjà tous les styles actifs ; la liste devient longue : gro
 - **Balcons d'angle et bow-windows (AG-137, ADR-65).** Case « Balcons qui tournent l'angle », liste « Bow-window » (travée centrale, travées des bouts) au panneau du bâtiment.
 - **Maisons de La Baule (AG-140 à AG-142, ADR-67).** Palette tirée par la graine (`palette` du profil) ; rôle de matière `surrounds` ; villa révision 2 (pignon, pan de bois rouge, sombre ou vert, ou encadrements de brique ; mur enduit ou granit), villa à quatre pans (volets rouges, bleus, verts ou gris ; encadrements de granit ou de brique), maison de ville (granit, enduit ou schiste ; brique, granit ou blanc ; lucarnes ; commerce 3,6 m). Collées en rangée, ou isolées (case Bâtiments isolés) ; la villa à quatre pans, à croupe, ne se pose qu'isolée.
 - **Détails de La Baule (AG-143, ADR-68).** Cases « Bandeaux aux planchers », « Lucarnes passantes », « Tourelle d'angle », « Balconnets en fer forgé » et bow-window « Rez-de-chaussée » au panneau du bâtiment ; tirés aussi par les palettes des trois styles de La Baule.
+- **Édifices religieux (AG-144, ADR-69).** Styles Chapelle, Église romane, Église gothique, Cathédrale ; liste « Clocher » (tour-porche, tour d'angle, deux tours) et cases « Abside au chevet », « Transept » au panneau du bâtiment. À poser comme bâtiments seuls (le transept est refusé en rangée).
 - **Ailes en L, T, U (AG-138, AG-139, ADR-66).** Liste « Forme » et dimensions de l'aile au panneau du bâtiment ; l'import de carte reconnaît les contours en L, T et U.
 
 ## Tests

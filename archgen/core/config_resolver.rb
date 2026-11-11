@@ -182,6 +182,8 @@ module Archgen
         features.delete('balcony_rail') unless %w[bars solid glass].include?(features['balcony_rail']) # AG-106, AG-135
         features.delete('bow_window') unless %w[center ends ground].include?(features['bow_window']) # AG-137, AG-143
         %w[balconettes turret string_courses wall_dormers].each { |key| features.delete(key) unless features[key] } # AG-143
+        features.delete('bell_tower') unless %w[porch corner twin].include?(features['bell_tower']) # AG-144
+        %w[apse transept].each { |key| features.delete(key) unless features[key] } # AG-144
         features.delete('balcony_wrap') unless features['balcony_wrap'] # AG-137
         features.delete('balcony_levels') unless features['balcony_levels'] == 'all' # AG-133 : « noble » n'est pas écrit
         # AG-134 : profondeur du balcon ; 0,90 m, la valeur d'avant, n'est pas écrite.
