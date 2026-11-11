@@ -32,6 +32,7 @@ module Archgen
       core/site_assise
       core/map_projection
       core/map_reader
+      core/map_tiles
       geometry/types
       geometry/road_section
       geometry/road_axis
@@ -107,6 +108,7 @@ module Archgen
       adapters/sketchup/export_service
       adapters/sketchup/overpass_client
       adapters/sketchup/map_import_service
+      adapters/sketchup/base_map
       ui/target_tokens
       ui/confirmation_tokens
       ui/messages

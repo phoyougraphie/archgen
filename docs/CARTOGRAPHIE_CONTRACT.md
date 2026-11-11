@@ -168,11 +168,44 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
 - **« Ajouter du contexte » de SketchUp** (image de carte, bâtiments 3D) demande un abonnement : non utilisé.
 - **Essai réel**, Montauban, zone de 400 m : 192 rues et 130 bâtiments importés en une opération, à leur place en vue de dessus. Le reste a été écarté : 466 éléments, surtout des bâtiments non rectangulaires.
 
+## 7. Fond de plan à l'échelle — AG-131 (ADR-59)
+
+**Commande** : **Extensions → ARCHGEN → Fond de plan (carte et photo) autour du point géolocalisé…** (`UI::BaseMapCommand`).
+
+1. Le modèle doit être géolocalisé (Fichier → Ajouter un emplacement).
+2. On choisit le côté de la zone (200 à 1 000 m) et les calques : carte et photo, carte seule ou photo seule.
+3. Une confirmation affiche le nombre d'images et l'hôte de chaque calque.
+
+**Tuiles** (`Core::MapTiles`, pur) :
+
+- pavage Web Mercator ;
+- niveau 18 pour la carte (environ 0,43 m par pixel à 44° de latitude), 19 pour la photo (environ 0,21 m), abaissé si la zone dépasse 100 tuiles ;
+- chaque tuile est posée par son coin sud-ouest, avec sa largeur et sa hauteur au sol, dans le plan tangent de la carte.
+
+**Hôtes** (`Adapters::SketchUp::BaseMap`, liste fermée) :
+
+- `tile.openstreetmap.org` (style standard, emprises des bâtiments) ;
+- `data.geopf.fr` (WMTS IGN `ORTHOIMAGERY.ORTHOPHOTOS`, plan `PM`, France).
+
+Les images sont demandées une à la fois, avec `User-Agent: ARCHGEN/<version> (extension SketchUp)`. Elles sont gardées dans `fond_<lat>_<lon>` à côté du SKP (ou dans Documents\ARCHGEN) et ne sont jamais redemandées. Une image non reçue est comptée et laissée vide.
+
+**Pose :**
+
+- une opération « ARCHGEN : fond de plan » ;
+- un groupe par calque, chacun sous sa balise « ARCHGEN Fond carte » ou « ARCHGEN Fond photo » ;
+- une image SketchUp par tuile ; la carte est 2 mm au-dessus de la photo ;
+- le groupe est tourné selon le nord du modèle (même repère que §6) ;
+- l'attribution et le niveau sont gardés sur chaque groupe ;
+- la vue se cadre de dessus.
+
+**Essai réel (2026-11-11), Montauban, 400 m** : 20 tuiles de carte et 72 de photo posées. Les rues importées au §6 tombent sur celles de la carte, rivière et ronds-points compris. La photo est nette (arbres, cours, toitures).
+
 ## Tests
 
 - **U87** : lecture (`.osm`, GeoJSON, clés gardées, XXE refusé, taille), projection (distances connues à 0,1 % près sur 2 km, déterminisme).
 - **U88** : table des voies, simplification, rayons, réseaux reliés et découpés à 24, écartés comptés.
 - **U89** : rectangle orienté (rectangle tourné, L refusé à 0,85), niveaux, graine stable, façade vers la voie.
 - **U90** : ASCII Grid (en-têtes, NODATA, alignement, refus hors emprise), maillage.
+- **U93** : tuiles (point dans sa tuile aux niveaux 16, 18, 19 ; tuiles carrées à l'échelle du sol à 0,5 % près, bord à bord, couvrant la zone ; niveau abaissé sous 100 tuiles) ; plan des deux calques (hôtes, couche IGN, libellés, taille refusée).
 - **U92** : rues à plat (largeur, matière, superposition, faces convexes et vers le haut sur virages serrés, tunnels et types inconnus comptés, pont gardé) ; U89 complété (300 plus proches gardés) ; U91 complété (mode simple, repère tourné).
 - **U91** : panneau et service d'import avec doubles (aperçu, un Undo, refus sans résidu, attribution sur la racine) ; téléchargement avec un client HTTP factice (requête fixe, hôtes fermés, en-têtes, statut 429, taille, fichier enregistré et empreinte).

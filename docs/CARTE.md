@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.26.0 : import de carte en un clic (géolocalisation SketchUp → rues à plat et bâtiments), essayé au vrai geste. Suite : EXT-08 quartier, puis J22 (emprises non rectangulaires, qui ferait entrer les bâtiments OSM écartés), J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - Prochaine action — 0.27.0 : fond de plan à l'échelle (carte OSM et photo IGN, deux balises) pour dessiner par-dessus, essayé au vrai geste. Suite : EXT-08 quartier, J22, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/CARTOGRAPHIE_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -147,6 +147,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-128 — Une dalle RGE ALTI de 1 km au pas de 1 m donnerait 2 millions de faces : la fenêtre se cale sur la carte et le pas grandit jusqu'à 250 × 250 points. Altitudes relatives à l'origine pour que voies et bâtiments, à z = 0, tombent au sol. Le point d'origine du Lambert-93 sert de témoin exact au test.
     - 2026-11-11 AG-129 — Un réseau doit partir de [0, 0] : MapRoads recentre chaque réseau et rend son origin_m (le test d'AG-126 partait par hasard de l'origine). Une racine ARCHGEN doit rester au premier niveau pour le clic droit : pas de groupe englobant, un marqueur « ARCHGEN Carte » à côté. Overpass jamais appelé en test : client HTTP injecté.
     - 2026-11-11 AG-130 — Essai réel : 10 rues sur 300 en réseaux (carrefours dans des virages, trop proches, trop aigus) ; la moitié au mieux après retouches. Une rue à plat ne peut pas échouer : mode simple par défaut. « Ajouter du contexte » de SketchUp demande un abonnement. point_to_latlong rend [longitude, latitude] et le nord est tourné (1,14° ici).
+    - 2026-11-11 AG-131 — Pas de bibliothèque d'images en Ruby ni de mosaïque SketchUp sans abonnement : chaque tuile devient une image SketchUp posée à sa place. Carte OSM niveau 18, photo IGN niveau 19 ; serveurs de tuiles servis une image à la fois, avec cache. La carte retombe exactement sous les rues importées.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -299,13 +300,14 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-122 Arrêt de bus — abri au fond de la bande, marquage dérivé sur la voie contiguë, bande de 1,6 m, avertissement de proximité. U84 vert.
     - [fait] AG-123 Panneaux — clé facing (forward par défaut), orientation par RoadItems.side, haut de plaque à la hauteur. U85 vert.
     - [fait] AG-124 Éditeur, RBZ 0.24.0 — Pose, Positions, Sens, Arceaux, dessins, préréglage arret-bus ; RBZ 0.24.0 installé ; H39 à faire. U86 vert.
-  - J25 Cartographie, fait — RBZ 0.26.0 (mode simple, ADR-58) ; H41 faite par Claude, H40 à faire. ADR-56, ADR-57 (D-38 : téléchargement OpenStreetMap), D-39 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - J25 Cartographie, fait — RBZ 0.27.0 (mode simple ADR-58, fond de plan ADR-59) ; H41 faite par Claude, H40 à faire. ADR-56, ADR-57 (D-38 : téléchargement OpenStreetMap), D-39 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
     - [fait] AG-125 Lecture et projection — Core::MapReader (balayage XML borné, StrictJson), MapProjection, E_MAP. U87 vert.
     - [fait] AG-126 Voies en réseaux — Core::MapRoads : table, Douglas-Peucker gardant les points partagés, découpe à 64, rayon uniforme 10/5/0, réseaux de 24. U88 vert.
     - [fait] AG-127 Bâtiments — Core::MapBuildings : rectangle d'aire minimale, remplissage 85 %, niveaux, graine du hachage OSM, façade vers la voie, chevauchements. U89 vert.
     - [fait] AG-128 Terrain ASCII Grid — Core::MapTerrain : Lambert-93 IGN, échelle et convergence, fenêtre, pas jusqu'à 250², NODATA, altitudes relatives. U90 vert.
     - [fait] AG-129 Téléchargement, commande, RBZ 0.25.0 — OverpassClient, MapImportService (une opération, marqueur ARCHGEN Carte), MapController et MapPanel, menu ; RBZ 0.25.0 installé ; H40 à faire. U91 vert.
     - [fait] AG-130 Mode simple, RBZ 0.26.0 — rues à plat MapStreets, 300 bâtiments les plus proches, un clic depuis la géolocalisation, nord du modèle, sans dialogue ; essai réel 192 rues + 130 bâtiments. U92 vert.
+    - [fait] AG-131 Fond de plan à l'échelle, RBZ 0.27.0 — tuiles OSM (carte) et IGN (photo) au sol, deux balises, cache ; essai réel 20 + 72 images alignées. U93 vert.
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

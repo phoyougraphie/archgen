@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.27.0
+
+Fond de plan à l'échelle (AG-131, ADR-59), essayé dans SketchUp.
+
+**Ajouts**
+
+- **Fond de plan (carte et photo) autour du point géolocalisé** : tuiles OpenStreetMap (emprises des bâtiments) et photo aérienne IGN, à plat, à l'échelle, au nord du modèle, sur deux balises à allumer ou éteindre. Images gardées en cache, une entrée d'Annuler.
+
 ## 0.26.0
 
 Import de carte en mode simple (AG-130, ADR-58), essayé dans SketchUp sur 400 m de centre-ville.

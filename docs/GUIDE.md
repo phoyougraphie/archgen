@@ -215,7 +215,20 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 - **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
 - **Hors de portée :** le réseau est horizontal (pas de pont sur un terrain) ; pas d'échangeur à bretelles, de courbe de rails ni de marquage de priorité ; pas de calcul de structure : un pont est une maquette.
 
-## Importer une carte (0.26.0)
+## Fond de plan à l'échelle (0.27.0)
+
+Pour dessiner vous-même routes et bâtiments sur le vrai terrain :
+
+1. **Fichier → Ajouter un emplacement…** : cherchez l'adresse, puis **Définir la géolocalisation**.
+2. **Extensions → ARCHGEN → Fond de plan (carte et photo) autour du point géolocalisé…** : choisissez la taille (400 m par défaut) et les calques, puis acceptez le téléchargement.
+3. Deux images à plat, à l'échelle et orientées au nord, arrivent au sol :
+   - **ARCHGEN Fond carte** : le plan OpenStreetMap, avec les emprises des bâtiments ;
+   - **ARCHGEN Fond photo** : la photo aérienne de l'IGN (France), avec les arbres, les jardins et les toits.
+
+   Dans **Fenêtre → Balises**, allumez l'un ou l'autre. Tracez ensuite vos voies, rues et bâtiments ARCHGEN par-dessus.
+
+Les images sont gardées à côté du modèle : relancer la commande ne les retélécharge pas. Une seule entrée d'Annuler retire le fond. À citer sur une image diffusée : « © les contributeurs d'OpenStreetMap » et « IGN ».
+
 
 **Le plus simple : trois gestes.**
 
