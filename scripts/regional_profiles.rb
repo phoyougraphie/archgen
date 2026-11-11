@@ -406,15 +406,16 @@ PROFILES = {
   },
   # AG-133 (ADR-61) : styles côtiers de la presqu'île guérandaise.
   'baule_front_de_mer' => {
-    'label' => 'Côtier — front de mer (La Baule)', 'period' => 'Immeuble balnéaire du front de mer, 1955-1980', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
+    'label' => 'Côtier — front de mer (La Baule)', 'period' => 'Immeuble balnéaire du front de mer, 1960 à aujourd\'hui', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential mixed_use], 'family' => 'modern_modular',
     'requires' => %w[flat balcony glazing],
     'defaults' => {
       'footprint' => { 'width_m' => 22, 'depth_m' => 14 },
       'levels' => { 'count' => 8, 'height_m' => 2.8, 'heights_m' => [] },
-      'facade' => { 'front_bays' => 6, 'window_width_m' => 1.8, 'window_height_m' => 2.2, 'sill_m' => 0.3, 'entry_bay' => 2, 'door_width_m' => 1.4, 'door_height_m' => 2.4 },
+      'facade' => { 'front_bays' => 6, 'window_width_m' => 2.0, 'window_height_m' => 2.2, 'sill_m' => 0.3, 'entry_bay' => 2, 'door_width_m' => 1.4, 'door_height_m' => 2.4 },
+      'shop' => { 'height_m' => 3.6 },
       'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
       'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'painted_wood', 'glass' => 'glass' },
-      'features' => { 'glazing' => true, 'balcony' => true, 'balcony_levels' => 'all', 'balcony_rail' => 'solid' }
+      'features' => { 'glazing' => true, 'balcony' => true, 'balcony_levels' => 'all', 'balcony_depth_m' => 1.8, 'balcony_rail' => 'bars' }
     },
     'rules' => rules(levels: [4, 12], roofs: %w[flat], ratio: [0.8, 1.6], walls: %w[light_render concrete])
   },

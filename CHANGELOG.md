@@ -1,5 +1,14 @@
 # Journal des versions
 
+## 0.30.0
+
+Front de mer recadré sur photos (AG-134, ADR-62).
+
+**Changements**
+
+- **Côtier — front de mer** : balcons de 1,8 m à barreaux blancs, baies de 2,0 m, rez-de-chaussée commerçant de 3,6 m quand on le coche.
+- Option **Profondeur des balcons** (0,6 à 2,5 m) au panneau du bâtiment.
+
 ## 0.29.0
 
 Styles côtiers et maison moderne (AG-133, ADR-61).

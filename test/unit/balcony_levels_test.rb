@@ -44,6 +44,15 @@ class BalconyLevelsTest < Minitest::Test
     assert_equal (1..7).map { |i| "balcony/#{i}" }.sort, balconies(plan)
   end
 
+  # AG-134 : profondeur réglable ; 0,90 m n'est pas écrite.
+  def test_depth_is_set_by_the_style_and_default_is_not_written
+    config, plan = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1)
+    assert_equal 1.8, config['features']['balcony_depth_m']
+    assert_includes plan.to_s, '-1.8'
+    plain, = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1, 'features' => { 'balcony_depth_m' => 0.9 })
+    refute plain['features'].key?('balcony_depth_m')
+  end
+
   def test_noble_keeps_levels_two_and_five_and_is_not_written
     config, plan = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1, 'features' => { 'balcony_levels' => 'noble' })
     refute config['features'].key?('balcony_levels')

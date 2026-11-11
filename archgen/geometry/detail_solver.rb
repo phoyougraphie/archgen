@@ -253,6 +253,12 @@ module Archgen
       end
       private_class_method :fascia_problems
 
+      # AG-134 : profondeur réglable (features.balcony_depth_m), 0,90 m par défaut.
+      def balcony_depth(config)
+        config['features']['balcony_depth_m'] || BALCONY_DEPTH_M
+      end
+      private_class_method :balcony_depth
+
       def balcony_level?(level, features)
         features['balcony_levels'] == 'all' ? level.index >= 1 : BALCONY_LEVELS.include?(level.index)
       end
@@ -584,13 +590,13 @@ module Archgen
         balcony_levels.map do |level|
           Node.leaf("balcony/#{level.index}", 'balcony',
                     Boxes.on_facade(facade, margin, facade.length_m - margin, level.base_z_m - BALCONY_THICKNESS_M, level.base_z_m,
-                                    -BALCONY_DEPTH_M, 0.0, balcony_material(config)))
+                                    -balcony_depth(config), 0.0, balcony_material(config)))
         end
       end
       private_class_method :balconies
 
       def mitred_balconies(footprint, balcony_levels, margin, config)
-        ring = mitred_ring(footprint, margin, BALCONY_DEPTH_M)
+        ring = mitred_ring(footprint, margin, balcony_depth(config))
         return [] unless ring
 
         balcony_levels.map do |level|
@@ -603,7 +609,7 @@ module Archgen
       # libres du balcon ; le côté du mur reste ouvert.
       def balcony_rails(footprint, balcony_levels, config, definitions)
         margin = config['facade']['margin_m']
-        ring = footprint.trapezoid? ? mitred_ring(footprint, margin, BALCONY_DEPTH_M) : rect_ring(footprint, margin)
+        ring = footprint.trapezoid? ? mitred_ring(footprint, margin, balcony_depth(config)) : rect_ring(footprint, margin, balcony_depth(config))
         return [] unless ring
 
         segments = [[ring[3], ring[0]], [ring[0], ring[1]], [ring[1], ring[2]]]
@@ -622,10 +628,10 @@ module Archgen
       end
       private_class_method :balcony_rails
 
-      def rect_ring(footprint, margin)
+      def rect_ring(footprint, margin, depth)
         x0 = margin
         x1 = footprint.width_m - margin
-        [[x0, -BALCONY_DEPTH_M], [x1, -BALCONY_DEPTH_M], [x1, 0.0], [x0, 0.0]]
+        [[x0, -depth], [x1, -depth], [x1, 0.0], [x0, 0.0]]
       end
       private_class_method :rect_ring
 

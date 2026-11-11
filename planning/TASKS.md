@@ -258,6 +258,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-131 — Fond de plan à l'échelle, RBZ 0.27.0** | AG-130, ADR-59 | Tuiles OSM et photo IGN posées à plat, à l'échelle, au nord ; deux balises ; cache ; une opération. | U93 vert ; H42 faite au vrai geste par Claude. |
 | **AG-132 — Carrefour sur un virage, RBZ 0.28.0** | AG-043, ADR-60 | Branche redressée jusqu'à sa coupe, tronçon raccordé à la courbe ; refus seulement au-delà de 45° au raccord. | U94 vert ; suites U27 à U33 vertes. |
 | **AG-133 — Styles côtiers et maison moderne, RBZ 0.29.0** | AG-075, ADR-61 | Option balcons à tous les étages ; profils baule_front_de_mer, maison_moderne, baule_villa. | U95 et U52 verts. |
+| **AG-134 — Front de mer recadré, RBZ 0.30.0** | AG-133, ADR-62 | Profondeur des balcons réglable ; profil recadré sur photos. | U96, U95, U52 verts. |
 
 ## J21 — Intérieur
 

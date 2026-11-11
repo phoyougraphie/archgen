@@ -11,7 +11,7 @@
   "family_id": "modern_modular",
   "label": "Côtier — front de mer (La Baule)",
   "context": {
-    "period": "Immeuble balnéaire du front de mer, 1955-1980",
+    "period": "Immeuble balnéaire du front de mer, 1960 à aujourd'hui",
     "regions": [
       "loire_atlantique"
     ],
@@ -39,12 +39,15 @@
     },
     "facade": {
       "front_bays": 6,
-      "window_width_m": 1.8,
+      "window_width_m": 2.0,
       "window_height_m": 2.2,
       "sill_m": 0.3,
       "entry_bay": 2,
       "door_width_m": 1.4,
       "door_height_m": 2.4
+    },
+    "shop": {
+      "height_m": 3.6
     },
     "roof": {
       "type": "flat",
@@ -61,7 +64,8 @@
       "glazing": true,
       "balcony": true,
       "balcony_levels": "all",
-      "balcony_rail": "solid"
+      "balcony_depth_m": 1.8,
+      "balcony_rail": "bars"
     }
   },
   "rules": [

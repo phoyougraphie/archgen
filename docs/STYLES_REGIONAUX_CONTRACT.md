@@ -65,12 +65,13 @@ Le panneau propose déjà tous les styles actifs ; la liste devient longue : gro
 
 | Profil | Famille | Volume et toit | Matières | Détails |
 |---|---|---|---|---|
-| **Côtier — front de mer (La Baule)** `baule_front_de_mer` | Moderne modulaire | 8 niveaux de 2,8 m (4 à 12), 22 × 14 m, toit plat ; portes-fenêtres de 1,8 × 2,2 m | Enduit clair, menuiseries peintes claires | Balcons filants à chaque étage, garde-corps plein, vitrage |
+| **Côtier — front de mer (La Baule)** `baule_front_de_mer` | Moderne modulaire | 8 niveaux de 2,8 m (4 à 12), 22 × 14 m, toit plat ; baies de 2,0 × 2,2 m ; commerce de 3,6 m si coché | Enduit clair, menuiseries peintes claires | Balcons filants de 1,8 m à chaque étage, garde-corps à barreaux, vitrage |
 | **Maison individuelle moderne** `maison_moderne` | Moderne modulaire | 2 niveaux de 2,7 m (1 à 2), 12 × 9 m, toit plat (deux pans permis) ; baies de 1,8 × 2,1 m | Enduit clair en bas, bardage bois naturel à l'étage, menuiseries anthracite | Bardage, vitrage |
 | **Côtier — villa balnéaire (La Baule, Pornichet)** `baule_villa` | Pan de bois | 2 niveaux de 2,9 m (1 à 3), 10 × 11 m, deux pans à 50°, débord 0,6 m, faîtage perpendiculaire (pignon sur rue) | Enduit clair, pan de bois sombre, ardoise | Pan de bois, petits bois, cheminées, vitrage |
 
 - Accès d'îlot : interruption pour les trois (le porche ne tient pas sous un rez-de-chaussée de 2,8 m).
 - **Fait (AG-133).** Profils écrits par `scripts/regional_profiles.rb`, vérifiés par U52 en bâtiment seul, rue, rue à angle et îlot ; U95 pour les balcons. RBZ 0.29.0. **Vu dans SketchUp : non** (laissé au propriétaire).
+- **Recadrage (AG-134, ADR-62)**, sur photos du front de mer : option `features.balcony_depth_m` (0,6 à 2,5 m, défaut 0,90 non écrit), champ « Profondeur des balcons » au panneau du bâtiment ; balcons de 1,8 m à barreaux, baies de 2,0 m, commerce de 3,6 m. Reportés : garde-corps vitré, attique en retrait, balcons d'angle, bow-windows.
 - **Limite.** Une rue de maisons est une rangée mitoyenne ; des maisons isolées, avec jardin et retrait, demandent une capacité d'ensemble à part.
 
 ## Tests

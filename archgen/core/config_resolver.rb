@@ -158,6 +158,8 @@ module Archgen
         features.delete('shop_front') unless %w[awning pergola].include?(features['shop_front'])
         features.delete('balcony_rail') unless %w[bars solid].include?(features['balcony_rail']) # AG-106
         features.delete('balcony_levels') unless features['balcony_levels'] == 'all' # AG-133 : « noble » n'est pas écrit
+        # AG-134 : profondeur du balcon ; 0,90 m, la valeur d'avant, n'est pas écrite.
+        features.delete('balcony_depth_m') if features['balcony_depth_m'].nil? || (features['balcony_depth_m'] - 0.9).abs < 1e-9
         if features['shop_front'] == 'awning'
           materials['awning'] ||= DEFAULT_AWNING
         else

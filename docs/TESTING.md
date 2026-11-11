@@ -88,6 +88,7 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U93 | Fond de plan (AG-131, map_tiles_test) : point dans sa tuile aux niveaux 16, 18, 19 ; tuiles carrées à l'échelle à 0,5 % près, bord à bord, couvrant la zone ; niveau abaissé sous 100 tuiles ; plan à deux calques, hôtes et couche IGN, taille refusée. |
 | U94 | Carrefour sur un virage (AG-132, road_network_test) : trois croisements dans une courbe se construisent, rien n'est couvert deux fois, aucune fente entre faces ; un coude vif juste après la coupe reste refusé (`junction_on_curve`). |
 | U95 | Balcons à tous les étages (AG-133, balcony_levels_test) : sept balcons sur huit niveaux ; « noble » garde 2 et 5 et n'est pas écrit. Les trois nouveaux profils passent U52. |
+| U96 | Profondeur des balcons (AG-134, balcony_levels_test) : 1,8 m du style écrite et posée ; 0,90 m non écrite. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

@@ -380,6 +380,11 @@
           "enum": [
             "all"
           ]
+        },
+        "balcony_depth_m": {
+          "type": "number",
+          "minimum": 0.6,
+          "maximum": 2.5
         }
       },
       "additionalProperties": false,
