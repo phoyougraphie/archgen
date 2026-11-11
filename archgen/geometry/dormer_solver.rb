@@ -11,6 +11,8 @@ module Archgen
       SETBACK_M = 0.15
       CHEEK_M = 0.10
       SILL_ABOVE_WALLS_M = 0.30
+      # AG-143 : lucarne passante, façade dans le plan du mur, appui juste au-dessus de l'égout.
+      WALL_SILL_M = 0.05
       HEAD_M = 0.15
       MAX_WINDOW_M = 1.40
       MIN_WINDOW_M = 0.60
@@ -30,6 +32,7 @@ module Archgen
         end
 
         top = levels.last.top_z_m
+        wall = config['features']['wall_dormers'] == true
         width = config['facade']['window_width_m'] + (2 * CHEEK_M)
         planes = planes(footprint, top, roof, row)
         front_only = planes.reject { |plane| plane[:lateral] }
@@ -39,10 +42,10 @@ module Archgen
           id = "dormer/#{bay}"
           x0 = centre - (width / 2.0)
           x1 = centre + (width / 2.0)
-          fitted = fit(id, x0, x1, top, roof, planes)
+          fitted = fit(id, x0, x1, top, roof, planes, wall)
           unless fitted
             # Contre une croupe, la travée d'extrémité n'a pas de lucarne : omise, et dit.
-            fit(id, x0, x1, top, roof, front_only) ? skipped << [id, 'hip'] : problems << problem('dormer_too_low', id)
+            fit(id, x0, x1, top, roof, front_only, wall) ? skipped << [id, 'hip'] : problems << problem('dormer_too_low', id)
             next
           end
           unless within(fitted, footprint, config, mitre: false)
@@ -119,10 +122,10 @@ module Archgen
 
       # La plus haute fenêtre qui tient : appui au-dessus de la peau en façade, arrière du volume
       # enfoui sous la peau avant le faîtage.
-      def fit(id, x0, x1, top, roof, planes)
+      def fit(id, x0, x1, top, roof, planes, wall = false)
         xc = (x0 + x1) / 2.0
-        y_front = SETBACK_M
-        sill = [top + SILL_ABOVE_WALLS_M, [x0, x1].map { |x| roof_z(planes, x, y_front) }.max + INSIDE_M].max
+        y_front = wall ? 0.0 : SETBACK_M
+        sill = [top + (wall ? WALL_SILL_M : SILL_ABOVE_WALLS_M), [x0, x1].map { |x| roof_z(planes, x, y_front) }.max + INSIDE_M].max
         sill = Core::Quant.q(sill)
         pitch = RoofSolver.slope(roof['pitch_deg'])
         height = MAX_WINDOW_M

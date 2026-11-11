@@ -477,8 +477,21 @@
             "bow_window": {
               "enum": [
                 "center",
-                "ends"
+                "ends",
+                "ground"
               ]
+            },
+            "wall_dormers": {
+              "type": "boolean"
+            },
+            "string_courses": {
+              "type": "boolean"
+            },
+            "turret": {
+              "type": "boolean"
+            },
+            "balconettes": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false

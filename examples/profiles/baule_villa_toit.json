@@ -25,7 +25,8 @@
     "muntins",
     "shutters",
     "surrounds",
-    "chimneys"
+    "chimneys",
+    "dormers"
   ],
   "defaults": {
     "footprint": {
@@ -119,18 +120,29 @@
     {
       "materials": {
         "shutters": "painted_wood_blue"
+      },
+      "features": {
+        "dormers": true,
+        "wall_dormers": true
       }
     },
     {
       "materials": {
         "shutters": "painted_wood_green",
         "surrounds": "red_brick"
+      },
+      "features": {
+        "string_courses": true
       }
     },
     {
       "materials": {
         "shutters": "painted_wood_blue",
         "surrounds": "red_brick"
+      },
+      "features": {
+        "turret": true,
+        "string_courses": true
       }
     },
     {
@@ -138,12 +150,20 @@
         "shutters": "painted_wood_grey",
         "wall": "granite",
         "surrounds": "light_render"
+      },
+      "features": {
+        "turret": true
       }
     },
     {
       "materials": {
         "shutters": "painted_wood_red",
         "surrounds": "red_brick"
+      },
+      "features": {
+        "dormers": true,
+        "wall_dormers": true,
+        "string_courses": true
       }
     }
   ]

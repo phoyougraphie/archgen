@@ -121,6 +121,9 @@
     {
       "materials": {
         "wall": "granite"
+      },
+      "features": {
+        "turret": true
       }
     },
     {
@@ -139,7 +142,8 @@
       },
       "features": {
         "timber_frame": false,
-        "surrounds": true
+        "surrounds": true,
+        "string_courses": true
       }
     },
     {
@@ -149,7 +153,8 @@
       },
       "features": {
         "timber_frame": false,
-        "surrounds": true
+        "surrounds": true,
+        "turret": true
       }
     }
   ]

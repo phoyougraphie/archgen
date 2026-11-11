@@ -84,6 +84,18 @@ module Archgen
       BOW_SLAB_M = 0.15
       BOW_POST_M = 0.06
       BOW_PANE_M = 0.02
+      # AG-143 : bandeaux, tourelle d'angle, balconnets.
+      BAND_HALF_M = 0.10
+      BAND_DEPTH_M = 0.04
+      TURRET_SIDE_M = 2.0
+      TURRET_SPIRE = 1.4
+      TURRET_EAVE_M = 0.15
+      TURRET_CLEAR_M = 0.10
+      BALCONETTE_DEPTH_M = 0.35
+      BALCONETTE_SLAB_M = 0.08
+      BALCONETTE_RAIL_M = 0.75
+      BALCONETTE_BAR_M = 0.02
+      BALCONETTE_SPACING_M = 0.12
       # AG-133 : balcons filants à chaque étage au-dessus du rez-de-chaussée (immeuble balnéaire).
       # AG-106 : garde-corps de balcon (docs/TEINTES_ABORDS_CONTRACT.md).
       RAIL_HEIGHT_M = 1.00
@@ -125,6 +137,10 @@ module Archgen
         problems.concat(balcony_problems(config, balcony_levels, openings, wrap))
         bows = features['bow_window'] ? bow_openings(openings, config) : []
         problems.concat(bow_problems(config, bows, balcony_levels, features))
+        problems.concat(band_problems(footprint, levels, openings, config, row, balcony_levels, bows)) if features['string_courses']
+        turret = features['turret'] && !row && !footprint.trapezoid?
+        problems.concat(turret_problems(footprint, openings)) if turret
+        problems.concat(balconette_problems(balcony_levels)) if features['balconettes']
         problems.concat(fascia_problems(levels, openings)) if shop?(config)
         clashes = features['shutters'] ? shutter_clashes(footprint, openings, config) : {}
         problems.concat(shutter_problems(clashes))
@@ -158,9 +174,13 @@ module Archgen
         nodes += built_balconies
         nodes += balcony_rails(footprint, balcony_levels, config, definitions, wrap) if features['balcony_rail'] && !built_balconies.empty?
         nodes += bow_windows(footprint, bows, levels, config)
+        nodes += string_courses(footprint, levels, config, row, balcony_levels, bows) if features['string_courses']
+        nodes += turret_nodes(levels, config) if turret
+        nodes += balconettes(footprint, openings, config, bows) if features['balconettes']
         warnings = features['balcony'] && built_balconies.empty? ? [balcony_warning(balcony_levels)] : []
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/balcony_wrap', reason: 'balcony_wrap_in_row') if features['balcony'] && features['balcony_wrap'] && !wrap
         warnings << Core::Diagnostic.warning('W_DETAIL', '/features/bow_window', reason: 'no_bow_window') if features['bow_window'] && bows.empty?
+        warnings << Core::Diagnostic.warning('W_DETAIL', '/features/turret', reason: 'turret_in_row') if features['turret'] && !turret
         warnings += dormers.warnings if dormers
         porch_warning = features['classical'] ? OrnamentSolver.porch_warning(footprint, openings, config) : nil
         warnings << porch_warning if porch_warning
@@ -715,11 +735,14 @@ module Archgen
 
       # Fenêtres de façade, aux étages, des travées choisies : centre, ou les deux bouts.
       def bow_openings(openings, config)
-        windows = front(openings).select { |o| o.kind == 'window' && o.level_index >= 1 }
+        ground = config['features']['bow_window'] == 'ground'
+        windows = front(openings).select { |o| o.kind == 'window' && (ground ? o.level_index.zero? : o.level_index >= 1) }
         bays = windows.map(&:bay_index).uniq.sort
         return [] if bays.empty?
 
         chosen = config['features']['bow_window'] == 'ends' ? [bays.first, bays.last].uniq : [bays[bays.size / 2]]
+        # Au rez-de-chaussée, la fenêtre la plus proche du milieu (la porte n'en est pas une).
+        chosen = [bays.min_by { |b| (b - ((config['facade']['front_bays'] - 1) / 2.0)).abs }] if ground
         windows.select { |o| chosen.include?(o.bay_index) }
       end
       private_class_method :bow_openings
@@ -760,7 +783,9 @@ module Archgen
           column.each_with_index.flat_map do |o, k|
             level = by_level.fetch(o.level_index)
             above = column[k + 1] && by_level[column[k + 1].level_index]
-            z0 = level.base_z_m
+            # Au rez-de-chaussée, la dalle basse est posée sur le sol au lieu de passer dessous (AG-143).
+            ground = level.base_z_m.abs < EPS
+            z0 = ground ? Core::Quant.q(level.base_z_m + BOW_SLAB_M) : level.base_z_m
             top = above ? above.base_z_m - BOW_SLAB_M : level.top_z_m
             id = "bow/#{bay}/#{o.level_index}"
             parts = [
@@ -777,6 +802,156 @@ module Archgen
         end
       end
       private_class_method :bow_windows
+
+      # --- Bandeaux, tourelle, balconnets (AG-143, ADR-68)
+
+      # Façades qui reçoivent un bandeau : en rangée, les murs latéraux sont mitoyens.
+      def band_facades(footprint, row)
+        row ? %w[front rear] : %w[front right rear left]
+      end
+      private_class_method :band_facades
+
+      # Cotes des bandeaux : chaque plancher d'étage (sauf sous un balcon) et l'égout (sauf corniche, génoise).
+      def band_zs(levels, config, balcony_levels)
+        floors = levels.drop(1).reject { |l| balcony_levels.include?(l) }.map(&:base_z_m)
+        top = config['features']['cornice'] || config['features']['genoise'] ? [] : [Core::Quant.q(levels.last.top_z_m - BAND_HALF_M)]
+        floors + top
+      end
+      private_class_method :band_zs
+
+      def band_problems(footprint, levels, openings, config, row, balcony_levels, bows)
+        out = []
+        out << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/string_courses', reason: 'string_courses_with_timber') if config['features']['timber_frame']
+        zs = band_zs(levels, config, balcony_levels)
+        facades = band_facades(footprint, row)
+        openings.each do |o|
+          next unless facades.include?(o.facade_id)
+          next unless zs.any? { |z| o.z_max_m > z - BAND_HALF_M + EPS && o.z_min_m < z + BAND_HALF_M - EPS }
+
+          out << Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/string_courses', reason: 'string_course_over_opening', id: o.id)
+        end
+        out
+      end
+      private_class_method :band_problems
+
+      # Cordon de 20 cm, en saillie de 4 cm ; devant et derrière, il couvre l'angle des murs libres.
+      # Le bandeau s'interrompt au droit d'un bow-window qu'il croiserait (dalles comprises).
+      def string_courses(footprint, levels, config, row, balcony_levels, bows = [])
+        material = config['materials']['surrounds'] || config['materials']['wall']
+        by_level = levels.to_h { |l| [l.index, l] }
+        gaps = bows.group_by(&:bay_index).map do |_, column|
+          low = column.map { |o| by_level[o.level_index].base_z_m }.min - BOW_SLAB_M
+          high = column.map { |o| by_level[o.level_index].top_z_m }.max + BOW_SLAB_M
+          [column.map(&:u_min_m).min - BOW_SIDE_M, column.map(&:u_max_m).max + BOW_SIDE_M, low, high]
+        end
+        band_facades(footprint, row).flat_map do |id|
+          facade = footprint.facade(id)
+          over = !row && %w[front rear].include?(id) ? BAND_DEPTH_M : 0.0
+          band_zs(levels, config, balcony_levels).each_with_index.flat_map do |z, k|
+            cuts = id == 'front' ? gaps.select { |_, _, lo, hi| z + BAND_HALF_M > lo && z - BAND_HALF_M < hi }.map { |u0, u1, _, _| [u0, u1] }.sort : []
+            spans = [[-over, facade.length_m + over]]
+            cuts.each { |c0, c1| spans = spans.flat_map { |a, b| [[a, [b, c0].min], [[a, c1].max, b]].select { |s0, s1| s1 - s0 > Core::Quant::MIN_EDGE_M } } }
+            spans.each_with_index.map do |(a, b), n|
+              Node.leaf(n.zero? ? "band/#{id}/#{k}" : "band/#{id}/#{k}/#{n}", 'cornice',
+                        Boxes.on_facade(facade, a, b, z - BAND_HALF_M, z + BAND_HALF_M, -BAND_DEPTH_M, 0.0, material))
+            end
+          end
+        end
+      end
+      private_class_method :string_courses
+
+      # Tour carrée centrée sur l'angle avant gauche, un étage plus haute que l'égout, flèche d'ardoise.
+      def turret_box
+        half = TURRET_SIDE_M / 2.0
+        [-half, half, -half, half]
+      end
+      private_class_method :turret_box
+
+      def turret_problems(footprint, openings)
+        x0, x1, y0, y1 = turret_box
+        openings.filter_map do |o|
+          next unless %w[front left].include?(o.facade_id)
+
+          facade = footprint.facade(o.facade_id)
+          p = facade.point(o.u_min_m, 0.0)
+          q = facade.point(o.u_max_m, 0.0)
+          xs = [p[0], q[0]].minmax
+          ys = [p[1], q[1]].minmax
+          next unless xs[1] > x0 - TURRET_CLEAR_M && xs[0] < x1 + TURRET_CLEAR_M && ys[1] > y0 - TURRET_CLEAR_M && ys[0] < y1 + TURRET_CLEAR_M
+
+          Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/turret', reason: 'turret_over_opening', id: o.id)
+        end
+      end
+      private_class_method :turret_problems
+
+      def turret_nodes(levels, config)
+        x0, x1, y0, y1 = turret_box
+        last = levels.last
+        storey = last.top_z_m - last.base_z_m
+        top = Core::Quant.q(last.top_z_m + storey)
+        wall = config['materials']['wall']
+        roof = config['materials']['roof']
+        glass = config['materials']['glass'] || 'glass'
+        frames = config['materials']['frames']
+        e = TURRET_EAVE_M
+        apex = [0.0, 0.0, Core::Quant.q(top + (TURRET_SIDE_M * TURRET_SPIRE))]
+        base = [[x0 - e, y0 - e], [x1 + e, y0 - e], [x1 + e, y1 + e], [x0 - e, y1 + e]].map { |x, y| [Core::Quant.q(x), Core::Quant.q(y), top] }
+        spire = MeshBuilder.new('solid')
+        spire.add_face(base.reverse, roof)
+        base.each_index { |i| spire.add_face([base[i], base[(i + 1) % 4], apex], roof) }
+        nodes = [Node.leaf('turret/body', 'structure', Boxes.solid(x0, x1, y0, y1, 0.0, top, wall)),
+                 Node.leaf('turret/spire', 'roof_face', spire.to_primitive)]
+        bases = levels.map(&:base_z_m) + [last.top_z_m]
+        bases.each_with_index do |z, k|
+          sill = Core::Quant.q(z + 0.9)
+          head = Core::Quant.q(sill + 1.2)
+          next if head > top - 0.2
+
+          nodes << Node.leaf("turret/frame/front/#{k}", 'frame', Boxes.solid(-0.4, 0.4, y0 - 0.03, y0, sill - 0.05, head + 0.05, frames))
+          nodes << Node.leaf("turret/glass/front/#{k}", 'frame', Boxes.solid(-0.33, 0.33, y0 - 0.04, y0 - 0.03, sill, head, glass))
+          nodes << Node.leaf("turret/frame/left/#{k}", 'frame', Boxes.solid(x0 - 0.03, x0, -0.4, 0.4, sill - 0.05, head + 0.05, frames))
+          nodes << Node.leaf("turret/glass/left/#{k}", 'frame', Boxes.solid(x0 - 0.04, x0 - 0.03, -0.33, 0.33, sill, head, glass))
+        end
+        nodes
+      end
+      private_class_method :turret_nodes
+
+      def balconette_problems(balcony_levels)
+        return [] if balcony_levels.empty?
+
+        [Core::Diagnostic.error('E_OPENING_CLEARANCE', '/features/balconettes', reason: 'balconettes_with_balcony')]
+      end
+      private_class_method :balconette_problems
+
+      # Devant chaque fenêtre d'étage en façade (hors bow-window) : dalle de pierre et ferronnerie noire.
+      def balconettes(footprint, openings, config, bows)
+        facade = footprint.facade('front')
+        stone = config['materials']['surrounds'] || config['materials']['wall']
+        iron = 'dark_metal'
+        skip = bows.map(&:id)
+        d = -BALCONETTE_DEPTH_M
+        b = BALCONETTE_BAR_M
+        front(openings).select { |o| o.kind == 'window' && o.level_index >= 1 && !skip.include?(o.id) }.flat_map do |o|
+          id = "balconette/#{o.level_index}/#{o.bay_index}"
+          z = o.z_min_m
+          rail = Core::Quant.q(z + BALCONETTE_RAIL_M)
+          u0 = o.u_min_m
+          u1 = o.u_max_m
+          parts = [
+            Node.leaf("#{id}/slab", 'balcony', Boxes.on_facade(facade, u0, u1, z - BALCONETTE_SLAB_M, z, d, 0.0, stone)),
+            Node.leaf("#{id}/rail/front", 'balcony', Boxes.on_facade(facade, u0, u1, rail - b, rail, d, d + b, iron)),
+            Node.leaf("#{id}/rail/left", 'balcony', Boxes.on_facade(facade, u0, u0 + b, rail - b, rail, d + b, 0.0, iron)),
+            Node.leaf("#{id}/rail/right", 'balcony', Boxes.on_facade(facade, u1 - b, u1, rail - b, rail, d + b, 0.0, iron))
+          ]
+          count = ((u1 - u0) / BALCONETTE_SPACING_M).floor
+          (0..count).each do |k|
+            u = Core::Quant.q([u0 + (k * BALCONETTE_SPACING_M), u1 - b].min)
+            parts << Node.leaf("#{id}/bar/#{k}", 'balcony', Boxes.on_facade(facade, u, u + b, z, rail - b, d, d + b, iron))
+          end
+          parts
+        end
+      end
+      private_class_method :balconettes
 
       def rect_ring(footprint, margin, depth)
         x0 = margin

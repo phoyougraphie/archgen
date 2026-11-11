@@ -462,17 +462,17 @@ PROFILES = {
     # Pan de bois et encadrements occupent la même épaisseur : une variante prend l'un ou l'autre.
     'palette' => [
       {},
-      { 'materials' => { 'wall' => 'granite' } },
+      { 'materials' => { 'wall' => 'granite' }, 'features' => { 'turret' => true } },
       { 'materials' => { 'timber' => 'dark_wood' } },
       { 'materials' => { 'timber' => 'painted_wood_green' } },
-      { 'materials' => { 'surrounds' => 'red_brick' }, 'features' => { 'timber_frame' => false, 'surrounds' => true } },
-      { 'materials' => { 'wall' => 'granite', 'surrounds' => 'light_render' }, 'features' => { 'timber_frame' => false, 'surrounds' => true } }
+      { 'materials' => { 'surrounds' => 'red_brick' }, 'features' => { 'timber_frame' => false, 'surrounds' => true, 'string_courses' => true } },
+      { 'materials' => { 'wall' => 'granite', 'surrounds' => 'light_render' }, 'features' => { 'timber_frame' => false, 'surrounds' => true, 'turret' => true } }
     ],
     'rules' => rules(levels: [1, 3], roofs: %w[gable hip], ratio: [1.1, 1.8], walls: %w[light_render red_brick granite])
   },
   'baule_villa_toit' => {
     'label' => 'Côtier — villa à quatre pans (La Baule)', 'period' => 'Villa balnéaire, 1900-1950', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential], 'family' => 'masonry_vernacular',
-    'requires' => %w[hip glazing muntins shutters surrounds chimneys],
+    'requires' => %w[hip glazing muntins shutters surrounds chimneys dormers],
     'defaults' => {
       'footprint' => { 'width_m' => 11, 'depth_m' => 9 },
       'levels' => { 'count' => 2, 'height_m' => 2.9, 'heights_m' => [] },
@@ -483,11 +483,11 @@ PROFILES = {
     },
     'palette' => [
       {},
-      { 'materials' => { 'shutters' => 'painted_wood_blue' } },
-      { 'materials' => { 'shutters' => 'painted_wood_green', 'surrounds' => 'red_brick' } },
-      { 'materials' => { 'shutters' => 'painted_wood_blue', 'surrounds' => 'red_brick' } },
-      { 'materials' => { 'shutters' => 'painted_wood_grey', 'wall' => 'granite', 'surrounds' => 'light_render' } },
-      { 'materials' => { 'shutters' => 'painted_wood_red', 'surrounds' => 'red_brick' } }
+      { 'materials' => { 'shutters' => 'painted_wood_blue' }, 'features' => { 'dormers' => true, 'wall_dormers' => true } },
+      { 'materials' => { 'shutters' => 'painted_wood_green', 'surrounds' => 'red_brick' }, 'features' => { 'string_courses' => true } },
+      { 'materials' => { 'shutters' => 'painted_wood_blue', 'surrounds' => 'red_brick' }, 'features' => { 'turret' => true, 'string_courses' => true } },
+      { 'materials' => { 'shutters' => 'painted_wood_grey', 'wall' => 'granite', 'surrounds' => 'light_render' }, 'features' => { 'turret' => true } },
+      { 'materials' => { 'shutters' => 'painted_wood_red', 'surrounds' => 'red_brick' }, 'features' => { 'dormers' => true, 'wall_dormers' => true, 'string_courses' => true } }
     ],
     'rules' => rules(levels: [1, 3], roofs: %w[hip gable], ratio: [1.1, 1.8], walls: %w[light_render granite])
   },
@@ -501,14 +501,14 @@ PROFILES = {
       'shop' => { 'height_m' => 3.6 },
       'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 45 },
       'materials' => { 'wall' => 'granite', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'surrounds' => 'red_brick' },
-      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'dormers' => true, 'chimneys' => true }
+      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'dormers' => true, 'chimneys' => true, 'wall_dormers' => true, 'string_courses' => true }
     },
     'palette' => [
       {},
-      { 'materials' => { 'wall' => 'light_render' } },
+      { 'materials' => { 'wall' => 'light_render' }, 'features' => { 'balconettes' => true } },
       { 'materials' => { 'wall' => 'light_render', 'surrounds' => 'granite' } },
-      { 'materials' => { 'surrounds' => 'light_render' } },
-      { 'materials' => { 'wall' => 'schist' } }
+      { 'materials' => { 'surrounds' => 'light_render' }, 'features' => { 'balconettes' => true, 'string_courses' => false } },
+      { 'materials' => { 'wall' => 'schist' }, 'features' => { 'wall_dormers' => false } }
     ],
     'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[granite light_render schist])
   }

@@ -1,5 +1,18 @@
 # Journal des versions
 
+## 0.34.0
+
+Détails des maisons de La Baule (AG-143, ADR-68).
+
+**Ajouts**
+
+- **Bandeaux** de brique (ou de la matière des encadrements) à chaque plancher et sous l'égout.
+- **Lucarnes passantes**, dans le plan de la façade.
+- **Tourelle d'angle** carrée à flèche d'ardoise.
+- **Balconnets** en fer forgé devant les fenêtres d'étage.
+- **Bow-window de rez-de-chaussée**.
+- Les palettes des styles de La Baule tirent ces détails d'une maison à l'autre.
+
 ## 0.33.0
 
 Maisons de La Baule variées (AG-140 à AG-142, ADR-67).

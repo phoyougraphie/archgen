@@ -70,7 +70,9 @@
       "muntins": true,
       "surrounds": true,
       "dormers": true,
-      "chimneys": true
+      "chimneys": true,
+      "wall_dormers": true,
+      "string_courses": true
     }
   },
   "rules": [
@@ -122,6 +124,9 @@
     {
       "materials": {
         "wall": "light_render"
+      },
+      "features": {
+        "balconettes": true
       }
     },
     {
@@ -133,11 +138,18 @@
     {
       "materials": {
         "surrounds": "light_render"
+      },
+      "features": {
+        "balconettes": true,
+        "string_courses": false
       }
     },
     {
       "materials": {
         "wall": "schist"
+      },
+      "features": {
+        "wall_dormers": false
       }
     }
   ]
