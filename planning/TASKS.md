@@ -253,7 +253,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-126 — Voies en réseaux** | AG-125 | Table des types, simplification, rayons, réseaux de 24 voies, écartés comptés. | U88 vert. |
 | **AG-127 — Bâtiments** | AG-125 | Rectangle orienté ≥ 85 %, niveaux, graine, façade vers la voie, écartés. | U89 vert. |
 | **AG-128 — Terrain ASCII Grid** | AG-125 | Lambert-93, échelle et convergence, NODATA, maillage ; écriture et Undo en AG-129. | U90 vert. |
-| **AG-129 — Téléchargement, commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Téléchargement Overpass (adaptateur, hôtes fermés, confirmation, fichier enregistré) ; panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 ; recette H40 à la main. |
+| **AG-129 — Téléchargement, commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Téléchargement Overpass (adaptateur, hôtes fermés, confirmation, fichier enregistré) ; panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 vert ; recette H40 à la main (à faire). |
 
 ## J21 — Intérieur
 

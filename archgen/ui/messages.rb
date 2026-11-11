@@ -150,6 +150,8 @@ module Archgen
         'terrain_too_large' => 'Le terrain compte %{value} points : %{limit} au plus.',
         'terrain_nodata' => 'Le terrain a %{value} points sans altitude : %{limit} au plus.',
         'terrain_outside_map' => 'Le terrain ne recouvre pas la carte : vérifiez qu’il est en Lambert-93 et couvre la même zone.',
+        'preview_missing' => 'Faites d’abord un aperçu de la carte.',
+        'map_download' => 'Le téléchargement OpenStreetMap a échoué (%{reason_detail}) : réessayez plus tard ou importez un fichier.',
         'map_empty' => 'Le fichier de carte ne contient ni voie ni bâtiment.',
         'export_selection' => 'Sélectionnez un seul bâtiment ou une seule rue ARCHGEN, puis relancez l’export.',
         'export_unsupported' => 'Les routes, réseaux et terrains ne s’exportent pas encore : sélectionnez un bâtiment ou une rue.',

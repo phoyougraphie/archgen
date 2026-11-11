@@ -1,5 +1,15 @@
 # Journal des versions
 
+## 0.25.0
+
+Cartographie (AG-125 à AG-129, ADR-56, ADR-57). Recette H40 dans SketchUp à faire.
+
+**Ajouts**
+
+- **Importer une carte** : extrait OpenStreetMap téléchargé par ARCHGEN (Overpass, après confirmation, seule l'emprise est envoyée, fichier gardé à côté du modèle) ou fichier `.osm` / GeoJSON local.
+- **Voies** en réseaux ARCHGEN par type de voie ; **bâtiments** en rectangles orientés vers la voie ; **terrain IGN** ASCII Grid en Lambert-93, recalé (échelle, convergence).
+- Aperçu chiffré avant écriture, une seule entrée d'Annuler, attribution gardée sur le composant « ARCHGEN Carte ».
+
 ## 0.24.0
 
 Mobilier urbain (AG-120 à AG-124, ADR-55). Recette H39 dans SketchUp à faire.

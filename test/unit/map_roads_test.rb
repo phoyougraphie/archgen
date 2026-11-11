@@ -18,7 +18,7 @@ class MapRoadsTest < Minitest::Test
     result.value
   end
 
-  def roads(value) = value['networks'].flat_map { |n| n['roads'] }
+  def roads(value) = value['networks'].flat_map { |n| n['tree']['roads'] }
 
   def test_types_follow_the_closed_table_and_unknown_or_levels_are_counted
     value = convert([way(1, 'residential', [[0, 0], [100, 0]]), way(2, 'cycleway', [[0, 50], [100, 50]]),
@@ -53,15 +53,17 @@ class MapRoadsTest < Minitest::Test
   def test_connected_ways_make_one_network_and_big_ones_are_cut_at_twenty_four
     cross = convert([way(1, 'residential', [[0, 0], [50, 0], [100, 0]]), way(2, 'residential', [[50, -50], [50, 0], [50, 50]]),
                      way(3, 'residential', [[300, 0], [400, 0]])])
-    assert_equal [%w[w1-1 w2-1], %w[w3-1]], cross['networks'].map { |n| n['roads'].map { |r| r['id'] } }
+    assert_equal [%w[w1-1 w2-1], %w[w3-1]], cross['networks'].map { |n| n['tree']['roads'].map { |r| r['id'] } }
     grid = (0..29).map { |i| way(100 + i, 'service', [[i * 30.0, 0], [i * 30.0, 20], [(i + 1) * 30.0, 20]]) }
     big = convert(grid)
-    assert_equal [24, 6], big['networks'].map { |n| n['roads'].size }
+    assert_equal [24, 6], big['networks'].map { |n| n['tree']['roads'].size }
   end
 
   def test_an_imported_network_is_accepted_by_the_engine
-    value = convert([way(1, 'residential', [[0, 0], [50, 0], [100, 0]]), way(2, 'residential', [[50, -50], [50, 0], [50, 50]])])
-    tree = value['networks'].first
+    value = convert([way(1, 'residential', [[20, 10], [70, 10], [120, 10]]), way(2, 'residential', [[70, -40], [70, 10], [70, 60]])])
+    network = value['networks'].first
+    assert_equal [20, 10], network['origin_m'], 'le réseau part du premier point de sa première voie'
+    tree = network['tree']
     settings = C.road_network_intake.settings(tree)
     assert settings.ok?, settings.errors.map(&:to_h).inspect
     plan = RoadNetworkEngine.call(settings.value, bands: C.road_bands, items: C.road_items)

@@ -215,6 +215,33 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 - **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
 - **Hors de portée :** le réseau est horizontal (pas de pont sur un terrain) ; pas d'échangeur à bretelles, de courbe de rails ni de marquage de priorité ; pas de calcul de structure : un pont est une maquette.
 
+## Importer une carte (0.25.0)
+
+**Extensions → ARCHGEN → Importer une carte…**
+
+1. **Télécharger depuis OpenStreetMap** : donnez le centre de la zone (déjà rempli si le modèle est géolocalisé) et son côté, de 50 à 2 000 m, puis cliquez sur **Télécharger…**. ARCHGEN montre le serveur Overpass et l'emprise, et n'envoie rien sans votre accord. Seule l'emprise part sur le réseau. L'extrait reçu est gardé à côté du fichier SKP (`<modèle>_osm_<date>.osm`). Vous pouvez aussi **choisir** un `.osm` ou un GeoJSON déjà sur le disque.
+2. **Terrain (facultatif)** : un fichier ASCII Grid de l'IGN (RGE ALTI, `.asc`), en Lambert-93. Cochez la case IGN pour l'attribution.
+3. **Choisissez** les couches (voies, bâtiments, terrain) et le style des bâtiments, puis cliquez sur **Aperçu**. Le panneau compte les réseaux, les voies, les bâtiments et les faces de terrain, ainsi que tout ce qui est écarté, avec la raison. Rien n'est encore écrit.
+4. **Cliquez sur Importer.** Une seule entrée d'Annuler retire tout.
+
+**Ce que vous obtenez :**
+
+- Les voies deviennent des **réseaux de voies** ARCHGEN, avec un type de voie tout prêt selon leur catégorie OSM.
+- Les bâtiments deviennent des **bâtiments ARCHGEN** rectangulaires, tournés vers la voie la plus proche.
+- Tous sont modifiables au clic droit comme s'ils avaient été créés à la main.
+- Le terrain est un composant **ARCHGEN Terrain** que les commandes d'assise et de voie sur terrain savent relever.
+- Le composant **ARCHGEN Carte** garde l'origine, la source et l'attribution.
+
+**Licences.** Les données OpenStreetMap sont sous licence ODbL : toute image diffusée doit porter « © les contributeurs d'OpenStreetMap ». Le RGE ALTI de l'IGN est sous Licence Ouverte 2.0 et demande de citer l'IGN.
+
+**Limites.**
+
+- Zone de 2 × 2 km au plus, 300 bâtiments, 400 tronçons de voie.
+- Les bâtiments non rectangulaires sont écartés (contour qui remplit moins de 85 % de son rectangle).
+- Les ponts, les tunnels, l'eau et les voies ferrées ne sont pas importés.
+- Le terrain doit être en Lambert-93.
+- Le serveur Overpass peut refuser une demande trop fréquente : réessayez plus tard.
+
 ## Reproduire
 
 La même configuration, la même graine et les mêmes versions donnent le même plan. Les réglages sont enregistrés dans le fichier SKP et retrouvés à sa réouverture.

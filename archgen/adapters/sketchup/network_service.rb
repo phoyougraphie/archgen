@@ -32,6 +32,11 @@ module Archgen
                           settings.diagnostics + plan.diagnostics)
         end
 
+        # Import de carte (AG-129) : réseau déjà calculé, coordonnées de la carte ; l'appelant tient l'opération.
+        def write_imported(model, computed, origin)
+          write_new_root(model, computed, [origin[0].to_f, origin[1].to_f, 0.0])
+        end
+
         # AG-102 : le réseau des voies fusionnées remplace leurs racines, en une seule opération.
         def create_replacing(model:, merge:)
           computed = preview(tree: merge.tree)

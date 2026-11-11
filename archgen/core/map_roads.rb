@@ -3,7 +3,7 @@
 module Archgen
   module Core
     # Voies d'une carte → réseaux ARCHGEN (docs/CARTOGRAPHIE_CONTRACT.md §2, AG-126, D-40).
-    # Entrée : la carte de MapReader, en mètres. Sortie : des réglages de réseau prêts pour
+    # Entrée : la carte de MapReader, en mètres. Sortie : des réseaux { origin_m, tree }, tree étant prêt pour
     # RoadNetworkIntake, et le compte de ce qui est écarté. Aucune écriture, aucun aléa.
     module MapRoads
       module_function
@@ -175,11 +175,15 @@ module Archgen
         out
       end
 
+      # Un réseau part de son origine : le premier point de sa première voie. `origin_m` le place dans la carte.
       def network(roads)
-        { 'network_version' => 1,
-          'roads' => roads.map do |r|
-            { 'id' => r['id'], 'road' => { 'road_version' => 1, 'trace' => { 'points_m' => r['points'], 'radii_m' => r['radii'] }, 'profile' => r['profile'] } }
-          end }
+        x0, y0 = roads.first['points'].first
+        tree = { 'network_version' => 1,
+                 'roads' => roads.map do |r|
+                   points = r['points'].map { |x, y| [Quant.q(x - x0), Quant.q(y - y0)] }
+                   { 'id' => r['id'], 'road' => { 'road_version' => 1, 'trace' => { 'points_m' => points, 'radii_m' => r['radii'] }, 'profile' => r['profile'] } }
+                 end }
+        { 'origin_m' => [x0, y0], 'tree' => tree }
       end
     end
   end

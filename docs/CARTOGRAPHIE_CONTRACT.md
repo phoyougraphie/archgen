@@ -124,6 +124,19 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
   - un **aperçu chiffré** avant écriture : voies, réseaux, bâtiments, objets écartés avec leurs raisons, attribution.
 - **Importer** fait une seule opération Undo, sous une racine « ARCHGEN Carte » qui porte l'origine, la source et l'attribution. Un refus laisse le document intact.
 - Guide, journal, **RBZ 0.25.0**. Recette **H40** à faire à la main : un extrait OSM réel de 500 m sur 500 m, et un `.asc` IGN.
+- **Fait (AG-129).** Ce qui est livré :
+  - `Adapters::SketchUp::OverpassClient` : emprise, requête fixe, hôtes fermés, jugement de la réponse, nom du fichier gardé ;
+  - `MapImportService` : `preview` sans écriture et `import` en une seule opération ;
+  - `UI::MapController` et `MapPanel`, ce dernier envoyant la requête par `Sketchup::Http::Request` après confirmation ;
+  - le menu **Importer une carte…** ;
+  - le guide, le journal, la version 0.25.0 et le RBZ.
+
+  **Écart au §5 : pas de racine englobante.** Une racine ARCHGEN doit rester au premier niveau du modèle pour être modifiable au clic droit. Réseaux et bâtiments importés sont donc des racines ordinaires, au premier niveau. La racine « ARCHGEN Carte » est un **marqueur** à côté d'eux : un composant avec un point de construction, qui porte l'origine, la source (hôte, emprise, date, SHA-256), l'attribution, les comptes et l'altitude d'origine du terrain. Le terrain est un composant « ARCHGEN Terrain », aux arêtes adoucies.
+
+  **Autres précisions :**
+  - Un réseau importé part du premier point de sa première voie et est placé à cet endroit (`origin_m`). Ce point est ajouté à `MapRoads`, car un réseau doit partir de `[0, 0]`.
+  - La géolocalisation du modèle n'est pas modifiée ; l'origine est seulement gardée sur le marqueur.
+  - **Non vérifié** : aucun envoi réel vers Overpass, aucun essai dans SketchUp.
 
 ## Tests
 

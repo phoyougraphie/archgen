@@ -114,6 +114,16 @@ module Archgen
                             'site_plan' => site.value&.site_plan }, loaded.diagnostics + plan.diagnostics + site.diagnostics)
         end
 
+        # Import de carte (AG-129) : brouillon résolu et plan, sans écriture.
+        def prepare_import(draft)
+          prepare(draft)
+        end
+
+        # Écrit une racine préparée et placée ; l'appelant tient l'opération (une seule pour tout l'import).
+        def write_imported(model, config, plan, transform)
+          write_new_root(model, config, plan, transform: transform)
+        end
+
         # Remplace la géométrie d'une seule instance : racine, placement, nom, tag et
         # attributs tiers sont conservés ; l'ancienne définition n'est jamais touchée.
         def regenerate(model:, target:, draft:)
@@ -408,9 +418,9 @@ module Archgen
           Core::Diagnostic.error('E_TARGET_STALE', '/model', reason: 'nested_edit_context')
         end
 
-        def write_new_root(model, config, plan)
+        def write_new_root(model, config, plan, transform: nil)
           definition, digest = write_definition(model, plan)
-          instance = @repository.insert(model, definition: definition)
+          instance = transform ? @repository.insert(model, definition: definition, transform: transform) : @repository.insert(model, definition: definition)
           instance.name = config.to_h['name']
           metadata = metadata_for(config, digest, uuid: @uuid.call, revision: 1)
           store_metadata(instance, metadata)

@@ -104,6 +104,8 @@ module Archgen
       adapters/sketchup/network_service
       adapters/sketchup/street_tool
       adapters/sketchup/export_service
+      adapters/sketchup/overpass_client
+      adapters/sketchup/map_import_service
       ui/target_tokens
       ui/confirmation_tokens
       ui/messages
@@ -112,6 +114,7 @@ module Archgen
       ui/parcel_controller
       ui/road_controller
       ui/network_controller
+      ui/map_controller
     ].freeze
 
     # Export glTF (ADR-54) : Ruby pur, hors noyau ; chargé par main.rb et ses tests.
