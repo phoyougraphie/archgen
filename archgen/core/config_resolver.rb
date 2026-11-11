@@ -100,6 +100,21 @@ module Archgen
       end
       private_class_method :reuse_profile
 
+      # Une variante de palette sur des valeurs (AG-141). Un détail mis à faux est retiré, sauf les trois
+      # toujours écrits (corniche, balcon, encadrements), et sa matière avec lui.
+      ALWAYS_WRITTEN = %w[cornice balcony surrounds].freeze
+      FEATURE_MATERIAL = { 'timber_frame' => 'timber', 'cladding' => 'cladding', 'shutters' => 'shutters' }.freeze
+
+      def palette_merge(values, entry)
+        merged = Merge.leaves(values, entry)
+        off = (entry['features'] || {}).select { |_, on| on == false }.keys
+        return merged if off.empty?
+
+        features = merged['features'].reject { |key, _| off.include?(key) && !ALWAYS_WRITTEN.include?(key) }
+        materials = merged['materials'].reject { |role, _| off.any? { |key| FEATURE_MATERIAL[key] == role } }
+        merged.merge('features' => features, 'materials' => materials)
+      end
+
       # Chances décoratives, après le choix de la graine et avant tout override.
       def with_chances(values, profile, seed)
         effective_seed = seed || values['seed']
@@ -111,7 +126,13 @@ module Archgen
           draw = DeterministicRandom.unit(effective_seed, DeterministicRandom.feature_key(feature))
           features[feature] = draw < rule['params']['probability']
         end
-        values.merge('features' => features)
+        values = values.merge('features' => features)
+        palette = profile.palette || []
+        return values if palette.empty?
+
+        # AG-141 : une variante de la palette du style, tirée avec la graine (couleurs, matières, détails).
+        pick = palette[(DeterministicRandom.unit(effective_seed, 'palette') * palette.size).floor]
+        palette_merge(values, pick)
       end
       private_class_method :with_chances
 

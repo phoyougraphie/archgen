@@ -46,6 +46,8 @@ module Archgen
         openings = with_porch(openings, input, footprint, levels, row)
         return openings unless openings.ok?
 
+        openings = Result.ok(unblocked(openings.value, input['_blocked_rear'])) if input['_blocked_rear']
+
         assemble(input, footprint, levels, openings.value, materials, row)
       end
 
@@ -194,9 +196,6 @@ module Archgen
           return Result.fail([wing_error('wing_too_wide', limit: Quant.q(width / positions.size))])
         end
 
-        main = generate_input(input.reject { |k, _| k == 'wing' }, materials, nil)
-        return main unless main.ok?
-
         levels = input['levels']
         count = wing['levels'] || levels['count']
         heights = levels['heights_m'] || []
@@ -207,19 +206,28 @@ module Archgen
           'levels' => { 'count' => count, 'height_m' => levels['height_m'], 'heights_m' => heights.first(count) },
           'facade' => input['facade'].merge('entry_bay' => nil, 'front_bays' => [(input['facade']['front_bays'] * ww / width).floor, 1].max),
           'roof' => roof,
-          'features' => input['features'].reject { |k, _| %w[balcony balcony_wrap bow_window pilotis shop_front].include?(k) }
+          'features' => input['features'].reject { |k, _| %w[balcony balcony_wrap bow_window pilotis shop_front].include?(k) },
+          # Le mur arrière de l'aile est contre le corps : aucune baie.
+          '_blocked_rear' => [[-Float::INFINITY, Float::INFINITY, Float::INFINITY]]
         )
         built = generate_input(wing_input, materials, nil)
         return built unless built.ok?
 
-        parts = positions.map do |pos|
-          x = case pos
-              when 'left' then 0.0
-              when 'right' then width - ww
-              else (width - ww) / 2.0
-              end
-          ["wing/#{pos}", built.value, [Quant.q(x + ww), Quant.q(depth + wing['depth_m']), 0.0]]
+        xs = positions.to_h do |pos|
+          [pos, case pos
+                when 'left' then 0.0
+                when 'right' then width - ww
+                else (width - ww) / 2.0
+                end]
         end
+        # AG-140 : le mur arrière du corps n'a pas de baie derrière une aile, jusqu'au faîte de son toit
+        # (le toit de l'aile passait devant ces fenêtres). Abscisse de façade arrière : u = L − x.
+        top = built.value['metrics']['roof_top_z_m']
+        blocked = xs.values.map { |x| [width - x - ww, width - x, top] }
+        main = generate_input(input.reject { |k, _| k == 'wing' }.merge('_blocked_rear' => blocked), materials, nil)
+        return main unless main.ok?
+
+        parts = positions.map { |pos| ["wing/#{pos}", built.value, [Quant.q(xs[pos] + ww), Quant.q(depth + wing['depth_m']), 0.0]] }
         plan = joined(main.value, parts)
         problems = PlanValidator.call(plan, materials: materials)
         return Result.fail(problems) unless problems.empty?
@@ -227,6 +235,14 @@ module Archgen
         Result.ok(Canonical.deep_freeze(plan), main.diagnostics + built.diagnostics)
       end
       private_class_method :winged
+
+      # Baies de façade arrière retirées si elles touchent une bande [u0, u1] sous la cote z.
+      def unblocked(openings, spans)
+        openings.reject do |o|
+          o.facade_id == 'rear' && spans.any? { |u0, u1, z| o.u_max_m > u0 - 0.3 && o.u_min_m < u1 + 0.3 && o.z_min_m < z }
+        end
+      end
+      private_class_method :unblocked
 
       def wing_error(reason, **params)
         Diagnostic.error('E_ROOF_GEOMETRY', '/wing', reason: reason, **params)

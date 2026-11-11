@@ -31,7 +31,19 @@ module Archgen
         errors = prepared.flat_map(&:errors)
         return Result.fail(errors.sort_by(&:sort_key)) unless errors.empty?
 
-        assemble(parcels, prepared, layout.value, materials, limits, progress, variety: settings['variety'] ? EnsembleVariety.summary(parcels) : nil)
+        # AG-142 : parcelles laissées en jardin ; si aucune ne reçoit de bâtiment, l'écart est refusé.
+        empty = prepared.each_index.select { |i| prepared[i].value.row[:empty] }
+        if empty.size == parcels.size
+          return Result.fail(prepared.flat_map(&:diagnostics).map { |d| Diagnostic.error('E_STREET_PARCEL', d.path, **d.params.transform_keys(&:to_sym).merge(reason: 'detached_too_narrow')) }.uniq(&:to_h))
+        end
+
+        left_empty = empty.flat_map { |i| prepared[i].diagnostics }
+        parcels = parcels.reject.with_index { |_, i| empty.include?(i) }
+        prepared = prepared.reject.with_index { |_, i| empty.include?(i) }
+        built = assemble(parcels, prepared, layout.value, materials, limits, progress, variety: settings['variety'] ? EnsembleVariety.summary(parcels) : nil)
+        return built if left_empty.empty? || !built.ok?
+
+        Result.ok(built.value, (built.diagnostics + left_empty).sort_by(&:sort_key))
       end
 
       # Les parcelles définitives, accès de cour compris. Une forme fermée n'en sort jamais sans accès.

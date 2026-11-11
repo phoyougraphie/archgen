@@ -340,6 +340,10 @@
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]{0,63}$"
         },
+        "surrounds": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
         "awning": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9_]{0,63}$"

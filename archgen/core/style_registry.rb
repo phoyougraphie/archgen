@@ -3,7 +3,7 @@
 module Archgen
   module Core
     # Profil résolu après héritage : données gelées.
-    StyleProfile = Struct.new(:id, :revision, :kind, :status, :family_id, :label, :requires, :defaults, :rules, keyword_init: true) do
+    StyleProfile = Struct.new(:id, :revision, :kind, :status, :family_id, :label, :requires, :defaults, :rules, :palette, keyword_init: true) do
       def ref
         { 'id' => id, 'revision' => revision }
       end
@@ -184,7 +184,8 @@ module Archgen
             family_id: raw['family_id'], label: raw['label'],
             requires: Canonical.deep_freeze(((parent&.requires || []) + raw['requires']).uniq),
             defaults: Canonical.deep_freeze(Merge.leaves(parent&.defaults || {}, raw['defaults'])),
-            rules: Canonical.deep_freeze(merge_rules(parent&.rules || [], raw['rules'], path))
+            rules: Canonical.deep_freeze(merge_rules(parent&.rules || [], raw['rules'], path)),
+            palette: Canonical.deep_freeze(raw['palette'] || parent&.palette || [])
           ).freeze
         end
 
@@ -213,6 +214,8 @@ module Archgen
           candidates = [base]
           # AG-065 : une hauteur de commerce du style se juge sur un rez-de-chaussée commerçant.
           candidates << base.merge('ground_floor' => 'shop', 'shop' => profile.defaults['shop']) if profile.defaults.key?('shop')
+          # AG-141 : chaque variante de la palette doit donner, elle aussi, un bâtiment valide.
+          candidates.concat(profile.palette.map { |entry| ConfigResolver.palette_merge(base, entry) })
           problems = candidates.flat_map { |candidate| defaults_problems(candidate) }.uniq { |d| [d.code, d.path, d.params] }
           problems.select(&:error?).each { |d| error("#{path}/defaults#{d.path}", d.params['reason'].to_s, code: d.code) }
         end

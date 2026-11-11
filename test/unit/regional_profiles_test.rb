@@ -7,7 +7,9 @@ require_relative '../test_helper'
 class RegionalProfilesTest < Minitest::Test
   include Archgen::Core
 
-  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste industriel high_tech bioclimatique baule_front_de_mer maison_moderne baule_villa].freeze
+  REGIONAL = %w[provencal_mas provencal_village breton_longere breton_bourg lyonnais bordelais_echoppe parisien_faubourien flamand savoyard_chalet colombages normand alsacien basque maison_romane maison_gothique renaissance neoclassique baroque art_deco art_nouveau mediterraneen_cycladique mediterraneen_andalou bauhaus moderniste mid_century minimaliste industriel high_tech bioclimatique baule_front_de_mer maison_moderne baule_villa baule_villa_toit baule_maison_de_ville].freeze
+  # Une croupe est refusée en rangée (hip_in_row) : ces styles se posent en bâtiments isolés (AG-136).
+  DETACHED_ONLY = %w[baule_villa_toit].freeze
   STREET = [[0, 0], [48, 0]].freeze
   CORNER = [[0, 0], [40, 0], [40, 30]].freeze
   BLOCK = [[0, 0], [40, 0], [40, 40], [0, 40]].freeze
@@ -45,6 +47,11 @@ class RegionalProfilesTest < Minitest::Test
   def test_each_profile_builds_a_street_a_corner_and_a_block
     REGIONAL.product([STREET, CORNER, BLOCK]).each do |id, points|
       tree = { 'seed' => 1, 'trace' => { 'points_m' => points, 'closed' => points == BLOCK }, 'building' => { 'profile' => { 'id' => id }, 'lod' => 1 } }
+      if DETACHED_ONLY.include?(id)
+        # Un îlot de 40 m n'a aucune parcelle assez large pour un bâtiment isolé : 80 m.
+        tree['trace']['points_m'] = points.map { |x, y| [x * 2, y * 2] } if points == BLOCK
+        tree['parcel'] = { 'target_width_m' => 18, 'depth_m' => 15, 'bay_width_m' => 3, 'detached' => { 'side_gap_m' => 3, 'front_setback_m' => 3, 'building_depth_m' => 9 } }
+      end
       settings = Archgen::Composition.ensemble_intake.settings(tree)
       assert settings.ok?, settings.errors.map(&:to_h).inspect
       result = EnsembleEngine.call(settings.value, registry: registry, intake: TestData.intake, materials: TestData.materials)

@@ -8,7 +8,7 @@ module Archgen
     module Tint
       LEVELS = (1..3)
       VARIANTS = 8
-      ROLES = %w[wall cladding frames shutters timber].freeze
+      ROLES = %w[wall cladding frames shutters timber surrounds].freeze
       PATTERN = /\A([a-z][a-z0-9_]{0,63})~([1-3])\.([1-8])\z/
       # Écart de clarté et de chaleur par niveau, puis rang de chaque variante (de -1 à 1).
       LIGHT_STEP = 0.04

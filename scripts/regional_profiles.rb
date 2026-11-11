@@ -444,23 +444,93 @@ PROFILES = {
       'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true, 'chimneys' => true }
     },
     'rules' => rules(levels: [1, 3], roofs: %w[gable hip], ratio: [1.1, 1.8], walls: %w[light_render red_brick granite])
+  },
+  # AG-142 (ADR-67) : maisons traditionnelles de La Baule et Pornichet, d'après les photos du propriétaire.
+  # Une palette par style : chaque maison tire sa variante avec sa graine (AG-141).
+  'baule_villa.r2' => {
+    'id' => 'baule_villa', 'revision' => 2,
+    'label' => 'Côtier — villa balnéaire (La Baule, Pornichet)', 'period' => 'Villa balnéaire néo-régionaliste, 1880-1939', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential mixed_use], 'family' => 'timber_vernacular',
+    'requires' => %w[gable cross_ridge timber_frame glazing muntins chimneys surrounds],
+    'defaults' => {
+      'footprint' => { 'width_m' => 9, 'depth_m' => 10 },
+      'levels' => { 'count' => 2, 'height_m' => 2.9, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.0, 'window_height_m' => 1.5, 'sill_m' => 0.9, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'muntin_rows' => 3 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.6, 'pitch_deg' => 50, 'ridge' => 'perpendicular' },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'timber' => 'painted_wood_red' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'timber_frame' => true, 'chimneys' => true }
+    },
+    # Pan de bois et encadrements occupent la même épaisseur : une variante prend l'un ou l'autre.
+    'palette' => [
+      {},
+      { 'materials' => { 'wall' => 'granite' } },
+      { 'materials' => { 'timber' => 'dark_wood' } },
+      { 'materials' => { 'timber' => 'painted_wood_green' } },
+      { 'materials' => { 'surrounds' => 'red_brick' }, 'features' => { 'timber_frame' => false, 'surrounds' => true } },
+      { 'materials' => { 'wall' => 'granite', 'surrounds' => 'light_render' }, 'features' => { 'timber_frame' => false, 'surrounds' => true } }
+    ],
+    'rules' => rules(levels: [1, 3], roofs: %w[gable hip], ratio: [1.1, 1.8], walls: %w[light_render red_brick granite])
+  },
+  'baule_villa_toit' => {
+    'label' => 'Côtier — villa à quatre pans (La Baule)', 'period' => 'Villa balnéaire, 1900-1950', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential], 'family' => 'masonry_vernacular',
+    'requires' => %w[hip glazing muntins shutters surrounds chimneys],
+    'defaults' => {
+      'footprint' => { 'width_m' => 11, 'depth_m' => 9 },
+      'levels' => { 'count' => 2, 'height_m' => 2.9, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 3, 'window_width_m' => 1.1, 'window_height_m' => 1.5, 'sill_m' => 0.8, 'entry_bay' => 1, 'door_width_m' => 1.0, 'door_height_m' => 2.2, 'muntin_rows' => 2 },
+      'roof' => { 'type' => 'hip', 'overhang_m' => 0.4, 'pitch_deg' => 35 },
+      'materials' => { 'wall' => 'light_render', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'shutters' => 'painted_wood_red', 'surrounds' => 'granite' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'shutters' => true, 'surrounds' => true, 'chimneys' => true }
+    },
+    'palette' => [
+      {},
+      { 'materials' => { 'shutters' => 'painted_wood_blue' } },
+      { 'materials' => { 'shutters' => 'painted_wood_green', 'surrounds' => 'red_brick' } },
+      { 'materials' => { 'shutters' => 'painted_wood_blue', 'surrounds' => 'red_brick' } },
+      { 'materials' => { 'shutters' => 'painted_wood_grey', 'wall' => 'granite', 'surrounds' => 'light_render' } },
+      { 'materials' => { 'shutters' => 'painted_wood_red', 'surrounds' => 'red_brick' } }
+    ],
+    'rules' => rules(levels: [1, 3], roofs: %w[hip gable], ratio: [1.1, 1.8], walls: %w[light_render granite])
+  },
+  'baule_maison_de_ville' => {
+    'label' => 'Côtier — maison de ville (La Baule)', 'period' => 'Maison de ville balnéaire, 1900-1939', 'regions' => %w[loire_atlantique], 'typologies' => %w[residential mixed_use], 'family' => 'masonry_vernacular',
+    'requires' => %w[gable glazing muntins surrounds dormers chimneys],
+    'defaults' => {
+      'footprint' => { 'width_m' => 8, 'depth_m' => 10 },
+      'levels' => { 'count' => 2, 'height_m' => 3.0, 'heights_m' => [] },
+      'facade' => { 'front_bays' => 2, 'window_width_m' => 1.1, 'window_height_m' => 1.6, 'sill_m' => 0.9, 'entry_bay' => 0, 'door_width_m' => 1.0, 'door_height_m' => 2.3, 'muntin_rows' => 2 },
+      'shop' => { 'height_m' => 3.6 },
+      'roof' => { 'type' => 'gable', 'overhang_m' => 0.3, 'pitch_deg' => 45 },
+      'materials' => { 'wall' => 'granite', 'roof' => 'slate', 'frames' => 'painted_wood', 'glass' => 'glass', 'surrounds' => 'red_brick' },
+      'features' => { 'glazing' => true, 'muntins' => true, 'surrounds' => true, 'dormers' => true, 'chimneys' => true }
+    },
+    'palette' => [
+      {},
+      { 'materials' => { 'wall' => 'light_render' } },
+      { 'materials' => { 'wall' => 'light_render', 'surrounds' => 'granite' } },
+      { 'materials' => { 'surrounds' => 'light_render' } },
+      { 'materials' => { 'wall' => 'schist' } }
+    ],
+    'rules' => rules(levels: [2, 4], roofs: %w[gable], ratio: [1.2, 1.8], walls: %w[granite light_render schist])
   }
 }.freeze
 
 def document(id, spec)
-  {
-    'schema_version' => 1, 'id' => id, 'revision' => 1, 'kind' => 'profile', 'status' => 'active',
+  doc = {
+    'schema_version' => 1, 'id' => spec.fetch('id', id), 'revision' => spec.fetch('revision', 1), 'kind' => 'profile', 'status' => 'active',
     'parent' => { 'id' => spec.fetch('family', 'masonry_vernacular'), 'revision' => 1 }, 'family_id' => spec.fetch('family', 'masonry_vernacular'), 'label' => spec['label'],
     'context' => { 'period' => spec['period'], 'regions' => spec['regions'], 'typologies' => spec['typologies'] },
     'requires' => spec['requires'], 'defaults' => spec['defaults'], 'rules' => spec['rules']
   }
+  doc['palette'] = spec['palette'] if spec['palette']
+  doc
 end
 
 ARGV.each do |id|
   spec = PROFILES.fetch(id)
   text = "#{JSON.pretty_generate(document(id, spec))}\n"
   DIRS.each do |dir|
-    path = File.join(ROOT, dir, "#{id}.json")
+    revision = spec.fetch('revision', 1)
+    path = File.join(ROOT, dir, revision > 1 ? "#{spec.fetch('id', id)}.r#{revision}.json" : "#{id}.json")
     abort "#{path} existe déjà avec un autre contenu : nouvelle révision nécessaire" if File.exist?(path) && File.read(path, encoding: 'utf-8') != text
     File.binwrite(path, text)
   end

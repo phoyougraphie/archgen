@@ -20,6 +20,11 @@ module Archgen
 
       def prepare(settings, parcel, registry:, intake:)
         box = detached_box(settings, parcel)
+        # AG-142 : une parcelle trop étroite (onglet d'angle) reste un jardin, et le dit.
+        if !box.ok? && box.errors.all? { |d| d.params['reason'] == 'detached_too_narrow' }
+          return Result.ok(Prepared.new(config: nil, row: { empty: true }, warnings: []),
+                           box.errors.map { |d| Diagnostic.warning('W_DETAIL', d.path, **d.params.transform_keys(&:to_sym).merge(reason: 'detached_parcel_left_empty')) })
+        end
         return box unless box.ok?
 
         parcel = parcel.merge('detached_box' => box.value) if box.value

@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.32.0 : balcons d'angle, bow-windows, bâtiments en L, T, U, import des contours en L, T, U (ADR-65, ADR-66). Vu dans SketchUp (H43). Suite possible : étagement des bâtiments isolés, jonction des toits des ailes ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECISIONS.md)
+  - Prochaine action — 0.33.0 : maisons de La Baule variées (palettes, brique, trois styles), ailes corrigées (ADR-67). Suite possible : tourelles, lucarnes-pignons, bandeaux de brique, bow-window de rez-de-chaussée ; étagement des isolés ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -154,6 +154,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-135, AG-136 — Attique : deux plans validés empilés plutôt qu'un retrait appris par chaque solveur ; en angle, l'attique garde des travées de même largeur. Isolés : seul le placement change ; limite latérale prise au fond du bâtiment, sinon les parcelles d'angle rentrant étaient refusées.
     - 2026-11-11 AG-137 à AG-139 — Une face de plan a 3 ou 4 sommets : la dalle en U est faite de cinq quadrilatères sans sommet en T. Les ailes sont des bâtiments seuls tournés d'un demi-tour (matrices d'instance comprises). Import : grille de 60 cases, intersection sur union ; une croix reste refusée.
     - 2026-11-11 H43 — Essai réel par sonde dans SketchUp : front de mer, villa en U à bow-window, maison en L, rue isolée en T construits sans échec et conformes à l'œil.
+    - 2026-11-11 AG-140 à AG-142 — Pan de bois et encadrements ne vont pas ensemble : la palette de la villa alterne l'un ou l'autre. Une variante qui coupe un détail le retire avec sa matière (sinon la validation refuse). Une croupe est refusée en rangée : la villa à quatre pans se pose isolée.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -322,6 +323,9 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-137 Balcons d'angle et bow-windows — dalle en U, avancées vitrées empilées. U99 vert. (→ docs/DECISIONS.md)
     - [fait] AG-138 Ailes en L, T, U — corps + ailes tournées vers le jardin. U99 vert. (→ docs/DECISIONS.md)
     - [fait] AG-139 Contours en L, T, U à l'import, RBZ 0.32.0 — ajustement sur grille, 80 % au moins. U89 vert. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+    - [fait] AG-140 Ailes sans baie derrière elles. U100 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-141 Palettes et encadrements — variante tirée par la graine ; brique ou pierre autour des baies. U100 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-142 Maisons de La Baule, RBZ 0.33.0 — villa r2, villa à quatre pans, maison de ville ; parcelle étroite en jardin. U100 vert. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

@@ -564,7 +564,7 @@ module Archgen
       private_class_method :placement_matrix
 
       def surrounds(footprint, openings, config)
-        material = config['materials']['wall']
+        material = config['materials']['surrounds'] || config['materials']['wall'] # AG-141 : brique sur enduit
         bar = SURROUND_BAR_M
         openings.select { |o| o.kind == 'window' }.flat_map do |o|
           facade = footprint.facade(o.facade_id)

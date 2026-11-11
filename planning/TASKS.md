@@ -264,6 +264,9 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-137 — Balcons d'angle et bow-windows** | AG-136, ADR-65 | `features.balcony_wrap`, `features.bow_window`. | U99 vert. |
 | **AG-138 — Ailes en L, T, U** | AG-137, ADR-66 | `wing`, corps et ailes composés ; panneau Forme. | U99 vert. |
 | **AG-139 — Contours en L, T, U à l'import, RBZ 0.32.0** | AG-138, ADR-66 | Ajustement corps + ailes sur grille. | U89 vert. |
+| **AG-140 — Ailes sans baie derrière elles** | AG-138, ADR-67 | Baies du mur arrière retirées derrière une aile. | U100 vert. |
+| **AG-141 — Palettes et encadrements** | AG-140, ADR-67 | `palette` de profil tirée par la graine ; rôle `surrounds`. | U100 vert. |
+| **AG-142 — Maisons de La Baule, RBZ 0.33.0** | AG-141, ADR-67 | Villa r2, villa à quatre pans, maison de ville ; parcelle étroite en jardin. | U100, U52 verts. |
 
 ## J21 — Intérieur
 

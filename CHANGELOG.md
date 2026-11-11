@@ -1,5 +1,20 @@
 # Journal des versions
 
+## 0.33.0
+
+Maisons de La Baule variées (AG-140 à AG-142, ADR-67).
+
+**Ajouts**
+
+- **Palettes de style** : chaque maison tire ses couleurs et matières (volets, pan de bois, mur, encadrements) ; une rue n'est plus uniforme.
+- **Encadrements en brique ou en pierre** sur un mur enduit.
+- Styles **Côtier — villa à quatre pans** et **Côtier — maison de ville** ; **villa balnéaire** en révision 2.
+
+**Corrections**
+
+- Le toit d'une aile ne passe plus devant des fenêtres : le mur arrière n'a plus de baie derrière une aile.
+- Bâtiments isolés : une parcelle d'angle trop étroite reste en jardin au lieu de refuser toute la rue.
+
 ## 0.32.0
 
 Balcons d'angle, bow-windows, bâtiments en L, T et U (AG-137 à AG-139 ; ADR-65, ADR-66).

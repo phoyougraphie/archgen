@@ -201,6 +201,7 @@ module Archgen
         parcel = EnsembleVariety.assign(street, parcels).find { |p| p['id'] == id } if street['variety']
         ready = ParcelBuilding.prepare(street, parcel, registry: registry, intake: intake)
         return ready unless ready.ok?
+        return Result.fail([error('E_STREET_PARCEL', "/parcels/#{id}", 'detached_parcel_left_empty', id: id)]) if ready.value.row[:empty]
 
         config = ready.value.config.to_h
         Result.ok(
