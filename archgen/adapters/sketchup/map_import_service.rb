@@ -5,7 +5,7 @@ require 'digest'
 module Archgen
   module Adapters
     module SketchUp
-      MapPreview = Struct.new(:origin, :networks, :buildings, :terrain, :skipped, :attribution, :source, :counts, keyword_init: true)
+      MapPreview = Struct.new(:origin, :networks, :streets, :buildings, :terrain, :skipped, :attribution, :source, :counts, keyword_init: true)
 
       # Import d'une carte (docs/CARTOGRAPHIE_CONTRACT.md §5, AG-129). L'aperçu calcule tout sans écrire ;
       # l'import écrit en une seule opération : réseaux et bâtiments comme racines ARCHGEN ordinaires,
@@ -14,6 +14,8 @@ module Archgen
         DICTIONARY = 'archgen.map'
         MARKER_NAME = 'ARCHGEN Carte'
         TERRAIN_NAME = 'ARCHGEN Terrain'
+        STREETS_NAME = 'ARCHGEN Rues'
+        IDENTITY = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0].freeze
         OSM_ATTRIBUTION = '© les contributeurs d’OpenStreetMap, ODbL'
         IGN_ATTRIBUTION = 'IGN, Licence Ouverte 2.0'
         LAYERS = %w[roads buildings terrain].freeze
@@ -30,14 +32,19 @@ module Archgen
         end
 
         # source : { 'kind' => 'download'|'file', 'host', 'bbox', 'date', 'file' } ; aucune écriture.
-        def preview(map_bytes:, format:, origin:, style:, layers: LAYERS, terrain_bytes: nil, ign: false, source: {})
+        # mode : 'streets' (ADR-58, rues à plat, rien n'est refusé pour sa géométrie) ou 'networks' (réseaux ARCHGEN).
+        def preview(map_bytes:, format:, origin:, style:, layers: LAYERS, terrain_bytes: nil, ign: false, source: {}, mode: 'streets')
           map = Core::MapReader.call(map_bytes, format: format, origin: origin)
           return map unless map.ok?
 
           skipped = Hash.new(0)
           map.value['skipped'].each { |k, v| skipped["map/#{k}"] += v }
-          networks = layers.include?('roads') ? network_previews(map.value, skipped) : []
+          roads = layers.include?('roads')
+          networks = roads && mode == 'networks' ? network_previews(map.value, skipped) : []
           return networks if networks.is_a?(Core::Result)
+
+          streets = roads && mode != 'networks' ? street_preview(map.value, skipped) : nil
+          return streets if streets.is_a?(Core::Result)
 
           buildings = layers.include?('buildings') ? building_previews(map.value, style, skipped) : []
           return buildings if buildings.is_a?(Core::Result)
@@ -49,24 +56,29 @@ module Archgen
 
             terrain = terrain.value
           end
-          return empty if networks.empty? && buildings.empty? && terrain.nil?
+          return empty if networks.empty? && streets.nil? && buildings.empty? && terrain.nil?
 
           attribution = [OSM_ATTRIBUTION]
           attribution << IGN_ATTRIBUTION if terrain && ign
           counts = { 'networks' => networks.size, 'roads' => networks.sum { |n| n[:computed].settings['roads'].size },
+                     'streets' => streets ? streets['street_count'] : 0,
                      'buildings' => buildings.size, 'terrain_faces' => terrain ? terrain['metrics']['face_count'] : 0 }
-          Core::Result.ok(MapPreview.new(origin: map.value['origin'], networks: networks, buildings: buildings, terrain: terrain,
+          Core::Result.ok(MapPreview.new(origin: map.value['origin'], networks: networks, streets: streets, buildings: buildings, terrain: terrain,
                                          skipped: skipped.sort.to_h, attribution: attribution, counts: counts,
                                          source: source.merge('sha256' => Digest::SHA256.hexdigest(map_bytes))))
         end
 
         # Une seule opération : un refus ou une panne laisse le document intact.
-        def import(model:, preview:)
+        # frame : matrice (16 nombres, en colonnes) du repère de la carte vers le modèle, par exemple la
+        # rotation du nord d'un modèle géolocalisé ; nil = la carte est posée telle quelle.
+        def import(model:, preview:, frame: nil)
           return Core::Result.fail([Core::Diagnostic.error('E_TARGET_STALE', '/model', reason: 'nested_edit_context')]) if model.active_path
 
+          @frame = frame || IDENTITY
           @guard.run(model, 'ARCHGEN : importer une carte') do
-            preview.networks.each { |n| @networks.write_imported(model, n[:computed], n[:origin]) }
-            preview.buildings.each { |b| @buildings.write_imported(model, b[:config], b[:plan], @host.transformation(inches(b[:matrix]))) }
+            preview.networks.each { |n| @networks.write_imported(model, n[:computed], n[:origin], transform: placed(translation(n[:origin]))) }
+            write_streets(model, preview.streets) if preview.streets
+            preview.buildings.each { |b| @buildings.write_imported(model, b[:config], b[:plan], placed(inches(b[:matrix]))) }
             write_terrain(model, preview.terrain) if preview.terrain
             write_marker(model, preview)
             preview.counts
@@ -74,6 +86,44 @@ module Archgen
         end
 
         private
+
+        # Matrice locale (pouces) placée dans le modèle par le repère de la carte.
+        def placed(local)
+          @host.transformation(multiply(@frame, local))
+        end
+
+        def translation(origin)
+          inches([1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, origin[0].to_f, origin[1].to_f, 0.0, 1.0])
+        end
+
+        def multiply(a, b)
+          (0..15).map { |i| (0..3).sum { |k| a[(4 * k) + (i % 4)] * b[(4 * (i / 4)) + k] } }
+        end
+
+        def street_preview(map, skipped)
+          streets = Core::MapStreets.call(map)
+          return streets unless streets.ok?
+
+          streets.value['skipped'].each { |k, v| skipped["streets/#{k}"] += v }
+          streets.value
+        end
+
+        # Rues à plat : un composant, un groupe par rue, sous la balise de la chaussée.
+        def write_streets(model, streets)
+          resources = Resources.new(model, catalog: Composition.road_catalog, revision: 1, host: @host)
+          definition = model.definitions.add(STREETS_NAME)
+          raise WriteError, 'Création de la définition refusée' unless definition
+
+          site_plan = { 'units' => 'm', 'nodes' => streets['nodes'], 'metrics' => { 'site_face_count' => streets['face_count'] } }
+          GeometryWriter.new(host: @host).write_site(site_plan, entities: definition.entities, resources: resources)
+          instance = model.entities.add_instance(definition, placed(IDENTITY))
+          raise WriteError, 'Insertion des rues refusée' unless instance
+
+          instance.name = STREETS_NAME
+          tag = resources.tag('road_surface')
+          instance.layer = tag if tag
+          instance.set_attribute(DICTIONARY, 'kind', 'streets')
+        end
 
         def empty
           Core::Result.fail([Core::Diagnostic.error('E_MAP', '/map', reason: 'map_empty')])
@@ -136,7 +186,7 @@ module Archgen
           site_plan = { 'units' => 'm', 'nodes' => terrain['nodes'], 'metrics' => { 'site_face_count' => terrain['metrics']['face_count'] } }
           GeometryWriter.new(host: @host).write_site(site_plan, entities: definition.entities, resources: resources)
           soften(definition.entities)
-          instance = model.entities.add_instance(definition, @host.identity)
+          instance = model.entities.add_instance(definition, placed(IDENTITY))
           raise WriteError, 'Insertion du terrain refusée' unless instance
 
           instance.name = TERRAIN_NAME
@@ -160,7 +210,7 @@ module Archgen
           raise WriteError, 'Création de la définition refusée' unless definition
 
           definition.entities.add_cpoint(@host.point(0, 0, 0)) if definition.entities.respond_to?(:add_cpoint)
-          instance = model.entities.add_instance(definition, @host.identity)
+          instance = model.entities.add_instance(definition, placed(IDENTITY))
           raise WriteError, 'Insertion du marqueur refusée' unless instance
 
           instance.name = MARKER_NAME

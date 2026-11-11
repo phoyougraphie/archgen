@@ -20,13 +20,16 @@ module Archgen
 
       # map : MapReader ; roads : polylignes en mètres (voies importées) ; style : identifiant de profil.
       def call(map, style:, roads: [], mode: 'shell')
-        if map['buildings'].size > MAX_BUILDINGS
-          return Result.fail([Diagnostic.error('E_MAP', '/map/buildings', reason: 'map_too_large', value: map['buildings'].size, limit: MAX_BUILDINGS)])
-        end
-
         skipped = Hash.new(0)
         placed = []
-        map['buildings'].each do |building|
+        # Au-delà de 300, on garde les plus proches du centre de la carte (ADR-58) ; le reste est compté.
+        ordered = map['buildings'].sort_by { |b| [centre_distance(b['ring_m']), b['id']] }
+        ordered.each do |building|
+          if placed.size >= MAX_BUILDINGS
+            skipped['too_many'] += 1
+            next
+          end
+
           rect = oriented_rectangle(building['ring_m'])
           next skipped['degenerate'] += 1 unless rect
           next skipped['not_rectangular'] += 1 if rect[:fill] < MIN_FILL
@@ -44,6 +47,12 @@ module Archgen
         end
         out = placed.map { |p| entry(p, style, mode, roads) }
         Result.ok({ 'buildings' => out, 'skipped' => skipped.sort.to_h })
+      end
+
+      def centre_distance(ring)
+        x = ring.sum(&:first) / ring.size
+        y = ring.sum(&:last) / ring.size
+        Math.hypot(x, y)
       end
 
       def levels_of(tags)

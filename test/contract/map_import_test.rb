@@ -56,7 +56,7 @@ class MapImportTest < Minitest::Test
 
   def test_preview_counts_everything_and_writes_nothing
     before = snapshot
-    value = preview(terrain_bytes: asc, ign: true)
+    value = preview(terrain_bytes: asc, ign: true, mode: 'networks')
     assert_equal before, snapshot
     assert_empty @model.operations
     assert_equal({ 'networks' => 1, 'roads' => 2, 'buildings' => 2 }, value.counts.slice('networks', 'roads', 'buildings'))
@@ -67,7 +67,7 @@ class MapImportTest < Minitest::Test
   end
 
   def test_import_is_one_operation_with_editable_roots_terrain_and_marker
-    value = preview(terrain_bytes: asc)
+    value = preview(terrain_bytes: asc, mode: 'networks')
     result = @service.import(model: @model, preview: value)
     assert result.ok?, result.errors.map(&:to_h).inspect
     assert_equal 1, @model.operations.count { |op| op.first == :start }
@@ -83,6 +83,22 @@ class MapImportTest < Minitest::Test
     # Chaque bâtiment est placé à son coin de façade, en pouces.
     origins = buildings.map { |b| b.transformation.to_a.values_at(12, 13).map { |v| (v * 0.0254).round(3) } }
     assert(origins.all? { |x, y| y.between?(7.9, 18.1) && x.between?(-30.1, 22.1) }, origins.inspect)
+  end
+
+  def test_simple_mode_lays_every_street_flat_and_turns_with_the_frame
+    value = preview
+    assert_empty value.networks
+    assert_equal 2, value.counts['streets']
+    angle = -1.14 * Math::PI / 180
+    frame = [Math.cos(angle), Math.sin(angle), 0.0, 0.0, -Math.sin(angle), Math.cos(angle), 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+    result = @service.import(model: @model, preview: value, frame: frame)
+    assert result.ok?, result.errors.map(&:to_h).inspect
+    streets = @model.instances.find { |i| i.name == 'ARCHGEN Rues' }
+    assert_equal 'streets', streets.get_attribute('archgen.map', 'kind')
+    assert_in_delta Math.cos(angle), streets.transformation.to_a[0], 1e-9
+    building = @model.instances.find { |i| i.get_attribute('archgen.building', 'config_json') }
+    m = building.transformation.to_a
+    assert_in_delta 1.0, Math.hypot(m[0], m[1]), 1e-9, 'rotation sans échelle'
   end
 
   def test_failure_during_import_leaves_the_model_intact

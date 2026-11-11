@@ -4,6 +4,8 @@
 
 **Révision du propriétaire (2026-11-11).** D-38 : « openstreetmap ». ARCHGEN **télécharge** l'extrait OpenStreetMap lui-même (ADR-57). Le fichier local reste possible.
 
+**Révision (2026-11-11, ADR-58) : mode simple par défaut.** Voir §6 : rues à plat, commande en un clic depuis la géolocalisation de SketchUp. Les §2 (réseaux) et §5 (panneau) restent valables comme mode avancé.
+
 **Périmètre.** EXT-09 importe un quartier réel à partir d'un **extrait OpenStreetMap téléchargé par ARCHGEN**, ou de fichiers locaux :
 
 - les voies et les bâtiments d'un extrait OpenStreetMap, au format `.osm` (XML) ou GeoJSON ;
@@ -138,10 +140,39 @@ ARCHGEN traduit ces fichiers en objets qu'il sait déjà produire : réseaux de 
   - La géolocalisation du modèle n'est pas modifiée ; l'origine est seulement gardée sur le marqueur.
   - **Non vérifié** : aucun envoi réel vers Overpass, aucun essai dans SketchUp.
 
+## 6. Mode simple — AG-130 (ADR-58)
+
+**Constat de l'essai réel (2026-11-11), sur 500 m de centre-ville :**
+
+- téléchargement correct : 314 voies et 742 bâtiments ;
+- aperçu refusé : plus de 300 bâtiments ;
+- en réseaux ARCHGEN, 10 voies gardées sur environ 300. Les carrefours réels sont dans des virages, trop proches les uns des autres ou trop aigus. En retirant les fautives et en redressant les bouts, on ne dépasse pas la moitié.
+- annuler le choix du dossier faisait échouer le téléchargement en silence.
+
+**Ce qui change :**
+
+- **Commande en un clic** : **Extensions → ARCHGEN → Importer rues et bâtiments autour du point géolocalisé…** (`UI::MapQuick`).
+  - Il faut que le modèle soit géolocalisé (Fichier → Ajouter un emplacement) ; sinon, le message donne les trois étapes.
+  - On choisit la taille de la zone (200 à 1 000 m) et le style, puis on confirme le téléchargement.
+  - Un résumé chiffré s'affiche (rues, bâtiments, écartés, attribution) ; **OK** importe en une seule opération et la vue se cadre.
+- **Rues à plat** (`Core::MapStreets`) : chaque voie devient une bande de chaussée à sa largeur par type, de 1,5 m pour un sentier à 14 m pour une autoroute.
+  - Bords décalés avec onglets bornés ; un segment qui se croiserait reprend ses bords droits ; un triangle comble l'extérieur d'un virage serré.
+  - Elle est posée de 3 à 12 cm au-dessus du sol, la plus importante au-dessus aux croisements.
+  - Seuls les tunnels et les types inconnus sont écartés ; un pont reste une rue à plat.
+  - Le tout forme un composant « ARCHGEN Rues », sous la balise de la chaussée. Plafond : 2 000 rues.
+- **Bâtiments** : au-delà de 300, les plus proches du centre sont gardés, et le reste est compté (`too_many`).
+- **Recalage sur SketchUp** :
+  - l'origine est le point géolocalisé (`point_to_latlong(ORIGIN)` rend [longitude, latitude]) ;
+  - la carte est tournée selon le nord de SketchUp, lu par `latlong_to_point`, puis composée avec chaque placement (`frame` du service).
+- **Enregistrement sans dialogue** : l'extrait va à côté du SKP, ou dans `Documents\ARCHGEN` si le modèle n'est pas enregistré. Toute erreur du téléchargement revient au panneau ou en message.
+- **« Ajouter du contexte » de SketchUp** (image de carte, bâtiments 3D) demande un abonnement : non utilisé.
+- **Essai réel**, Montauban, zone de 400 m : 192 rues et 130 bâtiments importés en une opération, à leur place en vue de dessus. Le reste a été écarté : 466 éléments, surtout des bâtiments non rectangulaires.
+
 ## Tests
 
 - **U87** : lecture (`.osm`, GeoJSON, clés gardées, XXE refusé, taille), projection (distances connues à 0,1 % près sur 2 km, déterminisme).
 - **U88** : table des voies, simplification, rayons, réseaux reliés et découpés à 24, écartés comptés.
 - **U89** : rectangle orienté (rectangle tourné, L refusé à 0,85), niveaux, graine stable, façade vers la voie.
 - **U90** : ASCII Grid (en-têtes, NODATA, alignement, refus hors emprise), maillage.
+- **U92** : rues à plat (largeur, matière, superposition, faces convexes et vers le haut sur virages serrés, tunnels et types inconnus comptés, pont gardé) ; U89 complété (300 plus proches gardés) ; U91 complété (mode simple, repère tourné).
 - **U91** : panneau et service d'import avec doubles (aperçu, un Undo, refus sans résidu, attribution sur la racine) ; téléchargement avec un client HTTP factice (requête fixe, hôtes fermés, en-têtes, statut 429, taille, fichier enregistré et empreinte).

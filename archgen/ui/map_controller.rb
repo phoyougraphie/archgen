@@ -80,6 +80,14 @@ module Archgen
         return Core::Result.ok({ 'started' => false }) unless @ports[:confirm].call(text)
 
         @ports[:fetch].call(request) do |status, body|
+          downloaded(status, body, host, box)
+        end
+        Core::Result.ok({ 'started' => true, 'host' => host, 'bbox' => box })
+      end
+
+      # Réponse du téléchargement : toute erreur revient au panneau, jamais en silence dans la console.
+      def downloaded(status, body, host, box)
+        begin
           checked = Adapters::SketchUp::OverpassClient.check(status, body)
           result = if checked.ok?
                      model = @ports[:model].call
@@ -88,9 +96,10 @@ module Archgen
                    else
                      checked
                    end
-          @on_downloaded&.call(respond(nil, result))
+        rescue StandardError => e
+          result = failure('E_MAP', '/download', 'map_download', reason_detail: 'save', error: e.class.name)
         end
-        Core::Result.ok({ 'started' => true, 'host' => host, 'bbox' => box })
+        @on_downloaded&.call(respond(nil, result))
       end
 
       def act_preview(payload)
@@ -114,7 +123,8 @@ module Archgen
       def act_import(_payload)
         return failure('E_TARGET_STALE', '/preview', 'preview_missing') unless @preview
 
-        result = @service.import(model: @ports[:model].call, preview: @preview)
+        frame = @ports[:frame]&.call
+        result = @service.import(model: @ports[:model].call, preview: @preview, frame: frame)
         @preview = nil if result.ok?
         result
       end

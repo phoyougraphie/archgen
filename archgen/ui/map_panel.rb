@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'fileutils'
 
 module Archgen
   module UI
@@ -32,6 +33,7 @@ module Archgen
           confirm: ->(text) { ::UI.messagebox(text, MB_OKCANCEL) == IDOK },
           fetch: ->(request, &done) { fetch(request, &done) },
           save: ->(name, bytes) { save(name, bytes) },
+          frame: -> { frame(::Sketchup.active_model) },
           model: -> { ::Sketchup.active_model }
         }
       end
@@ -40,8 +42,8 @@ module Archgen
       def self.georef(model)
         return nil unless model.respond_to?(:georeferenced?) && model.georeferenced?
 
-        point = model.point_to_latlong(ORIGIN)
-        [point.y.to_f, point.x.to_f]
+        lon, lat = model.point_to_latlong(ORIGIN).to_a
+        [lat.to_f, lon.to_f]
       end
 
       # Requête Overpass ; @request garde la requête en vie jusqu'à la réponse.
@@ -54,15 +56,29 @@ module Archgen
         end
       end
 
-      # À côté du SKP, ou dans un dossier choisi si le modèle n'est pas encore enregistré.
+      # À côté du SKP ; dans Documents\ARCHGEN si le modèle n'est pas encore enregistré. Aucun dialogue.
       def self.save(name, bytes)
         path = ::Sketchup.active_model.path.to_s
-        directory = path.empty? ? ::UI.select_directory(title: 'Dossier où garder l’extrait OpenStreetMap') : File.dirname(path)
-        raise ArgumentError, 'Aucun dossier choisi' unless directory
-
+        directory = path.empty? ? File.join(Dir.home, 'Documents', 'ARCHGEN') : File.dirname(path)
+        FileUtils.mkdir_p(directory)
         target = File.join(directory, name)
         File.binwrite(target, bytes)
         target
+      end
+
+      # Repère de la carte vers le modèle géolocalisé : rotation du nord de SketchUp, lue par sa propre
+      # conversion de coordonnées (point_to_latlong rend [longitude, latitude]). nil sans géolocalisation.
+      def self.frame(model)
+        origin = georef(model)
+        return nil unless origin
+
+        projection = Core::MapProjection.new(*origin)
+        lat, lon = projection.inverse(100.0, 0.0)
+        east = model.latlong_to_point([lon, lat])
+        angle = Math.atan2(east.y.to_f, east.x.to_f)
+        c = Math.cos(angle)
+        s = Math.sin(angle)
+        [c, s, 0.0, 0.0, -s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
       end
 
       def self.literal(text)

@@ -1,5 +1,20 @@
 # Journal des versions
 
+## 0.26.0
+
+Import de carte en mode simple (AG-130, ADR-58), essayé dans SketchUp sur 400 m de centre-ville.
+
+**Ajouts**
+
+- **Importer rues et bâtiments autour du point géolocalisé** : un clic après Fichier → Ajouter un emplacement ; taille et style ; résumé ; un Annuler.
+- **Toutes les rues** posées à plat à leur largeur, sans carrefour calculé : 301 sur 314 voies dans l'extrait d'essai, contre 10 en réseaux.
+
+**Corrections**
+
+- Au-delà de 300 bâtiments, les plus proches du centre sont gardés au lieu de tout refuser.
+- L'extrait est enregistré sans dialogue (Documents\ARCHGEN pour un modèle non enregistré) ; une erreur de téléchargement s'affiche au lieu d'aller en silence dans la console.
+- L'import suit le nord du modèle géolocalisé.
+
 ## 0.25.0
 
 Cartographie (AG-125 à AG-129, ADR-56, ADR-57). Recette H40 dans SketchUp à faire.

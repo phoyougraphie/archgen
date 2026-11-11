@@ -215,32 +215,30 @@ Sans terrain, l'eau reste à un seul niveau quel que soit le régime. Une éclus
 - **Limites :** 24 voies par réseau, 6 branches par carrefour ; mêmes plafonds de faces et d'objets qu'une voie.
 - **Hors de portée :** le réseau est horizontal (pas de pont sur un terrain) ; pas d'échangeur à bretelles, de courbe de rails ni de marquage de priorité ; pas de calcul de structure : un pont est une maquette.
 
-## Importer une carte (0.25.0)
+## Importer une carte (0.26.0)
 
-**Extensions → ARCHGEN → Importer une carte…**
+**Le plus simple : trois gestes.**
 
-1. **Télécharger depuis OpenStreetMap** : donnez le centre de la zone (déjà rempli si le modèle est géolocalisé) et son côté, de 50 à 2 000 m, puis cliquez sur **Télécharger…**. ARCHGEN montre le serveur Overpass et l'emprise, et n'envoie rien sans votre accord. Seule l'emprise part sur le réseau. L'extrait reçu est gardé à côté du fichier SKP (`<modèle>_osm_<date>.osm`). Vous pouvez aussi **choisir** un `.osm` ou un GeoJSON déjà sur le disque.
-2. **Terrain (facultatif)** : un fichier ASCII Grid de l'IGN (RGE ALTI, `.asc`), en Lambert-93. Cochez la case IGN pour l'attribution.
-3. **Choisissez** les couches (voies, bâtiments, terrain) et le style des bâtiments, puis cliquez sur **Aperçu**. Le panneau compte les réseaux, les voies, les bâtiments et les faces de terrain, ainsi que tout ce qui est écarté, avec la raison. Rien n'est encore écrit.
-4. **Cliquez sur Importer.** Une seule entrée d'Annuler retire tout.
+1. **Fichier → Ajouter un emplacement…** : cherchez l'adresse, puis cliquez sur **Définir la géolocalisation**. La carte de SketchUp montre le lieu.
+2. **Extensions → ARCHGEN → Importer rues et bâtiments autour du point géolocalisé…** : choisissez la taille de la zone (400 m par défaut) et le style, puis acceptez le téléchargement. Seule la zone est envoyée à OpenStreetMap.
+3. Lisez le résumé (rues, bâtiments, éléments écartés) et cliquez sur **OK**. Tout arrive d'un coup, et un seul Annuler retire tout.
 
 **Ce que vous obtenez :**
 
-- Les voies deviennent des **réseaux de voies** ARCHGEN, avec un type de voie tout prêt selon leur catégorie OSM.
-- Les bâtiments deviennent des **bâtiments ARCHGEN** rectangulaires, tournés vers la voie la plus proche.
-- Tous sont modifiables au clic droit comme s'ils avaient été créés à la main.
-- Le terrain est un composant **ARCHGEN Terrain** que les commandes d'assise et de voie sur terrain savent relever.
-- Le composant **ARCHGEN Carte** garde l'origine, la source et l'attribution.
+- **Les rues** : des bandes de chaussée à plat, chacune à la largeur de son type (trottoir, rue, avenue…). La plus importante passe au-dessus aux croisements. Elles forment le composant **ARCHGEN Rues** ; pour une rue précise, tracez par-dessus une vraie voie ARCHGEN avec trottoirs et mobilier.
+- **Les bâtiments** : des bâtiments ARCHGEN rectangulaires, tournés vers la rue la plus proche et modifiables au clic droit. Au-delà de 300, ce sont les plus proches du centre qui sont gardés. Les contours non rectangulaires sont écartés : ils attendent les emprises non rectangulaires.
+- **Le fichier téléchargé** est gardé à côté du modèle, ou dans **Documents\ARCHGEN** si le modèle n'est pas encore enregistré.
+- **Le composant ARCHGEN Carte** garde la source et l'attribution.
 
-**Licences.** Les données OpenStreetMap sont sous licence ODbL : toute image diffusée doit porter « © les contributeurs d'OpenStreetMap ». Le RGE ALTI de l'IGN est sous Licence Ouverte 2.0 et demande de citer l'IGN.
+**Depuis un fichier :** **Extensions → ARCHGEN → Importer une carte depuis un fichier…** ouvre le panneau complet : fichier `.osm` ou GeoJSON, terrain IGN `.asc` en Lambert-93, couches.
+
+**Licences.** Les données OpenStreetMap sont sous licence ODbL : toute image diffusée doit porter « © les contributeurs d'OpenStreetMap ». Le RGE ALTI de l'IGN est sous Licence Ouverte 2.0.
 
 **Limites.**
 
-- Zone de 2 × 2 km au plus, 300 bâtiments, 400 tronçons de voie.
-- Les bâtiments non rectangulaires sont écartés (contour qui remplit moins de 85 % de son rectangle).
-- Les ponts, les tunnels, l'eau et les voies ferrées ne sont pas importés.
-- Le terrain doit être en Lambert-93.
-- Le serveur Overpass peut refuser une demande trop fréquente : réessayez plus tard.
+- Zone de 1 000 m au plus en un clic, 2 000 m depuis le panneau.
+- Les tunnels ne sont pas importés.
+- La fonction « Ajouter du contexte » de SketchUp (image aérienne, bâtiments 3D) demande un abonnement SketchUp ; ARCHGEN ne s'en sert pas.
 
 ## Reproduire
 

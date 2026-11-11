@@ -254,6 +254,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-127 — Bâtiments** | AG-125 | Rectangle orienté ≥ 85 %, niveaux, graine, façade vers la voie, écartés. | U89 vert. |
 | **AG-128 — Terrain ASCII Grid** | AG-125 | Lambert-93, échelle et convergence, NODATA, maillage ; écriture et Undo en AG-129. | U90 vert. |
 | **AG-129 — Téléchargement, commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Téléchargement Overpass (adaptateur, hôtes fermés, confirmation, fichier enregistré) ; panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 vert ; recette H40 à la main (à faire). |
+| **AG-130 — Mode simple, RBZ 0.26.0** | AG-129, ADR-58 | Rues à plat (`MapStreets`), 300 bâtiments les plus proches, commande en un clic depuis la géolocalisation, nord du modèle, enregistrement sans dialogue, erreurs remontées. | U92 vert ; H41 faite au vrai geste par Claude. |
 
 ## J21 — Intérieur
 

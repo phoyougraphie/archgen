@@ -33,8 +33,13 @@ module Archgen
         end
 
         # Import de carte (AG-129) : réseau déjà calculé, coordonnées de la carte ; l'appelant tient l'opération.
-        def write_imported(model, computed, origin)
-          write_new_root(model, computed, [origin[0].to_f, origin[1].to_f, 0.0])
+        # transform : placement complet (repère de la carte) ; sinon simple translation à `origin`.
+        def write_imported(model, computed, origin, transform: nil)
+          return write_new_root(model, computed, [origin[0].to_f, origin[1].to_f, 0.0]) unless transform
+
+          instance = @roots.insert(model, definition: write_definition(model, computed), transform: transform)
+          instance.name = labels[:root]
+          finish(model, instance, computed, 1)
         end
 
         # AG-102 : le réseau des voies fusionnées remplace leurs racines, en une seule opération.

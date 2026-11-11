@@ -75,8 +75,10 @@ class MapBuildingsTest < Minitest::Test
                      building(3, rotated(10, 8, 0, at: [10, 0])), building(4, rotated(3, 3, 0, at: [40, 0]))])
     assert_equal %w[way/1 way/3], value['buildings'].map { |b| b['id'] }, 'mitoyen accepté, chevauchement écarté'
     assert_equal({ 'overlap' => 1, 'size' => 1 }, value['skipped'])
-    many = (0..300).map { |i| building(i, rotated(5, 5, 0, at: [i * 6.0, 0])) }
-    result = MapBuildings.call({ 'ways' => [], 'buildings' => many }, style: 'haussmann')
-    assert_equal 'map_too_large', result.errors.first.params['reason']
+    many = (0..300).map { |i| building(i, rotated(5, 5, 0, at: [(i * 6.0) - 900, 0])) }
+    kept = MapBuildings.call({ 'ways' => [], 'buildings' => many }, style: 'haussmann').value
+    assert_equal 300, kept['buildings'].size
+    assert_equal({ 'too_many' => 1 }, kept['skipped'])
+    assert_equal 'way/300', (many.map { |b| b['id'] } - kept['buildings'].map { |b| b['id'] }).first, 'le plus loin du centre est écarté'
   end
 end

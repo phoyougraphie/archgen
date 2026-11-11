@@ -81,6 +81,7 @@ module Archgen
       core/map_roads
       core/map_buildings
       core/map_terrain
+      core/map_streets
       geometry/embankment_builder
       geometry/site_planner
       composition

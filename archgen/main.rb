@@ -14,6 +14,7 @@ Archgen::Loader.load_internal('ui/export_command')
 Archgen::Loader.load_internal('ui/road_panel')
 Archgen::Loader.load_internal('ui/network_panel')
 Archgen::Loader.load_internal('ui/map_panel')
+Archgen::Loader.load_internal('ui/map_quick')
 
 module Archgen
   # La garde empêche de dédoubler le menu en cas de double chargement.
@@ -28,7 +29,8 @@ module Archgen
     submenu.add_item('Modifier la voie sélectionnée') { UI::RoadPanel.show('edit') }
     submenu.add_item('Tracer un réseau de voies') { UI::NetworkPanel.show('trace') }
     submenu.add_item('Modifier le réseau sélectionné') { UI::NetworkPanel.show('edit') }
-    submenu.add_item('Importer une carte…') { UI::MapPanel.show }
+    submenu.add_item('Importer rues et bâtiments autour du point géolocalisé…') { UI::MapQuick.run }
+    submenu.add_item('Importer une carte depuis un fichier…') { UI::MapPanel.show }
     # AG-069, AG-095 : clic droit — personnaliser un bâtiment d'une rue ouverte, modifier un bâtiment seul ou une rue.
     UI::ContextMenu.install
     @menu_installed = true
