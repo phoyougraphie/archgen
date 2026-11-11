@@ -234,6 +234,11 @@ module Archgen
         end
 
         def compute_site(model, instance, computed, settings, terrain)
+          # AG-136 : l'étagement suit les parcelles d'une rangée ; pas encore des bâtiments isolés.
+          if computed.settings.dig('parcel', 'detached')
+            return Core::Result.fail([Core::Diagnostic.error('E_STREET_SITE', '/parcel/detached', reason: 'detached_site_unavailable')])
+          end
+
           layout = Core::EnsembleEngine.layout_for(computed.settings, registry: @registry)
           return layout unless layout.ok?
 

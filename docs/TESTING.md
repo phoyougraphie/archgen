@@ -89,6 +89,8 @@ Trois niveaux : (1) Ruby pur, tests unitaires et propriétés sur fixtures ; (2)
 | U94 | Carrefour sur un virage (AG-132, road_network_test) : trois croisements dans une courbe se construisent, rien n'est couvert deux fois, aucune fente entre faces ; un coude vif juste après la coupe reste refusé (`junction_on_curve`). |
 | U95 | Balcons à tous les étages (AG-133, balcony_levels_test) : sept balcons sur huit niveaux ; « noble » garde 2 et 5 et n'est pas écrit. Les trois nouveaux profils passent U52. |
 | U96 | Profondeur des balcons (AG-134, balcony_levels_test) : 1,8 m du style écrite et posée ; 0,90 m non écrite. |
+| U97 | Attique et verre (AG-135, attic_test) : attique reculé de 2,5 m au-dessus du corps, garde-corps de terrasse, refus à un niveau et trop profond, attique en rue à angle ; garde-corps vitré sans barreaux. |
+| U98 | Bâtiments isolés (AG-136, detached_test) : retrait et largeur exacts, bâtiments jamais en contact, définition partagée ; trois styles en angle et en îlot sans accès ; refus trop étroit et trop profond. |
 
 Tolérance des mesures Ruby : 10⁻⁵ sur les cas étalons (unités SI) ; SketchUp ≤1 mm sur cotes attendues. Comparer le plan canonique et les invariants ; captures visuelles seulement en complément. Le hash est exact pour une même version/matrice validée ; une divergence numérique interplateforme doit être caractérisée et corrigée ou documentée avant promesse.
 

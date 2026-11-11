@@ -92,6 +92,18 @@ Chaque parcelle reçoit une configuration effective complète : largeur W, profo
 
 **Arrière :** il suit la trame de la façade arrière V1, avec ses propres travées. Pas de vitrage ni de traitement particulier côté cour.
 
+## Bâtiments isolés sur leur terrain — AG-136 (ADR-64)
+
+`parcel.detached` : `{ side_gap_m, front_setback_m, building_depth_m }`. La parcelle devient un terrain de profondeur `parcel.depth_m` ; chaque bâtiment est un **bâtiment seul** (murs latéraux percés, croupe permise, pas de passage) :
+
+- largeur : de `max(0, δg × r) + écart` à `min(L, L − δd × r) − écart`, avec r = (retrait + profondeur) / profondeur du terrain : la limite latérale est prise au fond du bâtiment ; au moins 4 m (`detached_too_narrow`) ;
+- retrait + profondeur du bâtiment ≤ profondeur du terrain (`detached_too_deep`) ;
+- travées : la largeur de travée de la rue en façade, la moitié du nombre qui tient en profondeur sur chaque côté ;
+- un îlot fermé n'a aucun accès ; deux bâtiments identiques partagent leur définition ;
+- l'étagement sur terrain est refusé (`detached_site_unavailable`, `E_STREET_SITE`).
+
+Panneau de rue : case « Bâtiments isolés sur leur terrain », écart (3 m), retrait (5 m), profondeur du bâtiment (10 m) ; cochée, une profondeur de terrain de moins de 20 m passe à 25 m. Tests U98.
+
 ## Accès à la cour
 
 Une forme fermée en reçoit toujours : une cour sans accès n'est jamais produite. Si le nombre demandé ne tient pas, le tracé est refusé, sans réduire ce nombre en silence. Exemple de référence, le carré de 40 m : 3 accès sur 3 côtés, 9 parcelles au lieu de 12, voisines de 18,25 m autour d'un vide de 3,5 m.

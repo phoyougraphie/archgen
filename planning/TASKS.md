@@ -259,6 +259,8 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-132 — Carrefour sur un virage, RBZ 0.28.0** | AG-043, ADR-60 | Branche redressée jusqu'à sa coupe, tronçon raccordé à la courbe ; refus seulement au-delà de 45° au raccord. | U94 vert ; suites U27 à U33 vertes. |
 | **AG-133 — Styles côtiers et maison moderne, RBZ 0.29.0** | AG-075, ADR-61 | Option balcons à tous les étages ; profils baule_front_de_mer, maison_moderne, baule_villa. | U95 et U52 verts. |
 | **AG-134 — Front de mer recadré, RBZ 0.30.0** | AG-133, ADR-62 | Profondeur des balcons réglable ; profil recadré sur photos. | U96, U95, U52 verts. |
+| **AG-135 — Attique et garde-corps vitré** | AG-134, ADR-63 | `levels.attic_setback_m`, corps et attique composés ; garde-corps `glass`. | U97 vert. |
+| **AG-136 — Bâtiments isolés, RBZ 0.31.0** | AG-135, ADR-64 | `parcel.detached`, bâtiment seul posé dans sa parcelle ; panneau de rue. | U98 vert ; rues, angles, îlots. |
 
 ## J21 — Intérieur
 

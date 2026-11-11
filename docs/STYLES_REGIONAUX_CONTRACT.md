@@ -72,7 +72,8 @@ Le panneau propose déjà tous les styles actifs ; la liste devient longue : gro
 - Accès d'îlot : interruption pour les trois (le porche ne tient pas sous un rez-de-chaussée de 2,8 m).
 - **Fait (AG-133).** Profils écrits par `scripts/regional_profiles.rb`, vérifiés par U52 en bâtiment seul, rue, rue à angle et îlot ; U95 pour les balcons. RBZ 0.29.0. **Vu dans SketchUp : non** (laissé au propriétaire).
 - **Recadrage (AG-134, ADR-62)**, sur photos du front de mer : option `features.balcony_depth_m` (0,6 à 2,5 m, défaut 0,90 non écrit), champ « Profondeur des balcons » au panneau du bâtiment ; balcons de 1,8 m à barreaux, baies de 2,0 m, commerce de 3,6 m. Reportés : garde-corps vitré, attique en retrait, balcons d'angle, bow-windows.
-- **Limite.** Une rue de maisons est une rangée mitoyenne ; des maisons isolées, avec jardin et retrait, demandent une capacité d'ensemble à part.
+- **Attique et verre (AG-135, ADR-63).** `levels.attic_setback_m` et garde-corps `glass` ; le front de mer prend un attique de 2,5 m et un garde-corps vitré. Champs « Retrait de l'attique » et « Vitré » au panneau du bâtiment.
+- **Bâtiments isolés (AG-136, ADR-64).** Voir [ENSEMBLE_CONTRACT](ENSEMBLE_CONTRACT.md), Bâtiments isolés ; reportés : balcons d'angle, bow-windows.
 
 ## Tests
 

@@ -22,6 +22,9 @@ module Archgen
       end
 
       def generate_input(input, materials, row)
+        setback = input.dig('levels', 'attic_setback_m').to_f
+        return attic(input, materials, row, setback) if setback.positive?
+
         footprint = footprint_for(input, row)
         inner = row && footprint.trapezoid? ? Geometry::FootprintSolver.inner_problems(footprint, input['structure']['wall_m']) : []
         return Result.fail(inner) unless inner.empty?
@@ -69,6 +72,107 @@ module Archgen
         Geometry::FootprintSolver.trapezoid(width_m: width, depth_m: depth, delta_left_m: left, delta_right_m: right)
       end
       private_class_method :footprint_for
+
+      # --- Attique en retrait (AG-135, ADR-63)
+
+      ATTIC_MIN_DEPTH_M = 4.0
+
+      # Le corps : tous les niveaux sauf le dernier, sous un toit plat qui devient la terrasse. L'attique :
+      # le dernier niveau, reculé de `setback` depuis la façade avant, sous le toit du style, avec un
+      # garde-corps au bord de la terrasse. Deux plans calculés à part, réunis sous une seule racine.
+      def attic(input, materials, row, setback)
+        levels = input['levels']
+        count = levels['count']
+        return Result.fail([attic_error('attic_single_level')]) if count < 2
+
+        depth = input['footprint']['depth_m']
+        return Result.fail([attic_error('attic_too_deep', limit: Quant.q(depth - ATTIC_MIN_DEPTH_M))]) if depth - setback < ATTIC_MIN_DEPTH_M
+
+        heights = levels['heights_m'] || []
+        body_levels = levels.reject { |k, _| k == 'attic_setback_m' }.merge('count' => count - 1, 'heights_m' => heights.first(count - 1))
+        flat = input['roof'].reject { |k, _| k == 'ridge' }.merge('type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0.0)
+        body = generate_input(input.merge('levels' => body_levels, 'roof' => flat), materials, row)
+        return body unless body.ok?
+
+        footprint = footprint_for(input, row)
+        x0 = Quant.q(footprint.left_x(setback))
+        x1 = Quant.q(footprint.right_x(setback))
+        top_depth = Quant.q(depth - setback)
+        top_row = row && row.reject { |k, _| k == :porch }.merge(delta_left_m: Quant.q(footprint.left_x(depth) - x0), delta_right_m: Quant.q(x1 - footprint.right_x(depth)))
+        top_input = input.reject { |k, _| %w[shop ground_floor].include?(k) }.merge(
+          'levels' => { 'count' => 1, 'height_m' => heights[count - 1] || levels['height_m'], 'heights_m' => [] },
+          'footprint' => input['footprint'].merge('width_m' => Quant.q(x1 - x0), 'depth_m' => top_depth),
+          # Un attique plus étroit que le corps (parcelle d'angle) garde des travées de même largeur.
+          'facade' => input['facade'].merge('entry_bay' => nil, 'front_bays' => [(input['facade']['front_bays'] * (x1 - x0) / input['footprint']['width_m']).floor, 1].max),
+          'structure' => input['structure'].merge('ground_slab' => false),
+          'features' => input['features'].reject { |k, _| %w[balcony pilotis shop_front].include?(k) }
+        )
+        top = generate_input(top_input, materials, top_row)
+        return top unless top.ok?
+
+        rails = {}
+        rail_nodes = []
+        if input['lod'] == 1
+          ground = Geometry::FootprintSolver.call(width_m: Quant.q(x1 - x0), depth_m: top_depth)
+          rail_nodes = Geometry::DetailSolver.terrace_rails(ground, setback, top_input, rails)
+        end
+        z0 = body.value['metrics']['roof_top_z_m']
+        plan = stack(body.value, top.value, rail_nodes, rails, [x0, setback, z0])
+        problems = PlanValidator.call(plan, materials: materials)
+        return Result.fail(problems) unless problems.empty?
+
+        Result.ok(Canonical.deep_freeze(plan), body.diagnostics + top.diagnostics)
+      end
+      private_class_method :attic
+
+      def attic_error(reason, **params)
+        Diagnostic.error('E_ROOF_GEOMETRY', '/levels/attic_setback_m', reason: reason, **params)
+      end
+      private_class_method :attic_error
+
+      def stack(body, top, rail_nodes, rails, offset)
+        moved = shifted(top['nodes'].first['children'] + rail_nodes, offset)
+        root = body['nodes'].first
+        nodes = [root.merge('children' => root['children'] + [Geometry::Node.group('attic', 'building', moved)])]
+        definitions = body['definitions'].merge(top['definitions']).merge(rails)
+        definition_faces = definitions.transform_values { |list| count_faces(list) }
+        own = count_faces(nodes)
+        openings = body['openings'] + top['openings'].map do |o|
+          o.merge('id' => "attic/#{o['id']}", 'level_index' => o['level_index'] + body['openings'].map { |b| b['level_index'] }.max.to_i + 1,
+                  'z_min_m' => Quant.q(o['z_min_m'] + offset[2]), 'z_max_m' => Quant.q(o['z_max_m'] + offset[2]))
+        end
+        metrics = body['metrics'].merge(
+          'wall_top_z_m' => Quant.q(top['metrics']['wall_top_z_m'] + offset[2]), 'roof_top_z_m' => Quant.q(top['metrics']['roof_top_z_m'] + offset[2]),
+          'opening_count' => openings.size,
+          'unique_face_count' => own + definition_faces.values.sum,
+          'expanded_face_count' => own + instance_definitions(nodes).sum { |id| definition_faces.fetch(id) },
+          'wall_cell_count' => body['metrics']['wall_cell_count'] + top['metrics']['wall_cell_count'], 'detail_definition_count' => definitions.size
+        )
+        body.merge('nodes' => nodes, 'definitions' => definitions, 'openings' => openings, 'metrics' => metrics)
+      end
+      private_class_method :stack
+
+      # Nœuds déplacés de `offset` (mètres) et renommés « attic/… » ; maillages requantifiés.
+      def shifted(nodes, offset)
+        dx, dy, dz = offset
+        nodes.map do |node|
+          moved = node.merge('id' => "attic/#{node['id']}", 'children' => shifted(node['children'], offset))
+          primitive = node['primitive']
+          next moved unless primitive
+
+          moved['primitive'] = if primitive['type'] == 'instance'
+                                 m = primitive['matrix'].dup
+                                 m[12] = Quant.q(m[12] + dx)
+                                 m[13] = Quant.q(m[13] + dy)
+                                 m[14] = Quant.q(m[14] + dz)
+                                 primitive.merge('matrix' => m)
+                               else
+                                 primitive.merge('vertices' => primitive['vertices'].map { |x, y, z| Quant.q3([x + dx, y + dy, z + dz]) })
+                               end
+          moved
+        end
+      end
+      private_class_method :shifted
 
       def plan_digest(plan)
         Canonical.digest(plan)

@@ -212,6 +212,7 @@ module Archgen
       def tree_for(settings)
         # Une case Varier décochée envoie `variety: null` : la rue garde alors un seul gabarit.
         tree = settings.reject { |key, value| %w[layout access].include?(key) || (key == 'variety' && value.nil?) }.merge('trace' => @session.trace)
+        tree = tree.merge('parcel' => tree['parcel'].reject { |key, value| key == 'detached' && value.nil? }) if tree['parcel'].is_a?(Hash)
         # ADR-50 : une nouvelle rue reçoit la dalle et les seuils ; enregistrés, ils restent.
         tree = tree.merge('building' => Core::Merge.leaves({ 'structure' => { 'ground_slab' => true }, 'features' => { 'balcony_rail' => 'bars' } }, tree.fetch('building', {})))
         return settings.key?('access') ? tree.merge('access' => settings['access']) : tree if @session.closed?
@@ -411,8 +412,13 @@ module Archgen
         stored = @edit_settings
         tree = stored.reject { |key, _| %w[layout access].include?(key) }.merge(
           'building' => Core::Merge.leaves(stored['building'], settings.fetch('building', {})),
-          'parcel' => Core::Merge.leaves(stored['parcel'], settings.fetch('parcel', {}))
+          'parcel' => Core::Merge.leaves(stored['parcel'], settings.fetch('parcel', {}).reject { |key, _| key == 'detached' })
         )
+        # AG-136 : bâtiments isolés remplacés en entier, ou retirés (null).
+        if settings.fetch('parcel', {}).key?('detached')
+          chosen = settings['parcel']['detached']
+          tree['parcel'] = chosen ? tree['parcel'].merge('detached' => chosen) : tree['parcel'].reject { |key, _| key == 'detached' }
+        end
         # Même style : la révision enregistrée reste ; autre style : sa révision courante (AG-064).
         chosen = settings.dig('building', 'profile')
         tree['building'] = tree['building'].merge('profile' => chosen) if chosen && chosen['id'] != stored.dig('building', 'profile', 'id')

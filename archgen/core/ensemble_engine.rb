@@ -38,7 +38,8 @@ module Archgen
       def layout_for(settings, registry:, rules: nil)
         layout = Geometry::ParcelLayout.call(settings)
         return layout unless layout.ok?
-        return EnsembleParcels.layout(settings, layout.value.merge('accesses' => [])) unless settings.dig('trace', 'closed')
+        # AG-136 : des bâtiments isolés laissent passer entre eux ; un îlot n'a pas besoin d'accès.
+        return EnsembleParcels.layout(settings, layout.value.merge('accesses' => [])) unless settings.dig('trace', 'closed') && !settings.dig('parcel', 'detached')
 
         form = access_form(settings, registry, rules || Composition.ensemble_rules)
         return form unless form.ok?
@@ -105,7 +106,7 @@ module Archgen
           budget = budget_problem(unique, expanded, limits)
           return Result.fail([budget]) if budget
 
-          entry = { 'id' => parcel['id'], 'definition_id' => id, 'matrix' => matrix(parcel) }
+          entry = { 'id' => parcel['id'], 'definition_id' => id, 'matrix' => matrix(parcel, ready.value.placement) }
           entry['variety'] = parcel['variety'] if parcel['variety']
           placed << entry
           progress&.call(index + 1, parcels.size)
@@ -141,10 +142,15 @@ module Archgen
       end
       private_class_method :budget_error
 
-      # Colonnes (T, gauche, K) : x le long de la façade, y vers l'arrière.
-      def matrix(parcel)
+      # Colonnes (T, gauche, K) : x le long de la façade, y vers l'arrière. Un bâtiment isolé (AG-136)
+      # est posé à son retrait et à son écart latéral dans la parcelle.
+      def matrix(parcel, box = nil)
         t = parcel['tangent']
         origin = parcel['origin_m']
+        if box
+          origin = [origin[0] + (t[0] * box['x_m']) - (t[1] * box['setback_m']), origin[1] + (t[1] * box['x_m']) + (t[0] * box['setback_m']), origin[2] || 0.0]
+          origin = Quant.q3(origin)
+        end
         [t[0], t[1], 0.0, 0.0, -t[1], t[0], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, origin[0], origin[1], 0.0, 1.0].map { |c| c.zero? ? 0.0 : c }
       end
       private_class_method :matrix

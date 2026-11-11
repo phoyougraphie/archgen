@@ -410,12 +410,12 @@ PROFILES = {
     'requires' => %w[flat balcony glazing],
     'defaults' => {
       'footprint' => { 'width_m' => 22, 'depth_m' => 14 },
-      'levels' => { 'count' => 8, 'height_m' => 2.8, 'heights_m' => [] },
+      'levels' => { 'count' => 8, 'height_m' => 2.8, 'heights_m' => [], 'attic_setback_m' => 2.5 },
       'facade' => { 'front_bays' => 6, 'window_width_m' => 2.0, 'window_height_m' => 2.2, 'sill_m' => 0.3, 'entry_bay' => 2, 'door_width_m' => 1.4, 'door_height_m' => 2.4 },
       'shop' => { 'height_m' => 3.6 },
       'roof' => { 'type' => 'flat', 'overhang_m' => 0.0, 'pitch_deg' => 0 },
       'materials' => { 'wall' => 'light_render', 'roof' => 'concrete', 'frames' => 'painted_wood', 'glass' => 'glass' },
-      'features' => { 'glazing' => true, 'balcony' => true, 'balcony_levels' => 'all', 'balcony_depth_m' => 1.8, 'balcony_rail' => 'bars' }
+      'features' => { 'glazing' => true, 'balcony' => true, 'balcony_levels' => 'all', 'balcony_depth_m' => 1.8, 'balcony_rail' => 'glass' }
     },
     'rules' => rules(levels: [4, 12], roofs: %w[flat], ratio: [0.8, 1.6], walls: %w[light_render concrete])
   },

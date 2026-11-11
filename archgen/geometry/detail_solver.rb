@@ -83,6 +83,9 @@ module Archgen
       RAIL_HEIGHT_M = 1.00
       RAIL_TOP_M = 0.05
       RAIL_SOLID_M = 0.10
+      # AG-135 : vitrage du garde-corps vitré, sous la main courante.
+      RAIL_GLASS_M = 0.02
+      RAIL_GLASS_FOOT_M = 0.05
       BAR_M = 0.02
       BAR_SPACING_M = 0.12
       SURROUND_BAR_M = 0.04
@@ -614,19 +617,38 @@ module Archgen
 
         segments = [[ring[3], ring[0]], [ring[0], ring[1]], [ring[1], ring[2]]]
         solid = config['features']['balcony_rail'] == 'solid'
-        balcony_levels.flat_map do |level|
-          z = level.base_z_m
+        glass = config['features']['balcony_rail'] == 'glass'
+        rails_on(segments, balcony_levels.map(&:base_z_m), config, definitions, solid, glass, ->(z) { balcony_levels.find { |l| l.base_z_m == z }.index })
+      end
+      private_class_method :balcony_rails
+
+      # Garde-corps au bord de la terrasse d'un attique (AG-135), en repère de l'attique : bande de
+      # `depth` devant sa façade, à z = 0. Barreaux si le style n'en dit pas autrement.
+      def terrace_rails(footprint, depth, config, definitions)
+        ring = rect_ring(footprint, 0.0, depth)
+        segments = [[ring[3], ring[0]], [ring[0], ring[1]], [ring[1], ring[2]]]
+        kind = config['features']['balcony_rail']
+        rails_on(segments, [0.0], config, definitions, kind == 'solid', kind == 'glass', ->(_) { 'terrace' })
+      end
+
+      def rails_on(segments, zs, config, definitions, solid, glass, name)
+        zs.flat_map do |z|
+          label = name.call(z)
           segments.each_with_index.flat_map do |(p, q), i|
-            id = "balcony/#{level.index}/rail/#{i}"
+            id = "balcony/#{label}/rail/#{i}"
             next [Node.leaf(id, 'balcony', Boxes.prism(band(p, q, RAIL_SOLID_M), z, z + RAIL_HEIGHT_M, config['materials']['wall']))] if solid
 
             material = config['materials']['frames']
             top = Node.leaf(id, 'balcony', Boxes.prism(band(p, q, RAIL_TOP_M), z + RAIL_HEIGHT_M - RAIL_TOP_M, z + RAIL_HEIGHT_M, material))
+            if glass
+              pane = Boxes.prism(band(p, q, RAIL_GLASS_M), z + RAIL_GLASS_FOOT_M, z + RAIL_HEIGHT_M - RAIL_TOP_M, config['materials']['glass'] || 'glass')
+              next [top, Node.leaf("#{id}/glass", 'balcony', pane)]
+            end
             [top] + bars(p, q, z, material, definitions).each_with_index.map { |matrix, k| Node.leaf("#{id}/bar/#{k}", 'balcony', matrix) }
           end
         end
       end
-      private_class_method :balcony_rails
+      private_class_method :rails_on
 
       def rect_ring(footprint, margin, depth)
         x0 = margin

@@ -135,6 +135,10 @@ Le terrain doit déjà être dans le modèle, sous forme d'un **groupe ou d'un c
 - **Après coup :** on déplace ou on copie l'ensemble entier. Pour agir sur un bâtiment, il faudrait éclater l'ensemble : ses bâtiments restent, mais ne sont plus modifiables par ARCHGEN.
 - **Hors de portée :** pas encore de chaussée, de trottoir ni de carrefour (en préparation, tickets AG-037 à AG-049). Le tracé est horizontal, sans adaptation au terrain, et rien ne vérifie qu'il ne traverse pas d'autres objets du modèle.
 
+### Maisons et bâtiments isolés (0.31.0)
+
+Dans **Rue et parcelles**, cochez **Bâtiments isolés sur leur terrain** : chaque parcelle devient un terrain (la profondeur est celle du terrain, 25 m proposés) et chaque bâtiment s'y pose seul, avec un jardin autour. Réglez l'écart aux limites (3 m), le retrait sur rue (5 m) et la profondeur du bâtiment (10 m). Les murs latéraux reçoivent des fenêtres ; un îlot n'a pas besoin d'accès. L'étagement sur terrain ne les prend pas encore.
+
 ## Étager une rue ou un îlot sur un terrain
 
 Le terrain doit déjà être dans le modèle, en un seul groupe ou composant, visible, au niveau du modèle. Le tracé reste horizontal : on trace d'abord l'ensemble, on le place au-dessus du terrain, puis on l'adapte.

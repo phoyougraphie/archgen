@@ -35,7 +35,8 @@
       "height_m": 2.8,
       "heights_m": [
 
-      ]
+      ],
+      "attic_setback_m": 2.5
     },
     "facade": {
       "front_bays": 6,
@@ -65,7 +66,7 @@
       "balcony": true,
       "balcony_levels": "all",
       "balcony_depth_m": 1.8,
-      "balcony_rail": "bars"
+      "balcony_rail": "glass"
     }
   },
   "rules": [

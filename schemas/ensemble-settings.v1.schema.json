@@ -71,6 +71,32 @@
           "type": "number",
           "minimum": 1.5,
           "maximum": 12
+        },
+        "detached": {
+          "type": "object",
+          "properties": {
+            "side_gap_m": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "front_setback_m": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "building_depth_m": {
+              "type": "number",
+              "minimum": 4,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "side_gap_m",
+            "front_setback_m",
+            "building_depth_m"
+          ],
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

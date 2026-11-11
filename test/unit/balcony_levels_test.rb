@@ -39,9 +39,12 @@ class BalconyLevelsTest < Minitest::Test
   end
 
   def test_front_de_mer_has_a_balcony_on_every_floor
-    config, plan = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1)
+    config, plan = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1, 'levels' => { 'attic_setback_m' => 0 })
     assert_equal 'all', config['features']['balcony_levels']
     assert_equal (1..7).map { |i| "balcony/#{i}" }.sort, balconies(plan)
+    # AG-135 : avec l'attique du style, le huitième niveau recule ; sa terrasse remplace le balcon.
+    _, stepped = build('profile' => { 'id' => 'baule_front_de_mer' }, 'lod' => 1)
+    assert_equal (1..6).map { |i| "balcony/#{i}" }.sort, balconies(stepped)
   end
 
   # AG-134 : profondeur réglable ; 0,90 m n'est pas écrite.

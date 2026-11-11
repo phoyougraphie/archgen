@@ -61,7 +61,8 @@
         <legend>Niveaux et structure</legend>
         <div class="field wide"><label for="f-heights">Hauteurs par niveau (m), séparées par des points-virgules</label><input id="f-heights" data-path="/levels/heights_m" data-kind="list" inputmode="decimal"></div>
         <div class="field"><label for="f-wall">Épaisseur de mur (m)</label><input id="f-wall" data-path="/structure/wall_m" data-kind="number" inputmode="decimal"></div>
-        <div class="field"><label for="f-balcony-rail">Garde-corps des balcons</label><select id="f-balcony-rail" data-path="/features/balcony_rail" data-kind="rail"><option value="bars">Barreaux</option><option value="solid">Plein</option><option value="none">Aucun</option></select></div>
+        <div class="field"><label for="f-balcony-rail">Garde-corps des balcons</label><select id="f-balcony-rail" data-path="/features/balcony_rail" data-kind="rail"><option value="bars">Barreaux</option><option value="solid">Plein</option><option value="glass">Vitré</option><option value="none">Aucun</option></select></div>
+        <div class="field"><label for="f-attic">Retrait de l’attique (m, 0 : aucun)</label><input id="f-attic" data-path="/levels/attic_setback_m" data-kind="number" inputmode="decimal" placeholder="0"></div>
         <div class="field"><label for="f-balcony-levels">Étages des balcons</label><select id="f-balcony-levels" data-path="/features/balcony_levels" data-kind="balconies"><option value="noble">2e et 5e niveaux</option><option value="all">Tous les étages</option></select></div>
         <div class="field"><label for="f-balcony-depth">Profondeur des balcons (m)</label><input id="f-balcony-depth" data-path="/features/balcony_depth_m" data-kind="number" inputmode="decimal" placeholder="0,9"></div>
         <div class="field check"><input type="checkbox" id="f-ground-slab" data-path="/structure/ground_slab" data-kind="check"><label for="f-ground-slab">Dalle de rez-de-chaussée et seuils</label></div>

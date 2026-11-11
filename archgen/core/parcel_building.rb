@@ -8,7 +8,7 @@ module Archgen
       SEED_HEX_CHARS = 8
       Built = Struct.new(:config, :plan, :rear_bays, :plan_warnings, keyword_init: true)
       # Tout ce qui décide de la géométrie, avant de la calculer.
-      Prepared = Struct.new(:config, :row, :warnings, keyword_init: true)
+      Prepared = Struct.new(:config, :row, :warnings, :placement, keyword_init: true)
 
       module_function
 
@@ -19,6 +19,10 @@ module Archgen
       end
 
       def prepare(settings, parcel, registry:, intake:)
+        box = detached_box(settings, parcel)
+        return box unless box.ok?
+
+        parcel = parcel.merge('detached_box' => box.value) if box.value
         config = config_for(settings, parcel, registry: registry, intake: intake)
         return config unless config.ok?
 
@@ -30,6 +34,9 @@ module Archgen
           return config unless config.ok?
         end
 
+        # AG-136 : un bâtiment isolé est un bâtiment seul, posé dans sa parcelle ; croupe permise.
+        return Result.ok(Prepared.new(config: config.value, row: { detached: true }, warnings: config.warnings, placement: parcel['detached_box'])) if parcel['detached_box']
+
         hip = hip_problem(config.value)
         return Result.fail([hip]) if hip
 
@@ -40,10 +47,10 @@ module Archgen
       end
 
       def generate(ready, parcel, materials: nil)
-        plan = GeometryEngine.generate(ready.config, materials: materials, row: ready.row)
+        plan = GeometryEngine.generate(ready.config, materials: materials, row: ready.row[:detached] ? nil : ready.row)
         return localized(plan, parcel) unless plan.ok?
 
-        built = Built.new(config: ready.config, plan: plan.value, rear_bays: ready.row[:rear_bays], plan_warnings: plan.warnings)
+        built = Built.new(config: ready.config, plan: plan.value, rear_bays: ready.row[:rear_bays] || 0, plan_warnings: plan.warnings)
         Result.ok(built, (ready.warnings + plan.warnings).map { |d| relocate(d, parcel) })
       end
 
@@ -73,6 +80,32 @@ module Archgen
         DeterministicRandom.hex(ensemble_seed, "parcel/#{parcel_id}/seed")[0, SEED_HEX_CHARS].to_i(16)
       end
 
+      DETACHED_MIN_WIDTH_M = 4.0
+
+      # Bâtiment isolé (AG-136, ADR-64) : rectangle dans la parcelle, à `side_gap_m` de chaque limite
+      # latérale (prise au fond du bâtiment), reculé de `front_setback_m`, profond de
+      # `building_depth_m`. Result<{ 'x_m', 'width_m', 'setback_m', 'depth_m' }> ou Result<nil> en rangée.
+      def detached_box(settings, parcel)
+        spec = settings.dig('parcel', 'detached')
+        return Result.ok(nil) unless spec
+
+        gap = spec['side_gap_m']
+        # Limites latérales du trapèze prises au fond du bâtiment, là où une parcelle d'angle rentrant est la plus étroite.
+        reach = (spec['front_setback_m'] + spec['building_depth_m']) / parcel['depth_m']
+        x0 = [0.0, parcel['delta_left_m'] * reach].max + gap
+        x1 = [parcel['width_m'], parcel['width_m'] - (parcel['delta_right_m'] * reach)].min - gap
+        if x1 - x0 < DETACHED_MIN_WIDTH_M
+          return Result.fail([Diagnostic.error('E_STREET_PARCEL', "/parcels/#{parcel['id']}/detached/side_gap_m", reason: 'detached_too_narrow', id: parcel['id'],
+                                                                                                                    min: DETACHED_MIN_WIDTH_M, value: Quant.q(x1 - x0))])
+        end
+        if spec['front_setback_m'] + spec['building_depth_m'] > parcel['depth_m'] + Quant::EPSILON
+          return Result.fail([Diagnostic.error('E_STREET_PARCEL', '/parcel/detached/building_depth_m', reason: 'detached_too_deep',
+                                                                                                       limit: Quant.q(parcel['depth_m'] - spec['front_setback_m']))])
+        end
+
+        Result.ok({ 'x_m' => Quant.q(x0), 'width_m' => Quant.q(x1 - x0), 'setback_m' => spec['front_setback_m'], 'depth_m' => spec['building_depth_m'] })
+      end
+
       def bays(length, bay_width, minimum)
         [((length + Quant::EPSILON) / bay_width).floor, minimum].max
       end
@@ -94,6 +127,14 @@ module Archgen
         building = building.merge('profile' => own_profile) if own_profile
         ground = pick['ground'] || {}
         entry = ground['entry_bay'] && ground['entry_bay'] < front ? ground['entry_bay'] : front / 2
+        box = parcel['detached_box']
+        if box
+          bay = settings.dig('parcel', 'bay_width_m')
+          front = bays(box['width_m'], bay, 1)
+          entry = front / 2
+          return Merge.leaves(building, 'footprint' => { 'width_m' => box['width_m'], 'depth_m' => box['depth_m'] }, 'seed' => seed(settings['seed'], parcel['id']),
+                                        'facade' => { 'front_bays' => front, 'side_bays' => bays(box['depth_m'], bay, 0) / 2, 'entry_bay' => entry })
+        end
         Merge.leaves(
           building,
           'footprint' => { 'width_m' => parcel['width_m'], 'depth_m' => parcel['depth_m'] },

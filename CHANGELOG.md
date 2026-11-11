@@ -1,5 +1,16 @@
 # Journal des versions
 
+## 0.31.0
+
+Attique, garde-corps vitré, bâtiments isolés (AG-135, AG-136 ; ADR-63, ADR-64).
+
+**Ajouts**
+
+- **Retrait de l'attique** : le dernier niveau recule sur une terrasse bordée d'un garde-corps.
+- **Garde-corps vitré** pour les balcons.
+- **Bâtiments isolés sur leur terrain** dans une rue ou un îlot : écart aux limites, retrait sur rue, jardin autour.
+- Le style **Côtier — front de mer** prend un attique de 2,5 m et des garde-corps vitrés.
+
 ## 0.30.0
 
 Front de mer recadré sur photos (AG-134, ADR-62).

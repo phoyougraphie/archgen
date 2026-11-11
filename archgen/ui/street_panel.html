@@ -58,6 +58,10 @@
     <div class="field"><label for="s-target">Largeur de parcelle (m)</label><input id="s-target" inputmode="decimal"></div>
     <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
     <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
+    <div class="field wide check"><input type="checkbox" id="s-detached"><label for="s-detached">Bâtiments isolés sur leur terrain (jardin autour, profondeur = terrain)</label></div>
+    <div class="field"><label for="s-gap">Écart aux limites (m)</label><input id="s-gap" inputmode="decimal" data-detached="1" placeholder="3"></div>
+    <div class="field"><label for="s-setback">Retrait sur rue (m)</label><input id="s-setback" inputmode="decimal" data-detached="1" placeholder="5"></div>
+    <div class="field"><label for="s-bdepth">Profondeur du bâtiment (m)</label><input id="s-bdepth" inputmode="decimal" data-detached="1" placeholder="10"></div>
   </fieldset>
   <fieldset>
     <legend>Variété</legend>

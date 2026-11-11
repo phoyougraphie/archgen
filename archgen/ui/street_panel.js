@@ -12,6 +12,7 @@
     status: byId('status'), summary: byId('summary'), summaryList: byId('summary-list'), result: byId('result'), warnings: byId('warnings'),
     profile: byId('s-profile'), mode: byId('s-mode'), lod: byId('s-lod'), count: byId('s-count'), height: byId('s-height'),
     side: byId('s-side'), streetField: byId('s-street-field'), street: byId('s-street'), target: byId('s-target'), depth: byId('s-depth'), bay: byId('s-bay'),
+    detached: byId('s-detached'), gap: byId('s-gap'), setback: byId('s-setback'), bdepth: byId('s-bdepth'),
     accessFields: byId('s-access-fields'), accessCount: byId('s-access-count'), accessWidth: byId('s-access-width'), accessHeight: byId('s-access-height'),
     title: byId('title'), guide: byId('guide'), replaceWarning: byId('replace-warning'), reload: byId('reload'),
     create: byId('create'), clear: byId('clear'), resume: byId('resume'),
@@ -58,6 +59,16 @@
     if (number(el.target) !== null) { parcel.target_width_m = number(el.target); }
     if (number(el.depth) !== null) { parcel.depth_m = number(el.depth); }
     if (number(el.bay) !== null) { parcel.bay_width_m = number(el.bay); }
+    // AG-136 : bâtiments isolés ; décochés en modification, ils sont retirés (null).
+    if (el.detached.checked) {
+      parcel.detached = {
+        side_gap_m: number(el.gap) === null ? 3 : number(el.gap),
+        front_setback_m: number(el.setback) === null ? 5 : number(el.setback),
+        building_depth_m: number(el.bdepth) === null ? 10 : number(el.bdepth)
+      };
+    } else if (state.mode === 'edit') {
+      parcel.detached = null;
+    }
     var layout = { side: el.side.value };
     if (el.side.value === 'both' && number(el.street) !== null) { layout.street_width_m = number(el.street); }
     var access = { count: el.accessCount.value === 'auto' ? 'auto' : Number(el.accessCount.value) };
@@ -142,6 +153,10 @@
     });
     if (drawn.shops) { parts.push(drawn.shops + (drawn.shops > 1 ? ' commerces' : ' commerce')); }
     return parts.length ? ' Tirage : ' + parts.join(', ') + '.' : '';
+  }
+
+  function toggleDetached() {
+    Array.prototype.slice.call(document.querySelectorAll('input[data-detached]')).forEach(function (input) { input.disabled = !el.detached.checked; });
   }
 
   function toggleVariety() {
@@ -337,6 +352,11 @@ if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(respons
     el.target.value = decimal(defaults.parcel.target_width_m);
     el.depth.value = decimal(defaults.parcel.depth_m);
     el.bay.value = decimal(defaults.parcel.bay_width_m);
+    el.detached.checked = false;
+    el.gap.value = '';
+    el.setback.value = '';
+    el.bdepth.value = '';
+    toggleDetached();
     el.street.value = decimal(defaults.layout.street_width_m);
     el.accessWidth.value = decimal(defaults.access.width_m);
 el.accessHeight.value = decimal(defaults.access.height_m);
@@ -465,6 +485,12 @@ function runSite(message, action, payload) {
     setOptional(el.target, values.parcel.target_width_m);
     setOptional(el.depth, values.parcel.depth_m);
     setOptional(el.bay, values.parcel.bay_width_m);
+    var detached = values.parcel.detached;
+    el.detached.checked = Boolean(detached);
+    setOptional(el.gap, detached && detached.side_gap_m);
+    setOptional(el.setback, detached && detached.front_setback_m);
+    setOptional(el.bdepth, detached && detached.building_depth_m);
+    toggleDetached();
     el.seed.value = values.seed === undefined ? '1' : String(values.seed);
     fillDetails(building);
     var stored = values.variety || {};
@@ -582,6 +608,13 @@ function runSite(message, action, payload) {
   });
 
   el.variety.addEventListener('change', function () { toggleVariety(); requestPreview(); });
+  // Un terrain trop court pour le retrait et le bâtiment passe à 25 m de profondeur.
+  el.detached.addEventListener('change', function () {
+    toggleDetached();
+    if (el.detached.checked && (number(el.depth) === null || number(el.depth) < 20)) { el.depth.value = decimal(25); }
+    requestPreview();
+  });
+  [el.gap, el.setback, el.bdepth].forEach(function (input) { input.addEventListener('input', requestPreview); });
   el.roofs.forEach(function (box) { box.addEventListener('change', requestPreview); });
   // Un autre style propose ses toits et sa fourchette, tant que la variété n'est pas choisie.
   el.profile.addEventListener('change', function () {

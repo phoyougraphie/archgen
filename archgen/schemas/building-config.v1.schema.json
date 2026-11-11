@@ -101,6 +101,11 @@
             "maximum": 6
           },
           "maxItems": 15
+        },
+        "attic_setback_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6
         }
       },
       "additionalProperties": false,
@@ -373,7 +378,8 @@
         "balcony_rail": {
           "enum": [
             "bars",
-            "solid"
+            "solid",
+            "glass"
           ]
         },
         "balcony_levels": {
