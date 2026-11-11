@@ -1,5 +1,13 @@
 # Journal des versions
 
+## 0.28.0
+
+Carrefour sur un virage (AG-132, ADR-60).
+
+**Changements**
+
+- **Un carrefour peut toucher un virage** : la branche est redressée jusqu'au bout du carrefour, puis la voie rejoint sa courbe. Seul un virage très serré juste après le carrefour (plus de 45°) reste refusé. Les rues d'une carte importées en réseau sont donc moins souvent refusées.
+
 ## 0.27.0
 
 Fond de plan à l'échelle (AG-131, ADR-59), essayé dans SketchUp.

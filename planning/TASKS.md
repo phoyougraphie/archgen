@@ -256,6 +256,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-129 — Téléchargement, commande, RBZ 0.25.0** | AG-126, AG-127, AG-128 | Téléchargement Overpass (adaptateur, hôtes fermés, confirmation, fichier enregistré) ; panneau Importer une carte, aperçu chiffré, racine avec attribution ; guide, journal, RBZ. | U91 vert ; recette H40 à la main (à faire). |
 | **AG-130 — Mode simple, RBZ 0.26.0** | AG-129, ADR-58 | Rues à plat (`MapStreets`), 300 bâtiments les plus proches, commande en un clic depuis la géolocalisation, nord du modèle, enregistrement sans dialogue, erreurs remontées. | U92 vert ; H41 faite au vrai geste par Claude. |
 | **AG-131 — Fond de plan à l'échelle, RBZ 0.27.0** | AG-130, ADR-59 | Tuiles OSM et photo IGN posées à plat, à l'échelle, au nord ; deux balises ; cache ; une opération. | U93 vert ; H42 faite au vrai geste par Claude. |
+| **AG-132 — Carrefour sur un virage, RBZ 0.28.0** | AG-043, ADR-60 | Branche redressée jusqu'à sa coupe, tronçon raccordé à la courbe ; refus seulement au-delà de 45° au raccord. | U94 vert ; suites U27 à U33 vertes. |
 
 ## J21 — Intérieur
 

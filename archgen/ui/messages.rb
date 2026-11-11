@@ -373,7 +373,7 @@ module Archgen
         'rails_at_junction' => 'Une voie ferrée ne croise une route qu’en passage à niveau : choisissez ce type pour ce carrefour, ou écartez les tracés.',
         'too_many_arms' => 'Ce carrefour aurait %{value} branches, pour %{limit} au plus.',
         'arms_too_close' => 'Deux branches de ce carrefour font %{value_deg}°, pour %{min_deg}° au moins. Ouvrez l’angle.',
-        'junction_on_curve' => 'Le carrefour touche un virage de la voie %{road}. Éloignez le sommet du croisement.',
+        'junction_on_curve' => 'La voie %{road} tourne trop serré juste après le carrefour (plus de 45° au raccord). Adoucissez le virage ou éloignez-le du croisement.',
         'arm_too_short' => 'La voie %{road} est trop courte pour entrer dans ce carrefour. Allongez-la.',
         'junctions_too_close' => 'Ce carrefour et le suivant se touchent sur la voie %{road}. Écartez les croisements.',
         'junction_shape' => 'La forme de ce carrefour ne se construit pas. Changez l’angle ou le rayon des bordures.',

@@ -10,11 +10,15 @@ module Archgen
       MIN_ARM_RAD = 30.0 * Math::PI / 180.0
       MAX_ARMS = 6
       DEFAULT_RADIUS_M = 6.0
+      # AG-132 : une branche dont la zone touche un virage est redressée jusqu'à sa coupe, puis raccordée
+      # à la courbe ; le raccord tourne d'au plus BEND_MAX_RAD et chaque bord du ruban avance d'au moins BEND_MIN_M.
+      BEND_MAX_RAD = 45.0 * Math::PI / 180.0
+      BEND_MIN_M = 0.05
       RAIL_ROLES = %w[rail tram].freeze
       J = RoadJunction
 
       # Une voie du réseau : ses stations en repère du réseau et sa ligne de coupe.
-      Road = Struct.new(:index, :id, :settings, :section, :width, :ax, :stations, :chain, :line, keyword_init: true) do
+      Road = Struct.new(:index, :id, :settings, :section, :width, :ax, :stations, :chain, :line, :joints, keyword_init: true) do
         def length
           chain.last
         end
@@ -29,7 +33,7 @@ module Archgen
         chain = [0.0]
         moved.each_cons(2) { |a, b| chain << (chain.last + Math.hypot(b.point[0] - a.point[0], b.point[1] - a.point[1])) }
         Road.new(index: index, id: id, settings: settings, section: section, width: section['width_m'], ax: ax,
-                 stations: moved, chain: chain, line: RoadRibbons.cross_line(section))
+                 stations: moved, chain: chain, line: RoadRibbons.cross_line(section), joints: [])
       end
 
       def error(id, reason, **params)
@@ -247,8 +251,10 @@ module Archgen
         J.dedupe(out)
       end
 
-      # La zone coupée d'une branche doit tenir dans un seul segment droit de sa voie.
-      def straight_problem(node, arm)
+      # La zone coupée d'une branche doit tenir dans un seul segment droit de sa voie. Avec bend (carrefour
+      # simple, à feux, giratoire ; AG-132), une zone qui touche un virage est redressée : la branche reste
+      # droite jusqu'à sa coupe et le tronçon suivant part de cette coupe (raccord vérifié par pieces).
+      def straight_problem(node, arm, bend: false)
         road = arm.road
         from, to = arm.sign.positive? ? [arm.s, arm.s + arm.reach] : [arm.s - arm.reach, arm.s]
         return error(node.id, 'arm_too_short', road: road.id) if from < -1e-6 || to > road.length + 1e-6
@@ -261,7 +267,12 @@ module Archgen
         n = [-d[1] / len, d[0] / len]
         straight = [a, b].all? { |st| (st.normal[0] - n[0]).abs < 1e-6 && (st.normal[1] - n[1]).abs < 1e-6 }
         inside = from >= road.chain[k] - 1e-6 && to <= road.chain[k + 1] + 1e-6
-        straight && inside ? nil : error(node.id, 'junction_on_curve', road: road.id)
+        return nil if straight && inside
+        return error(node.id, 'junction_on_curve', road: road.id) unless bend
+
+        road.joints << { at: arm.sign.positive? ? to : from, start: arm.sign.positive?, node: node.id,
+                         origin: arm.origin, dir: arm.dir, reach: arm.reach }
+        nil
       end
 
       # Coupe, coins et géométrie d'un nœud ; Result<{ faces: [[points, matériau]], cuts: }>.
@@ -295,7 +306,7 @@ module Archgen
 
           node.arms.each { |a| a.ext = RoadSignals.extension(a) }
         end
-        straight = node.arms.filter_map { |a| straight_problem(node, a) }.uniq(&:to_h)
+        straight = node.arms.filter_map { |a| straight_problem(node, a, bend: true) }.uniq(&:to_h)
         return Core::Result.fail(straight) unless straight.empty?
 
         built = faces(node, corners)
@@ -337,7 +348,7 @@ module Archgen
         shape = RoadRoundabout.build(node)
         return shape unless shape.ok?
 
-        straight = node.arms.filter_map { |a| straight_problem(node, a) }.uniq(&:to_h)
+        straight = node.arms.filter_map { |a| straight_problem(node, a, bend: true) }.uniq(&:to_h)
         return Core::Result.fail(straight) unless straight.empty?
 
         built = RoadRoundabout.faces(node, shape.value)
@@ -617,13 +628,72 @@ module Archgen
           start = [start, s1].max
         end
         out << [start, road.length] if road.length - start > 1e-6
+        bad = road.joints.reject { |j| out.any? { |from, to| joint_fits?(road, j, from, to) } }
+        return Core::Result.fail(bad.map { |j| error(j[:node], 'junction_on_curve', road: road.id) }.uniq(&:to_h)) unless bad.empty?
+
         Core::Result.ok(out)
       end
 
+      # Raccord d'une branche redressée au tronçon qui part de sa coupe : il tourne d'au plus BEND_MAX_RAD
+      # et chaque bord du ruban avance (aucune face retournée).
+      def joint_fits?(road, joint, from, to)
+        ends = joint[:start] ? (joint[:at] - from).abs < 1e-6 : (joint[:at] - to).abs < 1e-6
+        return false unless ends
+
+        st = piece_stations(road, from, to)
+        st = st.reverse unless joint[:start]
+        return false if st.size < 2
+
+        p = st[0]
+        q = st[1]
+        d = J.sub(q.point, p.point)
+        len = Math.hypot(*d)
+        return false if len < 1e-6 || J.dot(d, joint[:dir]) < len * Math.cos(BEND_MAX_RAD)
+
+        offsets = road.line.flat_map { |(xa, _), (xb, _), _| [road.ax - xa, road.ax - xb] }.minmax
+        offsets.all? do |u|
+          a = [p.point[0] + (p.normal[0] * u), p.point[1] + (p.normal[1] * u)]
+          b = [q.point[0] + (q.normal[0] * u), q.point[1] + (q.normal[1] * u)]
+          J.dot(J.sub(b, a), d) / len >= BEND_MIN_M
+        end
+      end
+
       # Stations d'un tronçon : celles de la voie, plus ses deux bouts interpolés sur un segment droit.
+      # Au bout d'une branche redressée (AG-132), le tronçon part de la coupe de la branche, sur sa droite,
+      # et laisse les stations de la courbe restées en deçà.
       def piece_stations(road, from, to)
         inner = road.stations.each_index.select { |i| road.chain[i] > from + 1e-6 && road.chain[i] < to - 1e-6 }.map { |i| road.stations[i] }
-        [station_at(road, from, after: true)] + inner + [station_at(road, to, after: false)]
+        first = station_at(road, from, after: true)
+        last = station_at(road, to, after: false)
+        head = joint_at(road, from, true)
+        tail = joint_at(road, to, false)
+        if head
+          first = joint_station(head)
+          inner = inner.drop_while { |st| !ahead?(st, head) }
+        end
+        if tail
+          last = joint_station(tail)
+          inner = inner.reverse.drop_while { |st| !ahead?(st, tail) }.reverse
+        end
+        [first] + inner + [last]
+      end
+
+      def joint_at(road, s, start)
+        (road.joints || []).find { |j| j[:start] == start && (j[:at] - s).abs < 1e-6 }
+      end
+
+      # Station de la coupe : sur l'axe redressé, normale à gauche dans le sens de la voie.
+      def joint_station(joint)
+        o = joint[:origin]
+        d = joint[:dir]
+        point = [o[0] + (d[0] * joint[:reach]), o[1] + (d[1] * joint[:reach])]
+        normal = joint[:start] ? [-d[1], d[0]] : [d[1], -d[0]]
+        RoadAxis::Station.new(point: point, normal: normal, vertex: -1)
+      end
+
+      # Une station de la courbe au-delà de la coupe, en avançant le long de la branche.
+      def ahead?(station, joint)
+        J.dot(J.sub(station.point, joint[:origin]), joint[:dir]) > joint[:reach] + BEND_MIN_M
       end
 
       def station_at(road, s, after:)

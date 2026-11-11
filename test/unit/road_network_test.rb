@@ -205,7 +205,6 @@ class RoadNetworkTest < Minitest::Test
     {
       'motorway_at_grade' => [road('a', [[0, 0], [100, 0]], 'autoroute'), road('b', [[50, -50], [50, 50]])],
       'arms_too_close' => [a, road('b', [[50, 0], [95.3, 21.1]])],
-      'junction_on_curve' => [road('a', [[0, 0], [50, 0], [100, 30]]), road('b', [[50, -50], [50, 50]])],
       # AG-101 : à 4 m, le dépassement est absorbé en T ; à 9 m, au-delà de la demi-chaussée + 1 m, le moignon reste trop court.
       'arm_too_short' => [a, road('b', [[50, -50], [50, 9]])],
       'too_many_arms' => [road('a', [[0, 0], [100, 0]]), road('b', [[50, -50], [50, 50]]), road('c', [[10, -40], [90, 40]]),
@@ -215,6 +214,40 @@ class RoadNetworkTest < Minitest::Test
       assert_equal [reason], errors.map { |d| d.params['reason'] }.uniq, reason
       assert(errors.all? { |d| d.code == 'E_ROAD_JUNCTION' && d.path.start_with?('/junctions/') }, reason)
     end
+  end
+
+  # AG-132 : un carrefour qui touche un virage se construit ; la branche est redressée jusqu'à sa coupe
+  # et raccordée à la courbe. Vu de dessus, rien n'est couvert deux fois ; aucune fente entre faces.
+  def test_a_junction_on_a_curve_is_straightened
+    [[[0, 0], [50, 0], [100, 30]], [[0, 0], [46, 0], [90, 40]], [[0, 0], [54, 0], [80, -40]]].each do |pts|
+      roads = [road('a', pts), road('b', [[50, -50], [50, 50]])]
+      plan = plan(network(*roads))
+      assert_equal 1, plan['junctions'].size
+      polys = top_polygons(plan).map { |q| [q, q.map(&:first).minmax, q.map { |p| p[1] }.minmax] }
+      covered = ->(x, y) { polys.count { |q, (ax, bx), (ay, by)| x.between?(ax, bx) && y.between?(ay, by) && in_polygon?(x, y, q) } }
+      twice = []
+      (0..200).each { |i| (0..200).each { |j| twice << [i, j] if covered.call(25.0137 + (i * 0.25), -24.9929 + (j * 0.25)) > 1 } }
+      assert_empty twice, "#{pts} : points couverts deux fois"
+      surf = surface(plan)
+      v = surf['vertices']
+      count = Hash.new(0)
+      surf['faces'].each { |f| f['indices'].each_with_index { |x, k| count[[x, f['indices'][(k + 1) % f['indices'].size]].sort] += 1 } }
+      cracks = count.select { |_, n| n == 1 }.keys.select do |x, y|
+        p = v[x]
+        q = v[y]
+        len = Math.hypot(q[0] - p[0], q[1] - p[1])
+        next false if len < 1e-6
+
+        m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]
+        n = [-(q[1] - p[1]) / len * 0.03, (q[0] - p[0]) / len * 0.03]
+        covered.call(m[0] + n[0], m[1] + n[1]).positive? && covered.call(m[0] - n[0], m[1] - n[1]).positive?
+      end
+      assert_empty cracks, "#{pts} : arêtes libres entre deux faces"
+    end
+  end
+
+  def test_a_sharp_bend_at_the_cut_is_still_refused
+    assert_equal ['junction_on_curve'], reasons(network(road('a', [[0, 0], [52, 0], [60, 40]], radii: [0]), road('b', [[50, -50], [50, 50]])))
   end
 
   # Voie ferrée sur ballast : refusée jusqu'au passage à niveau (AG-050). Le tram : U31.
