@@ -69,6 +69,7 @@
     else if (action === 'site_remove_preview') { onSiteRemovePreview(response); }
     else if (action === 'adapt_site') { onSiteWritten(response, 'Bâtiment adapté au terrain.'); }
     else if (action === 'remove_site') { onSiteWritten(response, 'Assise retirée.'); }
+    else if (action === 'save_recipe' || action === 'delete_recipe') { recipes.receive(action, response); }
   };
 
   window.archgenSetMode = function (mode) { startMode(mode); };
@@ -113,8 +114,45 @@
       fillSelect(select, result.materials.map(function (m) { return { value: m.id, label: m.label }; }));
     });
     fillSite(result.site);
+    recipes.update(result.recipes);
     startMode(result.mode);
   }
+
+  // --- Recettes (AG-148) : le style et les champs changés, sans le nom propre au bâtiment.
+
+  function recipeData() {
+    if (Object.keys(state.localErrors).length > 0) { return null; }
+    var profile = state.profile || state.baseProfile;
+    var overrides = {};
+    Object.keys(state.overrides).forEach(function (path) { if (path !== '/name') { overrides[path] = state.overrides[path]; } });
+    return { profile: profile ? { id: profile.id, revision: profile.revision } : null, overrides: overrides };
+  }
+
+  function applyRecipe(data) {
+    var profile = data.profile && findProfile(data.profile.id);
+    if (!profile) { setStatus('Le style de cette recette n’est plus disponible.', true); return; }
+    chooseProfile(profile);
+    if (state.mode === 'edit' && state.baseProfile && profile.id === state.baseProfile.id) { state.profile = null; }
+    var name = state.overrides['/name'];
+    state.overrides = data.overrides || {};
+    if (name !== undefined) { state.overrides['/name'] = name; }
+    state.localErrors = {};
+    fields.forEach(function (field) {
+      var path = field.dataset.path;
+      if (Object.prototype.hasOwnProperty.call(state.overrides, path)) { writeField(field, state.overrides[path]); }
+    });
+    if (state.overrides['/roof/type']) {
+      el.roof.value = state.overrides['/roof/type'];
+      showRoofFields(el.roof.value);
+    }
+    showShopHeight();
+    showLocalErrors();
+    schedule();
+  }
+
+  var recipes = window.ArchgenRecipes.mount({
+    root: byId('recipes'), prefix: 'b', send: send, current: recipeData, apply: applyRecipe
+  });
 
   // Avec `group`, les options se rangent sous un optgroup par groupe, dans l'ordre reçu.
   function fillSelect(select, options) {

@@ -69,6 +69,17 @@ details.section > summary::before { content: "▸"; display: inline-block; width
 details.section[open] > summary::before { content: "▾"; }
 details.section[open] > summary { border-bottom: 1px solid var(--line); }
 details.section > fieldset { margin: 0; border: 0; padding-top: 0.5rem; }
+/* AG-148 : recettes, réglages enregistrés sous un nom. */
+details.recipes > .hint, .recipes-row, .recipes-status { margin: 0.5rem 0.75rem; }
+.recipes-row { display: flex; flex-wrap: wrap; gap: 0.375rem 0.5rem; align-items: center; }
+.recipes-row > label { min-width: 3.5rem; color: var(--muted); font-size: 0.8125rem; }
+.recipes-row > select, .recipes-row > input { flex: 1 1 12rem; min-width: 0; }
+.recipes-confirm { padding: 0.375rem 0.5rem; border: 1px solid var(--error); border-radius: 2px; }
+.recipes-confirm > span { flex: 1 1 100%; }
+button.danger { color: #ffffff; background: var(--error); border-color: var(--error); }
+.recipes-status { min-height: 1.1em; font-size: 0.8125rem; color: var(--muted); }
+.recipes-status:empty { display: none; }
+.recipes-status.is-bad { color: var(--error); }
 /* Une aide, une erreur ou des boutons posés dans un groupe occupent toute la ligne. */
 fieldset > .hint, fieldset > .error, fieldset > .warning, fieldset > .actions { grid-column: 1 / -1; }
 .preview svg { margin: 0 auto; }

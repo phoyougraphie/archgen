@@ -23,7 +23,8 @@ module Archgen
       attr_reader :session
       attr_accessor :mode, :tool_active
 
-      def initialize(presets:, catalog:, service: nil, session: nil, model_provider: nil)
+      def initialize(presets:, catalog:, service: nil, session: nil, model_provider: nil, recipes: nil)
+        @recipes = recipes
         @presets = presets.fetch('presets')
         @colors = catalog.transform_values { |m| m['srgb'] }
         @service = service
@@ -118,10 +119,25 @@ module Archgen
         @mutations.clear
         Core::Result.ok(
           'version' => VERSION, 'mode' => @mode, 'tool_active' => @tool_active == true, 'writes' => !@service.nil?,
-          'default_radius_m' => DEFAULT_RADIUS_M, 'presets' => @presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name') } },
-          'families' => RoadFamilies.group(@presets.map { |p| p['id'] }),
+          'default_radius_m' => DEFAULT_RADIUS_M, 'presets' => all_presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name') } },
+          'families' => families,
           'trace' => trace_state, 'state' => state
         )
+      end
+
+      # AG-148 : les coupes enregistrées comme recettes dans le panneau de voirie s'ajoutent aux préréglages.
+      MINE = 'mine:'
+      MINE_LABEL = 'Mes coupes'
+
+      def all_presets
+        mine = @recipes ? @recipes.list.map { |r| { 'id' => "#{MINE}#{r['name']}", 'profile' => r['data'].merge('name' => r['name']) } } : []
+        @presets + mine
+      end
+
+      def families
+        groups = RoadFamilies.group(@presets.map { |p| p['id'] })
+        mine = all_presets.drop(@presets.size).map { |p| p['id'] }
+        mine.empty? ? groups : groups + [{ 'label' => MINE_LABEL, 'ids' => mine }]
       end
 
       def state
@@ -134,8 +150,10 @@ module Archgen
         return failure('E_TARGET_STALE', '/trace', 'trace_unfinished') unless @session.finished?
         return failure('E_ROAD_TRACE', '/roads', 'too_many_roads', limit: MAX_ROADS) if @roads.size >= MAX_ROADS
 
-        preset = @presets.find { |p| p['id'] == payload['preset'] }
-        return failure('E_SCHEMA', '/preset', 'enum', allowed: @presets.map { |p| p['id'] }) unless preset
+        presets = all_presets
+        preset = presets.find { |p| p['id'] == payload['preset'] }
+        return failure('E_SCHEMA', '/preset', 'enum', allowed: presets.map { |p| p['id'] }) unless preset
+        return failure('E_ROAD_BAND', '/preset', 'type', expected: 'bands') unless preset['profile']['bands'].is_a?(Array)
 
         axis = payload.fetch('axis', 'center')
         return failure('E_SCHEMA', '/axis', 'enum', allowed: AXES) unless AXES.include?(axis)
@@ -307,7 +325,7 @@ module Archgen
         settings = @edit.settings
         @roads = settings['roads'].map do |entry|
           road = entry['road']
-          preset = @presets.find { |p| p['profile']['bands'] == road['profile']['bands'] }
+          preset = all_presets.find { |p| p['profile']['bands'] == road['profile']['bands'] }
           { 'id' => entry['id'], 'preset' => preset && preset['id'], 'name' => road.dig('profile', 'name'), 'profile' => road['profile'],
             'axis' => road['axis'], 'radii_m' => road['trace']['radii_m'], 'points' => road['trace']['points_m'],
             'settings' => road.reject { |k, _| %w[trace axis profile].include?(k) } }

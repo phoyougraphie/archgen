@@ -34,7 +34,8 @@ module Archgen
           service: Adapters::SketchUp::EnsembleService.default,
           session: Core::TraceSession.new,
           registry: Composition.registry.value,
-          model_provider: -> { ::Sketchup.active_model }
+          model_provider: -> { ::Sketchup.active_model },
+          recipes: Recipes.new('street')
         )
       end
 

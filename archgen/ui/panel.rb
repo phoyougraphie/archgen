@@ -37,7 +37,8 @@ module Archgen
             service: Adapters::SketchUp::BuildingService.default,
             registry: registry.value,
             materials: Composition.materials.fetch('materials'),
-            model_provider: -> { ::Sketchup.active_model }
+            model_provider: -> { ::Sketchup.active_model },
+            recipes: Recipes.new('building')
           )
         end
       end

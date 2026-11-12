@@ -69,6 +69,13 @@ module Archgen
       }.freeze
 
       REASONS = {
+        # Recettes (AG-148)
+        'recipe_name' => 'Donnez à la recette un nom de 1 à %{max} caractères.',
+        'recipe_data' => 'Ces réglages ne peuvent pas être enregistrés : corrigez d’abord la saisie.',
+        'recipe_full' => 'Pas plus de %{max} recettes : effacez-en une avant d’en enregistrer une autre.',
+        'recipe_too_large' => 'Cette recette dépasse %{max} Ko.',
+        'recipe_unknown' => 'Cette recette n’existe plus.',
+        'recipe_unavailable' => 'Les recettes ne sont pas disponibles ici.',
         # Structure
         'required' => 'Cette valeur est obligatoire.',
         'unknown_key' => 'Ce réglage n’existe pas.',

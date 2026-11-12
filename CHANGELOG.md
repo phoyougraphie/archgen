@@ -1,5 +1,12 @@
 # Journal des versions
 
+## 0.37.0
+
+Recettes (AG-148, ADR-71).
+
+- Bloc **Mes recettes** dans les panneaux du bâtiment, de la rue et de la voirie : enregistrez vos réglages sous un nom, appliquez-les plus tard, remplacez-les ou effacez-les (avec confirmation). Elles restent sur ce poste, disponibles dans tous vos modèles.
+- Les coupes de voirie enregistrées apparaissent aussi dans le réseau, sous **Mes coupes**.
+
 ## 0.36.2
 
 Préréglages de voirie par famille (AG-147, ADR-70).

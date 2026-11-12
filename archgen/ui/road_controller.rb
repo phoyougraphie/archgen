@@ -7,12 +7,14 @@ module Archgen
     # tout, calcule la coupe dessinée et l'aperçu ; une écriture exige l'empreinte montrée.
     class RoadController
       PROTOCOL = 1
-      ACTIONS = %w[init preview create clear load_selection regenerate retain_terrain survey_ground].freeze
+      include RecipeActions
+
+      ACTIONS = (%w[init preview create clear load_selection regenerate retain_terrain survey_ground] + RecipeActions::ACTIONS).freeze
       MUTATIONS = %w[create regenerate].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'preview' => %w[profile road], 'create' => %w[profile road road_digest], 'clear' => [],
         'load_selection' => [], 'regenerate' => %w[profile road road_digest], 'retain_terrain' => [], 'survey_ground' => %w[profile road]
-      }.freeze
+      }.merge(RecipeActions::PAYLOAD_KEYS).freeze
       MAX_REQUEST_ID = 64
       START_PRESET = 'ville'
       DEFAULT_RADIUS_M = 20.0
@@ -22,7 +24,8 @@ module Archgen
       attr_accessor :mode, :tool_active
 
       # service, session, model_provider : absents, le panneau ne fait que composer une coupe.
-      def initialize(intake:, bands:, items:, presets:, service: nil, session: nil, model_provider: nil)
+      def initialize(intake:, bands:, items:, presets:, service: nil, session: nil, model_provider: nil, recipes: nil)
+        @recipes = recipes
         @intake = intake
         @bands = bands
         @items = items
@@ -112,6 +115,7 @@ module Archgen
         when 'regenerate' then regenerate(payload)
         when 'retain_terrain' then retain_terrain
         when 'survey_ground' then survey_ground(payload)
+        when *RecipeActions::ACTIONS then recipe_action(action, payload)
         end
       end
 
@@ -123,6 +127,7 @@ module Archgen
           'profile' => @profile, 'default_radius_m' => DEFAULT_RADIUS_M,
           'presets' => @presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name'), 'profile' => p['profile'] } },
           'families' => RoadFamilies.group(@presets.map { |p| p['id'] }),
+          'recipes' => recipe_list,
           'bands' => band_catalogue, 'items' => item_catalogue, 'trace' => trace_state
         )
       end

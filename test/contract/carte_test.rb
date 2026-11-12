@@ -20,7 +20,7 @@ class CarteTest < Minitest::Test
 
   def test_every_ticket_of_tasks_has_a_status
     expected = read_utf8('planning', 'TASKS.md').scan(/\*\*(AG-\d{3})/).flatten
-    assert_equal 147, expected.size
+    assert_equal 148, expected.size
     found = nodes.select { |n| n['label'].match?(/\AAG-\d{3}/) }
     assert_equal expected, found.map { |n| n['label'][/AG-\d{3}/] }
     found.each { |n| refute_nil n['status'], "#{n['label']} sans statut" }

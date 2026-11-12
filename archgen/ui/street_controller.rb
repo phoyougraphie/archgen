@@ -6,13 +6,15 @@ module Archgen
     # vient que de l'outil : le panneau n'envoie que des réglages, jamais de géométrie.
     class StreetController
       PROTOCOL = 1
-      ACTIONS = %w[init preview create clear load_selection edit_preview regenerate retain_terrain site_preview adapt_site remove_site].freeze
+      include RecipeActions
+
+      ACTIONS = (%w[init preview create clear load_selection edit_preview regenerate retain_terrain site_preview adapt_site remove_site] + RecipeActions::ACTIONS).freeze
       MUTATIONS = %w[create regenerate adapt_site remove_site].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'preview' => %w[settings], 'create' => %w[settings ensemble_digest], 'clear' => [],
         'load_selection' => [], 'edit_preview' => %w[settings], 'regenerate' => %w[settings ensemble_digest],
         'retain_terrain' => [], 'site_preview' => %w[site], 'adapt_site' => %w[site site_digest], 'remove_site' => []
-      }.freeze
+      }.merge(RecipeActions::PAYLOAD_KEYS).freeze
       MAX_REQUEST_ID = 64
       # Toits qu'une rangée peut tirer (D-14) ; la croupe reste refusée en rangée.
       VARIETY_ROOFS = %w[flat gable mansard].freeze
@@ -29,7 +31,8 @@ module Archgen
       attr_writer :tool_active
       attr_accessor :mode
 
-      def initialize(service:, session:, registry:, model_provider:)
+      def initialize(service:, session:, registry:, model_provider:, recipes: nil)
+        @recipes = recipes
         @service = service
         @session = session
         @registry = registry
@@ -118,6 +121,7 @@ module Archgen
         when 'edit_preview' then edit_preview(payload)
         when 'retain_terrain' then retain_terrain
         when 'site_preview' then site_preview(payload)
+        when *RecipeActions::ACTIONS then recipe_action(action, payload)
         end
       end
 
@@ -132,7 +136,8 @@ module Archgen
           'tool_active' => @tool_active == true,
           'site_defaults' => Core::SiteIntake::DEFAULTS,
           'site_materials' => Composition.materials.fetch('materials').map { |id, entry| { 'id' => id, 'label' => entry['label'] } },
-          'mode' => @mode
+          'mode' => @mode,
+          'recipes' => recipe_list
         )
       end
 

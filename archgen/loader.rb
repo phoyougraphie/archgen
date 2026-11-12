@@ -112,6 +112,7 @@ module Archgen
       ui/target_tokens
       ui/confirmation_tokens
       ui/messages
+      ui/recipes
       ui/dialog_controller
       ui/street_controller
       ui/parcel_controller

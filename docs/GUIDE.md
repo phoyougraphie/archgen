@@ -14,6 +14,10 @@ L'extension fonctionne hors ligne et n'envoie aucune donnée.
 
 **Activer ou désactiver :** sur le poste de test, le bouton Enabled/Disabled du Gestionnaire agit dans la session, mais n'a pas été conservé au redémarrage suivant. Si ARCHGEN reste désactivé, ouvrez **Extensions → Développeur → Console Ruby**, tapez `Sketchup.extensions['ARCHGEN'].check`, puis quittez SketchUp normalement. Pour le désactiver durablement, utilisez `uncheck` de la même façon.
 
+## Mes recettes
+
+Dans les panneaux du bâtiment, de la rue et de la voirie, le bloc **Mes recettes** garde vos réglages sous un nom. Tapez un nom puis **Enregistrer** (ou Entrée) ; un nom déjà pris propose **Remplacer**. Pour réutiliser une recette, choisissez-la puis **Appliquer** : la saisie est remplacée et l'aperçu recalculé. **Effacer** demande une confirmation. Les recettes restent sur ce poste et servent dans tous vos modèles. Les coupes de voirie enregistrées se retrouvent dans le réseau, sous **Mes coupes**. Une recette de bâtiment ne garde pas le nom du bâtiment.
+
 ## Créer un bâtiment
 
 1. **Extensions → ARCHGEN → Nouveau bâtiment**.

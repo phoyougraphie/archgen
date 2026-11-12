@@ -28,7 +28,8 @@ module Archgen
           intake: Composition.road_profile_intake, bands: Composition.road_bands,
           items: Composition.road_items, presets: Composition.road_presets,
           service: Adapters::SketchUp::RoadService.default, session: Core::TraceSession.new,
-          model_provider: -> { ::Sketchup.active_model }
+          model_provider: -> { ::Sketchup.active_model },
+          recipes: Recipes.new('road')
         )
       end
 

@@ -136,6 +136,7 @@
     if (action === 'clear') { requestPreview(true); }
     if (action === 'retain_terrain') { return groundAnswer(response, false); }
     if (action === 'survey_ground') { return groundAnswer(response, true); }
+    if (action === 'save_recipe' || action === 'delete_recipe') { return recipes.receive(action, response); }
   };
 
   function previewed(response) {
@@ -306,6 +307,7 @@
     result.items.forEach(function (i) { state.items[i.kind] = i; });
     state.presets = result.presets;
     state.families = result.families;
+    recipes.update(result.recipes);
     load(result.profile, matchPreset(result.profile));
     fillAddType();
     renderPresets();
@@ -991,6 +993,17 @@
     el.status.textContent = state.mode === 'edit' ? 'Remplacement en cours…' : 'Écriture de la voie en cours…';
     send(state.mode === 'edit' ? 'regenerate' : 'create', { profile: profile(), road: road(), road_digest: state.digest });
   });
+  // --- Recettes (AG-148) : la coupe composée ; le nom de la recette devient celui de la coupe.
+  function recipeData() {
+    if (state.localError || state.stale) { return null; }
+    return { road_profile_version: 1, bands: JSON.parse(JSON.stringify(state.draft)) };
+  }
+
+  var recipes = window.ArchgenRecipes.mount({
+    root: byId('recipes'), prefix: 'r', send: send, current: recipeData,
+    apply: function (data, name) { data.name = name; load(data, null); }
+  });
+
   el.clear.addEventListener('click', function () { send('clear', {}); });
   el.reload.addEventListener('click', function () { send('load_selection', {}); });
   el.resume.addEventListener('click', function () { window.sketchup.archgen_road('activate_tool'); });

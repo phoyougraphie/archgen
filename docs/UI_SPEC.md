@@ -18,6 +18,16 @@ Entrées numériques affichables avec virgule en français ; parser une représe
 
 Fenêtre séparée, ouverte par « Tracer une rue » : son pont `archgen_street`, ses actions et son geste sont décrits dans [le contrat d'ensemble](ENSEMBLE_CONTRACT.md). Elle ne reçoit jamais de géométrie du tracé par le pont : le tracé vient de l'outil seul.
 
+## Recettes (AG-148, ADR-71)
+
+Les panneaux du bâtiment, de la rue et de la voirie ont un bloc repliable **Mes recettes** : choisir une recette, **Appliquer**, **Effacer** (confirmation dans le bloc : « Oui, effacer » ou « Non ») ; saisir un nom, **Enregistrer** (**Remplacer** si le nom existe). Une recette appliquée remplace la saisie et repasse par l'aperçu : un style retiré depuis est refusé avec son diagnostic. Une saisie invalide ne s'enregistre pas.
+
+- **Bâtiment :** le style et les champs changés, sans le nom du bâtiment.
+- **Rue :** les réglages de la rue ; le tracé en cours décide si la disposition (rue ouverte) ou les accès (rue fermée) s'appliquent. Les réglages propres posés au clic droit n'en font pas partie.
+- **Voirie :** la coupe composée ; le nom de la recette devient celui de la coupe. Ces coupes apparaissent aussi dans la liste « Type de voie » du réseau, sous **Mes coupes**.
+
+Stockage sur ce poste, dans les préférences de SketchUp (section `ARCHGEN`, clés `recipes_building`, `recipes_street`, `recipes_road`) : un JSON `{schema_version:1,recipes:[{name,data}]}` encodé en Base64, car `Sketchup.read_default` évalue la valeur stockée comme du Ruby. Nom de 1 à 60 caractères, sans caractère de contrôle ; 40 recettes et 64 Ko par recette au plus. Une valeur illisible est copiée sous la clé suffixée `_illisible` avant d'être remplacée.
+
 ## Contrat du pont
 
 Un callback `archgen_dispatch` reçoit **une chaîne JSON** : `{v:1,request_id:"...",action:"preview",payload:{...}}`. Réponse : `{v:1,request_id:"...",ok:true,result:{...},diagnostics:[]}`. Si échec, `ok:false,result:null`. Pour les identifiants, utiliser des chaînes ; Ruby valide toutes les entrées indépendamment de JS.
@@ -36,6 +46,7 @@ Une écriture répétée avec le même `request_id` reçoit la réponse mémoris
 | `site_preview` | `{site,target_token,terrain_token?}` | Relève et calcule sans écrire : métriques, lignes lisibles, jeton de confirmation. Sans jeton de terrain, le terrain enregistré par la racine. |
 | `adapt_site` | `{site,target_token,terrain_token?,confirmation_token}` | Écrit l'assise ; même réponse que `regenerate`. Terrain changé depuis l'aperçu : refus. |
 | `site_remove_preview`, `remove_site` | `{target_token}`, `{target_token,confirmation_token}` | Confirmation, puis retrait de l'assise. |
+| `save_recipe`, `delete_recipe` | `{name,data}`, `{name}` | Recettes (AG-148, ADR-71), aussi dans les ponts de la rue et de la voirie : liste à jour `{recipes:[{name,data}]}`. `init` rend aussi `recipes`. N'écrit rien dans le modèle et n'ouvre aucune opération. |
 
 Les confirmations de l'assise sont distinctes de celle du brouillon : relever ne périme pas un aperçu du bâtiment, et réciproquement. Même durée, même usage unique, mêmes invalidations.
 

@@ -7,7 +7,9 @@ module Archgen
     # Possède les jetons de cible et de confirmation ; le service relit toujours la cible.
     class DialogController
       PROTOCOL = 1
-      ACTIONS = %w[init load_selection preview generate regenerate retain_terrain site_status site_preview adapt_site site_remove_preview remove_site].freeze
+      include RecipeActions
+
+      ACTIONS = (%w[init load_selection preview generate regenerate retain_terrain site_status site_preview adapt_site site_remove_preview remove_site] + RecipeActions::ACTIONS).freeze
       MUTATIONS = %w[generate regenerate adapt_site remove_site].freeze
       PAYLOAD_KEYS = {
         'init' => [], 'load_selection' => [], 'preview' => %w[draft target_token],
@@ -15,7 +17,7 @@ module Archgen
         'retain_terrain' => [], 'site_status' => %w[target_token], 'site_preview' => %w[site target_token terrain_token],
         'adapt_site' => %w[site target_token terrain_token confirmation_token],
         'site_remove_preview' => %w[target_token], 'remove_site' => %w[target_token confirmation_token]
-      }.freeze
+      }.merge(RecipeActions::PAYLOAD_KEYS).freeze
       NEEDS_DRAFT = %w[preview generate regenerate].freeze
       NEEDS_SITE = %w[site_preview adapt_site].freeze
       REMOVE_DIGEST = 'retirer-assise'
@@ -26,7 +28,8 @@ module Archgen
       attr_reader :confirmations, :site_confirmations
 
       def initialize(service:, registry:, materials:, model_provider:, tokens: TargetTokens.new, confirmations: ConfirmationTokens.new,
-                     terrain_tokens: TargetTokens.new, site_confirmations: ConfirmationTokens.new, mode: 'new')
+                     terrain_tokens: TargetTokens.new, site_confirmations: ConfirmationTokens.new, mode: 'new', recipes: nil)
+        @recipes = recipes
         @service = service
         @registry = registry
         @materials = materials
@@ -157,6 +160,7 @@ module Archgen
         when 'adapt_site' then adapt_site(payload)
         when 'site_remove_preview' then site_remove_preview(payload)
         when 'remove_site' then remove_site(payload)
+        when *RecipeActions::ACTIONS then recipe_action(action, payload)
         end
       end
 
@@ -177,7 +181,8 @@ module Archgen
             'max_width_m' => Core::Limits::MAX_FOOTPRINT_M, 'max_levels' => Core::Limits::MAX_LEVELS,
             'max_wall_top_m' => Core::Limits::MAX_WALL_TOP_M, 'max_roof_top_m' => Core::Limits::MAX_ROOF_TOP_M
           },
-          'site' => Core::SiteIntake::DEFAULTS
+          'site' => Core::SiteIntake::DEFAULTS,
+          'recipes' => recipe_list
         )
       end
 

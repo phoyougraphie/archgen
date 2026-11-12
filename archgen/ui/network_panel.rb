@@ -26,7 +26,8 @@ module Archgen
         @controller ||= NetworkController.new(
           presets: Composition.road_presets, catalog: Composition.road_catalog,
           service: Adapters::SketchUp::NetworkService.default, session: Core::TraceSession.new,
-          model_provider: -> { ::Sketchup.active_model }
+          model_provider: -> { ::Sketchup.active_model },
+          recipes: Recipes.new('road')
         )
       end
 

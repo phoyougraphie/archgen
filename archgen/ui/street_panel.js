@@ -299,6 +299,7 @@ if (action === 'regenerate') { onRegenerated(response); return; }
 if (action === 'retain_terrain') { onRetained(response); return; }
 if (action === 'site_preview') { onSitePreview(response); return; }
 if (action === 'adapt_site' || action === 'remove_site') { onSiteWritten(response, action); return; }
+    if (action === 'save_recipe' || action === 'delete_recipe') { recipes.receive(action, response); return; }
     showDiagnostics(allDiagnostics(response));
     showResult(response.result, response.ok);
   };
@@ -368,6 +369,7 @@ result.site_materials.forEach(function (material) {
   el.siteMaterial.appendChild(option);
 });
 state.siteDefaults = result.site_defaults;
+    recipes.update(result.recipes);
 fillSite(result.site_defaults);
     el.side.value = result.side;
     el.streetField.hidden = result.side !== 'both';
@@ -643,6 +645,37 @@ function runSite(message, action, payload) {
     updateButtons();
     el.status.textContent = 'Écriture en cours…';
     send(state.mode === 'edit' ? 'regenerate' : 'create', { settings: values, ensemble_digest: state.digest });
+  });
+
+  // --- Recettes (AG-148) : les réglages de la rue, sans ce qui ne vaut que pour l'ensemble chargé.
+  var DETAIL_KEYS = ['glazing', 'chimneys', 'muntins', 'shutters', 'dormers', 'genoise', 'stepped_gable', 'cladding', 'timber_frame', 'classical', 'pilotis', 'structural_grid', 'sun_shades'];
+
+  function recipeData() {
+    var values = settings();
+    if (!values) { return null; }
+    delete values.parcels;
+    if (values.parcel.detached === null) { delete values.parcel.detached; }
+    return values;
+  }
+
+  // Le tracé en cours décide : rue ouverte, la disposition de la recette ; rue fermée, ses accès.
+  function applyRecipe(data) {
+    if (!state.profiles[data.building.profile.id]) { el.status.textContent = 'Le style de cette recette n’est plus disponible.'; return; }
+    data.parcel = data.parcel || {};
+    data.layout = data.layout || { side: el.side.value };
+    data.access = data.access || { count: 'auto' };
+    data.trace = { closed: !el.accessFields.hidden };
+    fill(data);
+    var features = data.building.features || {};
+    DETAIL_KEYS.concat(['shop_front']).forEach(function (key) { if (features[key] !== undefined) { state.touched[key] = true; } });
+    if (data.building.ground_floor) { state.touched.shop = true; }
+    if (data.building.facade && data.building.facade.tint !== undefined) { state.touched.tint = true; }
+    showShopHeight();
+    requestPreview();
+  }
+
+  var recipes = window.ArchgenRecipes.mount({
+    root: byId('recipes'), prefix: 's', send: send, current: recipeData, apply: applyRecipe
   });
 
   el.clear.addEventListener('click', function () { send('clear'); });
