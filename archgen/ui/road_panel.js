@@ -351,9 +351,10 @@
     state.families.forEach(function (f) {
       var row = node('div', { class: 'road-family', role: 'group', 'aria-label': f.label }, el.presets);
       node('span', { class: 'road-family-name' }, row, f.label);
+      var buttons = node('div', { class: 'road-family-buttons' }, row);
       f.ids.forEach(function (id) {
         var p = byPreset[id];
-        var b = node('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': String(state.preset === p.id) }, row, p.name);
+        var b = node('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': String(state.preset === p.id) }, buttons, p.name);
         b.addEventListener('click', function () { load(p.profile, p.id); });
       });
     });
