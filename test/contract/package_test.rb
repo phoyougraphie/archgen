@@ -36,9 +36,12 @@ class PackageTest < Minitest::Test
 
   def test_release_version_and_menu
     assert_match(/\A\d+\.\d+\.\d+(-dev)?\z/, Archgen::VERSION)
-    main = read_utf8('archgen', 'main.rb')
-    assert_equal ['Nouveau bâtiment', 'Modifier le bâtiment sélectionné', 'Tracer une rue', 'Modifier l’ensemble sélectionné', 'Tracer une voie', 'Modifier la voie sélectionnée',
-                  'Tracer un réseau de voies', 'Modifier le réseau sélectionné'], main.scan(/add_item\('([^']+)'\)/).flatten
+    # AG-145 : menu et barre d'outils partagent les commandes d'archgen/ui/commands.rb.
+    assert_includes read_utf8('archgen', 'main.rb'), 'UI::Commands.install'
+    commands = read_utf8('archgen', 'ui', 'commands.rb')
+    ['Nouveau bâtiment', 'Tracer une rue', 'Tracer une voie', 'Tracer un réseau de voies', 'Modifier la sélection'].each { |label| assert_includes commands, "menu: '#{label}'" }
+    assert_equal ['Le bâtiment sélectionné', 'L’ensemble sélectionné', 'La voie sélectionnée', 'Le réseau sélectionné', 'Afficher la barre d’outils ARCHGEN'],
+                 commands.scan(/add_item\('([^']+)'\)/).flatten
     refute_includes central_names(RbzPackager.build).join(' '), 'diagnostic'
   end
 

@@ -1,5 +1,22 @@
 # Journal des versions
 
+## 0.36.0
+
+Accès direct et passe d'interface (AG-145, ADR-70). Bilan : docs/BILAN_INTERFACE.md.
+
+**Ajouts**
+
+- **Barre d'outils ARCHGEN** : nouveau bâtiment, rue, voie, réseau, **Modifier la sélection**, fond de plan, import autour du point, import de fichier, export pour un moteur de jeu.
+- Menu Extensions → ARCHGEN regroupé ; clic droit **Modifier cette voie** et **Modifier ce réseau**.
+- Panneau du bâtiment : réglages fins en **dix sections repliables** par thème ; aperçu plus grand ; Générer toujours visible.
+
+**Corrections**
+
+- Le panneau **Importer une carte** restait sur « Lecture… » et ne répondait plus.
+- Voirie : les libellés des éléments de bande ne se chevauchent plus.
+- Import de carte : Latitude et Longitude sont de nouveau sur une même ligne.
+- Champs d'aile masqués pour un bâtiment rectangulaire ; panneau de réseau aux couleurs communes.
+
 ## 0.35.0
 
 Édifices religieux (AG-144, ADR-69).

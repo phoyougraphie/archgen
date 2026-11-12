@@ -28,6 +28,12 @@ class ContextMenuTest < Minitest::Test
     assert_equal [['Modifier cette rue', :edit_street], ['Exporter pour un moteur de jeu…', :export_game]], entries(Root.new({ 'archgen.ensemble' => { 'ensemble_json' => '{}' } }))
   end
 
+  # AG-145 : une voie ou un réseau se rouvre aussi au clic droit, sans export.
+  def test_a_road_or_network_root_offers_to_edit_it
+    assert_equal [['Modifier cette voie', :edit_road]], entries(Root.new({ 'archgen.road' => { 'road_json' => '{}' } }))
+    assert_equal [['Modifier ce réseau', :edit_network]], entries(Root.new({ 'archgen.network' => { 'network_json' => '{}' } }))
+  end
+
   def test_anything_else_offers_nothing
     assert_empty entries(Root.new({}))
     assert_empty entries(nil)

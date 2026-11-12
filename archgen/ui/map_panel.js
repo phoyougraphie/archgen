@@ -41,7 +41,11 @@
     return out;
   }
 
-  window.archgenMapReceive = function (response) {
+  // AG-145 : Ruby envoie une chaîne JSON, jamais un objet (même pont que le panneau du bâtiment).
+  function parsed(message) { return typeof message === 'string' ? JSON.parse(message) : message; }
+
+  window.archgenMapReceive = function (message) {
+    var response = parsed(message);
     var action = state.pending[response.request_id];
     delete state.pending[response.request_id];
     if (action === 'init' && response.ok) {
@@ -92,7 +96,8 @@
     }
   };
 
-  window.archgenMapDownloaded = function (response) {
+  window.archgenMapDownloaded = function (message) {
+    var response = parsed(message);
     el.result.textContent = '';
     if (response.ok) {
       el.map.value = response.result.path;

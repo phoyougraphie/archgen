@@ -20,7 +20,11 @@ module Archgen
         item = selection.first
         out << ['Modifier ce bâtiment', :edit_building] if root_with?(item, BUILDING, 'config_json')
         out << ['Modifier cette rue', :edit_street] if root_with?(item, ENSEMBLE, 'ensemble_json')
-        out << ['Exporter pour un moteur de jeu…', :export_game] if out.any?
+        export = out.any?
+        # AG-145 : voies et réseaux se rouvrent aussi au clic droit ; ils ne s'exportent pas.
+        out << ['Modifier cette voie', :edit_road] if root_with?(item, 'archgen.road', 'road_json')
+        out << ['Modifier ce réseau', :edit_network] if root_with?(item, 'archgen.network', 'network_json')
+        out << ['Exporter pour un moteur de jeu…', :export_game] if export
         out
       end
 
@@ -50,6 +54,8 @@ module Archgen
         when :edit_building then Panel.show('edit')
         when :edit_street then StreetPanel.show('edit')
         when :customize_parcel then ParcelPanel.show
+        when :edit_road then RoadPanel.show('edit')
+        when :edit_network then NetworkPanel.show('edit')
         when :export_game then ExportCommand.run
         end
       end

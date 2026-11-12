@@ -44,6 +44,16 @@ class PanelAssetsTest < Minitest::Test
     end
   end
 
+  # AG-145 : Ruby envoie toujours une chaîne JSON. Le panneau de carte la lisait comme un objet et restait sur « Lecture… ».
+  def test_every_receiver_parses_the_json_string
+    Dir.glob(repo_path(*UI_DIR, '*.js')).each do |path|
+      source = File.read(path, encoding: 'UTF-8')
+      source.scan(/window\.archgen\w*(?:Receive|Downloaded|Notify|State) = function \((\w+)\) \{\n(.*)\n/).each do |arg, first|
+        assert_match(/JSON\.parse\(#{arg}\)|parsed\(#{arg}\)/, first, "#{File.basename(path)} : #{first.strip}")
+      end
+    end
+  end
+
   def test_every_field_has_a_label_and_a_known_path
     html = read_utf8(*UI_DIR, 'panel.html')
     ids = html.scan(/<(?:input|select)[^>]*\bid="([^"]+)"/).flatten

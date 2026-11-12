@@ -7,7 +7,7 @@ Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le 
 Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
 
 - État courant — Où en est le développement, à lire en premier
-  - Prochaine action — 0.35.0 : chapelles, églises et cathédrale (ADR-69). Suite possible : rosace, arcs-boutants, tour de croisée, bas-côtés ; tourelle octogonale, perron ; étagement des isolés ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECISIONS.md)
+  - Prochaine action — 0.36.0 : barre d'outils et passe d'interface (ADR-70, docs/BILAN_INTERFACE.md). Suite possible : sections repliables au panneau de rue, préréglages de voirie par famille, consigne dans le plan du réseau ; rosace, arcs-boutants, tour de croisée ; étagement des isolés ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. Test de sécurité rouge hérité (écritures de fichiers d'export et de fond de plan hors liste). (→ docs/DECISIONS.md)
   - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
   - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
   - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
@@ -158,6 +158,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - 2026-11-11 AG-143 — Détails en booléens pour que les palettes les tirent. Tourelle de 2 m centrée sur l'angle : assez petite pour laisser la première baie d'une villa de 9 m.
     - 2026-11-11 H45 — L'essai réel a trouvé deux défauts que les tests ne voyaient pas : une palette tirait des bandeaux qui refusaient le bow-window demandé (le bandeau s'interrompt maintenant) ; la dalle du bow-window de rez-de-chaussée passait sous le sol.
     - 2026-11-11 AG-144 — Transept composé comme les ailes, avec des quarts de tour (matrices d'instance tournées ligne par ligne). Une baie entièrement derrière une tour est cachée plutôt que refusée. Le format garde ses limites (porte 4 m, mur 1 m) : les profils s'y plient.
+    - 2026-11-12 AG-145 — Le panneau d'import de carte (AG-129) n'avait jamais marché dans SketchUp : il lisait la chaîne JSON comme un objet, ce qu'un banc de navigateur passant un objet ne pouvait montrer (même piège qu'en AG-038). Agrandir un SVG en CSS grossit aussi ses textes : agrandir le cadre de dessin. Set-Content en PowerShell 5.1 ajoute un BOM et relit en ANSI : éditer avec sed.
 - Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
   - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
   - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
@@ -331,6 +332,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-142 Maisons de La Baule, RBZ 0.33.0 — villa r2, villa à quatre pans, maison de ville ; parcelle étroite en jardin. U100 vert. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
     - [fait] AG-143 Détails de La Baule, RBZ 0.34.0 — bandeaux, lucarnes passantes, tourelle, balconnets, bow-window de rez-de-chaussée ; tirés par les palettes. U101 vert. (→ docs/DECISIONS.md)
     - [fait] AG-144 Édifices religieux, RBZ 0.35.0 — clochers, abside, transept ; chapelle, églises romane et gothique, cathédrale. U102 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-145 Accès direct et passe d'interface, RBZ 0.36.0 — barre d'outils ARCHGEN (9 boutons), Modifier la sélection, réglages fins en 10 sections, panneau de carte réparé. U103 vert, H47. (→ docs/BILAN_INTERFACE.md)
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.

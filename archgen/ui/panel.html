@@ -34,8 +34,8 @@
       <div class="field"><label for="f-width">Largeur (m)</label><input id="f-width" data-path="/footprint/width_m" data-kind="number" inputmode="decimal"></div>
       <div class="field"><label for="f-depth">Profondeur (m)</label><input id="f-depth" data-path="/footprint/depth_m" data-kind="number" inputmode="decimal"></div>
       <div class="field"><label for="f-wing">Forme</label><select id="f-wing" data-path="/wing" data-kind="wing"><option value="none">Rectangle</option><option value="left">En L, aile à gauche</option><option value="right">En L, aile à droite</option><option value="center">En T</option><option value="both">En U</option></select></div>
-      <div class="field"><label for="f-wing-width">Largeur de l’aile (m)</label><input id="f-wing-width" inputmode="decimal" placeholder="4"></div>
-      <div class="field"><label for="f-wing-depth">Profondeur de l’aile (m)</label><input id="f-wing-depth" inputmode="decimal" placeholder="5"></div>
+      <div class="field" id="f-wing-width-field"><label for="f-wing-width">Largeur de l’aile (m)</label><input id="f-wing-width" inputmode="decimal" placeholder="4"></div>
+      <div class="field" id="f-wing-depth-field"><label for="f-wing-depth">Profondeur de l’aile (m)</label><input id="f-wing-depth" inputmode="decimal" placeholder="5"></div>
       <div class="field"><label for="f-count">Niveaux, RDC inclus</label><input id="f-count" data-path="/levels/count" data-kind="int" inputmode="numeric"></div>
       <div class="field"><label for="f-height">Hauteur courante (m)</label><input id="f-height" data-path="/levels/height_m" data-kind="number" inputmode="decimal"></div>
     </fieldset>
@@ -46,10 +46,10 @@
       <div class="field"><label for="f-side">Travées latérales</label><input id="f-side" data-path="/facade/side_bays" data-kind="int" inputmode="numeric"></div>
     </fieldset>
 
-    <details id="advanced">
-      <summary>Avancé</summary>
+    <h2 class="section-title">Réglages fins</h2>
+    <details id="advanced" class="section">
+      <summary>Baies et entrée</summary>
       <fieldset>
-        <legend>Baies et entrée</legend>
         <div class="field"><label for="f-wwidth">Largeur de fenêtre (m)</label><input id="f-wwidth" data-path="/facade/window_width_m" data-kind="number" inputmode="decimal"></div>
         <div class="field"><label for="f-wheight">Hauteur de fenêtre (m)</label><input id="f-wheight" data-path="/facade/window_height_m" data-kind="number" inputmode="decimal"></div>
         <div class="field"><label for="f-sill">Allège (m)</label><input id="f-sill" data-path="/facade/sill_m" data-kind="number" inputmode="decimal"></div>
@@ -57,80 +57,112 @@
         <div class="field"><label for="f-entry">Travée d’entrée, à partir de 0</label><input id="f-entry" data-path="/facade/entry_bay" data-kind="int" inputmode="numeric"></div>
         <div class="field"><label for="f-dwidth">Largeur de porte (m)</label><input id="f-dwidth" data-path="/facade/door_width_m" data-kind="number" inputmode="decimal"></div>
         <div class="field"><label for="f-dheight">Hauteur de porte (m)</label><input id="f-dheight" data-path="/facade/door_height_m" data-kind="number" inputmode="decimal"></div>
-        <div class="field"><label for="f-tint">Teintes</label><select id="f-tint" data-path="/facade/tint" data-kind="tint"><option value="0">Toutes pareilles</option><option value="1">Légères</option><option value="2">Marquées</option><option value="3">Fortes</option></select></div>
+        <div class="field"><label for="f-arch">Arcs des baies</label><select id="f-arch" data-path="/facade/arch" data-kind="arch"><option value="flat">Baies droites</option><option value="round">Plein cintre</option><option value="pointed">Arc brisé</option></select></div>
+        <div class="field"><label for="f-ribbon">Baies des étages</label><select id="f-ribbon" data-path="/facade/ribbon" data-kind="ribbon"><option value="bays">Par travée</option><option value="band">En bandeau</option><option value="curtain">Mur-rideau</option></select></div>
         <div class="field"><label for="f-jitter">Variation des baies (m)</label><input id="f-jitter" data-path="/facade/jitter_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-tint">Teintes</label><select id="f-tint" data-path="/facade/tint" data-kind="tint"><option value="0">Toutes pareilles</option><option value="1">Légères</option><option value="2">Marquées</option><option value="3">Fortes</option></select></div>
       </fieldset>
+    </details>
+    <details id="adv-levels" class="section">
+      <summary>Niveaux et structure</summary>
       <fieldset>
-        <legend>Niveaux et structure</legend>
         <div class="field wide"><label for="f-heights">Hauteurs par niveau (m), séparées par des points-virgules</label><input id="f-heights" data-path="/levels/heights_m" data-kind="list" inputmode="decimal"></div>
         <div class="field"><label for="f-wall">Épaisseur de mur (m)</label><input id="f-wall" data-path="/structure/wall_m" data-kind="number" inputmode="decimal"></div>
-        <div class="field"><label for="f-balcony-rail">Garde-corps des balcons</label><select id="f-balcony-rail" data-path="/features/balcony_rail" data-kind="rail"><option value="bars">Barreaux</option><option value="solid">Plein</option><option value="glass">Vitré</option><option value="none">Aucun</option></select></div>
-        <div class="field"><label for="f-attic">Retrait de l’attique (m, 0 : aucun)</label><input id="f-attic" data-path="/levels/attic_setback_m" data-kind="number" inputmode="decimal" placeholder="0"></div>
-        <div class="field"><label for="f-balcony-levels">Étages des balcons</label><select id="f-balcony-levels" data-path="/features/balcony_levels" data-kind="balconies"><option value="noble">2e et 5e niveaux</option><option value="all">Tous les étages</option></select></div>
-        <div class="field"><label for="f-balcony-depth">Profondeur des balcons (m)</label><input id="f-balcony-depth" data-path="/features/balcony_depth_m" data-kind="number" inputmode="decimal" placeholder="0,9"></div>
-        <div class="field check"><input type="checkbox" id="f-ground-slab" data-path="/structure/ground_slab" data-kind="check"><label for="f-ground-slab">Dalle de rez-de-chaussée et seuils</label></div>
         <div class="field"><label for="f-slab">Épaisseur de dalle (m)</label><input id="f-slab" data-path="/structure/slab_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field"><label for="f-attic">Retrait de l’attique (m, 0 : aucun)</label><input id="f-attic" data-path="/levels/attic_setback_m" data-kind="number" inputmode="decimal" placeholder="0"></div>
+        <div class="field check"><input type="checkbox" id="f-ground-slab" data-path="/structure/ground_slab" data-kind="check"><label for="f-ground-slab">Dalle de rez-de-chaussée et seuils</label></div>
       </fieldset>
+    </details>
+    <details id="adv-roof" class="section">
+      <summary>Toiture</summary>
       <fieldset>
-        <legend>Toiture</legend>
         <div class="field"><label for="f-roof">Type de toit</label><select id="f-roof"><option value="flat">Plat</option><option value="gable">Deux pans</option><option value="hip">Croupe</option><option value="mansard">Mansarde</option><option value="sawtooth">Sheds</option></select></div>
         <div class="field" data-roof="ridge"><label for="f-ridge">Faîtage</label><select id="f-ridge" data-path="/roof/ridge" data-kind="ridge"><option value="parallel">Parallèle à la rue</option><option value="perpendicular">Perpendiculaire (pignon sur rue)</option></select></div>
         <div class="field" data-roof="overhang_m"><label for="f-overhang">Débord (m)</label><input id="f-overhang" data-path="/roof/overhang_m" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="pitch_deg"><label for="f-pitch">Pente (°)</label><input id="f-pitch" data-path="/roof/pitch_deg" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="lower_pitch_deg"><label for="f-lower">Pente basse (°)</label><input id="f-lower" data-path="/roof/lower_pitch_deg" data-kind="number" inputmode="decimal"></div>
         <div class="field" data-roof="inset_m"><label for="f-inset">Retrait du brisis (m)</label><input id="f-inset" data-path="/roof/inset_m" data-kind="number" inputmode="decimal"></div>
+        <div class="field check"><input type="checkbox" id="f-chimneys" data-path="/features/chimneys" data-kind="check"><label for="f-chimneys">Cheminées</label></div>
+        <div class="field check"><input type="checkbox" id="f-dormers" data-path="/features/dormers" data-kind="check"><label for="f-dormers">Lucarnes</label></div>
+        <div class="field check"><input type="checkbox" id="f-wall-dormers" data-path="/features/wall_dormers" data-kind="check"><label for="f-wall-dormers">Lucarnes passantes</label></div>
+        <div class="field check"><input type="checkbox" id="f-genoise" data-path="/features/genoise" data-kind="check"><label for="f-genoise">Génoise (deux pans, croupe)</label></div>
+        <div class="field check"><input type="checkbox" id="f-stepped" data-path="/features/stepped_gable" data-kind="check"><label for="f-stepped">Pignon à redents (pignon sur rue)</label></div>
       </fieldset>
+    </details>
+    <details id="adv-materials" class="section">
+      <summary>Matériaux</summary>
       <fieldset>
-        <legend>Matériaux et détails</legend>
         <div class="field"><label for="f-mwall">Murs</label><select id="f-mwall" data-path="/materials/wall" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field"><label for="f-mroof">Toit</label><select id="f-mroof" data-path="/materials/roof" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field"><label for="f-mframes">Cadres</label><select id="f-mframes" data-path="/materials/frames" data-kind="select" data-catalogue="materials"></select></div>
-        <div class="field check"><input type="checkbox" id="f-cornice" data-path="/features/cornice" data-kind="check"><label for="f-cornice">Corniche</label></div>
-        <div class="field check"><input type="checkbox" id="f-balcony" data-path="/features/balcony" data-kind="check"><label for="f-balcony">Balcon</label></div>
-        <div class="field check"><input type="checkbox" id="f-balcony-wrap" data-path="/features/balcony_wrap" data-kind="check"><label for="f-balcony-wrap">Balcons qui tournent l’angle</label></div>
-        <div class="field"><label for="f-bow">Bow-window</label><select id="f-bow" data-path="/features/bow_window" data-kind="bow"><option value="none">Aucun</option><option value="center">Travée centrale</option><option value="ends">Travées des bouts</option><option value="ground">Rez-de-chaussée</option></select></div>
-        <div class="field check"><input type="checkbox" id="f-string-courses" data-path="/features/string_courses" data-kind="check"><label for="f-string-courses">Bandeaux aux planchers</label></div>
-        <div class="field check"><input type="checkbox" id="f-wall-dormers" data-path="/features/wall_dormers" data-kind="check"><label for="f-wall-dormers">Lucarnes passantes</label></div>
-        <div class="field check"><input type="checkbox" id="f-turret" data-path="/features/turret" data-kind="check"><label for="f-turret">Tourelle d’angle</label></div>
-        <div class="field check"><input type="checkbox" id="f-balconettes" data-path="/features/balconettes" data-kind="check"><label for="f-balconettes">Balconnets en fer forgé</label></div>
-        <div class="field"><label for="f-bell-tower">Clocher</label><select id="f-bell-tower" data-path="/features/bell_tower" data-kind="bell"><option value="none">Aucun</option><option value="porch">Tour-porche</option><option value="corner">Tour d’angle</option><option value="twin">Deux tours de façade</option></select></div>
-        <div class="field check"><input type="checkbox" id="f-apse" data-path="/features/apse" data-kind="check"><label for="f-apse">Abside au chevet</label></div>
-        <div class="field check"><input type="checkbox" id="f-transept" data-path="/features/transept" data-kind="check"><label for="f-transept">Transept</label></div>
-        <div class="field check"><input type="checkbox" id="f-surrounds" data-path="/features/surrounds" data-kind="check"><label for="f-surrounds">Encadrements</label></div>
       </fieldset>
+    </details>
+    <details id="adv-decor" class="section">
+      <summary>Décor de façade</summary>
       <fieldset>
-        <legend>Détails (LOD 1)</legend>
-        <div class="field check"><input type="checkbox" id="f-glazing" data-path="/features/glazing" data-kind="check"><label for="f-glazing">Vitrage</label></div>
-        <div class="field check"><input type="checkbox" id="f-chimneys" data-path="/features/chimneys" data-kind="check"><label for="f-chimneys">Cheminées</label></div>
-        <div class="field check"><input type="checkbox" id="f-shop" data-path="/ground_floor" data-kind="ground"><label for="f-shop">Commerce au rez-de-chaussée</label></div>
-        <div class="field check"><input type="checkbox" id="f-muntins" data-path="/features/muntins" data-kind="check"><label for="f-muntins">Petits bois (avec le vitrage)</label></div>
-        <div class="field check"><input type="checkbox" id="f-dormers" data-path="/features/dormers" data-kind="check"><label for="f-dormers">Lucarnes</label></div>
-        <div class="field check"><input type="checkbox" id="f-stepped" data-path="/features/stepped_gable" data-kind="check"><label for="f-stepped">Pignon à redents (pignon sur rue)</label></div>
-        <div class="field check"><input type="checkbox" id="f-cladding" data-path="/features/cladding" data-kind="check"><label for="f-cladding">Bardage bois (dernier niveau)</label></div>
-        <div class="field" id="f-cladding-material-field" hidden><label for="f-mcladding">Bardage, matériau</label><select id="f-mcladding" data-path="/materials/cladding" data-kind="select" data-catalogue="materials"></select></div>
-        <div class="field"><label for="f-arch">Arcs des baies</label><select id="f-arch" data-path="/facade/arch" data-kind="arch"><option value="flat">Baies droites</option><option value="round">Plein cintre</option><option value="pointed">Arc brisé</option></select></div>
+        <p class="hint">Les détails n’apparaissent qu’au LOD 1.</p>
+        <div class="field check"><input type="checkbox" id="f-cornice" data-path="/features/cornice" data-kind="check"><label for="f-cornice">Corniche</label></div>
+        <div class="field check"><input type="checkbox" id="f-string-courses" data-path="/features/string_courses" data-kind="check"><label for="f-string-courses">Bandeaux aux planchers</label></div>
+        <div class="field check"><input type="checkbox" id="f-surrounds" data-path="/features/surrounds" data-kind="check"><label for="f-surrounds">Encadrements</label></div>
         <div class="field check"><input type="checkbox" id="f-classical" data-path="/features/classical" data-kind="check"><label for="f-classical">Ornements classiques (pilastres, fronton)</label></div>
-        <div class="field"><label for="f-ribbon">Baies des étages</label><select id="f-ribbon" data-path="/facade/ribbon" data-kind="ribbon"><option value="bays">Par travée</option><option value="band">En bandeau</option><option value="curtain">Mur-rideau</option></select></div>
-        <div class="field check"><input type="checkbox" id="f-pilotis" data-path="/features/pilotis" data-kind="check"><label for="f-pilotis">Pilotis</label></div>
-        <div class="field check"><input type="checkbox" id="f-structural_grid" data-path="/features/structural_grid" data-kind="check"><label for="f-structural_grid">Trame structurelle</label></div>
-        <div class="field check"><input type="checkbox" id="f-sun_shades" data-path="/features/sun_shades" data-kind="check"><label for="f-sun_shades">Brise-soleil</label></div>
-        <div class="field check"><input type="checkbox" id="f-timber" data-path="/features/timber_frame" data-kind="check"><label for="f-timber">Pan de bois (étages)</label></div>
-        <div class="field" id="f-timber-material-field" hidden><label for="f-mtimber">Pan de bois, matériau</label><select id="f-mtimber" data-path="/materials/timber" data-kind="select" data-catalogue="materials"></select></div>
-        <div class="field check"><input type="checkbox" id="f-genoise" data-path="/features/genoise" data-kind="check"><label for="f-genoise">Génoise (deux pans, croupe)</label></div>
+        <div class="field check"><input type="checkbox" id="f-glazing" data-path="/features/glazing" data-kind="check"><label for="f-glazing">Vitrage</label></div>
+        <div class="field check"><input type="checkbox" id="f-muntins" data-path="/features/muntins" data-kind="check"><label for="f-muntins">Petits bois (avec le vitrage)</label></div>
+        <div class="field check"><input type="checkbox" id="f-balconettes" data-path="/features/balconettes" data-kind="check"><label for="f-balconettes">Balconnets en fer forgé</label></div>
         <div class="field check"><input type="checkbox" id="f-shutters" data-path="/features/shutters" data-kind="check"><label for="f-shutters">Volets</label></div>
         <div class="field" id="f-shutters-material-field" hidden><label for="f-mshutters">Volets, matériau</label><select id="f-mshutters" data-path="/materials/shutters" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field check"><input type="checkbox" id="f-cladding" data-path="/features/cladding" data-kind="check"><label for="f-cladding">Bardage bois (dernier niveau)</label></div>
+        <div class="field" id="f-cladding-material-field" hidden><label for="f-mcladding">Bardage, matériau</label><select id="f-mcladding" data-path="/materials/cladding" data-kind="select" data-catalogue="materials"></select></div>
+        <div class="field check"><input type="checkbox" id="f-timber" data-path="/features/timber_frame" data-kind="check"><label for="f-timber">Pan de bois (étages)</label></div>
+        <div class="field" id="f-timber-material-field" hidden><label for="f-mtimber">Pan de bois, matériau</label><select id="f-mtimber" data-path="/materials/timber" data-kind="select" data-catalogue="materials"></select></div>
+      </fieldset>
+    </details>
+    <details id="adv-balconies" class="section">
+      <summary>Balcons et saillies</summary>
+      <fieldset>
+        <div class="field"><label for="f-balcony-levels">Étages des balcons</label><select id="f-balcony-levels" data-path="/features/balcony_levels" data-kind="balconies"><option value="noble">2e et 5e niveaux</option><option value="all">Tous les étages</option></select></div>
+        <div class="field"><label for="f-balcony-depth">Profondeur des balcons (m)</label><input id="f-balcony-depth" data-path="/features/balcony_depth_m" data-kind="number" inputmode="decimal" placeholder="0,9"></div>
+        <div class="field"><label for="f-balcony-rail">Garde-corps des balcons</label><select id="f-balcony-rail" data-path="/features/balcony_rail" data-kind="rail"><option value="bars">Barreaux</option><option value="solid">Plein</option><option value="glass">Vitré</option><option value="none">Aucun</option></select></div>
+        <div class="field"><label for="f-bow">Bow-window</label><select id="f-bow" data-path="/features/bow_window" data-kind="bow"><option value="none">Aucun</option><option value="center">Travée centrale</option><option value="ends">Travées des bouts</option><option value="ground">Rez-de-chaussée</option></select></div>
+        <div class="field check"><input type="checkbox" id="f-balcony" data-path="/features/balcony" data-kind="check"><label for="f-balcony">Balcon</label></div>
+        <div class="field check"><input type="checkbox" id="f-balcony-wrap" data-path="/features/balcony_wrap" data-kind="check"><label for="f-balcony-wrap">Balcons qui tournent l’angle</label></div>
+        <div class="field check"><input type="checkbox" id="f-turret" data-path="/features/turret" data-kind="check"><label for="f-turret">Tourelle d’angle</label></div>
+      </fieldset>
+    </details>
+    <details id="adv-ground" class="section">
+      <summary>Rez-de-chaussée</summary>
+      <fieldset>
+        <div class="field check"><input type="checkbox" id="f-shop" data-path="/ground_floor" data-kind="ground"><label for="f-shop">Commerce au rez-de-chaussée</label></div>
+        <div class="field check"><input type="checkbox" id="f-pilotis" data-path="/features/pilotis" data-kind="check"><label for="f-pilotis">Pilotis</label></div>
         <div class="field" id="f-shopfront-field" hidden><label for="f-shopfront">Devanture</label><select id="f-shopfront" data-path="/features/shop_front" data-kind="shopfront"><option value="none">Rien</option><option value="awning">Store banne</option><option value="pergola">Pergola</option></select></div>
         <div class="field" id="f-awning-material-field" hidden><label for="f-mawning">Toile du store</label><select id="f-mawning" data-path="/materials/awning" data-kind="select" data-catalogue="materials"></select></div>
         <div class="field" id="f-shop-height-field" hidden><label for="f-shop-height">Hauteur du commerce (m)</label><input id="f-shop-height" data-path="/shop/height_m" data-kind="number" inputmode="decimal"></div>
       </fieldset>
+    </details>
+    <details id="adv-modern" class="section">
+      <summary>Architecture moderne</summary>
       <fieldset>
-        <legend>Génération</legend>
+        <div class="field check"><input type="checkbox" id="f-structural_grid" data-path="/features/structural_grid" data-kind="check"><label for="f-structural_grid">Trame structurelle</label></div>
+        <div class="field check"><input type="checkbox" id="f-sun_shades" data-path="/features/sun_shades" data-kind="check"><label for="f-sun_shades">Brise-soleil</label></div>
+      </fieldset>
+    </details>
+    <details id="adv-religious" class="section">
+      <summary>Édifices religieux</summary>
+      <fieldset>
+        <p class="hint">Pour un bâtiment seul : le transept est refusé dans une rue.</p>
+        <div class="field"><label for="f-bell-tower">Clocher</label><select id="f-bell-tower" data-path="/features/bell_tower" data-kind="bell"><option value="none">Aucun</option><option value="porch">Tour-porche</option><option value="corner">Tour d’angle</option><option value="twin">Deux tours de façade</option></select></div>
+        <div class="field check"><input type="checkbox" id="f-apse" data-path="/features/apse" data-kind="check"><label for="f-apse">Abside au chevet</label></div>
+        <div class="field check"><input type="checkbox" id="f-transept" data-path="/features/transept" data-kind="check"><label for="f-transept">Transept</label></div>
+      </fieldset>
+    </details>
+    <details id="adv-generation" class="section">
+      <summary>Génération</summary>
+      <fieldset>
         <div class="field"><label for="f-seed">Graine</label><input id="f-seed" data-path="/seed" data-kind="int" inputmode="numeric"></div>
         <div class="field"><label for="f-fidelity">Fidélité</label><select id="f-fidelity" data-path="/fidelity" data-kind="select"><option value="strict">Stricte</option><option value="plausible">Plausible</option><option value="creative">Créative</option></select></div>
       </fieldset>
     </details>
 
-    <details id="terrain" hidden>
+    <details id="terrain" class="section" hidden>
       <summary>Terrain</summary>
       <fieldset>
         <legend>Adapter au terrain</legend>

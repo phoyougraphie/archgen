@@ -43,7 +43,7 @@ module ArchgenH09Probe
   end
 
   def choose(id, value)
-    js("document.getElementById('advanced').open = true; var s = document.getElementById('#{id}'); s.value = #{value.to_json}; s.dispatchEvent(new Event('change', {bubbles: true}));")
+    js("document.querySelectorAll('details.section').forEach(function (d) { d.open = true; }); var s = document.getElementById('#{id}'); s.value = #{value.to_json}; s.dispatchEvent(new Event('change', {bubbles: true}));")
   end
 
   def choose_profile(label)

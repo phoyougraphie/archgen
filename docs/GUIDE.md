@@ -8,7 +8,7 @@ ARCHGEN génère dans SketchUp un bâtiment paramétrique, ou toute une rue ou u
 
 1. Ouvrez **Extensions → Extension Manager**, puis **Install Extension**.
 2. Choisissez `archgen-0.3.0.rbz` et acceptez l'installation. L'extension n'est pas signée : si vos réglages de chargement n'autorisent que les extensions identifiées, SketchUp refuse de l'activer. Changez ce réglage dans le Gestionnaire d'extensions seulement si vous faites confiance à ce fichier.
-3. Le menu **Extensions → ARCHGEN** apparaît.
+3. Le menu **Extensions → ARCHGEN** et la **barre d'outils ARCHGEN** apparaissent. Ses boutons, de gauche à droite : nouveau bâtiment, tracer une rue, tracer une voie, tracer un réseau ; **Modifier la sélection** (rouvre le bon panneau pour le bâtiment, la rue, la voie ou le réseau sélectionné) ; fond de plan, import autour du point géolocalisé, import d'un fichier de carte ; export pour un moteur de jeu. Si la barre a été fermée : **Extensions → ARCHGEN → Afficher la barre d'outils ARCHGEN**. Les entrées « Modifier … » par genre sont dans le sous-menu **Modifier…**.
 
 L'extension fonctionne hors ligne et n'envoie aucune donnée.
 

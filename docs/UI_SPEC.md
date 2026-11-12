@@ -1,6 +1,6 @@
 # Panneau ARCHGEN
 
-Menu **Extensions → ARCHGEN** : « Nouveau bâtiment », « Modifier le bâtiment sélectionné ». Panneau modeless, local, en français au départ (messages identifiés, traduisibles). Création au repère du modèle ; l'utilisateur déplace ensuite le composant avec SketchUp. Aucun outil de placement dédié en V0.1. Exemples de messages : « Cette fenêtre ne tient pas dans la travée. Réduisez sa largeur ou le nombre de travées. » ; « Le bâtiment sélectionné a changé. Rechargez la sélection. »
+Menu **Extensions → ARCHGEN** et barre d'outils ARCHGEN, nourris de la même liste de commandes (`ui/commands.rb`, ADR-70) : « Nouveau bâtiment », « Modifier la sélection » (et sous-menu « Modifier… » par genre). Réglages fins du panneau en sections repliables par thème ([bilan](BILAN_INTERFACE.md)). Panneau modeless, local, en français au départ (messages identifiés, traduisibles). Création au repère du modèle ; l'utilisateur déplace ensuite le composant avec SketchUp. Aucun outil de placement dédié en V0.1. Exemples de messages : « Cette fenêtre ne tient pas dans la travée. Réduisez sa largeur ou le nombre de travées. » ; « Le bâtiment sélectionné a changé. Rechargez la sélection. »
 
 | Zone | Contenu et comportement |
 |---|---|

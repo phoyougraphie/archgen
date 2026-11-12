@@ -7,8 +7,8 @@
   var DEBOUNCE_MS = 250;
   var SVG = 'http://www.w3.org/2000/svg';
   var LOCAL_ERROR = 'Saisissez un nombre valide.';
-  var CHART_WIDTH = 420;
-  var CHART_HEIGHT = 240;
+  var CHART_WIDTH = 520;
+  var CHART_HEIGHT = 320;
   var CHART_PAD = 22;
 
   var state = {
@@ -269,7 +269,7 @@
 
   function onFieldInput(event) {
     var field = event.target;
-    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding' || field.id === 'f-timber' || field.id === 'f-shopfront') { showShopHeight(); }
+    if (field.id === 'f-shop' || field.id === 'f-shutters' || field.id === 'f-cladding' || field.id === 'f-timber' || field.id === 'f-shopfront' || field.id === 'f-wing') { showShopHeight(); }
     var value = readField(field);
     var path = field.dataset.path;
     if (value === null) {
@@ -798,6 +798,10 @@
     document.getElementById('f-shutters-material-field').hidden = !document.getElementById('f-shutters').checked;
     document.getElementById('f-cladding-material-field').hidden = !document.getElementById('f-cladding').checked;
     document.getElementById('f-timber-material-field').hidden = !document.getElementById('f-timber').checked;
+    // AG-145 : les dimensions de l'aile ne s'affichent qu'avec une aile.
+    var plain = document.getElementById('f-wing').value === 'none';
+    document.getElementById('f-wing-width-field').hidden = plain;
+    document.getElementById('f-wing-depth-field').hidden = plain;
   }
 
   function writeField(field, value) {
