@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "id": "baule_front_de_mer",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "modern_modular",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Côtier — front de mer (La Baule)",
+  "context": {
+    "period": "Immeuble balnéaire du front de mer, 1960 à aujourd'hui",
+    "regions": [
+      "loire_atlantique"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "flat",
+    "balcony",
+    "glazing"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 22,
+      "depth_m": 14
+    },
+    "levels": {
+      "count": 8,
+      "height_m": 2.8,
+      "heights_m": [
+
+      ],
+      "attic_setback_m": 2.5
+    },
+    "facade": {
+      "front_bays": 6,
+      "window_width_m": 2.0,
+      "window_height_m": 2.2,
+      "sill_m": 0.3,
+      "entry_bay": 2,
+      "door_width_m": 1.4,
+      "door_height_m": 2.4
+    },
+    "shop": {
+      "height_m": 3.6
+    },
+    "roof": {
+      "type": "flat",
+      "overhang_m": 0.0,
+      "pitch_deg": 0
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "concrete",
+      "frames": "painted_wood",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true,
+      "balcony": true,
+      "balcony_levels": "all",
+      "balcony_depth_m": 1.8,
+      "balcony_rail": "glass"
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 0.8,
+        "max": 1.6
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 4,
+        "max": 12
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "flat"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "concrete"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

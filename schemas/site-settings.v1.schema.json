@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN site settings V1",
+  "type": "object",
+  "properties": {
+    "site_version": {
+      "const": 1
+    },
+    "platform": {
+      "type": "object",
+      "properties": {
+        "policy": {
+          "enum": [
+            "high",
+            "mean"
+          ]
+        },
+        "offset_m": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2
+        }
+      },
+      "additionalProperties": false
+    },
+    "earthwork": {
+      "enum": [
+        "plinth",
+        "embankment"
+      ]
+    },
+    "embankment_ratio": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "plinth_material": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+    },
+    "survey": {
+      "type": "object",
+      "properties": {
+        "step_m": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 5
+        }
+      },
+      "additionalProperties": false
+    },
+    "entrance": {
+      "enum": [
+        "steps",
+        "ramp",
+        "none"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

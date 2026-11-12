@@ -153,6 +153,40 @@
           },
           "additionalProperties": false
         },
+        "wing": {
+          "type": "object",
+          "properties": {
+            "position": {
+              "enum": [
+                "left",
+                "right",
+                "center",
+                "both"
+              ]
+            },
+            "width_m": {
+              "type": "number",
+              "minimum": 3,
+              "maximum": 40
+            },
+            "depth_m": {
+              "type": "number",
+              "minimum": 2,
+              "maximum": 40
+            },
+            "levels": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            }
+          },
+          "required": [
+            "position",
+            "width_m",
+            "depth_m"
+          ],
+          "additionalProperties": false
+        },
         "levels": {
           "type": "object",
           "properties": {
@@ -174,6 +208,11 @@
                 "maximum": 6
               },
               "maxItems": 15
+            },
+            "attic_setback_m": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 6
             }
           },
           "additionalProperties": false
@@ -230,6 +269,25 @@
               "type": "number",
               "minimum": 0,
               "maximum": 0.3
+            },
+            "muntin_rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "arch": {
+              "enum": [
+                "flat",
+                "round",
+                "pointed"
+              ]
+            },
+            "ribbon": {
+              "enum": [
+                "bays",
+                "band",
+                "curtain"
+              ]
             }
           },
           "additionalProperties": false
@@ -246,6 +304,9 @@
               "type": "number",
               "minimum": 0.1,
               "maximum": 0.5
+            },
+            "ground_slab": {
+              "type": "boolean"
             }
           },
           "additionalProperties": false
@@ -258,7 +319,8 @@
                 "flat",
                 "gable",
                 "hip",
-                "mansard"
+                "mansard",
+                "sawtooth"
               ]
             },
             "overhang_m": {
@@ -280,6 +342,12 @@
               "type": "number",
               "minimum": 0,
               "maximum": 4
+            },
+            "ridge": {
+              "enum": [
+                "parallel",
+                "perpendicular"
+              ]
             }
           },
           "additionalProperties": false
@@ -298,6 +366,30 @@
             "frames": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "glass": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "shutters": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "cladding": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "timber": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "surrounds": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "awning": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
             }
           },
           "additionalProperties": false
@@ -313,6 +405,117 @@
             },
             "surrounds": {
               "type": "boolean"
+            },
+            "glazing": {
+              "type": "boolean"
+            },
+            "chimneys": {
+              "type": "boolean"
+            },
+            "muntins": {
+              "type": "boolean"
+            },
+            "shutters": {
+              "type": "boolean"
+            },
+            "dormers": {
+              "type": "boolean"
+            },
+            "genoise": {
+              "type": "boolean"
+            },
+            "stepped_gable": {
+              "type": "boolean"
+            },
+            "cladding": {
+              "type": "boolean"
+            },
+            "timber_frame": {
+              "type": "boolean"
+            },
+            "classical": {
+              "type": "boolean"
+            },
+            "pilotis": {
+              "type": "boolean"
+            },
+            "structural_grid": {
+              "type": "boolean"
+            },
+            "sun_shades": {
+              "type": "boolean"
+            },
+            "shop_front": {
+              "enum": [
+                "none",
+                "awning",
+                "pergola"
+              ]
+            },
+            "balcony_rail": {
+              "enum": [
+                "none",
+                "bars",
+                "solid",
+                "glass"
+              ]
+            },
+            "balcony_levels": {
+              "enum": [
+                "noble",
+                "all"
+              ]
+            },
+            "balcony_depth_m": {
+              "type": "number",
+              "minimum": 0.6,
+              "maximum": 2.5
+            },
+            "balcony_wrap": {
+              "type": "boolean"
+            },
+            "bow_window": {
+              "enum": [
+                "center",
+                "ends",
+                "ground"
+              ]
+            },
+            "wall_dormers": {
+              "type": "boolean"
+            },
+            "bell_tower": {
+              "enum": [
+                "porch",
+                "corner",
+                "twin"
+              ]
+            },
+            "apse": {
+              "type": "boolean"
+            },
+            "transept": {
+              "type": "boolean"
+            },
+            "string_courses": {
+              "type": "boolean"
+            },
+            "turret": {
+              "type": "boolean"
+            },
+            "balconettes": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "shop": {
+          "type": "object",
+          "properties": {
+            "height_m": {
+              "type": "number",
+              "minimum": 3.2,
+              "maximum": 6
             }
           },
           "additionalProperties": false
@@ -400,6 +603,28 @@
           "rule",
           "params"
         ]
+      }
+    },
+    "palette": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "properties": {
+          "materials": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "features": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": false
       }
     }
   },

@@ -1,0 +1,210 @@
+# frozen_string_literal: true
+
+module Archgen
+  module Geometry
+    # Percements et dégagements. Aucun réajustement implicite : une position
+    # impossible est refusée avec un diagnostic localisé.
+    module OpeningSolver
+      EPS = Core::Quant::EPSILON
+      CLEARANCE = Core::Quant::CLEARANCE_M
+      # AG-065 : vitrine d'une travée de rez-de-chaussée commerçant (départ).
+      SHOPFRONT_PIER_M = 0.30
+      SHOPFRONT_BASE_M = 0.15
+      SHOPFRONT_HEAD_M = 0.60
+      SHOPFRONT_MIN_WIDTH_M = 1.20
+      # AG-090 : baie en bandeau ou mur-rideau, aux étages.
+      CURTAIN_GAP_M = 0.15
+      RIBBON_FACADES = %w[front rear].freeze
+
+      module_function
+
+      def call(candidates, config, footprint:, levels:)
+        pitch = shop_pitch(config, footprint)
+        openings = candidates.map { |c| shopfront?(c, config) ? shopfront(c, pitch, levels) : build(c, config, levels) }
+        openings = ribbons(openings, config, footprint, levels) if config['facade']['ribbon']
+        problems = openings.flat_map { |o| check_extents(o, config, footprint, levels) }
+        problems.concat(narrow_shopfronts(openings))
+        problems.concat(check_pairs(openings, config))
+        return Core::Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
+
+        Core::Result.ok(sort(openings))
+      end
+
+      def sort(openings)
+        openings.sort_by { |o| [FACADE_ORDER.index(o.facade_id), o.level_index, o.bay_index, o.id] }
+      end
+
+      def build(candidate, config, levels)
+        facade = config['facade']
+        door = candidate.facade_id == 'front' && candidate.level_index.zero? && candidate.bay_index == facade['entry_bay']
+        base = levels[candidate.level_index].base_z_m
+        center = door ? candidate.center_u_m : candidate.center_u_m + jitter(candidate, config)
+        width = door ? facade['door_width_m'] : facade['window_width_m']
+        z_min = door ? 0.0 : base + facade['sill_m']
+        height = door ? facade['door_height_m'] : facade['window_height_m']
+        Opening.new(
+          id: "opening/#{candidate.facade_id}/#{candidate.level_index}/#{candidate.bay_index}",
+          facade_id: candidate.facade_id, level_index: candidate.level_index, bay_index: candidate.bay_index,
+          kind: door ? 'door' : 'window',
+          u_min_m: Core::Quant.q(center - (width / 2.0)), u_max_m: Core::Quant.q(center + (width / 2.0)),
+          z_min_m: Core::Quant.q(z_min), z_max_m: Core::Quant.q(z_min + height)
+        )
+      end
+      private_class_method :build
+
+      # Toutes les travées avant du rez-de-chaussée, sauf l'entrée de l'immeuble, en commerce.
+      def shopfront?(candidate, config)
+        config['ground_floor'] == 'shop' && candidate.facade_id == 'front' && candidate.level_index.zero? &&
+          candidate.bay_index != config['facade']['entry_bay']
+      end
+      private_class_method :shopfront?
+
+      def shop_pitch(config, footprint)
+        return nil unless config['ground_floor'] == 'shop'
+
+        facade = config['facade']
+        FacadeSolver.frame(footprint.facade('front'), facade['margin_m'], facade['front_bays'], config['structure']['wall_m'])[1]
+      end
+      private_class_method :shop_pitch
+
+      # Sur la trame, sans décalage : un trumeau de SHOPFRONT_PIER_M de chaque côté.
+      def shopfront(candidate, pitch, levels)
+        half = (pitch / 2.0) - SHOPFRONT_PIER_M
+        Opening.new(
+          id: "opening/front/0/#{candidate.bay_index}", facade_id: 'front', level_index: 0, bay_index: candidate.bay_index,
+          kind: 'shopfront',
+          u_min_m: Core::Quant.q(candidate.center_u_m - half), u_max_m: Core::Quant.q(candidate.center_u_m + half),
+          z_min_m: SHOPFRONT_BASE_M, z_max_m: Core::Quant.q(levels.first.top_z_m - SHOPFRONT_HEAD_M)
+        )
+      end
+      private_class_method :shopfront
+
+      # Jamais rétrécie en silence : une travée trop étroite pour une vitrine est refusée.
+      def narrow_shopfronts(openings)
+        openings.select { |o| o.kind == 'shopfront' && o.u_max_m - o.u_min_m < SHOPFRONT_MIN_WIDTH_M - EPS }.map do |o|
+          clearance('/facade/front_bays', 'shopfront_too_narrow', o, limit: SHOPFRONT_MIN_WIDTH_M, value: Core::Quant.q(o.u_max_m - o.u_min_m))
+        end
+      end
+      private_class_method :narrow_shopfronts
+
+      # Aux étages des façades avant et arrière, une seule baie par niveau, de marge à marge.
+      def ribbons(openings, config, footprint, levels)
+        facade = config['facade']
+        kept = openings.reject { |o| RIBBON_FACADES.include?(o.facade_id) && o.level_index.positive? }
+        added = RIBBON_FACADES.flat_map do |side_id|
+          next [] if openings.none? { |o| o.facade_id == side_id && o.level_index.positive? }
+
+          side = footprint.facade(side_id)
+          bays = openings.select { |o| o.facade_id == side_id && o.level_index == levels.size - 1 }.size
+          wall = config['structure']['wall_m']
+          start, pitch = FacadeSolver.frame(side, facade['margin_m'], bays, wall)
+          # Bornée aux dégagements d'about de façade : un angle biais ne la touche pas.
+          low = [start, [wall, side.inner_start(wall)].max + CLEARANCE].max
+          high = [start + (bays * pitch), side.length_m - ([wall, side.length_m - side.inner_end(wall)].max + CLEARANCE)].min
+          levels.drop(1).map do |level|
+            z0, z1 = ribbon_heights(facade, config, levels, level)
+            Opening.new(id: "opening/#{side_id}/#{level.index}/ribbon", facade_id: side_id, level_index: level.index, bay_index: 0, kind: 'ribbon',
+                        u_min_m: Core::Quant.q(low), u_max_m: Core::Quant.q(high), z_min_m: Core::Quant.q(z0), z_max_m: Core::Quant.q(z1))
+          end
+        end
+        kept + added
+      end
+      private_class_method :ribbons
+
+      def ribbon_heights(facade, config, levels, level)
+        return [level.base_z_m + facade['sill_m'], level.base_z_m + facade['sill_m'] + facade['window_height_m']] if facade['ribbon'] == 'band'
+
+        last = level.index == levels.size - 1
+        ceiling = last ? level.top_z_m : level.top_z_m - config['structure']['slab_m']
+        [level.base_z_m + CURTAIN_GAP_M, ceiling - CURTAIN_GAP_M]
+      end
+      private_class_method :ribbon_heights
+
+      JITTER_GRID_M = 0.005
+
+      def jitter(candidate, config)
+        amount = config['facade']['jitter_m']
+        return 0.0 if amount.zero?
+
+        key = Core::DeterministicRandom.opening_key(candidate.facade_id, candidate.level_index, candidate.bay_index)
+        drawn = amount * ((2.0 * Core::DeterministicRandom.unit(config['seed'], key)) - 1.0)
+        # D-01, ADR-43 : décalage arrondi à une grille de 5 mm (demi éloigné de zéro), borné au plus grand
+        # multiple de 5 mm qui ne dépasse pas l'amplitude. Deux baies de même largeur ont alors des bords
+        # confondus ou distants de 5 mm au moins ; sous 5 mm d'amplitude, aucun décalage.
+        steps = (drawn / JITTER_GRID_M).round(half: :up)
+        limit = ((amount + 1e-9) / JITTER_GRID_M).floor
+        Core::Quant.q(steps.clamp(-limit, limit) * JITTER_GRID_M)
+      end
+      private_class_method :jitter
+
+      WIDTH_PATHS = { 'door' => '/facade/door_width_m', 'shopfront' => '/facade/front_bays', 'ribbon' => '/facade/margin_m' }.freeze
+      HEIGHT_PATHS = { 'door' => '/facade/door_height_m', 'shopfront' => '/shop/height_m', 'ribbon' => '/facade/ribbon' }.freeze
+
+      def width_path(opening)
+        WIDTH_PATHS.fetch(opening.kind, '/facade/window_width_m')
+      end
+      private_class_method :width_path
+
+      def height_path(opening)
+        HEIGHT_PATHS.fetch(opening.kind, '/facade/window_height_m')
+      end
+      private_class_method :height_path
+
+      def check_extents(opening, config, footprint, levels)
+        problems = []
+        facade = footprint.facade(opening.facade_id)
+        wall = config['structure']['wall_m']
+        start_clearance = [wall, facade.inner_start(wall)].max + CLEARANCE
+        end_clearance = [wall, facade.length_m - facade.inner_end(wall)].max + CLEARANCE
+        if opening.u_min_m < start_clearance - EPS || facade.length_m - opening.u_max_m < end_clearance - EPS
+          problems << clearance(width_path(opening), 'facade_end', opening, limit: [start_clearance, end_clearance].max)
+        end
+        limit = top_limit(opening, config, levels)
+        problems << clearance(height_path(opening), 'level_top', opening, limit: limit) if opening.z_max_m > limit + EPS
+        problems
+      end
+      private_class_method :check_extents
+
+      def top_limit(opening, config, levels)
+        level = levels[opening.level_index]
+        last = opening.level_index == levels.size - 1
+        last ? level.top_z_m - CLEARANCE : level.top_z_m - config['structure']['slab_m'] - CLEARANCE
+      end
+      private_class_method :top_limit
+
+      def check_pairs(openings, config)
+        openings.group_by(&:facade_id).values.flat_map do |group|
+          group.combination(2).filter_map { |a, b| pair_problem(a, b, config) }
+        end
+      end
+      private_class_method :check_pairs
+
+      # Si les projections fermées se recouvrent sur un axe, dégagement sur l'autre.
+      def pair_problem(a, b, config)
+        gap_u = [a.u_min_m - b.u_max_m, b.u_min_m - a.u_max_m].max
+        gap_z = [a.z_min_m - b.z_max_m, b.z_min_m - a.z_max_m].max
+        overlap_u = gap_u <= EPS
+        overlap_z = gap_z <= EPS
+        return nil unless overlap_u || overlap_z
+        return nil if overlap_z && !overlap_u && gap_u >= CLEARANCE - EPS
+        return nil if overlap_u && !overlap_z && gap_z >= CLEARANCE - EPS
+
+        path = overlap_z ? pair_width_path(a, b, config) : height_path(b)
+        clearance(path, 'opening_spacing', b, other: a.id)
+      end
+      private_class_method :pair_problem
+
+      def pair_width_path(a, b, config)
+        return '/facade/jitter_m' if config['facade']['jitter_m'].positive? && a.kind == 'window' && b.kind == 'window'
+
+        width_path(b.kind == 'door' ? b : a)
+      end
+      private_class_method :pair_width_path
+
+      def clearance(path, reason, opening, **params)
+        Core::Diagnostic.error('E_OPENING_CLEARANCE', path, reason: reason, id: opening.id, **params)
+      end
+      private_class_method :clearance
+    end
+  end
+end

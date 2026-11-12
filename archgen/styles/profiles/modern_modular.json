@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "modern_modular",
+  "revision": 1,
+  "kind": "family",
+  "status": "internal",
+  "parent": {
+    "id": "generic",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Moderne modulaire",
+  "context": {
+    "period": "",
+    "regions": [],
+    "typologies": []
+  },
+  "requires": [],
+  "defaults": {},
+  "rules": []
+}

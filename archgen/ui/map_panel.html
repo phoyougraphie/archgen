@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : importer une carte</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1>Importer une carte</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Lecture…</p>
+</header>
+
+<main class="form street">
+  <fieldset>
+    <legend>Télécharger depuis OpenStreetMap</legend>
+    <p class="hint" id="m-georef">Centre de la zone : la géolocalisation du modèle, ou une latitude et une longitude.</p>
+    <div class="field"><label for="m-lat">Latitude</label><input id="m-lat" inputmode="decimal"></div>
+    <div class="field"><label for="m-lon">Longitude</label><input id="m-lon" inputmode="decimal"></div>
+    <div class="field"><label for="m-size">Côté de la zone (m)</label><input id="m-size" inputmode="decimal" value="500"></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="m-download">Télécharger…</button></div>
+    <p class="hint">Avant l’envoi, ARCHGEN montre le serveur et l’emprise demandés. Seule l’emprise part sur le réseau. Le fichier reçu est gardé à côté du modèle.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Fichiers</legend>
+    <div class="field wide"><label for="m-map">Carte (.osm, .geojson)</label><input id="m-map" readonly></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="m-map-pick">Choisir…</button></div>
+    <div class="field wide"><label for="m-terrain">Terrain IGN (.asc, Lambert-93), facultatif</label><input id="m-terrain" readonly></div>
+    <div class="field"><span class="hint">&nbsp;</span><button type="button" id="m-terrain-pick">Choisir…</button></div>
+    <div class="field wide"><label><input type="checkbox" id="m-ign"> Terrain de l’IGN, sous Licence Ouverte 2.0</label></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Ce qui est importé</legend>
+    <div class="field wide"><label><input type="checkbox" id="m-roads" checked> Voies</label></div>
+    <div class="field wide"><label><input type="checkbox" id="m-buildings" checked> Bâtiments</label></div>
+    <div class="field wide"><label><input type="checkbox" id="m-terrain-layer" checked> Terrain</label></div>
+    <div class="field wide"><label for="m-style">Style des bâtiments</label><select id="m-style"></select></div>
+  </fieldset>
+
+  <div class="actions">
+    <button type="button" id="m-preview">Aperçu</button>
+    <button type="button" id="m-import" disabled>Importer</button>
+  </div>
+  <section aria-labelledby="m-result-title">
+    <h2 id="m-result-title">Aperçu</h2>
+    <ul id="m-result" class="problems"></ul>
+    <p id="m-attribution" class="hint"></p>
+  </section>
+</main>
+<script src="map_panel.js"></script>
+</body>
+</html>

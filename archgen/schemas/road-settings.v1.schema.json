@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN road settings V1",
+  "type": "object",
+  "properties": {
+    "road_version": {
+      "const": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "axis": {
+      "enum": [
+        "center",
+        "left",
+        "right"
+      ]
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "points_m": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "radii_m": {
+          "type": "array",
+          "maxItems": 62,
+          "items": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5000
+          }
+        }
+      },
+      "required": [
+        "points_m",
+        "radii_m"
+      ],
+      "additionalProperties": false
+    },
+    "ground": {
+      "type": "object",
+      "properties": {
+        "survey_step_m": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "grade_step_m": {
+          "type": "number",
+          "minimum": 5,
+          "maximum": 100
+        },
+        "max_grade_percent": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "slope_ratio": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "water": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "river",
+            "canal",
+            "flat"
+          ]
+        },
+        "max_grade_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "lock_drop_m": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "lock_length_m": {
+          "type": "number",
+          "minimum": 20,
+          "maximum": 200
+        },
+        "level_m": {
+          "type": "number",
+          "minimum": -10000,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "trace",
+    "profile"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "id": "baule_villa_toit",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "masonry_vernacular",
+    "revision": 1
+  },
+  "family_id": "masonry_vernacular",
+  "label": "Côtier — villa à quatre pans (La Baule)",
+  "context": {
+    "period": "Villa balnéaire, 1900-1950",
+    "regions": [
+      "loire_atlantique"
+    ],
+    "typologies": [
+      "residential"
+    ]
+  },
+  "requires": [
+    "hip",
+    "glazing",
+    "muntins",
+    "shutters",
+    "surrounds",
+    "chimneys",
+    "dormers"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 11,
+      "depth_m": 9
+    },
+    "levels": {
+      "count": 2,
+      "height_m": 2.9,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.1,
+      "window_height_m": 1.5,
+      "sill_m": 0.8,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.2,
+      "muntin_rows": 2
+    },
+    "roof": {
+      "type": "hip",
+      "overhang_m": 0.4,
+      "pitch_deg": 35
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "slate",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "shutters": "painted_wood_red",
+      "surrounds": "granite"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "shutters": true,
+      "surrounds": true,
+      "chimneys": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.1,
+        "max": 1.8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 3
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "hip",
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "granite"
+        ]
+      },
+      "kind": "soft"
+    }
+  ],
+  "palette": [
+    {
+    },
+    {
+      "materials": {
+        "shutters": "painted_wood_blue"
+      },
+      "features": {
+        "dormers": true,
+        "wall_dormers": true
+      }
+    },
+    {
+      "materials": {
+        "shutters": "painted_wood_green",
+        "surrounds": "red_brick"
+      },
+      "features": {
+        "string_courses": true
+      }
+    },
+    {
+      "materials": {
+        "shutters": "painted_wood_blue",
+        "surrounds": "red_brick"
+      },
+      "features": {
+        "turret": true,
+        "string_courses": true
+      }
+    },
+    {
+      "materials": {
+        "shutters": "painted_wood_grey",
+        "wall": "granite",
+        "surrounds": "light_render"
+      },
+      "features": {
+        "turret": true
+      }
+    },
+    {
+      "materials": {
+        "shutters": "painted_wood_red",
+        "surrounds": "red_brick"
+      },
+      "features": {
+        "dormers": true,
+        "wall_dormers": true,
+        "string_courses": true
+      }
+    }
+  ]
+}

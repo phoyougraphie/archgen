@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "items": {
+    "tree": {
+      "label": "Arbre",
+      "variants": {
+        "round": { "label": "Feuillu rond", "crown_radius_ratio": 0.34, "crown_base_ratio": 0.32 },
+        "columnar": { "label": "Colonnaire", "crown_radius_ratio": 0.12, "crown_base_ratio": 0.16 },
+        "wide": { "label": "Étalé", "crown_radius_ratio": 0.46, "crown_base_ratio": 0.44 },
+        "conifer": { "label": "Conifère", "crown_radius_ratio": 0.2, "crown_base_ratio": 0.15 }
+      },
+      "default_variant": "round",
+      "default_height_m": 9, "min_height_m": 3, "max_height_m": 30,
+      "repeat": "spaced", "default_spacing_m": 9, "min_spacing_m": 1,
+      "height_variation": true
+    },
+    "lamp": {
+      "label": "Lampadaire",
+      "variants": {
+        "single": { "label": "Mât simple" },
+        "double": { "label": "Double crosse" },
+        "ped": { "label": "Piéton" },
+        "heritage": { "label": "Historique" },
+        "high": { "label": "Grand mât" }
+      },
+      "default_variant": "single",
+      "default_height_m": 8, "min_height_m": 3, "max_height_m": 30,
+      "repeat": "spaced", "default_spacing_m": 28, "min_spacing_m": 1,
+      "height_variation": false
+    },
+    "bollard": {
+      "label": "Potelet",
+      "variants": { "bollard": { "label": "Potelet" } },
+      "default_variant": "bollard",
+      "default_height_m": 0.9, "min_height_m": 0.5, "max_height_m": 1.5,
+      "repeat": "spaced", "default_spacing_m": 2.5, "min_spacing_m": 1,
+      "height_variation": false
+    },
+    "pole": {
+      "label": "Poteau de caténaire",
+      "variants": { "pole": { "label": "Avec potence" } },
+      "default_variant": "pole",
+      "default_height_m": 7, "min_height_m": 5, "max_height_m": 10,
+      "repeat": "spaced", "default_spacing_m": 40, "min_spacing_m": 1,
+      "height_variation": false
+    },
+    "hedge": {
+      "label": "Haie",
+      "variants": { "hedge": { "label": "Taillée" } },
+      "default_variant": "hedge",
+      "default_height_m": 1.2, "min_height_m": 0.5, "max_height_m": 5,
+      "repeat": "continuous",
+      "height_variation": false
+    },
+    "fence": {
+      "label": "Barrière",
+      "variants": { "fence": { "label": "Lisses" }, "mesh": { "label": "Grillage" } },
+      "default_variant": "fence",
+      "default_height_m": 1.1, "min_height_m": 0.6, "max_height_m": 3,
+      "repeat": "continuous",
+      "height_variation": false
+    },
+    "guard": {
+      "label": "Glissière",
+      "variants": { "guard": { "label": "Métallique" }, "concrete": { "label": "Béton" } },
+      "default_variant": "guard",
+      "default_height_m": 0.8, "min_height_m": 0.6, "max_height_m": 1.5,
+      "repeat": "continuous",
+      "height_variation": false
+    },
+    "sand_fence": {
+      "label": "Ganivelle",
+      "variants": { "sand_fence": { "label": "Lattes de châtaignier" } },
+      "default_variant": "sand_fence",
+      "default_height_m": 1.2, "min_height_m": 0.8, "max_height_m": 1.5,
+      "repeat": "continuous",
+      "height_variation": false,
+      "bands": ["dune", "beach"]
+    },
+    "low_wall": {
+      "label": "Muret",
+      "variants": { "low_wall": { "label": "Maçonné" } },
+      "default_variant": "low_wall",
+      "default_height_m": 0.6, "min_height_m": 0.3, "max_height_m": 1.2,
+      "repeat": "continuous",
+      "height_variation": false,
+      "bands": ["sidewalk", "path", "track", "verge", "quay", "beach"]
+    },
+    "road_stud": {
+      "label": "Plot de chaussée",
+      "variants": { "plain": { "label": "Blanc" }, "reflective": { "label": "Rétroréfléchissant" } },
+      "default_variant": "plain",
+      "default_height_m": 0.02, "min_height_m": 0.01, "max_height_m": 0.05,
+      "repeat": "spaced", "default_spacing_m": 12, "min_spacing_m": 1,
+      "height_variation": false,
+      "bands": ["lane", "hard", "edge", "tram_lane", "parking"],
+      "placement": "band_left"
+    },
+    "bench": {"label": "Banc", "variants": {"bench": {"label": "Bois et métal"}}, "default_variant": "bench", "default_height_m": 0.85, "min_height_m": 0.8, "max_height_m": 1.0, "repeat": "spaced", "default_spacing_m": 20, "min_spacing_m": 5, "height_variation": false, "bands": ["sidewalk", "path", "verge", "plant", "median"]},
+    "bin": {"label": "Corbeille", "variants": {"bin": {"label": "Cylindrique"}}, "default_variant": "bin", "default_height_m": 0.9, "min_height_m": 0.6, "max_height_m": 1.1, "repeat": "spaced", "default_spacing_m": 40, "min_spacing_m": 5, "height_variation": false, "bands": ["sidewalk", "path", "verge", "plant", "median"]},
+    "bike_rack": {"label": "Attache vélos", "variants": {"hoop": {"label": "Arceaux"}}, "default_variant": "hoop", "default_height_m": 0.75, "min_height_m": 0.7, "max_height_m": 0.9, "repeat": "spaced", "default_spacing_m": 30, "min_spacing_m": 5, "height_variation": false, "bands": ["sidewalk", "path", "verge", "plant", "median"], "default_count": 3, "min_count": 1, "max_count": 10},
+    "bus_stop": {"label": "Arrêt de bus", "variants": {"shelter": {"label": "Abri"}, "pole": {"label": "Mât seul"}}, "default_variant": "shelter", "default_height_m": 2.5, "min_height_m": 2.3, "max_height_m": 3.0, "repeat": "positions", "height_variation": false, "bands": ["sidewalk", "verge"]},
+    "sign": {"label": "Panneau", "variants": {"stop": {"label": "Stop"}, "give_way": {"label": "Cédez le passage"}, "prohibition": {"label": "Sens interdit"}, "limit": {"label": "Limitation"}, "mandatory": {"label": "Obligation"}, "information": {"label": "Indication"}, "danger": {"label": "Danger"}, "crossing": {"label": "Passage piéton"}}, "default_variant": "give_way", "default_height_m": 2.3, "min_height_m": 2.0, "max_height_m": 3.0, "repeat": "positions", "height_variation": false, "bands": ["sidewalk", "verge", "median", "plant"]}
+  }
+}

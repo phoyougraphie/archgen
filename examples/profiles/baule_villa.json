@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "id": "baule_villa",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "timber_vernacular",
+    "revision": 1
+  },
+  "family_id": "timber_vernacular",
+  "label": "Côtier — villa balnéaire (La Baule, Pornichet)",
+  "context": {
+    "period": "Villa balnéaire néo-régionaliste, 1880-1939",
+    "regions": [
+      "loire_atlantique"
+    ],
+    "typologies": [
+      "residential"
+    ]
+  },
+  "requires": [
+    "gable",
+    "cross_ridge",
+    "timber_frame",
+    "glazing",
+    "muntins",
+    "chimneys"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 10,
+      "depth_m": 11
+    },
+    "levels": {
+      "count": 2,
+      "height_m": 2.9,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.0,
+      "window_height_m": 1.5,
+      "sill_m": 0.9,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.2,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.6,
+      "pitch_deg": 50,
+      "ridge": "perpendicular"
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "slate",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "timber": "dark_wood"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "timber_frame": true,
+      "chimneys": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.1,
+        "max": 1.8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 3
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "red_brick",
+          "granite"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+/* Éditeur de coupe de voirie : couleurs des matériaux par classe (aucun style en ligne). */
+:root {
+  --sky: #e9f1f4; --earth: #bfb5a4; --asphalt: #4c5356; --asphalt2: #6a7174; --mark: #ffffff; --pave: #c9c5bb;
+  --cycle: #b5534a; --park: #7b8285; --grass: #7fa268; --gravel: #b9ab8c; --stab: #d0bd92; --ballast: #8f8d87;
+  --tramgrass: #94b57a; --water: #5e8fa3; --steel: #2a3033; --tree: #4f7f45; --tree2: #3b6a50; --trunk: #6e5339;
+  --hedge: #3f7350; --person: #c0392b; --veh: #35617f;
+}
+.road-presets { display: flex; flex-direction: column; gap: 0.375rem; padding: 0.5rem 1rem 0; }
+.road-family { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 0.75rem; align-items: baseline; }
+.road-family-name { color: var(--muted); font-size: 0.8125rem; text-align: right; }
+.road-recipes { padding: 0.5rem 1rem 0; }
+.road-family-buttons { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+@media (max-width: 560px) { .road-family { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; } .road-family-name { text-align: left; } }
+.road-presets button[aria-pressed="true"] { color: #ffffff; background: var(--accent); border-color: var(--accent); }
+.road { display: grid; grid-template-columns: minmax(0, 1fr) 28rem; gap: 0.75rem; padding: 0.75rem 1rem 1rem; align-items: start; }
+@media (max-width: 860px) { .road { grid-template-columns: minmax(0, 1fr); } }
+.road-stage { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.road-sheet, .road-side { background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; min-width: 0; }
+.road-side { position: sticky; top: 3rem; max-height: calc(100vh - 4rem); overflow: auto; }
+.road-head { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; justify-content: space-between; align-items: baseline; padding: 0.375rem 0.75rem; border-bottom: 1px solid var(--line); }
+.road-head h2 { margin: 0; }
+.road-fig { color: var(--muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.road-scroll { overflow-x: auto; }
+.road-scroll svg { width: 100%; min-width: 560px; background: none; }
+.road-opts { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; padding: 0.375rem 0.75rem; border-top: 1px solid var(--line); }
+.road-check { display: inline-flex; gap: 0.375rem; align-items: center; color: var(--ink); }
+.road-tools { display: flex; flex-wrap: wrap; gap: 0.375rem; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); }
+.road-tools select { flex: 1 1 9rem; width: auto; }
+.road-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.road-bands { list-style: none; margin: 0; padding: 0; }
+.road-bands > li { border-bottom: 1px solid var(--line); }
+.road-bands > li.is-selected { background: #eef3fc; }
+.road-bands > li.is-invalid { box-shadow: inset 3px 0 0 var(--error); }
+.road-row { display: grid; grid-template-columns: 1.4rem 0.8rem minmax(0, 1fr) 4.2rem auto; gap: 0.375rem; align-items: center; padding: 0.375rem 0.5rem 0.375rem 0.75rem; }
+.road-num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.road-sw { width: 0.8rem; height: 1.4rem; border: 1px solid var(--line); }
+.road-moves { display: flex; gap: 0.125rem; }
+.road-moves button { min-width: 1.75rem; padding: 0; }
+.road-items { display: grid; gap: 0.375rem; padding: 0 0.75rem 0.5rem 2.4rem; }
+.road-item { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 0.25rem; align-items: end; padding-bottom: 0.375rem; border-bottom: 1px dashed var(--line); }
+/* AG-145 : l'élément sur sa ligne, ses réglages dessous ; les libellés ne se chevauchent plus. */
+.road-item > label:first-child { grid-column: 1 / 5; }
+.road-item > button:last-child { grid-column: 5; grid-row: 1; }
+.road-item label { font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.0625rem; }
+.road-item .road-kind { font-size: 0.75rem; color: var(--ink); font-weight: 600; }
+.road-add { display: flex; gap: 0.375rem; }
+.road-add select { flex: 1 1 auto; width: auto; }
+.road-row-error { margin: 0 0.75rem 0.375rem 2.4rem; color: var(--error); font-size: 0.8125rem; }
+.road-diag { list-style: none; margin: 0; padding: 0.5rem 0.75rem; display: flex; flex-direction: column; gap: 0.375rem; }
+.road-diag li { padding: 0.25rem 0.5rem; border-left: 3px solid var(--line); color: var(--muted); }
+.road-diag li.is-error { border-color: var(--error); color: var(--error); }
+.road-diag li.is-warning { border-color: var(--warning); color: var(--warning); }
+.road-stale { opacity: 0.45; }
+
+/* Dessin */
+.s-sky { fill: var(--sky); }
+.s-earth { fill: var(--earth); }
+.s-select { fill: var(--accent); opacity: 0.1; }
+.s-hit { fill: transparent; cursor: pointer; }
+path.s-band { fill: none; stroke-linecap: butt; }
+line.s-hedge-line { stroke: var(--hedge); }
+.s-curb { fill: var(--pave); stroke: var(--steel); stroke-width: 0.5; }
+.s-rail, .s-steel { fill: var(--steel); }
+.s-pole { stroke: var(--steel); fill: none; }
+.s-wire { stroke: var(--steel); fill: none; stroke-dasharray: 3 2; }
+.s-trunk { fill: var(--trunk); }
+.s-tree { fill: var(--tree); }
+.s-tree2 { fill: var(--tree2); }
+.s-hedge { fill: var(--hedge); }
+.s-concrete { fill: var(--pave); stroke: var(--steel); stroke-width: 0.5; }
+.s-person { fill: var(--person); }
+.s-person-text { fill: var(--person); font-size: 11px; font-weight: 600; }
+.s-human { cursor: grab; }
+.s-veh { fill: var(--veh); opacity: 0.82; }
+.s-glass { fill: var(--sky); }
+.s-dim { stroke: var(--muted); stroke-width: 1; fill: none; }
+.s-dim-text { fill: var(--ink); font-size: 11px; }
+.s-dim-strong { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.s-scale { fill: var(--ink); }
+.s-grip { fill: var(--accent); }
+.s-grip-hit { fill: transparent; cursor: ew-resize; }
+.s-mark { stroke: var(--mark); fill: none; }
+.s-sleeper { stroke: var(--trunk); }
+.s-crown { opacity: 0.88; }
+.c-lane, .c-tram_lane { stroke: var(--asphalt); fill: var(--asphalt); }
+.c-hard, .c-edge { stroke: var(--asphalt2); fill: var(--asphalt2); }
+.c-parking { stroke: var(--park); fill: var(--park); }
+.c-tram { stroke: var(--tramgrass); fill: var(--tramgrass); }
+.c-rail { stroke: var(--ballast); fill: var(--ballast); }
+.c-cycle { stroke: var(--cycle); fill: var(--cycle); }
+.c-sidewalk { stroke: var(--pave); fill: var(--pave); }
+.c-path { stroke: var(--stab); fill: var(--stab); }
+.c-track { stroke: var(--gravel); fill: var(--gravel); }
+.c-median, .c-verge, .c-plant, .c-bank { stroke: var(--grass); fill: var(--grass); }
+.c-ditch { stroke: var(--water); fill: var(--water); }
+.c-water { stroke: #6b6450; fill: #6b6450; }
+.c-quay { stroke: #a39c8c; fill: #a39c8c; }
+.c-riverbank { stroke: var(--grass); fill: var(--grass); }
+.c-cliff { stroke: #9c8f7a; fill: #9c8f7a; }
+.c-rocks { stroke: #7d7a72; fill: #7d7a72; }
+.c-dune { stroke: #cfc196; fill: #cfc196; }
+.c-beach { stroke: #e3d3a6; fill: #e3d3a6; }
+.c-sea { stroke: #b5a67e; fill: #b5a67e; }
+.s-water { fill: var(--water); opacity: 0.55; }
+.road-sw.c-lane, .road-sw.c-tram_lane, .road-sw.c-hard, .road-sw.c-edge, .road-sw.c-parking, .road-sw.c-tram, .road-sw.c-rail, .road-sw.c-cycle,
+.road-sw.c-sidewalk, .road-sw.c-path, .road-sw.c-track, .road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank, .road-sw.c-ditch,
+.road-sw.c-water, .road-sw.c-quay, .road-sw.c-riverbank,
+.road-sw.c-cliff, .road-sw.c-rocks, .road-sw.c-dune, .road-sw.c-beach, .road-sw.c-sea { background: currentColor; }
+.road-sw.c-lane, .road-sw.c-tram_lane { color: var(--asphalt); }
+.road-sw.c-hard, .road-sw.c-edge { color: var(--asphalt2); }
+.road-sw.c-parking { color: var(--park); }
+.road-sw.c-tram { color: var(--tramgrass); }
+.road-sw.c-rail { color: var(--ballast); }
+.road-sw.c-cycle { color: var(--cycle); }
+.road-sw.c-sidewalk { color: var(--pave); }
+.road-sw.c-path { color: var(--stab); }
+.road-sw.c-track { color: var(--gravel); }
+.road-sw.c-median, .road-sw.c-verge, .road-sw.c-plant, .road-sw.c-bank { color: var(--grass); }
+.road-sw.c-ditch, .road-sw.c-water { color: var(--water); }
+.road-sw.c-quay { color: #a39c8c; }
+.road-sw.c-riverbank { color: var(--grass); }
+.road-sw.c-cliff { color: #9c8f7a; }
+.road-sw.c-rocks { color: #7d7a72; }
+.road-sw.c-dune { color: #cfc196; }
+.road-sw.c-beach { color: #e3d3a6; }
+.road-sw.c-sea { color: var(--water); }
+
+/* Tracé de la voie (AG-042) */
+.road-trace { border-bottom: 2px solid var(--accent); }
+.road-trace-body { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem 0.75rem 0.75rem; }
+.road-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 0.5rem; }
+.road-result { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Eau (AG-056) : régime et réglages propres à une bande. */
+.road-water { display: flex; flex-direction: column; gap: 0.375rem; margin-top: 0.5rem; }
+.road-tune { display: flex; flex-wrap: wrap; padding: 0 0.75rem 0.5rem 2.4rem; gap: 0.75rem; }
+.road-tune label { display: flex; align-items: center; gap: 0.375rem; font-size: 0.8125rem; white-space: nowrap; }
+.road-tune input { width: 4.5rem; }
+.s-stud { fill: #f2f2ee; stroke: #8a8a85; stroke-width: 0.5; }
+.s-reflector { fill: #e8a33d; }
+.s-glass { fill: #a8c6d1; opacity: 0.6; }
+.s-sign-red { fill: #c0392b; stroke: #f2f2ee; stroke-width: 1; }
+.s-sign-blue { fill: #1f4e9c; stroke: #f2f2ee; stroke-width: 1; }
+.s-sign-white { fill: #f2f2ee; stroke: #c0392b; stroke-width: 2; }

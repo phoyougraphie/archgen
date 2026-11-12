@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "lyonnais",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "masonry_vernacular",
+    "revision": 1
+  },
+  "family_id": "masonry_vernacular",
+  "label": "Lyonnais",
+  "context": {
+    "period": "Immeuble lyonnais, XIXe siècle (Croix-Rousse, Presqu'île)",
+    "regions": [
+      "lyon"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "glazing",
+    "muntins",
+    "shutters",
+    "surrounds"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 12,
+      "depth_m": 11
+    },
+    "levels": {
+      "count": 5,
+      "height_m": 3.0,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 4,
+      "window_width_m": 1.1,
+      "window_height_m": 1.9,
+      "sill_m": 0.7,
+      "entry_bay": 1,
+      "door_width_m": 1.2,
+      "door_height_m": 2.6,
+      "muntin_rows": 4
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.3,
+      "pitch_deg": 20
+    },
+    "materials": {
+      "wall": "golden_stone",
+      "roof": "terracotta_canal",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "shutters": "painted_wood_grey"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "shutters": true,
+      "surrounds": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.5,
+        "max": 2.2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 4,
+        "max": 7
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "golden_stone",
+          "light_render",
+          "ochre_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "toulousain",
+  "revision": 3,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "masonry_vernacular",
+    "revision": 1
+  },
+  "family_id": "masonry_vernacular",
+  "label": "Toulousain (brique)",
+  "context": {
+    "period": "Immeuble urbain du XIXe siècle",
+    "regions": [
+      "toulouse"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "hip",
+    "surrounds",
+    "glazing",
+    "muntins",
+    "shutters"
+  ],
+  "defaults": {
+    "levels": {
+      "count": 3,
+      "height_m": 3.1,
+      "heights_m": [
+
+      ]
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.2,
+      "pitch_deg": 24
+    },
+    "materials": {
+      "wall": "brick_foraine",
+      "roof": "terracotta_canal",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "shutters": "painted_wood_blue"
+    },
+    "features": {
+      "surrounds": true,
+      "glazing": true,
+      "muntins": true,
+      "shutters": true
+    },
+    "facade": {
+      "muntin_rows": 3
+    }
+  },
+  "rules": [
+    {
+      "id": "vertical_bays",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.4,
+        "max": 2.2
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "urban_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 2,
+        "max": 5
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "traditional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    }
+  ]
+}

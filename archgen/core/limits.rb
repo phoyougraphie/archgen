@@ -1,0 +1,42 @@
+# frozen_string_literal: true
+
+module Archgen
+  module Core
+    # Limites bloquantes V0.1 (docs/SECURITY_PERFORMANCE.md).
+    module Limits
+      JSON_BYTES = 64 * 1024
+      JSON_DEPTH = 12
+      MAX_FOOTPRINT_M = 60.0
+      MAX_LEVELS = 15
+      MAX_WALL_TOP_M = 60.0
+      MAX_ROOF_TOP_M = 90.0
+      MAX_OPENINGS = 720
+      MAX_UNIQUE_FACES = 30_000
+      MAX_EXPANDED_FACES = 60_000
+      MAX_WALL_CELLS = 100_000
+      MAX_DETAIL_DEFINITIONS = 128
+      # Assise : valeurs de départ du contrat terrain, à calibrer à la recette.
+      SITE_RELIEF_MAX_M = 6.0
+      SITE_MAX_SURVEY_POINTS = 3000
+      SITE_MAX_FACES = 20_000
+      # Ensemble : valeurs de départ du contrat d'ensemble, à calibrer à la recette.
+      ENSEMBLE_MIN_SEGMENT_M = 6.0
+      ENSEMBLE_MAX_COORDINATE_M = 2000.0
+      ENSEMBLE_REAR_MIN_M = 2.0
+      ENSEMBLE_CLEARANCE_M = 3.0
+      ENSEMBLE_MAX_PARCELS = 200
+      ENSEMBLE_MAX_UNIQUE_FACES = 120_000
+      ENSEMBLE_MAX_EXPANDED_FACES = 600_000
+      ENSEMBLE_SITE_MAX_POINTS = 12_000
+      # Voirie : valeurs de départ du contrat de voirie, à calibrer à la recette.
+      ROAD_MAX_COORDINATE_M = 2000.0
+      ROAD_MIN_SEGMENT_M = 0.5
+      ROAD_MIN_INNER_RADIUS_M = 1.0
+      ROAD_CHORD_TOLERANCE_M = 0.05
+      ROAD_MAX_UNIQUE_FACES = 60_000
+      ROAD_MAX_ITEMS = 5000
+      ROAD_MAX_EXPANDED_FACES = 600_000
+      ROAD_MAX_SLEEPERS = 20_000
+    end
+  end
+end

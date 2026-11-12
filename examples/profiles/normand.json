@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "normand",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "timber_vernacular",
+    "revision": 1
+  },
+  "family_id": "timber_vernacular",
+  "label": "Normand",
+  "context": {
+    "period": "Maison normande à pan de bois, XVIe-XIXe siècle",
+    "regions": [
+      "normandie"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "timber_frame",
+    "dormers",
+    "chimneys",
+    "glazing",
+    "muntins"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 10,
+      "depth_m": 8
+    },
+    "levels": {
+      "count": 2,
+      "height_m": 2.7,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 0.9,
+      "window_height_m": 1.3,
+      "sill_m": 0.9,
+      "entry_bay": 1,
+      "door_width_m": 1.0,
+      "door_height_m": 2.1,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.3,
+      "pitch_deg": 50
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "slate",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "timber": "dark_wood"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "timber_frame": true,
+      "dormers": true,
+      "chimneys": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.2,
+        "max": 1.8
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 3
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "hip"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

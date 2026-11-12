@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "masonry_vernacular",
+  "revision": 1,
+  "kind": "family",
+  "status": "internal",
+  "parent": {
+    "id": "generic",
+    "revision": 1
+  },
+  "family_id": "masonry_vernacular",
+  "label": "Vernaculaire maçonné",
+  "context": {
+    "period": "",
+    "regions": [],
+    "typologies": []
+  },
+  "requires": [],
+  "defaults": {},
+  "rules": []
+}

@@ -4,6 +4,9 @@
 - [Neutre Shell](buildings/rect-neutre-shell.json) et [neutre Structural](buildings/rect-neutre-structural.json) : mêmes dimensions, toit, ouvertures ; réservés aux tests. Le profil interne generic est accepté par le moteur sous banc de tests, jamais dans le panneau.
 - [Toulousain](buildings/toulousain.json) et [Brutaliste](buildings/brutalist.json) : signatures de la recette.
 - [Registre générique](profiles/generic.json), [haussmann](profiles/haussmann.json), [toulousain](profiles/toulousain.json), [brutalist](profiles/brutalist.json) : données prêtes à reprendre dans le dépôt. Le répertoire profiles contient aussi les sept parents techniques.
-- [Matériaux](materials.v1.json) : couleurs sRGB de génération ; textures et nomenclatures d'export sont différées.
+- [Terrains](terrain/) : grilles de relevé 12 × 9 m au pas de départ, pente de 8 %, creux et trou.
+- [Ensembles](ensembles/) : carré de 40 m, rue coudée des deux côtés, contour rentrant ; valeurs attendues calculées à la main dans `test/unit/parcel_layout_test.rb`.
+- [Matériaux d'assise](site_materials.v1.json) : la terre du talus, dans un catalogue séparé.
+- [Matériaux](materials.v1.json) : couleurs sRGB de génération, opacité `alpha` ; `roughness` et `metallic` facultatifs, entre 0 et 1, pour l'export glTF (0,85 et 0 par défaut, ADR-54) ; les textures restent différées.
 
 Le nom ne participe pas à l'identité du plan. Les tests d'algorithmes, d'Undo et de versions sont décrits dans [TESTING](../docs/TESTING.md).

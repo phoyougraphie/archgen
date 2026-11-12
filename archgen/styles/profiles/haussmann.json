@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "id": "haussmann",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "ordered_facade",
+    "revision": 1
+  },
+  "family_id": "ordered_facade",
+  "label": "Haussmannien",
+  "context": {
+    "period": "Paris, second XIXe siècle et prolongements",
+    "regions": [
+      "paris"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "mansard",
+    "cornice",
+    "balcony"
+  ],
+  "defaults": {
+    "levels": {
+      "count": 5,
+      "heights_m": []
+    },
+    "roof": {
+      "type": "mansard",
+      "overhang_m": 0.15,
+      "pitch_deg": 25,
+      "lower_pitch_deg": 65,
+      "inset_m": 0.9
+    },
+    "materials": {
+      "wall": "limestone",
+      "roof": "zinc",
+      "frames": "painted_wood"
+    },
+    "features": {
+      "cornice": true,
+      "balcony": true
+    }
+  },
+  "rules": [
+    {
+      "id": "vertical_bays",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.4,
+        "max": 2.4
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "urban_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 5,
+        "max": 7
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "traditional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "mansard"
+        ]
+      },
+      "kind": "historical"
+    }
+  ]
+}

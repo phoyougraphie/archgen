@@ -1,0 +1,155 @@
+# frozen_string_literal: true
+
+module Archgen
+  # Manifeste de chargement du noyau pur. Aucun fichier du noyau ne fait de
+  # `require` interne et le chemin de chargement reste intact (docs/RUBY_SKETCHUP.md).
+  module Loader
+    ROOT = __dir__
+
+    CORE = %w[
+      version
+      core/limits
+      core/result
+      core/quant
+      core/canonical
+      core/strict_json
+      core/schema_validator
+      core/building_config
+      core/constraint_validator
+      core/intake
+      core/deterministic_random
+      core/tint
+      core/style_registry
+      core/fidelity_rules
+      core/config_resolver
+      core/survey_grid
+      core/site_intake
+      core/ensemble_intake
+      core/road_profile_intake
+      core/road_intake
+      core/road_network_intake
+      core/trace_session
+      core/site_assise
+      core/map_projection
+      core/map_reader
+      core/map_tiles
+      geometry/types
+      geometry/road_section
+      geometry/road_axis
+      geometry/road_ribbons
+      geometry/road_item_shapes
+      geometry/road_furniture_shapes
+      geometry/road_items
+      geometry/road_ground
+      geometry/road_junction
+      geometry/road_signals
+      geometry/road_network
+      geometry/road_roundabout
+      geometry/road_crossing
+      geometry/road_bridge_forms
+      geometry/road_bridge
+      geometry/road_locks
+      geometry/planar
+      geometry/trace_rows
+      geometry/parcel_layout
+      geometry/access_planner
+      geometry/footprint_solver
+      geometry/floor_planner
+      geometry/facade_solver
+      geometry/opening_solver
+      geometry/wall_builder
+      geometry/porch_solver
+      geometry/roof_solver
+      geometry/row_roof_solver
+      geometry/detail_solver
+      geometry/dormer_solver
+      geometry/timber_solver
+      geometry/ornament_solver
+      geometry/modern_solver
+      core/budget
+      core/plan_validator
+      core/site_plan_validator
+      core/plan_projection
+      core/geometry_engine
+      core/ensemble_variety
+      core/ensemble_parcels
+      core/parcel_building
+      core/ensemble_engine
+      core/ensemble_site
+      core/road_engine
+      core/road_network_engine
+      core/road_merge
+      core/map_roads
+      core/map_buildings
+      core/map_terrain
+      core/map_streets
+      geometry/embankment_builder
+      geometry/site_planner
+      composition
+    ].freeze
+
+    # Chargé seulement par main.rb ou par les tests de contrat du writer.
+    ADAPTER = %w[
+      adapters/sketchup/native_host
+      adapters/sketchup/resources
+      adapters/sketchup/geometry_writer
+      adapters/sketchup/component_repository
+      adapters/sketchup/transaction_guard
+      adapters/sketchup/terrain_surveyor
+      adapters/sketchup/ensemble_repository
+      adapters/sketchup/building_service
+      adapters/sketchup/ensemble_service
+      adapters/sketchup/road_repository
+      adapters/sketchup/ground_cutter
+      adapters/sketchup/road_service
+      adapters/sketchup/network_repository
+      adapters/sketchup/network_service
+      adapters/sketchup/street_tool
+      adapters/sketchup/local_files
+      adapters/sketchup/export_service
+      adapters/sketchup/overpass_client
+      adapters/sketchup/map_import_service
+      adapters/sketchup/base_map
+      ui/target_tokens
+      ui/confirmation_tokens
+      ui/messages
+      ui/recipes
+      ui/dialog_controller
+      ui/street_controller
+      ui/parcel_controller
+      ui/road_families
+      ui/road_controller
+      ui/network_controller
+      ui/map_controller
+    ].freeze
+
+    # Export glTF (ADR-54) : Ruby pur, hors noyau ; chargé par main.rb et ses tests.
+    EXPORT = %w[
+      adapters/gltf/triangulator
+      adapters/gltf/glb_writer
+      adapters/gltf/volumes
+      adapters/gltf/lod_set
+    ].freeze
+
+    def self.load_core
+      CORE.each { |path| load_internal(path) }
+    end
+
+    def self.load_adapter
+      ADAPTER.each { |path| load_internal(path) }
+    end
+
+    def self.load_export
+      EXPORT.each { |path| load_internal(path) }
+    end
+
+    def self.load_internal(relative)
+      path = File.join(ROOT, relative)
+      if defined?(::Sketchup)
+        ::Sketchup.require(path)
+      else
+        require(path)
+      end
+    end
+  end
+end

@@ -1,0 +1,542 @@
+# Carte mentale ARCHGEN
+
+Point d'entrée de chaque session : **lire ce fichier au lieu de relire tout le dossier**, puis n'ouvrir que le document cité par la branche utile. Il est la source unique de la carte graphique [docs/carte/index.html](carte/index.html), générée par `bundle exec rake carte`.
+
+**À chaque ticket :** mettre à jour le statut, l'état courant et le journal ci-dessous, relancer `rake carte`, committer les deux fichiers. `rake test` échoue si la page est périmée ou si un ticket de TASKS manque.
+
+Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ doc)`. Statuts en tête de libellé : `[fait]` preuve obtenue, `[code]` code écrit mais preuve hôte manquante, `[encours]`, `[afaire]`, `[bloque]`.
+
+- État courant — Où en est le développement, à lire en premier
+  - Prochaine action — 0.37.0 : recettes (réglages nommés sur ce poste, ADR-71) ; 0.36.2 : préréglages de voirie rangés par famille ; panneau de rue en sections ; barre d'outils et passe d'interface (ADR-70, docs/BILAN_INTERFACE.md). Suite possible : consigne dans le plan du réseau, positions d'ouverture des panneaux ; rosace, arcs-boutants, tour de croisée ; étagement des isolés ; EXT-08, J21 (reporté). Recettes H26 à H36, H38 à H40 à la main. Commits non poussés depuis 34f74cf. (→ docs/DECISIONS.md)
+  - Décisions tranchées D-07 à D-12 — D-10 : clous de passage piéton et plots de chaussée (ADR-42). D-12 : pont né au croisement (ADR-40). D-11 : un cours d'eau ou une côte est une voie (ADR-39). D-08 : copie entaillée (ADR-38). D-07 : carrefour automatique (ADR-36). D-09 : 3D simple (ADR-35). (→ docs/DECISIONS.md)
+  - D-17 à D-22 tranchées — Détails : vitre et porte pleine, vitrine par travée, commerces sur toute la rue puis au clic droit, souches contre les murs latéraux, largeur par la limite mitoyenne, clic droit dans la rue ouverte (ADR-45). Aucune décision ouverte. (→ docs/DECISIONS.md)
+  - Consigne de vérification — Ne pas piloter SketchUp systématiquement : tests Ruby et sondes scriptées d'abord (test/host/v01.rb enchaîne tout, rapport dans tmp/), écran seulement pour la recherche de bug, la console ou une étape importante. Aucun contrôle hôte réussi sans preuve. (→ docs/DECISIONS.md)
+  - D-01 tranchée — Variation des baies arrondie à 5 mm (ADR-43) : 100 % des graines acceptées de 1 à 30 cm, contre 1 % à 2 cm avant. (→ docs/DECISIONS.md)
+  - D-13 à D-16 tranchées — Rues variées : niveaux tirés dans une fourchette avec écart borné, toits tirés dans une liste, un seul style par rue, murs mitoyens découverts aveugles (ADR-44). Aucune décision ouverte. (→ docs/DECISIONS.md)
+  - D-03 et D-04 tranchées — Onglet, tous angles permis (ADR-30) ; forme de l'accès selon le style (ADR-31). D-05 et D-06 : terrain intact, terrain avant rue (ADR-27). (→ docs/DECISIONS.md)
+  - Mesures H11 — SketchUp 26.2.243, Ryzen 7 5800H, p95 : plan Haussmann 12×9 13 à 71 ms (cible 150 ms) ; écriture LOD 1 52 à 161 ms (cible 2 s) ; 24×18 Structural 454 ms en générique, 921 ms en Toulousain (cible 5 s) ; 20 régénérations +0,89 Mo (plafond 10 Mo), cadres stables. Plus grand plan accepté : environ 5,5 s, hors contrat. (→ docs/recette/H11.md)
+  - Environnement — Windows 11, Ruby 3.2.11, Bundler 2.4.19, Minitest 5.25, Rake 13.0. SketchUp 2026 (26.2.243, Ruby 3.2.2) installé ; macOS et SketchUp 2024/2025 hors cible V0.1. (→ docs/MATRICE_POSTE.md)
+  - Git — Remote github.com/phoyougraphie/archgen. main = spec de base ; dev/v0.1 = développement. Auteur local phoyougraphie, adresse noreply. Pas de `gh` sur le poste.
+  - Commande de test — bundle exec rake test (Ruby pur, sans SketchUp). Le script hôte test/host/run.rb se charge à la main dans la console SketchUp.
+  - Journal — Écarts et décisions rencontrés en développement
+    - 2026-11-05 Spec — Relue ; chiffres U05 à U10 recalculés à la main et cohérents (259 cellules, 218/709 faces, 119,00 m², 27,82272 m³).
+    - 2026-11-05 Écart jitter — Mesuré à l'implémentation d'AG-010 ; contrat conservé, voir D-01.
+    - 2026-11-05 Ajouts — E_PLAN (ADR-11), refus de LOD 1 avant AG-015 (ADR-12), données embarquées (ADR-13).
+    - 2026-11-05 H01 — Réussi sur SketchUp 26.2.243. Le noyau dans le Ruby embarqué 3.2.2 redonne les empreintes de plan exactes. L'ordre du menu Extensions varie d'un démarrage à l'autre : ne pas viser une position fixe en recette.
+    - 2026-11-05 H02 — Réussi. Rapport de sonde écrit dans tmp/h02-<label>.txt (ignoré par Git) : plus fiable qu'une capture. Installer le RBZ puis redémarrer SketchUp pour charger un nouveau fichier du manifeste.
+    - 2026-11-05 D-02 tranchée — Arêtes de grille masquées (ADR-15), H02 rejoué et réussi.
+    - 2026-11-05 H03 et H04 — Réussis. Un Annuler ramène matériaux, tags et définitions à l'identique. Menus SketchUp : cliquer d'abord dans la vue, sinon le premier clic sur Édition après la console ne l'ouvre pas.
+    - 2026-11-05 H05 — Réussi. Le copier-coller réel reproduit bien l'UUID et partage la définition. Cliquer dans la vue vide déselectionne : ne pas le faire avant un Copier au menu.
+    - 2026-11-05 H06 et H07 — 10 pannes natives, aucun résidu ni ligne d'historique. H07 a trouvé un vrai défaut : jeton lié à l'objet Model, sans valeur sous Windows ; corrigé par le guid (ADR-18). H03 à H07 rejoués sur le code final. À faire en AG-017 : recharger la sélection après un enregistrement.
+    - 2026-11-05 H08 — Réussi : 12 variantes, 248 cadres pour 4 définitions. Le recouvrement balcon/baie est inatteignable d'après les dégagements du contrat ; garde conservée et testée sur le solveur. À rejouer en AG-018 : Annuler, Rétablir et pannes en LOD 1.
+    - 2026-11-05 H09 — Réussi après trois défauts corrigés (cote avec débord, message répété par baie, champs de toit visibles). Node absent du poste : JS testé dans le moteur du panneau via ArchgenPanelProbe.run_js_tests. Panneau et menu Édition se recouvrent en recette.
+    - 2026-11-05 H10 — Réussi après six défauts corrigés, dont deux vus seulement par la recette scriptée (champ à 12 pour un brouillon à 13 après enregistrement, notices jamais retirées). dialog.close est asynchrone sous Windows : rouvrir à l'étape suivante. Après un démarrage, attendre avant de coller dans la console : le presse-papiers peut être repris par SketchUp.
+    - 2026-11-05 Besoin ajouté — Générateur de rue et d'îlots au tracé (geste du Mur connecté YSKE, 1 à 3 accès de cour sur forme fermée) et terrassement sur terrain accidenté. Hors V0.1. (→ docs/RUE_ILOT_TERRAIN.md)
+    - 2026-11-05 Push bloqué — Aucun identifiant GitHub sur le poste à ce stade ; commits locaux en attente si la branche n'apparaît pas sur le remote.
+    - 2026-11-06 H11 — Réussi, aucun code livré modifié. Trois écarts de la sonde corrigés : brouillon qui n'était pas la fixture, model.definitions compte aussi les groupes, l'objet Ruby d'une définition change après un Rétablir (comparer le contenu ou le persistent_id). H06 et H07 rejoués en LOD 1, 12 pannes sans résidu. Avec type via presse-papiers, valider la console par une touche Entrée séparée.
+    - 2026-11-06 H12 — Réussi vers Blender 5.2 sans interface : écart nul sur W, D, H-toit, 148 baies traversantes. L'OBJ n'a pas d'unité : units 'model' donne un facteur 1 000 dans le gabarit Architecture en millimètres, exporter en 'm'. Accents remplacés par _ dans les noms de matériaux. (→ docs/recette/H12.md)
+    - 2026-11-06 Cible réduite — Choix du propriétaire : Windows et SketchUp 2026 seulement, AG-019 débloqué. (→ docs/DECISIONS.md)
+    - 2026-11-06 AG-020 — RBZ 0.1.0 installé, H01 à H12 rejoués sans échec. Bascule du Gestionnaire non conservée au redémarrage sur ce poste, alors que check/uncheck en Ruby l'est ; fermer SketchUp normalement, une fermeture forcée perd l'état. Sketchup.quit peut ramener à l'accueil sans quitter. Ne pas cliquer le gabarit d'accueil avant 28 s. Viser les boutons du panneau d'après une capture : ils bougent avec l'aperçu. (→ docs/recette/V0.1.md)
+    - 2026-11-06 EXT-10 préparé — D-05 et D-06 tranchées. Sonde raytest : altitude exacte, relance sous obstacle sans blocage, trou et masqué = nil, 0,84 ms par rayon, d'où un relevé sur demande au pas de 2 m. Terrain intact : plateforme au point haut par défaut, déblai annoncé mais non montré. Assise appliquée à une racine déjà placée. (→ docs/TERRAIN_CONTRACT.md)
+    - 2026-11-06 H13 relevé — 26 contrôles, écart 0,0005 mm. open_application lance une seconde instance si SketchUp tourne déjà : vérifier les processus d'abord, et regarder l'écran avant de cliquer. La session Windows se verrouille après inactivité : LogonUI actif = écran inaccessible, demander au propriétaire. (→ docs/recette/H13.md)
+    - 2026-11-06 H13 écriture — Vrai défaut trouvé : un rayon le long d'une arête verticale du soubassement ne renvoie rien ; rayons décalés de 0,2 mm. Les scripts patch en heredoc cassent les accents sous Git Bash (CP850) : les écrire dans un fichier. Le second clic sur Édition n'ouvre le menu qu'après un survol et 3 s.
+    - 2026-11-06 AG-026 — Vrai défaut présent depuis la 0.1.0 : set_on_closed est perdu à la fermeture, la page rouverte recevait une ancienne réponse et annonçait une création non écrite. Rattaché à chaque affichage, init vide la mémoire. Rejeu : dernier cas de charge figé, fenêtre fermée à la main par le propriétaire, pas de plantage ; prévenir avant une charge, run_h14 rejoue H14 seule. Le relevé coûte 30 à 50 ms par point sur 100 000 faces. Une réponse témoin posée juste après show est effacée par init : attendre la page. (→ docs/recette/H14.md)
+    - 2026-11-06 EXT-07 préparé — D-03 onglet, D-04 selon le style. Parcelle en trapèze à façade et arrière parallèles, donc convexe et toit en section ; murs mitoyens gardés ; même gabarit par ensemble. Report : carrefours, trottoirs, modification d'une seule parcelle. Annoncer la durée avant une écriture longue : une fenêtre figée se fait fermer. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-028 — Contrat corrigé à l'implémentation : l'écart de 3 m entre parcelles contredisait l'arrière minimal de 2 m autour d'un angle, il ne vaut donc plus entre segments contigus. Les numéros de segment restent ceux du tracé saisi, même parcouru à l'envers. Dans une classe de test, une méthode placée après private n'est pas lancée. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-030 — Trame des baies resserrée entre les joints : sinon un angle rentrant très fermé refusait toute la parcelle. À angle droit, le calcul V1 reste séparé pour ne pas bouger les empreintes. Reculs et travées arrière ne sont pas dans la configuration : AG-031 doit les inclure pour partager une définition entre parcelles. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-031 — Calcul pur sous Ruby 3.2.11, hors écriture : 10 à 69 ms pour 12 à 50 parcelles, au plus 231 ms pour 200 ; 1 à 3 définitions grâce au partage, sans jitter. Le plafond de 400 000 faces étendues refuse déjà 200 parcelles Brutaliste Structural LOD 1 (401 723) : à revoir avec la mesure d'écriture d'AG-032. Les profils livrés n'ont aucun tirage de style. D-01 pèse davantage ici : un jitter refuse presque toujours au moins une parcelle, donc tout l'ensemble. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-032 — Le coût d'écriture suit les faces uniques : 200 parcelles droites 2,4 s, 76 parcelles sans partage 14 à 17 s. Plafond étendu porté à 600 000. view.write_image évite de piloter l'écran pour regarder un rendu. Copie de développement dans Plugins, l'ancienne dans tmp/plugins-avant-ag032/. (→ docs/recette/H15.md)
+    - 2026-11-06 AG-033 — Une page se charge après l'activation de l'outil : init lui redonne l'état, sinon le statut reste faux. Un Result en erreur perd sa valeur : le tracé refusé transporte ses refus dans le résultat. Le panneau ouvert au coin cachait le menu Édition. En sonde, viser un point visible : une vue de dessus évite un clic hors de l'écran. (→ docs/recette/H16.md)
+    - 2026-11-06 AG-034 — Premier îlot fermé, Brutaliste, tracé à la vraie souris : carré de 52 m, 13 bâtiments, 3 accès, fermeture au premier point à quelques pixels, Annuler et Rétablir au vrai clavier et au vrai menu, vues de la rue et de la cour regardées. Preuve à l'écran seulement, la sonde scriptée de l'îlot viendra en H17. Une candidate doit avoir ses deux voisines sur son segment : sinon un sommet plat ouvrirait un vide contre un autre segment. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-035 — La hauteur de porche prévue, 3,5 m, ne tient sous aucun style livré : leur RDC ne laisse que 2,8 et 2,9 m. Départ ramené à 2,7 m, réglable ; un premier niveau plus haut le permet. Porche regardé à hauteur d'œil, écrit par le service dans deux styles ; le geste souris et la vraie copie restent pour H17. En sonde, la première instance du gabarit est le personnage : chercher la racine par son attribut. (→ docs/ENSEMBLE_CONTRACT.md)
+    - 2026-11-06 AG-036 — La recette complète passait alors que le vrai clic sur Remplacer ne faisait rien : le change d'un champ à la perte de focus désactivait le bouton sous la souris. Un clic DOM ne perd pas le focus : toujours faire le vrai geste sur une étape importante. Trois RBZ successifs, recette complète rejouée sur le dernier. (→ docs/recette/H17.md)
+    - 2026-11-07 AG-027 — Une dalle pile à l'altitude du terrain arrête le rayon, qui repart dessous et ne voit plus le terrain : relance à 1 mm puis 5 mm après un obstacle. Le vrai geste a encore montré quatre défauts d'interface invisibles au DOM. Faire le geste avant la recette complète évite de la rejouer. Une sonde qui ne lit que les sommets donne de fausses alertes : lire le bord réel. (→ docs/recette/H18.md)
+    - 2026-11-07 EXT-11 cadré — Demande du propriétaire : coupe d'abord, à l'échelle humaine, puis carrefours, rails, routes variées ; mobilier urbain renvoyé à EXT-12. Une maquette a suffi à montrer deux écueils : le terrain intact enterrerait les fossés (D-08), et une autoroute n'a pas de carrefour à niveau. Le tracé devra gagner des rayons. Dans une sonde de page, rechercher les boutons à chaque clic : un rendu les remplace. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-037 — Le contrôle de couronne a trouvé un défaut dans un préréglage de la maquette : arbre colonnaire du boulevard au-dessus d'une voie à 2,24 m ; terre-plein porté à 6 m. Une raison de refus passée par une variable échappe au relevé des messages du panneau : la tester à part. Le message de version d'une coupe parle encore d'un bâtiment, à reprendre en AG-038. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-038 — Le panneau reçoit une chaîne JSON, pas un objet : un banc de navigateur qui passait un objet a caché le défaut, seul SketchUp l'a montré. SketchUp n'expose à la page que les rappels connus à son chargement : une sonde se rattache juste après show. Un script de page modifié n'est pas toujours relu dans la même session : redémarrer SketchUp avant une recette. La sonde à l'écran a trouvé un personnage de 1,49 m, pieds en l'air : mesurer le repère d'échelle lui-même. (→ docs/recette/H19.md)
+    - 2026-11-07 Échelles — À la demande du propriétaire, chaque objet de la coupe est mesuré dans la géométrie rendue : 18 écarts sur 82 avant correction (rails 12 cm trop haut, train flottant de 13 cm, crosses et globe au-dessus de la hauteur annoncée). Après : 102 objets, 0 écart dans SketchUp. Un dessin « à l'œil » ne suffit pas : mesurer chaque objet contre le sol réel. (→ docs/recette/H19.md)
+    - 2026-11-07 AG-039 — Sur un arc comme à l'onglet, un quadrilatère de ruban en pente reste plan : les deux arêtes de coupe sont coplanaires. Une marche de ballast n'est pas une bordure : la bordure est réservée aux trottoirs, terre-pleins, bandes plantées et pistes. Une raison émise par une méthode error échappe au relevé des messages : la tester à part. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-040 — D-09 tranchée : 3D simple (ADR-35). La coupe ne transmettait pas la variation de hauteur à la pose : une seule hauteur d'arbre sur la route de campagne, vu en comptant les définitions. Une assertion « moins d'objets sur la ligne intérieure » était trop faible : mesurer la longueur de la ligne. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-041 — Un rail au ras de la chaussée, posé comme une face à part, scintillerait dans SketchUp : il est taillé dans la surface. La matière des rails portait la clé de la bande de ballast (road/rail) : le ballast aurait pris leur couleur, vu en comptant les matières ; clé distincte road/rail_steel. (→ docs/VOIRIE_CONTRACT.md)
+    - 2026-11-07 AG-042 — Le writer existant a suffi : la voie est un plan comme un autre, avec ses balises par famille et des définitions préfixées road1/. Le banc de navigateur relié au vrai service sur doubles a trouvé trois défauts d'affichage avant SketchUp. Au vrai geste, un segment tapé en perspective est parti presque à rebours : refus juste, message à mieux dire. Recette complète : deux sondes se partagent un panneau ; une sonde doit cesser d'écouter après sa fin, et ne pas supposer l'état de départ d'une session. Copier-Coller des recettes H05 et H17 : surveiller le journal pour ne pas les manquer. (→ docs/recette/V0.5.md)
+    - 2026-11-07 AG-043 — D-07 tranchée : carrefour automatique (ADR-36). Un contrôle de couverture vu de dessus (chaque point des emprises couvert une fois) a trouvé quatre défauts que la validation du plan laissait passer : coin aigu dont l'angle extérieur du trottoir tombait côté chaussée (arrondi extérieur ajouté), corde au côté convexe d'une jonction à 150° (onglet), chemin rejoignant une rue (coin vide accepté au niveau du cœur), bords très inégaux (refus junction_shape, un rayon plus grand passe). Le format du plan n'admet que triangles et quadrilatères : les sommets en T entre tronçon et carrefour sont soudés en retriangulant la face touchée. Une passe de retrait a effacé le début d'un fichier non suivi, reconstitué depuis la session ; tests rejoués. Besoin noté : canaux, rivières, fleuves et ponts (EXT-13, D-11, D-12).
+    - 2026-11-07 AG-044 — Le marquage est taillé dans la surface comme les rails : la zone du carrefour s'allonge du passage, de la garde et de la ligne d'arrêt, balayée avec une ligne de coupe dont les segments marqués changent de matière ; la soudure d'AG-043 raccorde les bandes sans autre code. Mon attente de test sur la ligne d'arrêt était fausse : la rue de ville a son stationnement au nord de la branche est, la voie qui entre va de -1 à 2 m. La ligne d'arrêt couvrait aussi les bandes dérasées : restreinte aux voies (lane).
+    - 2026-11-07 AG-045 — Un anneau est un polygone à trou, que la triangulation par oreilles ne sait pas faire : la chaussée est découpée en secteurs le long de la ligne médiane de chaque branche, l'îlot séparateur s'y loge par un détour de chaque côté. Le contrôle de couverture ne regardait que les emprises : étendu au disque du giratoire et à ce qui en déborde ; marge de 6 cm pour la flèche des arcs. Deux fausses alertes de test (disque mal centré sur un X oblique, arrondis d'entrée pris pour l'anneau), corrigées en lisant le centre du nœud dans le plan (point_m).
+    - 2026-11-07 AG-046 — Le contrat prévoyait deux anneaux autour d'un seul nœud : intenable, une branche passe par son nœud et non par le centre d'un anneau décalé. Décidé et consigné (ADR-37) : deux nœuds voisins sur une voie, jumelés ; la liaison est le bout de voie entre eux, sans îlot séparateur. Une commande d'essai attendait une saisie (python3 -) et a bloqué la session deux minutes, arrêtée.
+    - 2026-11-07 AG-047 — Le passage à niveau est reporté en AG-050 : le ballast est à 0,35 m et le dessus des rails à 0,52 m, une route ne les franchit qu'en rampe, donc avec le profil en long d'AG-049 ; mieux qu'un muret de 52 cm inventé. Le tram traverse en couloir balayé, ce qui coupe le cœur en deux et l'îlot central en deux morceaux fermés par une corde. Le passage piéton d'un carrefour à feux écrasait les rails : le marquage ne remplace plus un rail.
+    - 2026-11-07 AG-048 — Le service de réseau hérite de celui de la voie (libellés, matière, forme d'entrée). Un banc de navigateur nourri par le vrai contrôleur a montré que l'état renvoyé partageait la liste des réglages (copie). Dans SketchUp : soudure en O(arêtes × sommets), 89 s pour 9 giratoires, ramenée à 1,4 s par un index de cases ; voie refusée quand son premier point n'est pas rond (reste de 10⁻⁷) ; rouvrir le même fichier depuis une minuterie a figé SketchUp, réouverture à la main. Vrai geste : « 100 » tapé dans un gabarit en millimètres donne 100 mm, il faut « 100m ».
+    - 2026-11-07 AG-049, étape 1 — D-08 tranchée : copie entaillée (ADR-38). Le contrat est écrit avant le code. Profil en long et talus dans le noyau, vérifiés à la main sur un plan incliné. Un nom de refus (toe_not_found) existait déjà pour l'assise : le refus de la voie s'appelle road_toe_not_found. En bout de voie, l'abscisse calculée dépassait de 4·10⁻⁷ la dernière de la grille quantifiée : tolérance de 10⁻⁶.
+    - 2026-11-08 AG-049, étape 2 — Entaille par faces verticales temporaires et intersection SketchUp, faces intérieures effacées. En recette, le relevé de l'original masqué perdait des points : la copie le recouvre exactement hors de l'entaille et un rayon qui la touchait repartait sous l'original ; toucher la copie vaut toucher le terrain. Mes scripts d'édition écrivaient en CRLF sous Windows (un test de la page l'a vu) : fichiers ramenés en LF, écriture binaire désormais. Version de développement 0.7.0-dev.
+    - 2026-11-08 AG-049, vrai geste — Créer la voie ne faisait rien sur un terrain : la confirmation recalculait l'aperçu sans le relevé, et le refus était écrasé par l'aperçu suivant. Corrigé, avec un test de contrat du parcours du panneau, qui manquait. Le premier clic sur le panneau après un tracé ne fait que lui donner le focus.
+    - 2026-11-08 AG-050 — Pas de cœur de carrefour : les deux voies traversent. La route reçoit un profil en long (stations ajoutées, comme sur un terrain) ; la voie ferrée garde rails et traverses continus, ses autres objets sont calculés par morceaux autour de la route. Platelage 5 mm sous le dessus des rails pour éviter des faces superposées. U28 se servait de level_crossing comme type inconnu : interchange désormais.
+    - 2026-11-08 Recette 0.7.0 — TerrainSurveyor ayant changé, H13 et H15 à H18 rejouées avec la voirie (nouvel enchaînement run_terrain) : 0 échec. Vu dans SketchUp au passage à niveau : un lampadaire de la rue entre les rails et une croix en « + » ; corrigés, paquet reconstruit, toutes les recettes rejouées sur le final.
+    - 2026-11-08 EXT-13 cadré — Demande du propriétaire : l'eau et les ponts d'abord ; rivière qui suit le terrain, canal à écluses, fleuve sur terrain plat, et une astuce pour le bord de mer. Retenu : la mer est la dernière bande de la coupe, falaise et plage abaissent les bandes qui suivent (niveaux cumulés) ; écluses placées par une règle fixe, rivière en enveloppe descendante. D-11 tranchée (ADR-39) ; ponts en AG-057, après D-12.
+    - 2026-11-08 AG-051 — D-12 tranchée : pont né au croisement (ADR-40). Revanche et profondeur deviennent des réglages de bande, champs facultatifs du format V1 (ADR-41) : les 22 plans des anciens préréglages sont identiques avant et après. Le lit est dans la ligne de coupe, mur de quai compris ; la surface de l'eau est un ruban à part, pour ne pas couper les murs dans SketchUp. Eau sur un terrain et eau dans un réseau refusées en attendant AG-053, AG-055 et AG-057. Le dessin du panneau descend jusqu'au lit ; pas encore vu dans SketchUp.
+    - 2026-11-08 AG-052 — Niveaux cumulés de la terre vers la mer, de quelque côté que soit la mer ; une coupe sans mer ne bouge pas (28 plans des préréglages d'avant identiques). La ganivelle est une paroi de bois et ses poteaux, pas des lattes une à une : 770 lattes par 100 m dépasseraient vite le plafond d'objets. Le muret ne se pose pas en tête de falaise, dont le front n'accepte rien : le sentier côtier porte la barrière. Une mer large demande un grand rayon de son côté ; axe côté terre, on vire librement de l'autre. Pas encore vu dans SketchUp.
+    - 2026-11-08 AG-053 — Le lit se règle sur le terrain sous l'eau, pas sous toute l'emprise ; enveloppe descendante, borne de pente propre à l'eau. Copie 0.8.0-dev installée dans Plugins ; H23 par le service : 9/9 après deux corrections de la sonde (mon terrain de test dépassait la borne de 3 % : refus juste ; le refus à contre-pente était testé sur un terrain déjà masqué par la rivière, limite d'ADR-38). Premier vrai rendu de l'eau : opacité 0,6, lit creusé dans la copie entaillée.
+    - 2026-11-08 AG-054 — Écluses placées par la règle du contrat, la chambre finissant au point de pente précédent. Une seule ligne de coupe ne peut pas avoir le lit bas et les berges en rampe : la chambre est balayée avec une coupe dont seuls les points du lit sont décalés, d'où l'exigence de quais (canal_needs_quays). Portes simplifiées en battants droits, propres à chaque écluse (leur hauteur dépend de la chute), et non en définitions partagées. Ajouts au contrat : lock_outside_trace ; le lit plus bas de la chambre n'entre pas dans le contrôle des terrassements. H23 rejouée avec un canal de quatre écluses : 12/12 au premier passage.
+    - 2026-11-08 AG-055 — Demande du propriétaire : fond marin à 3 m, atteint en pente sur 10 m depuis la plage ou le pied de la falaise ; la marche de 1 m disparaît. Un fleuve à quais n'aurait jamais tenu sur un terrain (lit à 8 m sous les quais, au-delà des 6 m) : pour toute voie à eau, les terrassements se mesurent désormais aux bandes de terre ; la rivière de H23 passe de 3,40 à 1,56 m de déblai. Côté mer, ni talus ni toe : le contour suit le bord de la mer. Vu à l'écran : un terrain plat plus haut que la mer au-delà de son bord forme un mur au large (conforme, noté). H23 14/14.
+    - 2026-11-08 AG-056 et recette 0.8.0 — Régime de l'eau dans Tracer une voie, réglages sous chaque bande, chute et écluses dans l'aperçu ; en modification, le régime part avec la dernière bande d'eau (une clé à nil est retirée des réglages fusionnés). Vrai geste : canal sur terrain d'essai, 4 écluses annoncées puis écrites. Deux défauts vus : rangée des réglages illisible (au geste), ganivelle dessinée à 10 m dans la coupe (par H19, forme absente du dessin). Corrigés, paquet reconstruit, H13 à H23 rejouées : 0 échec. Saisie « longueur;angle » au clavier non prise pendant le geste : tracé fait à la souris.
+    - 2026-11-08 Contrat des ponts — Écrit avant le code. Un pont est un type de nœud, comme le passage à niveau : pas de cœur, voie portée en rampes, voie franchie inchangée. Sur l'eau il naît d'office (seul type possible) ; entre deux routes, le réglage over choisit la voie portée, sans défaut implicite. AG-057 découpé en trois : poutre (noyau), arc et voûte, panneau et RBZ 0.9.0. Réseau toujours horizontal : pont sur terrain hors lot.
+    - 2026-11-08 AG-057 — Le pont réutilise la mécanique du passage à niveau (profil, zones, objets coupés), plus un groupe road/bridges de solides : tablier 2 cm sous la chaussée (aucune face doublée), culées sous le haut des rampes, garde-corps qui servent de rive. Écarts au contrat consignés : tous les objets sous le tablier s'interrompent (pas de tri par hauteur) ; « simple » sur l'eau vaut pont. Six réseaux types identiques avant et après. Copie 0.9.0-dev : premier pont vu dans SketchUp, conforme. Un remplacement de Plugins lancé en même temps que la construction du paquet a vidé Plugins un instant ; refait dans l'ordre.
+    - 2026-11-08 AG-058 — Le gabarit du contrat (« hauteur libre » au-dessus de chaque bande) rendait l'arc impossible : à la clé, il touche le tablier ; aux bandes il descend. Corrigé dans le contrat : le gabarit sous un arc ou une voûte est celui de la bande (4,5 m) ou 2,5 m sur l'eau, et le refus donne la hauteur libre qui suffit, trouvée par dichotomie. Le plan n'admet que triangles et quadrilatères : abouts d'arc et de tympan découpés en bandes entre deux chaînes.
+    - 2026-11-08 AG-059 et recette 0.9.0 — Type Pont au panneau de réseau, eau dans le réseau à un seul niveau, eau en plan. Un réseau refusé gardait autrefois sa liste de carrefours vide : un pont refusé (voie portée manquante) devenait impossible à corriger ; la liste précédente reste. Vrai geste : rue et rivière à la souris, pont d'office passé en arc, réseau créé ; les longueurs au clavier et les clics d'options de liste n'arrivent pas depuis l'automatisation (choix au clavier). H24 9/9 après deux corrections de la sonde ; H13 à H23 rejouées sur le RBZ final : 0 échec.
+    - 2026-11-08 AG-060 — D-10 tranchée par le propriétaire : B et C. Le plot se pose sur la limite gauche de sa bande (pas de réglage de position) ; les clous sont une option du carrefour à feux, désactivée par défaut, pour que les réseaux enregistrés gardent leur empreinte (34 voies et 6 réseaux vérifiés identiques).
+    - 2026-11-08 D-01 — Tranchée par le propriétaire, option A (ADR-43). Le décalage, et non le centre, est arrondi : une porte non décalée garde ainsi ses bords sur la même grille que les fenêtres au-dessus d'elle. L'amplitude est bornée au multiple de 5 mm inférieur, pour ne jamais sortir de la grille. Mesure avant/après sur 500 graines : 0–73 % → 100 %.
+    - 2026-11-08 Rues variées cadrées — Demande du propriétaire : hauteurs et toits variés à la génération d'une rue. La géométrie s'y prête déjà : murs latéraux toujours émis et aveugles (ADR-32), toits coupés aux plans latéraux. Reste un tirage par parcelle, ses contrôles contre les règles du style (Haussmannien : 5 à 7 niveaux, mansarde) et les jointures. Fenêtres et portes : déjà là sur chaque bâtiment ; pas de vitrage ni de menuiserie.
+    - 2026-11-08 D-13 à D-16 — Tranchées par le propriétaire, les quatre options A (ADR-44).
+    - 2026-11-08 AG-061 — Le tirage se fait directement dans la fenêtre permise (fourchette ∩ ± écart autour de la voisine) : plus simple que tirer puis retirer, et sans coupe. Les règles du style se jugent sur une parcelle témoin par la résolution d'un bâtiment, pour garder exactement la sémantique des modes de fidélité. Limite notée : dans un îlot, la fermeture du tour n'est pas contrôlée. Quatre ensembles d'avant identiques.
+    - 2026-11-08 AG-062 — Aucune géométrie nouvelle : murs latéraux toujours émis (ADR-32) et toits coupés aux plans latéraux suffisent. Vérifié par invariants (U43) et à l'écran sur une rue en coude des deux côtés, copie 0.10.0-dev.
+    - 2026-11-08 AG-063 et recette 0.10.0 — Section Variété au panneau de rue : case, fourchette, écart, toits, graine ; tirage annoncé avant d'écrire. Les toits hors style restent proposés, marqués, sinon un style d'un seul toit n'aurait aucune variété. Case décochée : variety null, qui retire la variété en modification. Le vrai geste a trouvé un défaut ancien (AG-031) : les avertissements de style d'un ensemble se perdaient (lus sur le Result vide de la préparation) ; corrigé, U42, empreintes identiques. D-01 touchant les bâtiments seuls, toute la recette H02 à H25 rejouée sur le RBZ final : 0 échec.
+    - 2026-11-08 J11 cadré — Demande du propriétaire : portes et fenêtres, commerces au rez-de-chaussée, cheminées, personnaliser un bâtiment d'une rue au clic droit. Constat : baies et cadres existent, sans vitre ni porte pleine. Chaque réglage est une clé facultative, pour que rien d'existant ne bouge. Point délicat : la largeur d'une parcelle ; recommandé, déplacer la limite mitoyenne pour garder les ids, où s'attachent les réglages propres. Carrefour en T et boucle de plusieurs voies : déjà possibles (vérifié au noyau) ; une voie seule refermée reste refusée (self_overlap).
+    - 2026-11-08 D-17 à D-22 — Tranchées par le propriétaire, les six options A (ADR-45).
+    - 2026-11-09 AG-064 — Vitre de 1 cm plutôt qu'une face seule : solide fermé, même validation que les barres. Point trouvé en codant : la révision 2 vitrée aurait changé toute rue existante à sa prochaine modification, car un ensemble enregistrait son style sans révision ; une rue fige désormais sa révision, une rue d'avant est relue en révision 1 (ADR-46), et le panneau ne propose que la dernière révision. Empreintes des profils en révision 1 et de quatre ensembles types identiques. Copie de développement dans Plugins (0.10.0 gardée dans tmp/plugins-avant-ag064) ; sonde 13/13, premier vitrage vu. Annuler n'agit qu'entre deux appels Ruby : la sonde enchaîne ses pas par minuteur.
+    - 2026-11-09 AG-065 — Vitrine de 1,20 m au moins, centrée sur la trame et sans variation des baies ; trop étroite, la travée est refusée sur /facade/front_bays (le contrat citait un champ /facade/bay_width_m qui n'existe pas). Au porche, une vitrine recouverte est arrêtée à 0,10 m du passage si elle garde 1,20 m, sinon retirée. Bandeau refusé s'il passe devant l'entrée. Hauteur 4,5 m ajoutée à l'Haussmannien révision 2, pas encore publiée. Empreintes des quatre ensembles types identiques. Sonde SketchUp 9/9 sur la copie de développement ; façade vue (docs/recette/img/ag065-commerce.jpg).
+    - 2026-11-09 AG-066 — Souches au bout du faîtage aussi pour la mansarde d'un bâtiment seul (son haut est une croupe). Point trouvé en codant : deux parcelles de même configuration partageaient leur plan sans regarder la seed ; avec les cheminées la seed devient géométrique et entre dans la clé de partage. Protocole allégé à la demande du propriétaire : seulement les tests du ticket et ceux des fichiers touchés, pas de sonde SketchUp ; il teste à la main.
+    - 2026-11-09 AG-067 — Cases Détails au panneau de rue envoyées seulement si touchées : une rue laissée telle quelle suit son style, et une rue d'une ancienne révision ne reçoit pas de vitrage par mégarde. Vérification des panneaux dans le navigateur intégré, servis en local (pas de Node sur ce poste). RBZ 0.11.0 ; recette H26 laissée au propriétaire.
+    - 2026-11-09 AG-068 — Largeurs et ids jugés après les accès de cour, dans layout_for, pour que la mise sur terrain voie les mêmes limites. Le validateur de schéma ne lit pas un additionalProperties à sous-schéma : le détail d'une entrée est tenu en Ruby (EnsembleParcels::ENTRY_SCHEMA). Empreintes des ensembles types identiques ; version de développement installée dans SketchUp.
+    - 2026-11-09 AG-069 — Avant d'écrire, l'édition de la rue est refermée et la racine sélectionnée : on ne remplace jamais une définition pendant qu'on est dedans. Valeurs de la rue calculées par le noyau (street_values), affichées en grisé ; champ vide = rue. Panneau de rue : compte et retrait des réglages propres. Panneau de parcelle essayé dans le navigateur intégré ; menu contextuel non essayé dans SketchUp.
+    - 2026-11-09 J12 cadré — Demande du propriétaire : volets et lucarnes ; petits bois repris de D-17. Lucarne posée sans percer le toit, comme une souche (recommandé) ; volets ouverts plaqués, refus faute de place ; décisions D-23 à D-27 ouvertes.
+    - 2026-11-09 D-23 à D-27 — Options A retenues par le propriétaire (ADR-47).
+    - 2026-11-09 AG-070 — Petits bois à 1 mm devant la vitre : aucune face confondue. Les rangs ne s'écrivent qu'avec l'option, comme la matière du verre avec le vitrage.
+    - 2026-11-09 AG-071 — La place d'un volet se juge contre toutes les baies du même niveau, porte, vitrine et passage compris, pas seulement contre la fenêtre voisine.
+    - 2026-11-09 AG-072 — Écart au contrat : travée d'extrémité contre une croupe ou l'onglet d'une parcelle d'angle omise avec avertissement, pas refusée ; sinon presque aucune croupe ni rue qui tourne n'aurait eu de lucarnes. Faces du plan à 4 sommets au plus : pignons de lucarne en rectangle et triangle. Pas vu dans SketchUp.
+    - 2026-11-09 AG-073 — Un îlot Toulousain révision 3 par défaut aurait été refusé : les volets d'une fenêtre voisine du passage de porche manquaient de place. Ces volets sont omis et dits ; les autres manques restent refusés. Défauts des trois styles vérifiés en bâtiment, rue, rue à angle et îlot avant de publier.
+    - 2026-11-09 J13 cadré — Demande : tous les styles, éléments créés au fur et à mesure ; choix de détail délégués (ADR-48). Lots du moins au plus de géométrie nouvelle ; une variante régionale est un profil à part, sans capacité regional_variant.
+    - 2026-11-09 AG-074 — Génoise abaissée sous la peau du toit prolongée : posée à H, son rang du haut aurait percé le débord.
+    - 2026-11-09 AG-075 — Les profils régionaux sont écrits par un script qui refuse d'écraser une révision publiée changée ; un test commun (U52) vérifie chaque profil en bâtiment, rue, rue à angle et îlot.
+    - 2026-11-09 AG-076 — Longère en un niveau aux murs de 0,50 m et maison de bourg aux murs de 0,45 m ; lucarnes et cheminées tiennent ensemble sur les défauts.
+    - 2026-11-09 AG-077 — Le faubourien passe à 3,0 m par étage : à 2,9 m, le porche d'un îlot ne tenait pas sous le rez-de-chaussée ; trouvé par le test commun U52.
+    - 2026-11-09 AG-078 — Listes de styles groupées par famille, même ordre aux deux panneaux ; case Génoise partout. RBZ 0.14.0 installé.
+    - 2026-11-09 J14 cadré — Faîtage perpendiculaire en premier : pignon à redents et chalet en dépendent. Une parcelle d'angle garde un faîtage parallèle, avec avertissement.
+    - 2026-11-09 AG-079 — Toits de rangée à faîtage perpendiculaire faits par le solveur du bâtiment seul, sans débord latéral ; l'angle garde le parallèle avec avertissement. Défaut révélé au passage : un test épinglait les trois styles d'origine depuis AG-075 ; il vérifie maintenant qu'ils restent publiés.
+    - 2026-11-09 AG-080, AG-081 — Pignon à redents refusé avec un débord de plus de 5 cm, qui passerait devant les marches. Bardage par cellule de mur du dernier niveau, sans nouvelle géométrie.
+    - 2026-11-09 AG-082 — Chalet à trois niveaux : à deux, le balcon (niveau 2) n'existait pas. Liste Faîtage pour deux pans seulement. RBZ 0.15.0 installé.
+    - 2026-11-09 J15 cadré — Rez-de-chaussée maçonné, ossature aux étages posée sur le mur. Encorbellement reporté : il décale murs, baies, planchers et toit étage par étage, un lot à lui seul ; profils publiés sans lui.
+    - 2026-11-09 AG-083 à AG-085 — Pan de bois posé sur le mur, refusé avec les détails qui occupent la même épaisseur. Écharpes en parallélogrammes, validées comme solides. Quatre profils de la famille bois ; RBZ 0.16.0 installé.
+    - 2026-11-09 J16 cadré — Roman et Gothique en maisons de ville, pas en églises. Deux capacités portent le lot (arcs, ornements classiques) ; avant-corps, reliefs Art déco, Art nouveau et patio approchés et dits ; gradins, oriels, voûtes reportés.
+    - 2026-11-09 AG-086 à AG-089 — Le test commun U52 a trouvé trois défauts de profils avant publication : rangs de petits bois sans petits bois, croupe refusée en rangée, plafond de niveaux Art déco. Pilastre devant un porche omis et dit. RBZ 0.17.0 installé.
+    - 2026-11-09 J17 cadré — Quatre capacités (bandeaux et murs-rideaux, pilotis, sheds, trame et brise-soleil). Volumes assemblés et scénario climatique reportés.
+    - 2026-11-09 AG-090 à AG-094 — Pilotis en rangée changés de refus en omission dite, pour que le Moderniste fasse une rue. Bandeaux bornés aux dégagements d'about (angle biais). Trois défauts de profils corrigés avant publication par U52. RBZ 0.18.0, 32 styles.
+    - 2026-11-09 J18 cadré — Demande : clic droit Modifier, styles mêlés dans une rue (ADR-49, revient sur ADR-44), rez-de-chaussée moins répétitifs, stores et pergolas. Envoi sur GitHub des 24 commits fait à la demande.
+    - 2026-11-09 AG-095 à AG-099 — Devanture passée de shop.front à features.shop_front (shop est reconstruit à la résolution). Résumé « shops » écrit seulement avec un tirage de rez-de-chaussée, sinon toute rue variée aurait changé de plan. Largeur de fenêtre tirée pour tout le bâtiment : une seule largeur par bâtiment dans le format.
+    - 2026-11-10 J19 cadré — Cause des T difficiles : un bout n'était raccordé qu'à 1 m de l'axe de l'autre voie, pas sur sa chaussée ; un léger dépassement faisait une croix à moignon. Dalle et seuils écrits à la création (ADR-50) pour ne pas changer l'existant.
+    - 2026-11-10 AG-102, AG-103 — La fusion se calcule à part (core/road_merge, pur) puis s'écrit en une opération qui efface les racines absorbées. Deux tests anciens épinglaient encore trois styles ou un moignon de 4 m : mis à jour. RBZ 0.20.0 installé.
+    - 2026-11-10 J20 cadré — Le propriétaire demande tout le non-fait et des teintes faciles. Constat : le moteur ne garde la seed d'une parcelle que si elle change la géométrie ; avec des teintes elle doit rester. Balcons sans garde-corps ; seuil haut seulement signalé. Intérieur et emprises non rectangulaires renvoyés à J21 et J22.
+    - 2026-11-10 AG-104 à AG-108 — Les teintes sont des variantes `id~niveau.n` déduites du catalogue, pas des matériaux ajoutés ; la seed d'une parcelle doit alors compter dans la clé de partage. Perron, rampe et garde-corps s'écrivent à la création, comme la dalle. Le talus en rue est renvoyé à AG-109 : il faut relever au-delà de la parcelle et fermer chaque limite mitoyenne par un soutènement. RBZ 0.21.0 installé.
+    - 2026-11-10 AG-109 — Le soutènement se calcule chez la parcelle de gauche, sur sa propre grille : le profil de la voisine suit la même droite du terrain, la plateforme décalée de l'écart. Il faut donc toutes les plateformes avant de tracer. Deux tests de site_write, non relancés à AG-105, attendaient encore l'avertissement du seuil : réglés sur « Rien ». RBZ 0.22.0 installé.
+    - 2026-11-10 J21 cadré — Le PRD excluait l'intérieur : ADR-52 l'ouvre comme option des deux modes plutôt que comme le mode « Interior » réservé, pour ne pas doubler solveurs et migrations. Quatre choix de détail appliqués selon ADR-48 (D-23 à D-26) : escalier contre le mur latéral sans baie ou mitoyen, pièces en enfilade sur les trumeaux. Matières déjà au catalogue.
+    - 2026-11-10 J21 reporté — Le propriétaire reporte tout l'intérieur et précise qu'il se fera maison par maison, au clic droit (Créer l'intérieur), jamais pour une rue entière : AG-113 et AG-114 réécrits, pas de bloc interior au gabarit de rue (ADR-53). Priorité : EXT-06, 12, 09, 08, puis J22, puis J21.
+    - 2026-11-10 EXT-06 cadré — Les faces du plan sont des boucles simples (la grille de découpe remplace les trous) : une triangulation par oreilles suffit. Lire le plan plutôt que le modèle rend l'export testable sans SketchUp et identique à l'octet ; les retouches à la main ne passent pas. Unreal 5.8 et Blender 5.2 sont installés ; la reconnaissance des UCX_ en glTF reste à prouver (H38).
+    - 2026-11-10 AG-115 — Un nœud glTF n'a qu'un parent : une définition partagée devient un maillage aplati (instances internes cuites), et chaque instance un nœud qui le référence avec sa matrice conjuguée par le changement d'axes. Le plan est gelé : un test qui l'altère le recopie d'abord. Blender 5.2 en ligne de commande suffit à valider le fichier.
+    - 2026-11-10 AG-116 — Le Structural a aussi des surfaces (toits) : la double face se règle par primitive, d'où deux variantes d'un même matériau, suffixée pour qu'un importeur qui fusionne par nom ne les confonde pas. Le verre n'apparaît qu'avec glazing coché et une matière glass.
+    - 2026-11-10 AG-117 — Les boîtes et prismes prévus ne suivaient pas mansardes et croupes : l'enveloppe convexe des murs et du toit les remplace, pour LOD2 comme pour la collision (D-32 revu). Dans l'ordre naturel, les sommets de la grille des murs restaient dans l'enveloppe (88 triangles) ; traiter les plus lointains d'abord la ramène à 32.
+    - 2026-11-10 AG-118 — Les ids de définitions de détail peuvent se répéter d'un plan de maison à l'autre : le cache de maillages glTF est donc indexé par plan. Le bâtiment créé sans réglage reste au niveau de détail 0, si bien qu'un test qui attend LOD1 doit demander lod 1. L'export relit et recalcule tout, sans ouvrir d'opération.
+    - 2026-11-10 AG-119 — Le guide promettait « aucune garantie pour les moteurs de jeu » : la section Exporter est réécrite avec le parcours Unreal et son repli de collision, marqué non vérifié. RBZ 0.23.0 installé.
+    - 2026-11-10 EXT-12 cadré — FUTURE hésitait entre un module séparé et la coupe : la coupe gagne, car elle a déjà catalogue fermé, formes, définitions partagées, plafonds et éditeur. Il manquait la pose à un endroit précis (un arrêt de bus ne se répète pas tous les 28 m) : nouveau mode positions_m. Feux et croix de passage à niveau donnent déjà le modèle mât + plaque.
+    - 2026-11-10 AG-120 — Un élément qui n'est pas « spaced » est traité comme continu par le moteur : arrêt de bus et panneau n'entrent au catalogue qu'avec positions_m (AG-121), leurs formes étant déjà testées. Le schéma borne count à 10 avant l'intake : un dépassement sort en E_SCHEMA.
+    - 2026-11-10 AG-121 — Positions mesurées sur l'axe et non sur la ligne de pose : c'est la longueur lue au tracé, identique pour toutes les bandes. Le plan refuse les faces de plus de 4 sommets : plaques de panneau en éventail. Le relevé des messages lit les chaînes entre « error( » : bâtir le chemin avant l'appel.
+    - 2026-11-10 AG-122 — Le marquage est un élément dérivé de la coupe, posé à la cote de la voie et non du trottoir : une seule définition, quelle que soit la bordure. Un sommet décalé après la quantification est refusé par le plan : requantifier après tout décalage.
+    - 2026-11-10 AG-123 — Le repère d'un objet suit la chaussée la plus proche (Y vers elle) ; un panneau doit suivre le sens de circulation : RoadItems.side remplace « toward » pour lui seul, la plaque étant symétrique en Y.
+    - 2026-11-10 AG-124 — Pas de Node.js sur le poste et JScript ne lit pas l'ES5 du panneau : la syntaxe se vérifie en servant archgen/ui en local et en lisant chaque fichier par new Function dans le navigateur intégré. RBZ 0.24.0 installé.
+    - 2026-11-10 EXT-09 cadré — Pas de réseau dans le noyau : l'utilisateur fournit les fichiers. Deux pièges vus au cadrage : un réseau ARCHGEN plafonne à 24 voies (il faut découper un quartier OSM), et la convergence des méridiens Lambert-93 atteint 5° en Bretagne (il faut tourner le terrain, pas seulement le décaler). Bâtiments OSM en rectangles orientés tant que J22 n'est pas fait.
+    - 2026-11-11 D-38 révisée — Le propriétaire veut le téléchargement OpenStreetMap. AGENTS interdit le réseau au noyau, pas à l'adaptateur : Overpass est appelé par l'adaptateur (hôtes fermés, confirmation, seule l'emprise part), la réponse est enregistrée et lue comme un fichier local (ADR-57).
+    - 2026-11-11 AG-125 — REXML n'est plus une bibliothèque par défaut de Ruby 3 et peut manquer dans SketchUp : le XML OSM, très régulier, se lit par un balayage de balises, ce qui rend le refus du DOCTYPE trivial. Dans un bloc scan, un autre scan écrase Regexp.last_match : capturer d'abord.
+    - 2026-11-11 AG-126 — Simplifier chaque voie à part effaçait le nœud commun de deux rues qui se croisent, et avec lui le réseau : les points partagés sont fixés avant Douglas-Peucker. Une voie seule doit partir de [0, 0] : le rayon se vérifie sur le tracé ramené à son premier point.
+    - 2026-11-11 AG-127 — Le rectangle d'aire minimale d'un polygone a un côté sur l'une de ses arêtes : essayer chaque direction d'arête suffit, sans enveloppe convexe. Des maisons de ville mitoyennes se touchent : seul un chevauchement de plus de 1 % écarte un bâtiment.
+    - 2026-11-11 AG-128 — Une dalle RGE ALTI de 1 km au pas de 1 m donnerait 2 millions de faces : la fenêtre se cale sur la carte et le pas grandit jusqu'à 250 × 250 points. Altitudes relatives à l'origine pour que voies et bâtiments, à z = 0, tombent au sol. Le point d'origine du Lambert-93 sert de témoin exact au test.
+    - 2026-11-11 AG-129 — Un réseau doit partir de [0, 0] : MapRoads recentre chaque réseau et rend son origin_m (le test d'AG-126 partait par hasard de l'origine). Une racine ARCHGEN doit rester au premier niveau pour le clic droit : pas de groupe englobant, un marqueur « ARCHGEN Carte » à côté. Overpass jamais appelé en test : client HTTP injecté.
+    - 2026-11-11 AG-130 — Essai réel : 10 rues sur 300 en réseaux (carrefours dans des virages, trop proches, trop aigus) ; la moitié au mieux après retouches. Une rue à plat ne peut pas échouer : mode simple par défaut. « Ajouter du contexte » de SketchUp demande un abonnement. point_to_latlong rend [longitude, latitude] et le nord est tourné (1,14° ici).
+    - 2026-11-11 AG-131 — Pas de bibliothèque d'images en Ruby ni de mosaïque SketchUp sans abonnement : chaque tuile devient une image SketchUp posée à sa place. Carte OSM niveau 18, photo IGN niveau 19 ; serveurs de tuiles servis une image à la fois, avec cache. La carte retombe exactement sous les rues importées.
+    - 2026-11-11 AG-132 — Le carrefour suppose des branches droites : plutôt que de le courber, la voie est redressée sur la seule zone coupée et raccordée à la courbe après la coupe ; le raccord est vérifié (45° au plus, aucun bord qui recule).
+    - 2026-11-11 AG-133 — Les balcons n'existaient qu'aux niveaux 2 et 5 : option « tous les étages » ajoutée avant le profil du front de mer (règle 5). Le porche d'îlot ne tient pas sous 2,8 m : accès par interruption. Une rue de maisons reste mitoyenne.
+    - 2026-11-11 AG-134 — Photos du propriétaire : la profondeur des balcons fait le style. Révision 1 du front de mer remplacée le jour même, jamais utilisée. Baies de 2,4 m refusées en parcelle d'angle par U52 : 2,0 m.
+    - 2026-11-11 AG-135, AG-136 — Attique : deux plans validés empilés plutôt qu'un retrait appris par chaque solveur ; en angle, l'attique garde des travées de même largeur. Isolés : seul le placement change ; limite latérale prise au fond du bâtiment, sinon les parcelles d'angle rentrant étaient refusées.
+    - 2026-11-11 AG-137 à AG-139 — Une face de plan a 3 ou 4 sommets : la dalle en U est faite de cinq quadrilatères sans sommet en T. Les ailes sont des bâtiments seuls tournés d'un demi-tour (matrices d'instance comprises). Import : grille de 60 cases, intersection sur union ; une croix reste refusée.
+    - 2026-11-11 H43 — Essai réel par sonde dans SketchUp : front de mer, villa en U à bow-window, maison en L, rue isolée en T construits sans échec et conformes à l'œil.
+    - 2026-11-11 AG-140 à AG-142 — Pan de bois et encadrements ne vont pas ensemble : la palette de la villa alterne l'un ou l'autre. Une variante qui coupe un détail le retire avec sa matière (sinon la validation refuse). Une croupe est refusée en rangée : la villa à quatre pans se pose isolée.
+    - 2026-11-11 AG-143 — Détails en booléens pour que les palettes les tirent. Tourelle de 2 m centrée sur l'angle : assez petite pour laisser la première baie d'une villa de 9 m.
+    - 2026-11-11 H45 — L'essai réel a trouvé deux défauts que les tests ne voyaient pas : une palette tirait des bandeaux qui refusaient le bow-window demandé (le bandeau s'interrompt maintenant) ; la dalle du bow-window de rez-de-chaussée passait sous le sol.
+    - 2026-11-11 AG-144 — Transept composé comme les ailes, avec des quarts de tour (matrices d'instance tournées ligne par ligne). Une baie entièrement derrière une tour est cachée plutôt que refusée. Le format garde ses limites (porte 4 m, mur 1 m) : les profils s'y plient.
+    - 2026-11-12 AG-145 — Le panneau d'import de carte (AG-129) n'avait jamais marché dans SketchUp : il lisait la chaîne JSON comme un objet, ce qu'un banc de navigateur passant un objet ne pouvait montrer (même piège qu'en AG-038). Agrandir un SVG en CSS grossit aussi ses textes : agrandir le cadre de dessin. Set-Content en PowerShell 5.1 ajoute un BOM et relit en ANSI : éditer avec sed.
+    - 2026-11-12 AG-148 — Sketchup.read_default évalue la valeur stockée comme du Ruby : un JSON n'y relit pas (SyntaxError dans la console) et un nom hostile y deviendrait du code. Même en Base64, rien n'a survécu à un redémarrage, fermeture normale comprise : les recettes vont donc dans un fichier. Un seul module écrit des fichiers (LocalFiles), ce qui a remis vert le test de sécurité hérité.
+- Règles de travail — AGENTS.md résumé, gouverne tout le reste (→ AGENTS.md)
+  - Ordre — Premier ticket dont toutes les dépendances sont validées ; comparer les contrats à l'existant ; intégrer progressivement.
+  - Noyau pur — Ruby exécutable sans SketchUp, plan déterministe en mètres ; pas d'objet natif, de mutation de modèle, de réseau ni d'aléatoire global.
+  - Contraintes bloquantes — Géométrie et limites de plateforme bloquent dans tous les modes de fidélité ; diagnostic localisé ; ni champ inventé, ni réglage silencieux.
+  - Undo — Action réussie = une opération Undo ; action rejetée = document intact ; géométrie partagée jamais modifiée sur place ; revalider la cible avant chaque écriture.
+  - Styles — Données versionnées ; capacité et tests avant profil ; règles = clés d'un registre fermé, jamais de code chargé.
+  - Livraison — Centrée sur le ticket ; décision documentée et test/migration pour tout changement de format ou comportement.
+  - Rapport — Commandes, résultats, versions, limites ; distinguer Ruby, writer et essai réel ; aucun contrôle hôte réussi sans preuve. Sans SketchUp la sortie V0.1 reste bloquée.
+  - Priorité documentaire — AGENTS > PRD (périmètre) > contrats (détail) > tickets (ordre). Divergence = résolue dans la même modification.
+- Avancement — Jalons et tickets, statuts à jour (→ planning/TASKS.md)
+  - J0 Base — Projet testable et panneau local installable sur un hôte de référence. AG-001, 002. (→ planning/ROADMAP.md)
+    - [fait] AG-001 Dépôt et CI — Arborescence, version, Gemfile, Rakefile, smoke, matrice de poste. Preuve : rake test local ; CI à confirmer au premier push.
+    - [fait] AG-002 Extension — archgen.rb, main.rb, panneau de diagnostic, scripts/package_rbz.rb (rake package, ZIP reproductible). H01 réussi sur Windows 11 / SketchUp 26.2.243 seulement. (→ docs/recette/H01.md)
+  - J1 Données — Brouillons/effectifs vérifiés, héritage, seed stable. AG-003 à 005.
+    - [fait] AG-003 Validation — core/strict_json (≤64 Kio, profondeur 12, doublons), schema_validator (sous-ensemble fermé, mot-clé inconnu = erreur), intake, building_config, constraint_validator. U01 vert.
+    - [fait] AG-004 Profils — core/style_registry, fidelity_rules, config_resolver ; composition.rb seul lecteur de fichiers ; copies embarquées dans archgen/{schemas,styles} vérifiées identiques. U02 vert.
+    - [fait] AG-005 Hasard — core/deterministic_random, canonical, quant. Goldens U03 vérifiés. Dép. AG-003.
+  - J2 Enveloppe neutre — Shell/Structural, découpes, dalles, quatre toits, plans bornés. AG-006 à 010.
+    - [fait] AG-006 Emprise et niveaux — geometry/types, footprint_solver, floor_planner. U04 vert.
+    - [fait] AG-007 Travées et percements — geometry/facade_solver, opening_solver. U05 vert.
+    - [fait] AG-008 Murs et dalles — geometry/wall_builder (FacadeGrid, Shell, Structural, dalles). U06 et U07 verts.
+    - [fait] AG-009 Toitures — geometry/roof_solver. U08 vert. Capacités gable, hip, mansard déclarées dans composition.rb.
+    - [fait] AG-010 Plan et budgets — core/geometry_engine, plan_validator, plan_projection, budget. U09, U10 verts, digests neutres dans test/fixtures/plan_digests.json. LOD 1 refusé jusqu'à AG-015.
+  - J3 Adaptateur et persistance — Racine native, aller-retour SKP, Undo/Redo, copie isolée, échecs restaurés. AG-011 à 014.
+    - [fait] AG-011 Writer — adapters/sketchup/{native_host, resources, geometry_writer}, doubles dans test/support/fake_sketchup.rb, sonde test/host/run.rb. H02 réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
+    - [fait] AG-012 Créer et relire — adapters/sketchup/{component_repository, building_service}, sonde test/host/creation.rb. H03 et H04 réussis sur Windows / 26.2.243, Annuler et Rétablir par le menu, réouverture après avoir quitté SketchUp. (→ docs/recette/H03-H04.md)
+    - [fait] AG-013 Régénérer — BuildingService#regenerate et load_selection, ComponentRepository#swap, ui/target_tokens, sonde test/host/regeneration.rb. H05 réussi sur Windows / 26.2.243 avec vraie copie et Annuler/Rétablir au menu. (→ docs/recette/H05.md)
+    - [fait] AG-014 Rejeter et restaurer — adapters/sketchup/transaction_guard, contrôle de version dans regenerate, sonde test/host/faults.rb. H06 réussi ; H07 réussi sauf la confirmation, reportée à AG-017. (→ docs/recette/H06-H07.md)
+  - J4 Styles et panneau — Trois signatures, aperçu réel, confirmation, diagnostics lisibles. AG-015 à 017.
+    - [fait] AG-015 Détails et profils — geometry/detail_solver, definitions partagées du writer, Resources#shared_definition ; trois profils publiés. U11 vert, H08 réussi sur Windows / 26.2.243, rendus dans docs/recette/img. (→ docs/recette/H08.md)
+    - [fait] AG-016 Formulaire et aperçu — ui/{dialog_controller, messages, panel.rb, panel.html, panel.css, panel.js, panel_logic.js}. Générer reste désactivé. H09 réussi sur Windows / 26.2.243, 150 % émulé. (→ docs/recette/H09.md)
+    - [fait] AG-017 Création et édition — ui/{confirmation_tokens, panel_observers}, actions generate et regenerate, confirmation, requête unique, sonde test/host/h10.rb. H10 réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
+  - J5 Livraison — Recette Windows et SketchUp 2026, sécurité, budgets, export, RBZ installé. AG-018 à 020.
+    - [fait] AG-018 Sécurité et charge — test/contract/security_test.rb, configurations jusqu'aux bornes, sonde test/host/h11.rb. U10, U12, H06, H07 en LOD 1 et H11 réussis, toutes cibles tenues. (→ docs/recette/H11.md)
+    - [fait] AG-019 Export et compatibilité — Cible réduite à Windows et SketchUp 2026 (ADR-26). H12 réussi vers Blender, OBJ en mètres. H01 à H10 prouvés sur 26.2.243, chacun sur le code de son époque : le rejeu sur le RBZ final est à faire en AG-020. (→ docs/recette/H12.md)
+    - [fait] AG-020 RBZ V0.1 — Paquet reproductible, journal, guide, rapport. Installé par le Gestionnaire, H01 à H12 rejoués sur ce RBZ, P01 à P09 démontrées. Réserves : profil non vierge, état du Gestionnaire non conservé. (→ docs/recette/V0.1.md)
+  - J6 Terrain d'un bâtiment — Assise sur terrain réel, terrain intact, RBZ 0.2.0. AG-021 à 026. (→ docs/TERRAIN_CONTRACT.md)
+    - [fait] AG-021 Réglages, grille et assise — core/site_intake, survey_grid, site_assise ; schémas site et grille, fixtures examples/terrain. U13 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
+    - [fait] AG-022 Soubassement et plancher — geometry/site_planner, core/site_plan_validator ; plan du bâtiment inchangé. U14 vert. (→ docs/TERRAIN_CONTRACT.md)
+    - [fait] AG-023 Talus — geometry/embankment_builder, catalogue site_materials, plus de refus earthwork_unavailable. U15 vert, noyau pur. (→ docs/TERRAIN_CONTRACT.md)
+    - [fait] AG-024 Relevé dans SketchUp — adapters/sketchup/terrain_surveyor, BuildingService#survey_site. Altitudes à 0,0005 mm sur un terrain imbriqué et pivoté, aucune écriture ni ligne d'Annuler. H13, partie relevé. (→ docs/recette/H13.md)
+    - [fait] AG-025 Écrire et persister l'assise — BuildingService : preview_site, adapt_to_site, remove_site, site_status ; régénérer garde l'assise (ADR-29). H13 : 68 contrôles, terrain intact, H02 à H12 rejouées. (→ docs/recette/H13.md)
+    - [fait] AG-026 Panneau terrain et RBZ 0.2.0 — Section Terrain, confirmation, guide, charge mesurée. H02 à H14 sans échec sur le RBZ. Réserves : profil non vierge, SketchUp figé sur très gros terrain. (→ docs/recette/V0.2.md)
+    - [fait] AG-027 Étagement par parcelle et RBZ 0.4.0 — core/ensemble_site, une plateforme par parcelle, racine immobile, assises à part, section Terrain du panneau d'ensemble (ADR-33). H01 à H18 sans échec, vrai îlot adapté à la souris. Réserve : profil non vierge. (→ docs/recette/V0.4.md)
+  - J7 Rue et îlots au tracé — Forme ouverte = rue, forme fermée = îlot ; une validation = un Annuler ; RBZ 0.3.0. AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-028 Tracé et parcelles — core/ensemble_intake, geometry/{planar, trace_rows, parcel_layout}, schéma ensemble-settings, fixtures examples/ensembles. U16 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-029 Bâtiment de rangée — core/parcel_building, geometry/row_roof_solver ; murs latéraux aveugles, toits en section, plan d'un bâtiment seul inchangé. U17 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-030 Parcelle d'angle — Trapèze en Shell et Structural : joints, dalles, toits, corniche et balcon. Empreintes des bâtiments seuls inchangées. U18 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-031 Plan d'ensemble — core/ensemble_engine, EnsemblePlanValidator, définitions partagées par contenu, plafonds, progression. U19 vert, noyau pur. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-032 Écrire et persister l'ensemble — adapters/sketchup/{ensemble_service, ensemble_repository}, version 0.3.0-dev. H15 : 77 contrôles sans échec, rendu regardé, rues ouvertes seulement. (→ docs/recette/H15.md)
+    - [fait] AG-033 Outil de tracé — core/trace_session, adapters/sketchup/street_tool, ui/street_{controller,panel}, menu Tracer une rue. H16 et vrai geste souris et clavier. Rue ouverte utilisable en copie de développement. (→ docs/recette/H16.md)
+    - [fait] AG-034 Accès par interruption — geometry/access_planner, catalogue ensemble_rules.v1 ; îlot fermé pour Brutaliste, écrit et tracé à la souris. U20 vert. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-035 Accès par porche — geometry/porch_solver, entrées du catalogue pour Haussmannien et Toulousain, hauteur de départ 2,7 m. U21 vert, vues regardées. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-036 Panneau d'ensemble et RBZ 0.3.0 — Modifier l'ensemble sélectionné, guide, journal, RBZ. H02 à H17 sans échec, vrai tracé et vraie modification à la souris. Réserves : profil non vierge, cycle H01 sur le paquet précédent. (→ docs/recette/V0.3.md)
+  - J8 Voirie — Composer une voie en coupe à l'échelle humaine, la tracer ; carrefours ; puis sur un terrain. AG-037 à 050, AG-060. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-037 Format de coupe et catalogues — core/road_profile_intake, schéma road-profile V1, catalogues road_bands et road_items, onze préréglages dans archgen/styles/road. U23 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-038 Éditeur de coupe — geometry/road_section, ui/road_{controller,panel}, page road_panel ; menu Composer une coupe de voirie, version 0.5.0-dev. H19 réussi, vrai geste à la souris ; rien n'est écrit dans le modèle. (→ docs/recette/H19.md)
+    - [fait] AG-039 Axe et rubans — core/road_intake (format road V1), geometry/road_axis (arcs, onglets, refus), geometry/road_ribbons, core/road_engine (RoadPlan, validateur, road_digest). U24 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-040 Arbres, lampadaires, haies, clôtures — geometry/road_item_shapes (formes 3D, ADR-35), geometry/road_items (pose au pas, variation, extrusions, poteaux) ; RoadPlan avec définitions partagées et plafonds. U25 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-041 Rails et tram — Rails encastrés dans la surface (road/rail_steel), rails sur traverses et ballast, plafond de traverses. U26 vert, noyau pur. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-042 Écrire, tracer, modifier, RBZ 0.5.0 — adapters/sketchup/road_{service,repository}, catalogue road_materials, balises par famille, outil de tracé en mode voie, panneau Tracer une voie et Modifier la voie sélectionnée. H20 et vrai geste ; H02 à H20 sans échec sur le RBZ. (→ docs/recette/V0.5.md)
+    - [fait] AG-043 Réseau et carrefour simple — core/road_network_{intake,engine}, geometry/road_{network,junction}, schéma road-network V1 ; nœuds nés tout seuls, arrondis, onglets, murets, soudure aux tronçons ; refus E_ROAD_JUNCTION. U27, noyau seul : pas encore écrit dans SketchUp (AG-048). Dép. AG-042, D-07.
+    - [fait] AG-044 Carrefour à feux — geometry/road_signals, forme signal, matières road/marking et road/item/head ; type signals au réglage du nœud ; passages, lignes d'arrêt taillés dans la surface, un feu par branche à chaussée. U28, noyau seul : pas encore écrit dans SketchUp (AG-048). Dép. AG-043.
+    - [fait] AG-045 Giratoire — geometry/road_roundabout ; type roundabout, rayon extérieur et largeur d'anneau ; secteurs de chaussée, îlot central planté, îlots séparateurs, entrées arrondies, trottoirs de coin. U29, noyau seul : pas encore écrit dans SketchUp (AG-048). Dép. AG-043.
+    - [fait] AG-046 Double giratoire — deux nœuds voisins jumelés (pair), liaison sans îlot séparateur, 5 m au moins (ADR-37). U30, noyau seul : pas encore écrit dans SketchUp (AG-048). Dép. AG-045.
+    - [fait] AG-047 Tram au carrefour — couloir du tram d'une coupe à l'autre, rails au ras, cœur et îlot central coupés ; refus tram_not_through, tram_outside_carriageway. U31, noyau seul : pas encore écrit dans SketchUp (AG-048). Passage à niveau en AG-050. Dép. AG-041, AG-045.
+    - [fait] AG-048 Panneau de carrefour, RBZ 0.6.0 — adapters/sketchup/network_{service,repository}, ui/network_{controller,panel}, page network_panel ; menus Tracer un réseau de voies, Modifier le réseau sélectionné. H21 22/22 sur le RBZ, H19 et H20 rejouées, vrai geste ; RBZ 0.6.0. Dép. AG-044, AG-046, AG-047.
+    - [fait] AG-049 Voie sur un terrain — ADR-38 : geometry/road_ground, adapters/sketchup/ground_cutter, relevé du couloir (TerrainSurveyor), RoadService posé sur terrain, case Suivre le terrain du panneau. U32, contrats sur doubles, H22 11/11 par le service et vrai geste au panneau (retenir, relever, créer, Annuler) sur copie de développement 0.7.0-dev. Dép. AG-042, ADR-38.
+    - [fait] AG-050 Passage à niveau — geometry/road_crossing ; type level_crossing, rampes de pente bornée, platelage 5 mm sous les rails, murets, feux et barrières, voie ferrée entière (objets interrompus) ; choix dans le panneau de réseau. U33 ; vu dans SketchUp et écrit par H21 à la recette 0.7.0. Dép. AG-047, AG-049.
+    - [fait] AG-060 Clous et plots (D-10) — élément road_stud (limite gauche de sa bande), option crossing_studs du carrefour à feux (RoadSignals.studs) ; case au panneau de réseau, dessin dans la coupe. U41 vert ; vu dans SketchUp, copie 0.10.0-dev (docs/recette/img/ag060-clous.jpg, ag060-plots.jpg).
+  - J9 Eau et littoral — Rivière, canal à écluses, fleuve, côtes à falaises, dunes et plage, tracés comme des voies ; puis les ponts. AG-051 à 059. (→ docs/EAU_CONTRACT.md)
+    - [fait] AG-051 Bandes d'eau et de berge — water, quay, riverbank, revanche et profondeur (ADR-41), réglage water, nœud road/water ; préréglages canal, rivière, fleuve. U34 vert, noyau ; pas encore vu dans SketchUp.
+    - [fait] AG-052 Littoral : falaise, dune, plage, mer — niveaux cumulés (base_m), mer au bout de la coupe, ganivelles et murets, matière road/item/stone ; préréglages falaises, dunes, plage. U35 vert, noyau ; pas encore vu dans SketchUp.
+    - [fait] AG-053 Rivière sur un terrain — geometry/road_ground (river_envelope), moyenne sous l'eau, borne water.max_grade_percent, métrique water_drop_m. U36 vert ; H23 9/9 par le service (rivière, canal, côte à falaises), image docs/recette/img/h23-riviere.jpg.
+    - [fait] AG-054 Canal à écluses — geometry/road_locks (règle, chambre, mur de chute, portes) ; refus lock_on_curve, locks_too_close, lock_outside_trace, canal_needs_quays, lock_too_wide. U37 vert ; H23 12/12 avec un canal de quatre écluses, image docs/recette/img/h23-ecluses.jpg.
+    - [fait] AG-055 Fleuve et côte à un seul niveau — niveau saisi ou plus bas, côté mer sans talus (slopes open), terrassements aux bandes de terre ; fond marin 3 m sur 10 m. U38 vert ; H23 14/14.
+    - [fait] AG-056 Panneau de l'eau, RBZ 0.8.0 — régime et réglages de l'eau, réglages de bande, aperçu de la chute et des écluses ; ganivelle et muret dessinés. H19 28/28 (17 préréglages), H23 14/14, vrai geste du canal ; rapport docs/recette/V0.8.md.
+    - [fait] AG-057 Pont à poutre — geometry/road_bridge ; type bridge, rampes, tablier, culées, murs, garde-corps ; pont d'office sur l'eau, cours d'eau et surface d'eau dans les réseaux ; matières road/bridge, road/bridge_stone. U39 vert ; vu dans SketchUp (docs/recette/img/ag057-pont.jpg).
+    - [fait] AG-058 Arc et voûte — geometry/road_bridge_forms (forme, gabarit, profils) ; refus bridge_clearance avec la hauteur qui suffit, bridge_clearance_impossible, pier_on_traffic. U40 vert ; vu dans SketchUp (H24, docs/recette/img/h24-voute.jpg).
+    - [fait] AG-059 Panneau de pont, RBZ 0.9.0 — ui/network_controller et network_panel : type Pont, genre, voie portée, hauteur libre, rampes ; eau dans le réseau et en plan. H24 9/9, vrai geste ; rapport docs/recette/V0.9.md.
+  - J10 Rues variées — Hauteurs et toits tirés par parcelle. AG-061 à 063. (→ docs/RUE_VARIEE_CONTRACT.md)
+    - [fait] AG-061 Tirage par parcelle — core/ensemble_variety (contrôles, tirage, répartition), réglage variety du format ensemble V1, E_STREET_VARIETY. U42 vert ; noyau, pas encore vu dans SketchUp.
+    - [fait] AG-062 Jointures à hauteurs différentes — invariants U43 (toits entre les plans latéraux, murs à pleine hauteur, étagement inchangé) ; vu dans SketchUp (docs/recette/img/ag062-rue-variee.jpg).
+    - [fait] AG-063 Panneau de rue variée, RBZ 0.10.0 — ui/street_controller et street_panel : section Variété, variety_hints par style, répartition dans les corps ; correctif des avertissements d'ensemble. H25 30/30, vrai geste ; rapport docs/recette/V0.10.md.
+  - J11 Détails et personnalisation — Vitrage, commerces, cheminées, réglages propres d'une parcelle au clic droit. AG-064 à 069. (→ docs/DETAILS_CONTRACT.md)
+    - [fait] AG-064 Menuiseries et vitrage — geometry/detail_solver (vitre, vantail, imposte), features.glazing, matière glass, révision 2 des trois styles, révision figée des ensembles (ADR-46). U44 vert ; vu dans SketchUp (docs/recette/img/ag064-vitrage.jpg). U44.
+    - [fait] AG-065 Rez-de-chaussée commerçant — ground_floor shop, shop.height_m ; geometry/opening_solver (vitrines), porch_solver (arrêt au passage), detail_solver (bandeau, porte vitrée). U45 vert ; vu dans SketchUp (docs/recette/img/ag065-commerce.jpg).
+    - [fait] AG-066 Cheminées — features.chimneys ; geometry/detail_solver (souches, couronnement), clé de partage des parcelles avec la seed. U46 vert.
+    - [fait] AG-067 Section Détails aux panneaux, RBZ 0.11.0 — panel.html/js, street_panel.html/js, street_controller (cases du style) ; RBZ 0.11.0, H26 à faire.
+    - [fait] AG-068 Réglages propres d'une parcelle — core/ensemble_parcels (lecture, largeur, priorité), E_STREET_PARCEL. U47 vert.
+    - [fait] AG-069 Clic droit « Personnaliser ce bâtiment », RBZ 0.12.0 — ui/parcel_controller, ui/parcel_panel (menu contextuel, panneau), compte au panneau de rue ; RBZ 0.12.0, H27 à faire.
+  - J12 Volets, lucarnes et petits bois — D-23 à D-27 tranchées (ADR-47). AG-070 à 073. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
+    - [fait] AG-070 Petits bois — features.muntins, facade.muntin_rows ; geometry/detail_solver (montant, traverses). U48 vert.
+    - [fait] AG-071 Volets — features.shutters, materials.shutters, deux teintes ; geometry/detail_solver (battants, place). U49 vert.
+    - [fait] AG-072 Lucarnes — features.dormers ; geometry/dormer_solver (place, hauteur, volume), fenêtre partagée. U50 vert.
+    - [fait] AG-073 Styles et panneaux, RBZ 0.13.0 — révision 3 Haussmannien et Toulousain, cases aux trois panneaux ; H28 à faire.
+  - J13 Styles régionaux maçonnés — ADR-48. AG-074 à 078. Ensuite J14 à J17 : pignon sur rue, pan de bois, arcs et ornements, volumes modernes. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+    - [fait] AG-074 Génoises — features.genoise ; geometry/detail_solver (rangs, onglet, refus). U51 vert.
+    - [fait] AG-075 Provençal, matières régionales — profils provencal_mas, provencal_village ; scripts/regional_profiles.rb ; dix matières. U52 vert.
+    - [fait] AG-076 Breton — profils breton_longere, breton_bourg. U52 vert.
+    - [fait] AG-077 Lyonnais, Bordelais, Parisien faubourien — profils lyonnais, bordelais_echoppe, parisien_faubourien. U52 vert.
+    - [fait] AG-078 Panneaux, RBZ 0.14.0 — listes par famille, case Génoise ; H29 à faire.
+  - J14 Pignon sur rue et montagne — ADR-48. AG-079 à 082. (→ docs/PIGNON_MONTAGNE_CONTRACT.md)
+    - [fait] AG-079 Faîtage perpendiculaire — RoofSolver.cross_gable, roof.ridge, détails adaptés. U53 vert.
+    - [fait] AG-080 Pignon à redents — features.stepped_gable ; marches et pinacle. U54 vert.
+    - [fait] AG-081 Bardage bois — features.cladding ; wall_builder par niveau, pignons, balcons. U54 vert.
+    - [fait] AG-082 Flamand, Savoyard, RBZ 0.15.0 — profils flamand, savoyard_chalet ; liste Faîtage, cases ; H30 à faire.
+  - J15 Pan de bois — ADR-48 ; encorbellement reporté. AG-083 à 085. (→ docs/PAN_DE_BOIS_CONTRACT.md)
+    - [fait] AG-083 Pan de bois apparent — geometry/timber_solver, features.timber_frame, materials.timber. U55 vert.
+    - [fait] AG-084 Colombages, Normand, Alsacien, Basque — profils colombages, normand, alsacien, basque. U52 vert.
+    - [fait] AG-085 Panneaux, RBZ 0.16.0 — case Pan de bois aux trois panneaux ; H31 à faire.
+  - J16 Arcs et ornements — ADR-48 ; approximations consignées. AG-086 à 089. (→ docs/ARCS_ORNEMENTS_CONTRACT.md)
+    - [fait] AG-086 Arcs — facade.arch ; ornament_solver (écoinçons). U56 vert.
+    - [fait] AG-087 Ornements classiques — features.classical ; pilastres, soubassement, fronton. U57 vert.
+    - [fait] AG-088 Neuf profils — neuf profils, familles historique, ordonnancée, ornementale, maçonnée. U52 vert.
+    - [fait] AG-089 Panneaux, RBZ 0.17.0 — liste Arcs, case Ornements ; H32 à faire.
+  - J17 Volumes modernes — ADR-48 ; volumes assemblés reportés. AG-090 à 094. (→ docs/VOLUMES_MODERNES_CONTRACT.md)
+    - [fait] AG-090 Bandeaux et murs-rideaux — facade.ribbon ; opening_solver, montants. U58 vert.
+    - [fait] AG-091 Pilotis — features.pilotis ; wall_builder. U59 vert.
+    - [fait] AG-092 Toit en sheds — toit sawtooth ; roof_solver. U60 vert.
+    - [fait] AG-093 Trame structurelle et brise-soleil — modern_solver : trame, brise-soleil. U61 vert.
+    - [fait] AG-094 Sept profils, RBZ 0.18.0 — sept profils, panneaux, RBZ 0.18.0 ; H33 à faire.
+  - J18 Ville mixte — ADR-49. AG-095 à 099. (→ docs/VILLE_MIXTE_CONTRACT.md)
+    - [fait] AG-095 Clic droit Modifier — ui/context_menu. U62 vert.
+    - [fait] AG-096 Style par bâtiment — parcels.<id>.style, révision figée. U63 vert.
+    - [fait] AG-097 Rez-de-chaussée variés — variety.ground. U64 vert.
+    - [fait] AG-098 Stores bannes et pergolas — features.shop_front, toiles. U65 vert.
+    - [fait] AG-099 Panneaux, RBZ 0.19.0 — panneaux, RBZ 0.19.0 ; H34 à faire.
+  - J19 Carrefours sans réseau, dalle et seuils — ADR-50. AG-100 à 103. (→ docs/CARREFOURS_DALLE_CONTRACT.md)
+    - [fait] AG-100 Dalle de rez-de-chaussée et seuils — structure.ground_slab, wall_builder.ground ; écrit à la création. U66 vert.
+    - [fait] AG-101 T plus tolérants — road_network : portée = demi-chaussée + 1 m. U67 vert.
+    - [fait] AG-102 Carrefours depuis Tracer une voie — core/road_merge, RoadService#merge_for, NetworkService#create_replacing. U68 vert.
+    - [fait] AG-103 RBZ 0.20.0 — RBZ 0.20.0 ; H35 à faire.
+  - J20 Teintes et abords — ADR-51. AG-104 à 109. (→ docs/TEINTES_ABORDS_CONTRACT.md)
+    - [fait] AG-104 Teintes — facade.tint, core/tint, variantes id~L.n ; listes aux panneaux du bâtiment et de la rue. U69 vert.
+    - [fait] AG-105 Escaliers et rampes — site.entrance (steps, ramp, none), SitePlanner.entrance_nodes. U70 vert.
+    - [fait] AG-106 Garde-corps — features.balcony_rail (bars, solid), écrit à la création. U71 vert.
+    - [fait] AG-107 Tour d'îlot — EnsembleVariety.closing : écart sur tout le tour. U72 vert.
+    - [fait] AG-108 Dalle pour l'existant, RBZ 0.21.0 — case au panneau de rue ; RBZ 0.21.0 ; H36 à faire.
+    - [fait] AG-109 Talus entre voisins dans une rue — SurveyGrid.plan_row, EmbankmentBuilder (façades choisies, soutènements), refus à angle ; RBZ 0.22.0. U73 vert.
+  - J23 Décor de jeu, fait — ADR-54, D-27 à D-32. AG-115 à 119 ; RBZ 0.23.0 ; H38 à faire. (→ docs/DECOR_JEU_CONTRACT.md)
+    - [fait] AG-115 Triangulation et écriture glTF — adapters/gltf (Loader::EXPORT), oreilles, axes Y, maillages partagés, GLB déterministe, E_EXPORT. U78 vert ; Blender lit le fichier.
+    - [fait] AG-116 UV et matériaux PBR — projection cubique 1 m, métal-rugosité linéaire, verre BLEND, double face suffixée, roughness/metallic au catalogue. U79 vert ; Blender relit tout.
+    - [fait] AG-117 LOD et collisions — LodSet : LOD0 + UCX_, LOD1 au réglage lod 0, LOD2 enveloppe convexe (16 à 32 triangles), W_EXPORT_LOD. U80 vert ; Blender lit les trois.
+    - [fait] AG-118 Commande d'export — clic droit « Exporter pour un moteur de jeu… », ExportService, export_source des deux services, maillages partagés par maison, refus route et réseau. U81 vert ; H38 à faire.
+    - [fait] AG-119 Guide, RBZ 0.23.0 — section « Pour un moteur de jeu » (Unreal, Blender), journal ; RBZ 0.23.0 installé ; H38 à faire.
+  - J24 Mobilier urbain, fait — ADR-55, D-33 à D-37. AG-120 à 124 ; RBZ 0.24.0 ; H39 à faire. (→ docs/MOBILIER_CONTRACT.md)
+    - [fait] AG-120 Catalogue et formes — RoadFurnitureShapes ; bench, bin, bike_rack au catalogue avec count ; matières bleu, verre, jaune ; dessin de coupe. U82 vert.
+    - [fait] AG-121 Pose à des positions — positions_m mesurées sur l'axe, voie seule et réseau ; bus_stop et sign au catalogue ; refus. U83 vert.
+    - [fait] AG-122 Arrêt de bus — abri au fond de la bande, marquage dérivé sur la voie contiguë, bande de 1,6 m, avertissement de proximité. U84 vert.
+    - [fait] AG-123 Panneaux — clé facing (forward par défaut), orientation par RoadItems.side, haut de plaque à la hauteur. U85 vert.
+    - [fait] AG-124 Éditeur, RBZ 0.24.0 — Pose, Positions, Sens, Arceaux, dessins, préréglage arret-bus ; RBZ 0.24.0 installé ; H39 à faire. U86 vert.
+  - J25 Cartographie, fait — RBZ 0.28.0 (mode simple ADR-58, fond de plan ADR-59) ; H41 faite par Claude, H40 à faire. ADR-56, ADR-57 (D-38 : téléchargement OpenStreetMap), D-39 à D-43. AG-125 à 129. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+    - [fait] AG-125 Lecture et projection — Core::MapReader (balayage XML borné, StrictJson), MapProjection, E_MAP. U87 vert.
+    - [fait] AG-126 Voies en réseaux — Core::MapRoads : table, Douglas-Peucker gardant les points partagés, découpe à 64, rayon uniforme 10/5/0, réseaux de 24. U88 vert.
+    - [fait] AG-127 Bâtiments — Core::MapBuildings : rectangle d'aire minimale, remplissage 85 %, niveaux, graine du hachage OSM, façade vers la voie, chevauchements. U89 vert.
+    - [fait] AG-128 Terrain ASCII Grid — Core::MapTerrain : Lambert-93 IGN, échelle et convergence, fenêtre, pas jusqu'à 250², NODATA, altitudes relatives. U90 vert.
+    - [fait] AG-129 Téléchargement, commande, RBZ 0.25.0 — OverpassClient, MapImportService (une opération, marqueur ARCHGEN Carte), MapController et MapPanel, menu ; RBZ 0.25.0 installé ; H40 à faire. U91 vert.
+    - [fait] AG-130 Mode simple, RBZ 0.26.0 — rues à plat MapStreets, 300 bâtiments les plus proches, un clic depuis la géolocalisation, nord du modèle, sans dialogue ; essai réel 192 rues + 130 bâtiments. U92 vert.
+    - [fait] AG-131 Fond de plan à l'échelle, RBZ 0.27.0 — tuiles OSM (carte) et IGN (photo) au sol, deux balises, cache ; essai réel 20 + 72 images alignées. U93 vert.
+    - [fait] AG-132 Carrefour sur un virage, RBZ 0.28.0 — branche redressée jusqu'à sa coupe, raccord à la courbe (45° au plus). U94 vert. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-133 Styles côtiers et maison moderne, RBZ 0.29.0 — front de mer et villa de La Baule, maison moderne ; balcons à tous les étages. U95, U52 verts. 35 styles. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+    - [fait] AG-134 Front de mer recadré, RBZ 0.30.0 — balcons de 1,8 m (profondeur réglable), barreaux, baies 2,0 m, commerce 3,6 m. U96 vert. Reportés : verre, attique, balcons d'angle. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+    - [fait] AG-135 Attique et garde-corps vitré — corps et attique composés en un plan ; terrasse bordée. U97 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-136 Bâtiments isolés, RBZ 0.31.0 — parcel.detached, bâtiment seul dans sa parcelle, îlot sans accès. U98 vert. (→ docs/ENSEMBLE_CONTRACT.md)
+    - [fait] AG-137 Balcons d'angle et bow-windows — dalle en U, avancées vitrées empilées. U99 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-138 Ailes en L, T, U — corps + ailes tournées vers le jardin. U99 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-139 Contours en L, T, U à l'import, RBZ 0.32.0 — ajustement sur grille, 80 % au moins. U89 vert. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+    - [fait] AG-140 Ailes sans baie derrière elles. U100 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-141 Palettes et encadrements — variante tirée par la graine ; brique ou pierre autour des baies. U100 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-142 Maisons de La Baule, RBZ 0.33.0 — villa r2, villa à quatre pans, maison de ville ; parcelle étroite en jardin. U100 vert. (→ docs/STYLES_REGIONAUX_CONTRACT.md)
+    - [fait] AG-143 Détails de La Baule, RBZ 0.34.0 — bandeaux, lucarnes passantes, tourelle, balconnets, bow-window de rez-de-chaussée ; tirés par les palettes. U101 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-144 Édifices religieux, RBZ 0.35.0 — clochers, abside, transept ; chapelle, églises romane et gothique, cathédrale. U102 vert. (→ docs/DECISIONS.md)
+    - [fait] AG-145 Accès direct et passe d'interface, RBZ 0.36.0 — barre d'outils ARCHGEN (9 boutons), Modifier la sélection, réglages fins en 10 sections, panneau de carte réparé. U103 vert, H47. (→ docs/BILAN_INTERFACE.md)
+    - [fait] AG-146 Panneau de rue en sections, RBZ 0.36.1 — Rue et parcelles en tête ; Détails de façade et Variété repliables. Vu dans SketchUp : non (session du propriétaire en cours). (→ docs/BILAN_INTERFACE.md)
+    - [fait] AG-147 Préréglages de voirie par famille, RBZ 0.36.2 — six familles, une rangée chacune ; groupes dans la liste du réseau. Tests de contrôleur verts ; vu dans SketchUp (voirie et réseau). (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-148 Recettes, RBZ 0.37.0 — Mes recettes dans bâtiment, rue et voirie ; coupes reprises dans le réseau ; un fichier par genre dans %APPDATA%\ARCHGEN\recettes ; toutes les écritures de fichiers par LocalFiles, test de sécurité vert. U104 vert ; vu dans SketchUp, recette retrouvée après fermeture forcée. (→ docs/UI_SPEC.md)
+  - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
+    - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
+    - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.
+    - [afaire] AG-112 Cloisons et pièces — enfilade sur les trumeaux, portes.
+    - [afaire] AG-113 Créer l'intérieur au clic droit — un bâtiment à la fois, jamais la rue ; mitoyen, porche, budgets.
+    - [afaire] AG-114 Panneau, RBZ — section Intérieur au panneau du bâtiment ; H37 à faire.
+  - J22+ Extensions — Priorité : EXT-06, EXT-12, EXT-09, EXT-08 (ADR-53), puis J22 ; voir branche Extensions.
+- Produit — Extension SketchUp Desktop : bâtiments paramétriques pour maquette et décor 3D (→ docs/PRD.md)
+  - Fonctions P01–P09 — Résultats observables de la V0.1
+    - P01 Nouveau bâtiment — Menu Extensions → ARCHGEN ; style, dimensions, niveaux, trame, seed.
+    - P02 Aperçu — Élévation et emprise par le même noyau ; avertissements, cotes, ouvertures ; aucune entité créée.
+    - P03 Générer Shell — Surfaces simples, ouvertures traversantes réelles, couverture, matériaux, détails selon LOD.
+    - P04 Générer Structural — Même silhouette et ouvertures ; murs épais, tableaux, planchers intermédiaires.
+    - P05 Modifier / rouvrir — Sélection d'une racine ; paramètres rechargés après sauvegarde ; style, mode, dimensions.
+    - P06 Régénérer / annuler — Racine et placement conservés ; copies isolées ; confirmation ; une entrée Undo et Redo vérifié.
+    - P07 Reproduire — Config effective, seed, versions identiques ⇒ même plan canonique.
+    - P08 Exploiter — Faces orientées, matériaux nommés, pièces organisées ; un aller-retour export documenté.
+    - P09 Gérer les erreurs — Champ et cause expliqués ; aucune modification sur rejet ; échec d'écriture restauré.
+  - Périmètre V0.1 — Une génération à la fois au niveau racine ; emprise rectangulaire ; niveaux empilés ; ouvertures rectangulaires ; 4 toits ; matériaux unis ; LOD 0 et 1 ; 3 profils jouables.
+  - Frontières — Structural ≠ calcul porteur ; Shell ≠ volume étanche. Pas de réglementaire, vitrage détaillé, intérieur, terrain, ville ni service distant en V0.1 (rue, îlots et terrain prévus après J5). Pas de garantie moteur de jeu, UV, collisions.
+  - Signatures — Haussmann : pierre, mansarde, corniche, balcon filant. Toulousain : brique foraine, tuile canal, encadrements. Brutaliste : béton, toit plat, grille, baies en retrait au LOD 1 Structural.
+  - Recette de sortie — Fixture 12 × 9, 4 niveaux, 4 travées dans les deux modes ; déplacer, pivoter, copier, changer le style d'une seule instance ; Undo/Redo ; réouverture ; deux autres signatures.
+- Architecture — Noyau pur + adaptateur SketchUp (→ docs/ARCHITECTURE.md)
+  - Flux — HtmlDialog → DialogController → BuildingService → ConfigResolver/ConstraintValidator → StyleRegistry ; GeometryEngine → solveurs → GeometryPlan/PlanValidator ; GeometryWriter et ComponentRepository → modèle.
+  - Core — Noyau pur, Ruby standard
+    - StyleRegistry — fetch(profile_id, revision: nil) → StyleProfile ; héritage, capacités ; révision absente ⇒ erreur.
+    - ConfigResolver — resolve(request, registry:, base: nil) → Result<BuildingConfig>.
+    - BuildingConfig — to_h, geometry_input ; copie profonde gelée.
+    - ConstraintValidator — call(config, profile:) → Diagnostic[] ; paths JSON Pointer.
+    - DeterministicRandom — unit(seed, key) → Float.
+    - GeometryEngine — generate(config) → Result<GeometryPlan> ; valide avant retour.
+    - PlanValidator — call(plan) → Diagnostic[] ; topologie, indices, limites, matériaux.
+    - Result et Diagnostic — Result = value + diagnostics ; Diagnostic = {code, severity, path, params} ; error ou warning ; aucun objet SketchUp.
+  - Geometry — Solveurs purs
+    - Solveurs — FootprintSolver, FloorPlanner, FacadeSolver, OpeningSolver, WallBuilder, RoofSolver, DetailSolver.
+  - Adaptateur SketchUp — Seul à toucher au natif
+    - GeometryWriter — write(plan, entities:, resources:) ; ne crée ni transaction ni racine.
+    - ComponentRepository — read, insert, swap ; appartenance, révision, contexte.
+    - BuildingService — preview, create, load_building, load_selection, regenerate ; propriétaire de la transaction. Testé avec doubles et en natif.
+    - TransactionGuard — run(model, name, instance:) ; une opération, abandon unique, relevé d'intégrité.
+  - UI — DialogController.dispatch(chaîne JSON) → réponse ; actions init, load_selection, preview, generate, regenerate ; jetons de cible et de confirmation ; observateurs natifs ; l'UI ne reproduit aucune règle de faisabilité.
+  - Arborescence — archgen.rb (enregistrement seul) ; archgen/{main, version, loader, core, geometry, adapters/sketchup, styles, ui} ; test/{unit, contract, fixtures, host} ; scripts/.
+  - Décisions ADR — Choix révisables par décision écrite (→ docs/DECISIONS.md)
+    - ADR-01 — Génération hybride : plan indépendant + writer. Shell et Structural partagent les placements.
+    - ADR-02 — 3 profils actifs, 24 fiches, 7 familles techniques.
+    - ADR-03 — Config V1 fermée, valeurs effectives figées ; saisie séparée ; changer de style = transition explicite.
+    - ADR-04 — Une racine top-level par bâtiment, définition de remplacement fraîche ; pas d'édition imbriquée.
+    - ADR-05 — Subdivision explicite, onglets, 4 pièces murales fermées ; pas de booléens ; racine non solide.
+    - ADR-06 — m/rad au calcul, degrés en saisie ; une seule conversion par frontière.
+    - ADR-07 — Aperçu 2D en dialogue, sans écriture.
+    - ADR-08 — Cible initiale 2024–2026, Windows et macOS, remplacée par ADR-26.
+    - ADR-26 — Cible V0.1 : Windows et SketchUp 2026 ; seule la combinaison testée est annoncée ; pas de refus au chargement ailleurs.
+    - ADR-27 — D-05 et D-06 : terrain intact ; assise d'un bâtiment seul, puis EXT-07, puis étagement.
+    - ADR-30 — D-03 : coupe d'onglet, parcelle d'angle en trapèze, racine d'ensemble.
+    - ADR-31 — D-04 : forme de l'accès selon le style, catalogue séparé.
+    - ADR-33 — Étagement : une plateforme par parcelle, racine immobile, assises à part, soubassement seul.
+    - ADR-34 — Voirie : la coupe est la source, format séparé, catalogues fermés, rayons au tracé, valeurs de conception sans vérification réglementaire.
+    - ADR-35 — D-09 : arbres et lampadaires en volumes 3D simples, couleurs unies, définitions partagées.
+    - ADR-36 — D-07 : un réseau par racine, carrefour né automatiquement, type changé au panneau.
+    - ADR-32 — Murs mitoyens gardés, même gabarit par ensemble.
+    - ADR-28 — Assise sur racine existante, plateforme au point haut par défaut, format séparé, terrain désigné.
+    - ADR-09 — API minimale, géométrie locale, pas de purge globale.
+    - ADR-10 — Migrations de format distinctes des changements de règles.
+    - ADR-11 — Code E_PLAN pour tout invariant de plan violé.
+    - ADR-12 — LOD 1 refusé par le moteur jusqu'à AG-015.
+    - ADR-13 — Copie embarquée des schémas, profils et matériaux, identité vérifiée par test.
+    - ADR-14 — Ressources marquées archgen.resource ; tags sur les conteneurs de premier niveau ; homonyme utilisateur intact.
+    - ADR-15 — Le writer masque les arêtes entre faces coplanaires de même matériau ; plan et comptes inchangés.
+    - ADR-16 — Marqueur de définition non autoritaire ; création refusée en contexte d'édition ; message natif jamais exposé.
+    - ADR-17 — Cible = PID, définition, révision, empreinte de config ; jeton opaque borné ; la régénération ne renomme pas l'instance.
+    - ADR-18 — Document reconnu à Model#guid (l'objet Model ne distingue rien sous Windows) ; enregistrer périme la cible.
+    - ADR-19 — TransactionGuard : jamais imbriquée, abandon unique, relevé après abandon, restore_incomplete bloquant ; moteur plus récent non régénérable.
+    - ADR-20 — W_DETAIL pour un détail sans emplacement ; corniche sur toit plat débordant refusée ; LOD 1 ouvert.
+    - ADR-21 — Messages par raison dans UI::Messages, couverture testée ; logique JS isolée ; Diagnostic retiré du menu en AG-020.
+    - ADR-22 — Confirmation unique de 120 s ; Annuler redemande un aperçu ; enregistrer recharge sans perdre le brouillon ; autres événements = rechargement explicite.
+    - ADR-23 — Recettes de panneau scriptées quand c'est possible ; pilotage écran réservé aux contrôles qui l'exigent.
+  - Conventions Ruby/SketchUp — Tout sous Archgen ; snake_case ; gelé ; UTF-8/LF ; clés JSON chaînes, unités dans les noms ; pas de monkey patch, global, $LOAD_PATH. Point3d en m/0.0254 ou .m, jamais les deux. Pas de ComponentDefinition#manifold? dans le produit (ajoutée 2026.2). (→ docs/RUBY_SKETCHUP.md)
+- Géométrie — Contrat V1, valeurs exactes (→ docs/GEOMETRY_CONTRACT.md)
+  - Repères — P0 = coin avant gauche au sol ; X droite, Y arrière, Z haut. Anneau CCW (0,0),(W,0),(W,D),(0,D) ; arêtes front, right, rear, left. N = T×K ; point de mur = A + uT + zK − dN.
+  - Tolérances — Comparaisons 1e-6 m ; quantification 1e-6 (demi éloigné de zéro, −0 → 0) ; arête émise ≥ 0,002 m ; dégagements ≥ 0,10 m ; coupes distinctes < 0,002 m ⇒ erreur.
+  - Placement — Partagé par les deux modes
+    - Niveaux — base[i] = somme h[0…i) ; dalles Structural seulement aux limites intermédiaires, épaisseur vers le bas ; pas de dalle au RDC.
+    - Travées — P = (L−2M)/N ; centre u = M + (i+0,5)P ; N=0 ⇒ aucun candidat ; N>0 exige L>2M.
+    - Porte — Façade avant, RDC, entry_bay ; remplace la fenêtre ; z=0.
+    - Jitter — jitter_m × (2·unit−1), hors porte ; clé opening/<side>/<level>/<bay>/u ; aucun retentage.
+    - RNG — SHA-256 de "archgen-rng-v1:<seed>:<key>", 13 premiers hex en entier, /2^52.
+    - Dégagements — wall_m+0,10 aux extrémités ; ≥0,10 entre ouvertures ; haut ≤ top−slab−0,10 (intermédiaire) ou top−0,10 (dernier). Aucun réajustement implicite.
+    - Tri — façade/niveau/travée puis id ; ids stables type opening/front/0/1.
+  - Murs — Grille U = {0,L} + bords d'ouvertures ; Z = {0,H} + étages + limites d'ouvertures
+    - Shell — Quad extérieur par cellule pleine, normale N ; ni dalle ni retour.
+    - Structural — Grille extrudée à d=t ; intérieur u=0→t, u=L→L−t (onglets) ; quads ext/int opposés + latéral si voisin absent ou vide. Pas de seuil de porte.
+    - Dalles — [t,W−t]×[t,D−t]×[base−s,base], i=1…n−1 ; une pièce par dalle.
+  - Toitures — r = tan(pente), E = débord, H = tête de mur ; rive sous Z=0 rejetée
+    - Plat — Quad à H avec débord.
+    - Deux pans — Faîtage // X à y=D/2, z=H+rD/2, prolongé à −E et W+E ; rives H−rE ; 2 pignons triangulaires à x=0 et W.
+    - Croupe — z = H + r·distance signée au bord ; faîtage axe long à H+r·min(W,D)/2 ; carré : 4 triangles.
+    - Mansarde — Rive H−r_bas·E, anneau inset I à H+r_bas·I, couronné par une croupe à pente haute sans débord.
+  - Détails LOD 1 — Cadres 0,04×0,04 mutualisés, recul 0 Shell / min(0,16, wall−0,04) Structural. Corniche 0,15×0,08. Balcon 0,90×0,12 aux niveaux d'index 2 et 5. Encadrement 0,04, d∈[−0,03,0].
+  - GeometryPlan — {schema_version:1, engine_version, units:"m", nodes, definitions, openings, metrics}. Node = {id, category, children, primitive?}. Primitives surface, solid, instance.
+  - Matériaux par rôle — Murs, tableaux, dalles, pignons, balcons, corniches, encadrements → wall ; pans → roof ; cadres → frames.
+  - Ordre de validation — Configuration → faisabilité/compte estimé → plan → budget exact → écriture → contrôles natifs.
+- Configuration — JSON V1 fermé (→ docs/CONFIG_SCHEMA.md)
+  - Formats — Brouillon (overrides partiels) et effectif (complet, seul persisté) ; null et clés inconnues rejetés ; m et degrés. (→ schemas/README.md)
+  - Blocs — schema_version, name, profile, building_type, mode, lod, seed, fidelity, footprint, levels, facade, structure, roof, materials, features.
+  - Résolution — 1 contrôle taille/clés/types ; 2 profil exact ou courant ; 3 fusion feuille à feuille, tableaux remplacés, chances avant overrides ; 4 canonisation ; 5 vérification, gel.
+  - Transition de toit — Plat 0° ; deux pans/croupe 25° ; mansarde 25°/65°/0,9 m ; débord 0 ; puis champs explicites. Champ inactif explicite non nul ⇒ refus.
+  - Édition — Même profil : base + champs envoyés. Nouveau profil : garde name, mode, lod, seed, fidelity, footprint, levels, building_type ; reprend le reste.
+  - Diagnostics — E_SCHEMA, E_VERSION, E_PROFILE_UNAVAILABLE, E_HISTORICAL, W_HISTORICAL, E_OPENING_CLEARANCE, E_ROOF_GEOMETRY, E_BUDGET, E_PLAN, W_DETAIL, E_TARGET_STALE, E_CONFIRMATION_STALE, E_WRITE.
+  - Empreintes — JSON canonique trié. Empreinte géométrie sans name, UUID, révision, transformation ; empreinte config complète avec name pour le contrôle de cible.
+  - Exemples — creation-draft → haussmann-12x9 ; rect-neutre-shell et structural ; toulousain ; brutalist. (→ examples/README.md)
+- Styles — Données, pas de code (→ docs/STYLE_SCHEMA.md)
+  - Hiérarchie — generic → 7 familles → feuilles ; base → family → profile seulement.
+  - Fusion — Feuille à feuille ; requires en union parent puis enfant ; règles par id ; règle hard jamais affaiblie.
+  - Fidélité — hard : toujours erreur. historical : strict erreur, plausible avertit, creative ignore. soft : avertit, creative ignore. decorative : choix déterministe.
+  - Règles V1 — window_ratio, level_count, roof_type, material_allowed, feature_chance.
+  - Matériaux — lime_plaster, concrete, painted_wood, limestone, zinc, brick_foraine, terracotta_canal, dark_metal. (→ examples/materials.v1.json)
+  - Catalogue 24 styles — Actifs V0.1 et planifiés par famille (→ docs/styles/CATALOGUE.md)
+    - Façade ordonnancée — Haussmannien (actif, 5–7 niveaux, 2,7–4,0 m, mansarde) ; Baroque, Néoclassique, Renaissance (planifiés).
+    - Vernaculaire maçonné — Toulousain (actif, 2–5, 2,7–3,8, 15–35°) ; Provençal, Méditerranéen, Breton (planifiés).
+    - Ossature bois — Basque, Colombages, Normand, Alsacien (planifiés, EXT-02).
+    - Monumental — Roman, Gothique (planifiés, EXT-03).
+    - Ornemental — Art déco, Art nouveau (planifiés, EXT-03).
+    - Moderne modulaire — Brutaliste (actif, 2–15, 2,7–4,0, plat) ; Bauhaus, Minimaliste, Mid-century, Moderniste (planifiés).
+    - Technique — High-tech, Bioclimatique, Industriel (planifiés, EXT-04).
+- Régénération — Identité, transaction, copies (→ docs/REGENERATION.md)
+  - Identité — ComponentInstance racine, dictionnaire archgen.building : metadata_version, building_uuid, revision, config_json, plan_digest, engine_version, material_revision.
+  - Jeton de cible — Opaque, lié à session et modèle ; PID, définition, révision, SHA-256 de la config complète. Relecture à chaque écriture.
+  - Copies — Adresse d'édition = instance physique. UUID partagé ⇒ nouvel UUID pour la cible à la première écriture.
+  - Transaction — Valider sans muter ; aperçu et confirmation ; start_operation ; définition fraîche ; instance.definition= ; commit, ou abort_operation une seule fois.
+  - Refus — Transformation non rigide, miroir, échelle ; cible verrouillée, imbriquée, supprimée ; version inconnue en lecture seule.
+- Interface — Panneau modeless, local, français (→ docs/UI_SPEC.md)
+  - Zones — Projet, Dimensions, Façade, Avancé, Aperçu, Actions.
+  - Pont — archgen_dispatch reçoit une chaîne JSON {v, request_id, action, payload} ; actions init, load_selection, preview, generate, regenerate.
+  - Confirmation — Jeton unique, 120 s, consommé avant écriture ; aperçu temporisé à 250 ms ; réponses anciennes ignorées.
+- Sécurité et performances — Limites bloquantes et cibles (→ docs/SECURITY_PERFORMANCE.md)
+  - JSON — ≤64 Kio, profondeur ≤12, doublons rejetés, nombres finis ; pas de YAML objet, Marshal, eval.
+  - Limites — 60×60 m, ≤15 niveaux, ≤60 m sous toit, ≤90 m au sommet, ≤720 ouvertures, ≤30 000 faces uniques, ≤60 000 après expansion, ≤100 000 cellules, ≤128 définitions.
+  - Cibles — Plan p95 ≤150 ms ; écriture LOD 1 p95 ≤2 s ; 24×18 Structural p95 ≤5 s ; 20 régénérations : SKP +10 Mo max.
+  - Dialogue — HTML local, CSP sans inline ni CDN, textContent, execute_script à JSON ré-encodé (U+2028/9 échappés).
+- Tests — Ruby pur, contrats, hôte (→ docs/TESTING.md)
+  - U01–U12 — Ruby et contrats
+    - U01 — Brouillon, effectif, doublons, non-finis, 1.0 accepté, types faux, UTF-8, version ; parité schémas.
+    - U02 — Parents, cycle, révision manquante, hard/historique, changement de style.
+    - U03 — Golden RNG seed 42 : opening/front/0/0 = cd855d0e3d78c ; opening/rear/3/3 = 3b73a509759c3 ; feature/cornice = 8ecd39cb81f48.
+    - U04 — Normales et bases 0 / 3,2 / 6,4 / 9,6, H = 12,8.
+    - U05 — P=2,7 ; centres 1,95 / 4,65 / 7,35 / 10,05 ; 32 ouvertures, porte front/0/1.
+    - U06 — Shell : front 119,00 m², rear 119,04 m² ; segment traversant.
+    - U07 — Structural : front 27,82272 m³ ; dalles 3 × 19,63008 m³.
+    - U08 — Altitudes et normales des 4 toits.
+    - U09 — Sérialisation stable ; refus de bord ouvert, éventail scindé, face non plane, orientation, référence absente.
+    - U10 — 259 cellules, 218 faces Shell, 709 Structural ; limites exactes et 100 configs pseudo-aléatoires.
+    - U11 — 3 fixtures actives, baies ouvertes malgré cadres, rien au LOD 0.
+    - U12 — Pont adverse, faux writer, panne avant/après swap.
+    - U13 — Terrain : réglages, grille, plateforme, relief limite. Vert.
+    - U14 — Soubassement et plancher, plan_digest inchangé. Vert.
+    - U15 — Talus, 100 terrains pseudo-aléatoires. Vert.
+    - U16 — Tracé et parcelles, carré de référence, 100 tracés pseudo-aléatoires. Vert.
+    - U17 — Rangée rectangulaire, toits raccordés, plan de bâtiment seul inchangé. Vert.
+    - U18 — Parcelle d'angle, angles saillants et rentrants, carré de référence. Vert.
+    - U19 — Plan d'ensemble, définitions partagées, budgets. Vert.
+    - U20 — Accès par interruption, carré de référence, 100 contours pseudo-aléatoires. Vert.
+    - U21 — Accès par porche, Shell et Structural, limites. Vert.
+    - U22 — Étagement : rectangle = bâtiment seul, trapèzes, angles rentrants, trous, refus par parcelle, porches, plafonds. Vert.
+    - U23 — Coupe de voirie : limites et premier dépassement par type, registre fermé, préréglages, variation, avertissements. Vert.
+    - U24 — Axe et rubans : largeurs exactes en droite, courbe et onglet, corde sous 5 cm, rayon limite, refus du tracé, 100 tracés reproductibles. Vert.
+    - U25 — Éléments de voirie : positions à la main, pose sur la ligne d'un arc, crosse vers la chaussée, définitions partagées, variation, extrusions, plafonds. Vert.
+    - U26 — Rails : écartement exact en droite, courbe et onglet, rails au ras en voie mixte, traverses, plafond. Vert.
+  - H01–H12 — Recette dans SketchUp, seule preuve native
+    - H01 — Installer, activer, rouvrir ; une entrée de menu, console propre. Réussi sur Windows / 26.2.243. (→ docs/recette/H01.md)
+    - H02 — Neutres en mètres et en pouces : cotes, normales, trous, tags. Réussi sur Windows / 26.2.243. (→ docs/recette/H02.md)
+    - H03 — Un seul Undo, ressources utilisateur intactes. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
+    - H04 — Sauver, rouvrir ; version future refusée. Réussi sur Windows / 26.2.243. (→ docs/recette/H03-H04.md)
+    - H05 — Copie partagée, A modifié : B intact, PID et transfo conservés. Réussi sur Windows / 26.2.243. (→ docs/recette/H05.md)
+    - H06 — Pannes injectées : enregistrements identiques, aucun Undo ajouté. Réussi sur Windows / 26.2.243. (→ docs/recette/H06-H07.md)
+    - H07 — Cible verrouillée, supprimée, imbriquée, à l'échelle : aucune écriture. Réussi sur Windows / 26.2.243 ; partie panneau en H10. (→ docs/recette/H06-H07.md)
+    - H08 — 3 profils en LOD 0/1 et Shell/Structural. Réussi sur Windows / 26.2.243. (→ docs/recette/H08.md)
+    - H09 — Saisie rapide, invalide, clavier, hors ligne. Réussi sur Windows / 26.2.243, 150 % émulé, hors ligne non provoqué. (→ docs/recette/H09.md)
+    - H10 — Double clic, confirmation annulée puis refaite, observateurs, expiration, document. Réussi sur Windows / 26.2.243. (→ docs/recette/H10.md)
+    - H11 — Mesures et 20 régénérations. Réussi sur Windows / 26.2.243. (→ docs/recette/H11.md)
+    - H12 — Export Shell LOD 0 : écart ≤1 %. Réussi sur Windows / 26.2.243 Pro vers Blender 5.2. (→ docs/recette/H12.md)
+    - H13 — Terrain : relevé et écriture réussis, une entrée d'Annuler, terrain intact. Réussi sur Windows / 26.2.243. (→ docs/recette/H13.md)
+    - H14 — Parcours Terrain au panneau et charge sur 100 000 faces. Réussi sur Windows / 26.2.243 ; plus grand bâtiment : 1 min 30 par relevé. (→ docs/recette/H14.md)
+    - H15 — Écriture d'un ensemble, Annuler, pannes, copies, charge. Réussi sur Windows / 26.2.243, rues ouvertes ; 200 parcelles en 2,4 s. (→ docs/recette/H15.md)
+    - H16 — Outil de tracé à la souris et au clavier. Réussi sur Windows / 26.2.243. (→ docs/recette/H16.md)
+    - H17 — Parcours rue et îlot, modifier, rouvrir, vraie copie. Réussi sur Windows / 26.2.243. (→ docs/recette/H17.md)
+    - H18 — Étagement sur un vrai terrain, refus, pannes, panneau, rouvrir, charge. Réussi sur Windows / 26.2.243. (→ docs/recette/H18.md)
+    - H19 — Éditeur de coupe : préréglages, échelle mesurée à l'écran, refus, rouvrir, modèle inchangé. Réussi sur Windows / 26.2.243, copie de développement. (→ docs/recette/H19.md)
+    - H20 — Écrire une voie : service, faces écrites égales au plan, balises, Annuler, panne, copie, panneau, rouvrir, charge jusqu'à 2 km. Réussi sur Windows / 26.2.243. (→ docs/recette/H20.md)
+  - Tolérances — Ruby 1e-5 ; SketchUp ≤1 mm.
+- Extensions — Après J5, aucune dépendance inverse (→ docs/FUTURE.md)
+  - EXT-01 Richesse régionale — Vitrage et cheminées faits (J11) ; volets, lucarnes, petits bois cadrés (J12) ; débords ; Provençal, Breton. (→ docs/VOLETS_LUCARNES_CONTRACT.md)
+  - EXT-02 Bois — TimberFrameSolver ; Basque, Colombages, Normand, Alsacien.
+  - EXT-03 Courbes et décor — Arcs, reliefs, ordres ; Art déco, Art nouveau, Baroque, Néoclassique, Renaissance.
+  - EXT-04 Volumes et technique — Retraits, trame, sheds, façade rideau ; modernes, Industriel, High-tech.
+  - EXT-05 Interior — Cadré (J21), reporté ; au cas par cas, au clic droit.
+  - EXT-06 Décor de jeu — Cadré (J23) : export glTF depuis le plan, UV, PBR, collision convexe, trois LOD. (→ docs/DECOR_JEU_CONTRACT.md)
+  - EXT-07 Rue et îlots au tracé — Outil ligne au geste du Mur connecté YSKE ; forme ouverte = rue, forme fermée = îlot avec 1 à 3 accès de cour générés ; une validation = un Undo. Détail en AG-028 à 036. (→ docs/ENSEMBLE_CONTRACT.md)
+  - EXT-08 Quartier — Première partie cadrée : rues variées (AG-061 à 063, D-13 à D-16) ; commerces et personnalisation d'une parcelle cadrés (J11) ; ensuite densité, styles mêlés. (→ docs/RUE_VARIEE_CONTRACT.md)
+  - EXT-09 Cartographie — Cadré (J25) : fichiers OSM et ASCII Grid locaux, réseaux, rectangles, terrain, attribution. (→ docs/CARTOGRAPHIE_CONTRACT.md)
+  - EXT-10 Terrain et terrassement — Terrain intact : plateforme au point haut par défaut, soubassement, talus ; appliqué à une racine déjà placée, terrain désigné. Détail en AG-021 à 027. (→ docs/TERRAIN_CONTRACT.md)
+  - EXT-11 Voirie — Coupe à l'échelle humaine, routes de l'autoroute au chemin piéton, rails et tram, carrefours simple, à feux, giratoire, double giratoire. Détail en AG-037 à 049. (→ docs/VOIRIE_CONTRACT.md)
+  - EXT-12 Mobilier urbain — Cadré (J24) dans la coupe : arrêts de bus, panneaux, attaches vélos, bancs, corbeilles. (→ docs/MOBILIER_CONTRACT.md)
+  - EXT-13 Eau et ponts — Cadré le 2026-11-08 : cours d'eau et côtes comme des voies (ADR-39), ponts nés au croisement (ADR-40). Détail en AG-051 à 059. (→ docs/PONT_CONTRACT.md)

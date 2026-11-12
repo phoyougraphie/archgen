@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : voirie</title>
+<link rel="stylesheet" href="panel.css">
+<link rel="stylesheet" href="road_panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1 id="title">Tracer une voie</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Chargement</p>
+</header>
+
+<div class="road-presets" id="presets" role="group" aria-label="Types de voie"></div>
+<div id="recipes" class="road-recipes"></div>
+
+<main class="road">
+  <div class="road-stage">
+    <section class="road-sheet" aria-labelledby="section-title">
+      <div class="road-head"><h2 id="section-title">Coupe en travers</h2><span id="sum" class="road-fig"></span></div>
+      <div class="road-scroll"><svg id="section" role="img" aria-label="Coupe en travers de la voie, à l'échelle"></svg></div>
+      <div class="road-opts">
+        <label for="veh" class="road-check"><input type="checkbox" id="veh" checked> Gabarits de véhicules</label>
+        <span class="hint">Personnage de 1,75 m : glissez-le le long de la coupe. Glissez une poignée bleue pour changer une largeur.</span>
+      </div>
+    </section>
+    <section class="road-sheet" aria-labelledby="plan-title">
+      <div class="road-head"><h2 id="plan-title">Vue en plan</h2><span id="count" class="road-fig"></span></div>
+      <div class="road-scroll"><svg id="plan" role="img" aria-label="Vue de dessus du tronçon"></svg></div>
+    </section>
+    <p class="hint">Rien n'est écrit dans le modèle : cette coupe servira à tracer une voie. Les largeurs sont des valeurs de conception, pas une vérification du code de la route ni des normes.</p>
+  </div>
+
+  <aside class="road-side" aria-labelledby="bands-title">
+    <section id="road-box" class="road-trace" aria-labelledby="road-title" hidden>
+      <div class="road-head"><h2 id="road-title">Tracé de la voie</h2></div>
+      <div class="road-trace-body">
+        <p id="road-hint" class="hint"></p>
+        <div class="road-fields">
+          <div class="field"><label for="r-radius">Rayon des virages (m)</label><input id="r-radius" inputmode="decimal"></div>
+          <div class="field"><label for="r-axis">Le tracé suit</label><select id="r-axis"><option value="center">le milieu de la coupe</option><option value="left">le bord gauche</option><option value="right">le bord droit</option></select></div>
+        </div>
+        <div class="road-ground">
+          <label for="r-ground" class="road-check"><input type="checkbox" id="r-ground"> Suivre le terrain</label>
+          <div class="actions">
+            <button type="button" id="r-retain">Retenir le terrain sélectionné</button>
+            <button type="button" id="r-survey">Relever le terrain</button>
+          </div>
+          <p id="r-ground-state" class="hint"></p>
+        </div>
+        <div class="road-water" id="r-water-box" hidden>
+          <div class="field"><label for="r-water">Régime de l’eau</label><select id="r-water"><option value="flat">Un seul niveau : fleuve, côte</option><option value="river">Rivière : descend avec le terrain</option><option value="canal">Canal : biefs et écluses</option></select></div>
+          <div class="road-fields">
+            <div class="field" id="f-grade"><label for="r-grade">Pente maximale de l’eau (%)</label><input id="r-grade" inputmode="decimal" placeholder="3"></div>
+            <div class="field" id="f-drop"><label for="r-drop">Chute d’une écluse (m)</label><input id="r-drop" inputmode="decimal" placeholder="3"></div>
+            <div class="field" id="f-chamber"><label for="r-chamber">Longueur d’une chambre (m)</label><input id="r-chamber" inputmode="decimal" placeholder="40"></div>
+            <div class="field" id="f-level"><label for="r-level">Altitude du haut de la coupe (m)</label><input id="r-level" inputmode="decimal" placeholder="au plus bas"></div>
+          </div>
+          <p class="hint">Sans terrain, l’eau reste à un seul niveau quel que soit le régime.</p>
+        </div>
+        <p id="road-result" class="road-result" role="status" aria-live="polite"></p>
+        <ul id="road-diag" class="road-diag"></ul>
+        <div class="actions">
+          <button type="button" id="road-create" class="primary" disabled>Créer la voie</button>
+          <button type="button" id="road-clear">Effacer le tracé</button>
+          <button type="button" id="road-reload" hidden>Recharger la sélection</button>
+          <button type="button" id="road-resume" hidden>Reprendre le tracé</button>
+        </div>
+      </div>
+    </section>
+    <div class="road-head"><h2 id="bands-title">Bandes, de gauche à droite</h2><span id="n" class="road-fig"></span></div>
+    <div class="road-tools">
+      <label for="add-type" class="road-sr">Type de bande à ajouter</label>
+      <select id="add-type"></select>
+      <button type="button" id="add-band" class="primary">Ajouter</button>
+      <button type="button" id="mirror">Miroir</button>
+    </div>
+    <ol id="bands" class="road-bands"></ol>
+    <ul id="diag" class="road-diag"></ul>
+  </aside>
+</main>
+<script src="panel_logic.js"></script>
+<script src="recipes.js"></script>
+<script src="road_panel.js"></script>
+</body>
+</html>

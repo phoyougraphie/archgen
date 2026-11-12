@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "id": "mid_century",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "modern_modular",
+    "revision": 1
+  },
+  "family_id": "modern_modular",
+  "label": "Mid-century",
+  "context": {
+    "period": "Architecture mid-century, 1945-1970",
+    "regions": [
+      "europe"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "flat",
+    "ribbon",
+    "glazing"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 14,
+      "depth_m": 10
+    },
+    "levels": {
+      "count": 2,
+      "height_m": 2.8,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 4,
+      "window_width_m": 1.6,
+      "window_height_m": 1.8,
+      "sill_m": 0.6,
+      "entry_bay": 2,
+      "door_width_m": 1.0,
+      "door_height_m": 2.2,
+      "ribbon": "band"
+    },
+    "roof": {
+      "type": "flat",
+      "overhang_m": 1.0,
+      "pitch_deg": 0
+    },
+    "materials": {
+      "wall": "red_brick",
+      "roof": "concrete",
+      "frames": "dark_metal",
+      "glass": "glass"
+    },
+    "features": {
+      "glazing": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 0.4,
+        "max": 1.4
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 1,
+        "max": 3
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "flat",
+          "gable"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "red_brick",
+          "natural_wood",
+          "light_render"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

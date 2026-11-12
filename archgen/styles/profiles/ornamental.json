@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "ornamental",
+  "revision": 1,
+  "kind": "family",
+  "status": "internal",
+  "parent": {
+    "id": "generic",
+    "revision": 1
+  },
+  "family_id": "ornamental",
+  "label": "Décoratif géométrique ou organique",
+  "context": {
+    "period": "",
+    "regions": [],
+    "typologies": []
+  },
+  "requires": [],
+  "defaults": {},
+  "rules": []
+}

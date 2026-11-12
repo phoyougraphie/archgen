@@ -13,13 +13,93 @@
       "label": "Bois peint",
       "srgb": "#465551"
     },
+    "painted_wood_green": {
+      "label": "Bois peint vert",
+      "srgb": "#4F6B4A"
+    },
+    "painted_wood_blue": {
+      "label": "Bois peint bleu pastel",
+      "srgb": "#8FAFC4"
+    },
+    "ochre_render": {
+      "label": "Enduit ocre",
+      "srgb": "#C99A5B"
+    },
+    "light_render": {
+      "label": "Enduit clair",
+      "srgb": "#E9E1D2"
+    },
+    "blond_stone": {
+      "label": "Pierre blonde",
+      "srgb": "#D8C49A"
+    },
+    "golden_stone": {
+      "label": "Pierre dorée",
+      "srgb": "#C8A060"
+    },
+    "granite": {
+      "label": "Granit",
+      "srgb": "#8E8B86"
+    },
+    "schist": {
+      "label": "Schiste",
+      "srgb": "#6F6A63"
+    },
+    "slate": {
+      "label": "Ardoise",
+      "srgb": "#4A4F56"
+    },
+    "mechanical_tile": {
+      "label": "Tuile mécanique",
+      "srgb": "#A4553A"
+    },
+    "painted_wood_grey": {
+      "label": "Bois peint gris",
+      "srgb": "#8C9496"
+    },
+    "painted_wood_red": {
+      "label": "Bois peint rouge",
+      "srgb": "#8E2B23"
+    },
+    "natural_wood": {
+      "label": "Bois naturel",
+      "srgb": "#A0784C"
+    },
+    "dark_wood": {
+      "label": "Bois sombre",
+      "srgb": "#5A4030"
+    },
+    "red_brick": {
+      "label": "Brique rouge",
+      "srgb": "#9A4A32"
+    },
+    "canvas_red": {
+      "label": "Toile rouge",
+      "srgb": "#A63A32"
+    },
+    "canvas_green": {
+      "label": "Toile verte",
+      "srgb": "#3F6B4E"
+    },
+    "canvas_beige": {
+      "label": "Toile beige",
+      "srgb": "#D8C8A6"
+    },
+    "glass": {
+      "label": "Verre",
+      "srgb": "#9FB8C4",
+      "alpha": 0.35,
+      "roughness": 0.05
+    },
     "limestone": {
       "label": "Pierre calcaire",
       "srgb": "#DDCBB0"
     },
     "zinc": {
       "label": "Zinc",
-      "srgb": "#717E88"
+      "srgb": "#717E88",
+      "metallic": 0.9,
+      "roughness": 0.5
     },
     "brick_foraine": {
       "label": "Brique foraine",
@@ -31,7 +111,9 @@
     },
     "dark_metal": {
       "label": "Métal foncé",
-      "srgb": "#3D4145"
+      "srgb": "#3D4145",
+      "metallic": 1.0,
+      "roughness": 0.45
     }
   }
 }

@@ -1,0 +1,120 @@
+# frozen_string_literal: true
+
+module Archgen
+  module Core
+    # Barrière des réglages d'une voie (docs/VOIRIE_CONTRACT.md, Tronçon) : forme, coupe, tracé.
+    # La géométrie du tracé (rayons, replis, recouvrements) est jugée ensuite par Geometry::RoadAxis.
+    class RoadIntake
+      SUPPORTED_VERSION = 1
+      DEFAULTS = { 'road_version' => SUPPORTED_VERSION, 'seed' => 1, 'axis' => 'center' }.freeze
+
+      # schemas : { 'road' => Hash } ; profiles : RoadProfileIntake.
+      def initialize(schema, profiles:)
+        @schema = SchemaValidator.new(schema)
+        @profiles = profiles
+      end
+
+      def settings(input)
+        parsed = input.is_a?(String) ? StrictJson.parse(input) : Result.ok(input)
+        return parsed unless parsed.ok?
+
+        tree = parsed.value
+        version = version_problem(tree)
+        return Result.fail([version]) if version
+
+        problems = @schema.validate(tree)
+        return Result.fail(problems) unless problems.empty?
+
+        profile = @profiles.profile(tree['profile'])
+        diagnostics = profile.diagnostics.map { |d| repath(d) }
+        problems = diagnostics.select(&:error?) + trace_problems(tree['trace'])
+        problems += water_problems(tree, profile.value) if profile.ok?
+        return Result.fail(problems.sort_by(&:sort_key)) unless problems.empty?
+
+        Result.ok(Canonical.deep_freeze(effective(tree, profile.value)), diagnostics)
+      end
+
+      private
+
+      def version_problem(tree)
+        return nil unless tree.is_a?(Hash) && tree['road_version'].is_a?(Numeric) && tree['road_version'] != SUPPORTED_VERSION
+
+        Diagnostic.error('E_VERSION', '/road_version', reason: 'unsupported_road', value: tree['road_version'], supported: SUPPORTED_VERSION)
+      end
+
+      def repath(diagnostic)
+        params = diagnostic.params.transform_keys(&:to_sym)
+        path = "/profile#{diagnostic.path}"
+        diagnostic.error? ? Diagnostic.error(diagnostic.code, path, **params) : Diagnostic.warning(diagnostic.code, path, **params)
+      end
+
+      def trace_problems(trace)
+        points = trace['points_m']
+        out = []
+        return [error('/trace/points_m', 'too_few_points', value: points.size, limit: 2)] if points.size < 2
+
+        out << error('/trace/points_m/0', 'first_point_not_road_origin') unless points[0].all?(&:zero?)
+        points.each_with_index do |p, i|
+          next if p.all? { |c| c.abs <= Limits::ROAD_MAX_COORDINATE_M }
+
+          out << error("/trace/points_m/#{i}", 'coordinate_range', limit: Limits::ROAD_MAX_COORDINATE_M)
+        end
+        if trace['radii_m'].size != points.size - 2
+          out << error('/trace/radii_m', 'radii_count', expected: points.size - 2, value: trace['radii_m'].size)
+        end
+        out
+      end
+
+      # Réglage `water` (EAU_CONTRACT) : exigé par une coupe à eau, refusé sans eau. Une voie à eau sur un
+      # terrain attend AG-053 (rivière) et AG-055 (fleuve) : refusée plutôt que posée à plat en silence.
+      LOCK_MAX_WIDTH_M = 40.0
+      WATER_DEFAULTS = { 'max_grade_percent' => 3, 'lock_drop_m' => 3, 'lock_length_m' => 40 }.freeze
+
+      def water_problems(tree, profile)
+        wet = profile['bands'].any? { |b| %w[water sea].include?(b['type']) }
+        return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_mode_missing')] if wet && !tree['water']
+        return [Diagnostic.error('E_ROAD_WATER', '/water', reason: 'water_without_band')] if !wet && tree['water']
+        if tree['ground'] && tree.dig('water', 'mode') == 'canal'
+          # Chambre à murs verticaux : sur un terrain, un canal est bordé de quais (AG-054).
+          bad = profile['bands'].each_index.find do |i|
+            profile['bands'][i]['type'] == 'water' && [profile['bands'][i - 1], profile['bands'][i + 1]].any? { |b| b && b['type'] == 'riverbank' }
+          end
+          return [Diagnostic.error('E_ROAD_WATER', "/profile/bands/#{bad}", reason: 'canal_needs_quays')] if bad
+
+          wide = profile['bands'].each_index.find { |i| profile['bands'][i]['type'] == 'water' && profile['bands'][i]['width_m'] > LOCK_MAX_WIDTH_M }
+          return [Diagnostic.error('E_ROAD_WATER', "/profile/bands/#{wide}/width_m", reason: 'lock_too_wide', limit: LOCK_MAX_WIDTH_M)] if wide
+        end
+        if profile['bands'].any? { |b| b['type'] == 'sea' } && tree.dig('water', 'mode') != 'flat'
+          return [Diagnostic.error('E_ROAD_WATER', '/water/mode', reason: 'sea_needs_flat', value: tree['water']['mode'])]
+        end
+
+        []
+      end
+
+      def error(path, reason, **params)
+        Diagnostic.error('E_ROAD_TRACE', path, reason: reason, **params)
+      end
+
+      def effective(tree, profile)
+        {
+          'road_version' => SUPPORTED_VERSION,
+          'seed' => tree.fetch('seed', DEFAULTS['seed']).to_i,
+          'axis' => tree.fetch('axis', DEFAULTS['axis']),
+          'trace' => {
+            'points_m' => tree['trace']['points_m'].map { |p| p.map { |c| Quant.q(c.to_f) } },
+            'radii_m' => tree['trace']['radii_m'].map { |r| Quant.q(r.to_f) }
+          },
+          'profile' => profile
+        }.merge(tree['ground'] ? { 'ground' => Geometry::RoadGround.settings(tree['ground'].transform_values { |v| Quant.q(v.to_f) }) } : {})
+         .merge(tree['water'] ? { 'water' => water(tree['water']) } : {})
+      end
+
+      def water(input)
+        out = { 'mode' => input['mode'] }
+        WATER_DEFAULTS.each { |key, value| out[key] = Quant.q(input.fetch(key, value).to_f) }
+        out['level_m'] = Quant.q(input['level_m'].to_f) if input.key?('level_m')
+        out
+      end
+    end
+  end
+end

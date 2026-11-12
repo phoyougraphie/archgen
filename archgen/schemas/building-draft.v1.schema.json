@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN building draft V1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999999
+        }
+      },
+      "additionalProperties": false
+    },
+    "building_type": {
+      "enum": [
+        "residential",
+        "mixed_use"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "shell",
+        "structural"
+      ]
+    },
+    "lod": {
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "fidelity": {
+      "enum": [
+        "strict",
+        "plausible",
+        "creative"
+      ]
+    },
+    "footprint": {
+      "type": "object",
+      "properties": {
+        "width_m": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 60
+        },
+        "depth_m": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 60
+        }
+      },
+      "additionalProperties": false
+    },
+    "wing": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "enum": [
+            "none",
+            "left",
+            "right",
+            "center",
+            "both"
+          ]
+        },
+        "width_m": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 40
+        },
+        "depth_m": {
+          "type": "number",
+          "minimum": 2,
+          "maximum": 40
+        },
+        "levels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15
+        }
+      },
+      "required": [
+        "position",
+        "width_m",
+        "depth_m"
+      ],
+      "additionalProperties": false
+    },
+    "levels": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 15
+        },
+        "height_m": {
+          "type": "number",
+          "minimum": 2.2,
+          "maximum": 6
+        },
+        "heights_m": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 2.2,
+            "maximum": 6
+          },
+          "maxItems": 15
+        },
+        "attic_setback_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "facade": {
+      "type": "object",
+      "properties": {
+        "front_bays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "side_bays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "margin_m": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 8
+        },
+        "window_width_m": {
+          "type": "number",
+          "minimum": 0.35,
+          "maximum": 8
+        },
+        "window_height_m": {
+          "type": "number",
+          "minimum": 0.4,
+          "maximum": 4
+        },
+        "sill_m": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 3
+        },
+        "entry_bay": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 11
+        },
+        "door_width_m": {
+          "type": "number",
+          "minimum": 0.7,
+          "maximum": 4
+        },
+        "door_height_m": {
+          "type": "number",
+          "minimum": 1.8,
+          "maximum": 4
+        },
+        "jitter_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.3
+        },
+        "muntin_rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6
+        },
+        "arch": {
+          "enum": [
+            "flat",
+            "round",
+            "pointed"
+          ]
+        },
+        "ribbon": {
+          "enum": [
+            "bays",
+            "band",
+            "curtain"
+          ]
+        },
+        "tint": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        }
+      },
+      "additionalProperties": false
+    },
+    "structure": {
+      "type": "object",
+      "properties": {
+        "wall_m": {
+          "type": "number",
+          "minimum": 0.08,
+          "maximum": 1
+        },
+        "slab_m": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 0.5
+        },
+        "ground_slab": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "roof": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "flat",
+            "gable",
+            "hip",
+            "mansard",
+            "sawtooth"
+          ]
+        },
+        "overhang_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "pitch_deg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 80
+        },
+        "lower_pitch_deg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 80
+        },
+        "inset_m": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "ridge": {
+          "enum": [
+            "parallel",
+            "perpendicular"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "materials": {
+      "type": "object",
+      "properties": {
+        "wall": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "roof": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "frames": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "glass": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "shutters": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "cladding": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "timber": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "surrounds": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "awning": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "cornice": {
+          "type": "boolean"
+        },
+        "balcony": {
+          "type": "boolean"
+        },
+        "surrounds": {
+          "type": "boolean"
+        },
+        "glazing": {
+          "type": "boolean"
+        },
+        "chimneys": {
+          "type": "boolean"
+        },
+        "muntins": {
+          "type": "boolean"
+        },
+        "shutters": {
+          "type": "boolean"
+        },
+        "dormers": {
+          "type": "boolean"
+        },
+        "genoise": {
+          "type": "boolean"
+        },
+        "stepped_gable": {
+          "type": "boolean"
+        },
+        "cladding": {
+          "type": "boolean"
+        },
+        "timber_frame": {
+          "type": "boolean"
+        },
+        "classical": {
+          "type": "boolean"
+        },
+        "pilotis": {
+          "type": "boolean"
+        },
+        "structural_grid": {
+          "type": "boolean"
+        },
+        "sun_shades": {
+          "type": "boolean"
+        },
+        "shop_front": {
+          "enum": [
+            "none",
+            "awning",
+            "pergola"
+          ]
+        },
+        "balcony_rail": {
+          "enum": [
+            "none",
+            "bars",
+            "solid",
+            "glass"
+          ]
+        },
+        "balcony_levels": {
+          "enum": [
+            "noble",
+            "all"
+          ]
+        },
+        "balcony_depth_m": {
+          "type": "number",
+          "minimum": 0.6,
+          "maximum": 2.5
+        },
+        "balcony_wrap": {
+          "type": "boolean"
+        },
+        "bow_window": {
+          "enum": [
+            "none",
+            "center",
+            "ends",
+            "ground"
+          ]
+        },
+        "wall_dormers": {
+          "type": "boolean"
+        },
+        "bell_tower": {
+          "enum": [
+            "none",
+            "porch",
+            "corner",
+            "twin"
+          ]
+        },
+        "apse": {
+          "type": "boolean"
+        },
+        "transept": {
+          "type": "boolean"
+        },
+        "string_courses": {
+          "type": "boolean"
+        },
+        "turret": {
+          "type": "boolean"
+        },
+        "balconettes": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ground_floor": {
+      "enum": [
+        "dwelling",
+        "shop"
+      ]
+    },
+    "shop": {
+      "type": "object",
+      "properties": {
+        "height_m": {
+          "type": "number",
+          "minimum": 3.2,
+          "maximum": 6
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version"
+  ]
+}

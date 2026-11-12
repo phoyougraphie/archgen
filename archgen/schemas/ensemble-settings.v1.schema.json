@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARCHGEN ensemble settings V1",
+  "type": "object",
+  "properties": {
+    "ensemble_version": {
+      "const": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "trace": {
+      "type": "object",
+      "properties": {
+        "points_m": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "closed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "points_m",
+        "closed"
+      ],
+      "additionalProperties": false
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "side": {
+          "enum": [
+            "left",
+            "right",
+            "both"
+          ]
+        },
+        "street_width_m": {
+          "type": "number",
+          "minimum": 3,
+          "maximum": 60
+        }
+      },
+      "additionalProperties": false
+    },
+    "parcel": {
+      "type": "object",
+      "properties": {
+        "target_width_m": {
+          "type": "number",
+          "minimum": 6,
+          "maximum": 60
+        },
+        "depth_m": {
+          "type": "number",
+          "minimum": 4,
+          "maximum": 60
+        },
+        "bay_width_m": {
+          "type": "number",
+          "minimum": 1.5,
+          "maximum": 12
+        },
+        "detached": {
+          "type": "object",
+          "properties": {
+            "side_gap_m": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "front_setback_m": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 30
+            },
+            "building_depth_m": {
+              "type": "number",
+              "minimum": 4,
+              "maximum": 30
+            }
+          },
+          "required": [
+            "side_gap_m",
+            "front_setback_m",
+            "building_depth_m"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "access": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "enum": [
+            "auto",
+            1,
+            2,
+            3
+          ]
+        },
+        "width_m": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 6
+        },
+        "height_m": {
+          "type": "number",
+          "minimum": 2.5,
+          "maximum": 6
+        }
+      },
+      "additionalProperties": false
+    },
+    "variety": {
+      "type": "object",
+      "properties": {
+        "levels": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "max": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "max_step": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 14
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ],
+          "additionalProperties": false
+        },
+        "roofs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "flat",
+              "gable",
+              "mansard",
+              "hip"
+            ]
+          }
+        },
+        "ground": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "entry": {
+              "type": "boolean"
+            },
+            "shop_share": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "widths": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "parcels": {
+      "title": "Réglages propres : id de parcelle vers levels, roof, ground_floor, shop, chimneys, glazing, width_m (docs/DETAILS_CONTRACT.md ; détail vérifié par EnsembleParcels)",
+      "type": "object"
+    },
+    "building": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "trace"
+  ],
+  "additionalProperties": false
+}

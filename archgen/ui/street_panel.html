@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'">
+<title>ARCHGEN : rue</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+<header class="bar">
+  <h1 id="title">Tracer une rue</h1>
+  <p id="status" class="status" role="status" aria-live="polite">Prêt</p>
+</header>
+
+<div id="summary" class="summary" tabindex="-1" hidden>
+  <h2>À corriger</h2>
+  <ul id="summary-list"></ul>
+</div>
+
+<main class="form street">
+  <p id="guide" class="hint">Cliquez le départ dans la vue, puis un point par sommet, ou tapez « longueur;angle ». Double-clic ou Échap pour finir.</p>
+  <p id="replace-warning" class="hint" hidden>La géométrie de cet ensemble sera remplacée, tous ses bâtiments compris. Le tracé ne change pas. Annuler la rétablit en une fois.</p>
+  <div id="recipes"></div>
+  <fieldset>
+    <legend>Bâtiments</legend>
+    <div class="field wide"><label for="s-profile">Style</label><select id="s-profile"></select></div>
+    <div class="field"><label for="s-mode">Mode</label><select id="s-mode"><option value="shell">Shell (surfaces)</option><option value="structural">Structural (murs épais)</option></select></div>
+    <div class="field"><label for="s-lod">Niveau de détail</label><select id="s-lod"><option value="0">LOD 0, volume</option><option value="1">LOD 1, détails</option></select></div>
+    <div class="field"><label for="s-count">Niveaux, RDC inclus (vide : selon le style)</label><input id="s-count" inputmode="numeric"></div>
+    <div class="field"><label for="s-height">Hauteur courante, m (vide : selon le style)</label><input id="s-height" inputmode="decimal"></div>
+  </fieldset>
+  <fieldset>
+    <legend>Rue et parcelles</legend>
+    <div class="field wide"><label for="s-side">Côté bâti (Ctrl dans la vue)</label><select id="s-side"><option value="left">À gauche du tracé</option><option value="right">À droite du tracé</option><option value="both">Des deux côtés</option></select></div>
+    <div class="field" id="s-street-field" hidden><label for="s-street">Largeur de rue (m)</label><input id="s-street" inputmode="decimal"></div>
+    <div class="field"><label for="s-target">Largeur de parcelle (m)</label><input id="s-target" inputmode="decimal"></div>
+    <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
+    <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
+    <div class="field wide check"><input type="checkbox" id="s-detached"><label for="s-detached">Bâtiments isolés sur leur terrain (jardin autour, profondeur = terrain)</label></div>
+    <div class="field"><label for="s-gap">Écart aux limites (m)</label><input id="s-gap" inputmode="decimal" data-detached="1" placeholder="3"></div>
+    <div class="field"><label for="s-setback">Retrait sur rue (m)</label><input id="s-setback" inputmode="decimal" data-detached="1" placeholder="5"></div>
+    <div class="field"><label for="s-bdepth">Profondeur du bâtiment (m)</label><input id="s-bdepth" inputmode="decimal" data-detached="1" placeholder="10"></div>
+  </fieldset>
+  <details id="s-details-section" class="section">
+  <summary>Détails de façade</summary>
+  <fieldset>
+    <p class="hint">Pour toute la rue ; ils n’apparaissent qu’au LOD 1.</p>
+    <div class="field check"><input type="checkbox" id="s-glazing" data-detail="glazing"><label for="s-glazing">Vitrage</label></div>
+    <div class="field check"><input type="checkbox" id="s-chimneys" data-detail="chimneys"><label for="s-chimneys">Cheminées</label></div>
+    <div class="field check"><input type="checkbox" id="s-muntins" data-detail="muntins"><label for="s-muntins">Petits bois</label></div>
+    <div class="field check"><input type="checkbox" id="s-shutters" data-detail="shutters"><label for="s-shutters">Volets</label></div>
+    <div class="field check"><input type="checkbox" id="s-dormers" data-detail="dormers"><label for="s-dormers">Lucarnes</label></div>
+    <div class="field check"><input type="checkbox" id="s-genoise" data-detail="genoise"><label for="s-genoise">Génoise</label></div>
+    <div class="field check"><input type="checkbox" id="s-stepped" data-detail="stepped_gable"><label for="s-stepped">Pignon à redents</label></div>
+    <div class="field check"><input type="checkbox" id="s-cladding" data-detail="cladding"><label for="s-cladding">Bardage bois</label></div>
+    <div class="field check"><input type="checkbox" id="s-timber" data-detail="timber_frame"><label for="s-timber">Pan de bois</label></div>
+    <div class="field check"><input type="checkbox" id="s-classical" data-detail="classical"><label for="s-classical">Ornements classiques</label></div>
+    <div class="field check"><input type="checkbox" id="s-pilotis" data-detail="pilotis"><label for="s-pilotis">Pilotis</label></div>
+    <div class="field check"><input type="checkbox" id="s-structural_grid" data-detail="structural_grid"><label for="s-structural_grid">Trame structurelle</label></div>
+    <div class="field check"><input type="checkbox" id="s-sun_shades" data-detail="sun_shades"><label for="s-sun_shades">Brise-soleil</label></div>
+    <div class="field check"><input type="checkbox" id="s-ground-slab"><label for="s-ground-slab">Dalle de rez-de-chaussée et seuils</label></div>
+    <div class="field"><label for="s-tint">Teintes des maisons</label><select id="s-tint"><option value="0">Toutes pareilles</option><option value="1">Légères</option><option value="2">Marquées</option><option value="3">Fortes</option></select></div>
+    <div class="field"><label for="s-shopfront">Devanture des commerces</label><select id="s-shopfront"><option value="none">Rien</option><option value="awning">Store banne</option><option value="pergola">Pergola</option></select></div>
+    <div class="field check"><input type="checkbox" id="s-shop" data-detail="shop"><label for="s-shop">Commerces au rez-de-chaussée</label></div>
+    <div class="field" id="s-shop-height-field" hidden><label for="s-shop-height">Hauteur des commerces, m (vide : selon le style)</label><input id="s-shop-height" inputmode="decimal"></div>
+  </fieldset>
+  </details>
+  <div class="field wide check" id="s-custom-field" hidden><input type="checkbox" id="s-custom"><label for="s-custom" id="s-custom-label">Retirer les réglages propres des bâtiments personnalisés</label></div>
+  <details id="s-variety-section" class="section">
+  <summary>Variété</summary>
+  <fieldset>
+    <div class="field wide check"><input type="checkbox" id="s-ground"><label for="s-ground">Rez-de-chaussée variés (porte et largeur des fenêtres tirées par bâtiment)</label></div>
+    <div class="field"><label for="s-shopshare">Part de commerces, % (vide : selon la case Commerces)</label><input id="s-shopshare" inputmode="numeric"></div>
+    <div class="field wide check"><input type="checkbox" id="s-variety"><label for="s-variety">Varier les bâtiments (niveaux et toits tirés par parcelle)</label></div>
+    <div class="field"><label for="s-vmin">Niveaux, au moins</label><input id="s-vmin" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-vmax">Niveaux, au plus</label><input id="s-vmax" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-vstep">Écart entre voisines (niveaux)</label><input id="s-vstep" inputmode="numeric" data-variety="1"></div>
+    <div class="field"><label for="s-seed">Graine du tirage</label><input id="s-seed" inputmode="numeric"></div>
+    <div class="field check"><input type="checkbox" id="s-roof-flat" data-variety="1" data-roof="flat"><label for="s-roof-flat" id="s-roof-flat-label">Toit plat</label></div>
+    <div class="field check"><input type="checkbox" id="s-roof-gable" data-variety="1" data-roof="gable"><label for="s-roof-gable" id="s-roof-gable-label">Deux pans</label></div>
+    <div class="field check"><input type="checkbox" id="s-roof-mansard" data-variety="1" data-roof="mansard"><label for="s-roof-mansard" id="s-roof-mansard-label">Mansarde</label></div>
+  </fieldset>
+  </details>
+  <details id="s-access-fields" class="section" open hidden>
+  <summary>Accès à la cour</summary>
+  <fieldset>
+    <div class="field"><label for="s-access-count">Nombre</label><select id="s-access-count"><option value="auto">Selon le périmètre</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+    <div class="field"><label for="s-access-width">Largeur (m)</label><input id="s-access-width" inputmode="decimal"></div>
+    <div class="field"><label for="s-access-height">Hauteur d'un porche (m)</label><input id="s-access-height" inputmode="decimal"></div>
+  </fieldset>
+  </details>
+  <details id="s-terrain" class="section" open hidden>
+  <summary>Terrain</summary>
+  <fieldset>
+  <p id="site-hint" class="hint wide">Une plateforme par parcelle, à partir de l'ensemble enregistré. Sélectionnez le terrain, retenez-le, puis resélectionnez l'ensemble et rechargez. Le terrain n'est pas modifié.</p>
+  <div class="actions wide"><button type="button" id="site-retain">Retenir ce terrain</button></div>
+  <div class="field"><label for="s-site-policy">Altitude de plateforme</label><select id="s-site-policy" data-site="1"><option value="high">Point haut de la parcelle</option><option value="mean">Altitude moyenne de la parcelle</option></select></div>
+  <div class="field"><label for="s-site-offset">Décalage (m)</label><input id="s-site-offset" inputmode="decimal" data-site="1"></div>
+  <div class="field"><label for="s-site-earthwork">Terrassement</label><select id="s-site-earthwork" data-site="1"><option value="plinth">Soubassement</option><option value="embankment">Talus (rue droite)</option></select></div>
+  <div class="field"><label for="s-site-entrance">Devant les portes</label><select id="s-site-entrance" data-site="1"><option value="steps">Perron (marches)</option><option value="ramp">Rampe</option><option value="none">Rien</option></select></div>
+  <div class="field"><label for="s-site-material">Soubassement</label><select id="s-site-material" data-site="1"></select></div>
+  <div class="field"><label for="s-site-step">Pas du relevé (m)</label><input id="s-site-step" inputmode="decimal" data-site="1"></div>
+  <div class="actions wide">
+    <button type="button" id="site-survey">Relever</button>
+    <button type="button" id="site-adapt" disabled>Adapter au terrain</button>
+    <button type="button" id="site-remove" disabled>Retirer l'assise</button>
+  </div>
+  <ul id="site-lines" class="wide" hidden></ul>
+  </fieldset>
+  </details>
+  <div class="street-footer">
+  <section aria-labelledby="result-title">
+    <h2 id="result-title">Résultat</h2>
+    <p id="result" class="hint">Aucun tracé.</p>
+    <ul id="warnings" hidden></ul>
+  </section>
+  <div class="actions">
+    <button type="button" id="create" class="primary" disabled>Créer</button>
+    <button type="button" id="clear" disabled>Effacer le tracé</button>
+    <button type="button" id="resume" hidden>Reprendre le tracé</button>
+    <button type="button" id="reload" hidden>Recharger la sélection</button>
+  </div>
+  </div>
+</main>
+<script src="recipes.js"></script>
+<script src="street_panel.js"></script>
+</body>
+</html>

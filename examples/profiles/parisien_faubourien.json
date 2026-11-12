@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "id": "parisien_faubourien",
+  "revision": 1,
+  "kind": "profile",
+  "status": "active",
+  "parent": {
+    "id": "masonry_vernacular",
+    "revision": 1
+  },
+  "family_id": "masonry_vernacular",
+  "label": "Parisien faubourien",
+  "context": {
+    "period": "Immeuble de faubourg parisien, XVIIIe-XIXe siècle",
+    "regions": [
+      "paris"
+    ],
+    "typologies": [
+      "residential",
+      "mixed_use"
+    ]
+  },
+  "requires": [
+    "gable",
+    "glazing",
+    "muntins",
+    "shutters",
+    "surrounds"
+  ],
+  "defaults": {
+    "footprint": {
+      "width_m": 10,
+      "depth_m": 9
+    },
+    "levels": {
+      "count": 4,
+      "height_m": 3.0,
+      "heights_m": [
+
+      ]
+    },
+    "facade": {
+      "front_bays": 3,
+      "window_width_m": 1.0,
+      "window_height_m": 1.7,
+      "sill_m": 0.9,
+      "entry_bay": 1,
+      "door_width_m": 1.1,
+      "door_height_m": 2.4,
+      "muntin_rows": 3
+    },
+    "roof": {
+      "type": "gable",
+      "overhang_m": 0.2,
+      "pitch_deg": 30
+    },
+    "materials": {
+      "wall": "light_render",
+      "roof": "mechanical_tile",
+      "frames": "painted_wood",
+      "glass": "glass",
+      "shutters": "painted_wood_grey"
+    },
+    "features": {
+      "glazing": true,
+      "muntins": true,
+      "shutters": true,
+      "surrounds": true
+    }
+  },
+  "rules": [
+    {
+      "id": "window_proportion",
+      "rule": "window_ratio",
+      "params": {
+        "min": 1.4,
+        "max": 2.0
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_levels",
+      "rule": "level_count",
+      "params": {
+        "min": 3,
+        "max": 6
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "regional_roof",
+      "rule": "roof_type",
+      "params": {
+        "values": [
+          "gable",
+          "mansard"
+        ]
+      },
+      "kind": "historical"
+    },
+    {
+      "id": "local_wall",
+      "rule": "material_allowed",
+      "params": {
+        "role": "wall",
+        "values": [
+          "light_render",
+          "ochre_render",
+          "limestone"
+        ]
+      },
+      "kind": "soft"
+    }
+  ]
+}

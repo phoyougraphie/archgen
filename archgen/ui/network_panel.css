@@ -1,0 +1,20 @@
+/* Panneau de réseau de voies (AG-048). Couleurs et boîtes de panel.css (AG-145 : plus de couleurs propres). */
+.net { display: flex; gap: 0.75rem; padding: 0.75rem 1rem 1rem; align-items: flex-start; }
+.net-side { flex: 0 0 21rem; display: flex; flex-direction: column; gap: 0.625rem; }
+.net-box { border: 1px solid var(--line); border-radius: 2px; padding: 0.5rem 0.75rem 0.75rem; background: var(--sheet); }
+.net-box h2, .net-sheet h2 { font-size: 0.875rem; margin: 0 0 0.375rem; }
+.net-box label { display: block; margin-top: 0.375rem; color: var(--muted); }
+.net-box select, .net-box input { width: 100%; }
+.net-row { display: grid; grid-template-columns: 1fr 1fr; column-gap: 0.5rem; }
+.net-row label { grid-row: 1; }
+.net-actions { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.5rem; }
+.net-list { list-style: none; margin: 0; padding: 0; }
+.net-list li { border-top: 1px solid var(--line); padding: 0.375rem 0; }
+.net-list li:first-child { border-top: 0; }
+.net-road { display: flex; justify-content: space-between; align-items: center; gap: 0.375rem; }
+.net-junction .net-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.5rem; margin-top: 0.25rem; }
+.net-diag { margin: 0.25rem 0 0; padding-left: 1rem; color: var(--error); font-size: 0.8125rem; }
+.net-sheet { flex: 1 1 auto; min-width: 0; padding: 0.5rem 0.75rem 0.75rem; background: var(--sheet); border: 1px solid var(--line); border-radius: 2px; }
+#plan { width: 100%; height: calc(100vh - 9rem); min-height: 22rem; background: #eef1ec; border: 1px solid var(--line); }
+#plan text { font: 3px sans-serif; fill: var(--ink); }
+@media (max-width: 760px) { .net { flex-direction: column; } .net-side { flex-basis: auto; width: 100%; } }

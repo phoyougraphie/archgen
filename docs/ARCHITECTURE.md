@@ -26,6 +26,14 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::ConstraintValidator | call(config, profile:) → Diagnostic[] | Contraintes transversales et cohérence historique ; paths JSON Pointer. |
 | Core::DeterministicRandom | unit(seed, key) → Float | Tirages stables par clé sémantique ; voir contrat géométrique. |
 | Core::GeometryEngine | generate(config) → Result<GeometryPlan> | Pipeline pur, valide le plan avant retour. |
+| Adapters::SketchUp::BuildingService (assise) | preview_site, adapt_to_site, remove_site, site_status | Une opération par action ; relevé refait avant d'écrire. |
+| Adapters::SketchUp::TerrainSurveyor | retain(model), survey(model, ref, instance, axes) → Result | Terrain désigné, rayons verticaux, obstacles ; aucune écriture. |
+| Core::SiteIntake | settings(input), stored_settings(input), grid(tree, ...) → Result | Réglages d'assise et grille de relevé, chemins sous /site. |
+| Core::SurveyGrid | plan(...) → Result<axes> ; altitude_at(x, y) | Axes attendus, altitudes, interpolation bilinéaire. |
+| Core::SiteAssise | call(grid, settings, width_m:, depth_m:) → Result<Hash> | Plateforme, relief et indicateurs. |
+| Geometry::SitePlanner | call(plan:, config:, grid:, settings:, assise:) → Result<SitePlan> | Plancher et soubassement, porte et baies enterrées, budgets ; plan du bâtiment non modifié. |
+| Geometry::EmbankmentBuilder | call(footprint:, grid:, settings:, platform:) → Result | Rayons, pied de talus, angles en éventail. |
+| Core::SitePlanValidator | call(site_plan, materials:) → Diagnostic[] | Mêmes refus de maillage que le plan du bâtiment. |
 | Geometry::FootprintSolver | call(width_m:, depth_m:) → Footprint | Anneau CCW et repères de façades. |
 | Geometry::FloorPlanner | call(footprint, levels) → Level[] | Altitudes, plages de dalle. |
 | Geometry::FacadeSolver | call(footprint, levels, facade) → Candidate[] | Positions candidates à pas constant. |
@@ -36,7 +44,7 @@ Le noyau (Core + Geometry) ne dépend que de Ruby standard et des données déj�
 | Core::PlanValidator | call(plan) → Diagnostic[] | Topologie, indices, limites et matériaux. |
 | Adapters::SketchUp::GeometryWriter | write(plan, entities:, resources:) → WriteStats | Géométrie native dans une définition vide ; ne crée ni transaction ni racine. |
 | Adapters::SketchUp::ComponentRepository | read(model, persistent_id:) ; insert(model, definition:, transform:) ; swap(instance, definition:) | Identifie, lit et écrit les racines ; contrôle appartenance, révision et contexte. |
-| Adapters::SketchUp::BuildingService | preview(draft:, model: nil, target: nil) ; create(model:, draft:) ; regenerate(model:, target:, draft:) | Résout, calcule, vérifie le contexte, tient la transaction et le journal des ressources. |
+| Adapters::SketchUp::BuildingService | preview(draft:, model: nil, target: nil) ; create(model:, draft:) ; load_building(model:, persistent_id:) ; load_selection(model:) ; regenerate(model:, target:, draft:) | Résout, calcule, vérifie le contexte, tient la transaction et le journal des ressources. |
 | UI::DialogController | dispatch(envelope) → Response | Liaison modèle/session, validation du protocole et sérialisation. |
 
 `Result` contient `value` en cas de succès et toujours `diagnostics`. Un diagnostic : `{code, severity, path, params}` ; severities `error` et `warning`. Les erreurs attendues reviennent en données ; une anomalie inattendue du writer remonte au service pour abandon. Aucun objet SketchUp dans les diagnostics.
