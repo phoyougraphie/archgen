@@ -115,6 +115,7 @@ module Archgen
       ui/dialog_controller
       ui/street_controller
       ui/parcel_controller
+      ui/road_families
       ui/road_controller
       ui/network_controller
       ui/map_controller

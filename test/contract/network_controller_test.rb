@@ -5,6 +5,7 @@ require_relative '../support/fake_sketchup'
 
 Archgen::Loader.load_adapter
 require File.expand_path('../../archgen/ui/messages', __dir__)
+require File.expand_path('../../archgen/ui/road_families', __dir__)
 require File.expand_path('../../archgen/ui/network_controller', __dir__)
 
 # Contrat du panneau de réseau (AG-048) : tracer des voies une à une, régler les carrefours nés tout

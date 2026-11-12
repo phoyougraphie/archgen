@@ -79,7 +79,12 @@
     state.mode = res.mode;
     state.writes = res.writes;
     el.preset.textContent = '';
-    res.presets.forEach(function (p) { node('option', { value: p.id }, el.preset, p.name); });
+    var names = {};
+    res.presets.forEach(function (p) { names[p.id] = p.name; });
+    res.families.forEach(function (f) {
+      var group = node('optgroup', { label: f.label }, el.preset);
+      f.ids.forEach(function (id) { node('option', { value: id }, group, names[id]); });
+    });
     el.preset.value = 'ville';
     el.radius.value = String(res.default_radius_m).replace('.', ',');
     state.trace = res.trace;

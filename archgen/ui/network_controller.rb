@@ -119,6 +119,7 @@ module Archgen
         Core::Result.ok(
           'version' => VERSION, 'mode' => @mode, 'tool_active' => @tool_active == true, 'writes' => !@service.nil?,
           'default_radius_m' => DEFAULT_RADIUS_M, 'presets' => @presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name') } },
+          'families' => RoadFamilies.group(@presets.map { |p| p['id'] }),
           'trace' => trace_state, 'state' => state
         )
       end

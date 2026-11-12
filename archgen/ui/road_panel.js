@@ -12,7 +12,7 @@
   var VEHICLES = { car: [1.8, 1.5, 'Voiture'], bus: [2.55, 3.0, 'Bus'], tram: [2.4, 3.4, 'Tram'], train: [2.9, 4.1, 'Train'], bike: [0.6, 1.75, 'Cycliste'] };
 
   var state = {
-    counter: 0, latest: null, pending: {}, timer: null, bands: {}, bandList: [], items: {}, presets: [],
+    counter: 0, latest: null, pending: {}, timer: null, bands: {}, bandList: [], items: {}, presets: [], families: [],
     draft: [], name: null, preset: null, sel: 0, section: null, diagnostics: [], person: null,
     veh: true, drag: null, geom: null, stale: false, localError: null,
     mode: 'trace', writes: false, digest: null, busy: false, loaded: false, radiusError: null, notice: null
@@ -305,6 +305,7 @@
     state.items = {};
     result.items.forEach(function (i) { state.items[i.kind] = i; });
     state.presets = result.presets;
+    state.families = result.families;
     load(result.profile, matchPreset(result.profile));
     fillAddType();
     renderPresets();
@@ -342,11 +343,19 @@
     return e;
   }
 
+  // Une rangée par famille (AG-147) : libellé, puis ses boutons.
   function renderPresets() {
     el.presets.textContent = '';
-    state.presets.forEach(function (p) {
-      var b = node('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': String(state.preset === p.id) }, el.presets, p.name);
-      b.addEventListener('click', function () { load(p.profile, p.id); });
+    var byPreset = {};
+    state.presets.forEach(function (p) { byPreset[p.id] = p; });
+    state.families.forEach(function (f) {
+      var row = node('div', { class: 'road-family', role: 'group', 'aria-label': f.label }, el.presets);
+      node('span', { class: 'road-family-name' }, row, f.label);
+      f.ids.forEach(function (id) {
+        var p = byPreset[id];
+        var b = node('button', { type: 'button', 'data-preset': p.id, 'aria-pressed': String(state.preset === p.id) }, row, p.name);
+        b.addEventListener('click', function () { load(p.profile, p.id); });
+      });
     });
   }
 

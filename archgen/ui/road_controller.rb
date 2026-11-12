@@ -122,6 +122,7 @@ module Archgen
           'version' => VERSION, 'mode' => @mode, 'tool_active' => @tool_active == true, 'writes' => !@service.nil?,
           'profile' => @profile, 'default_radius_m' => DEFAULT_RADIUS_M,
           'presets' => @presets.map { |p| { 'id' => p['id'], 'name' => p.dig('profile', 'name'), 'profile' => p['profile'] } },
+          'families' => RoadFamilies.group(@presets.map { |p| p['id'] }),
           'bands' => band_catalogue, 'items' => item_catalogue, 'trace' => trace_state
         )
       end

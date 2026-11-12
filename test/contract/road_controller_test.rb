@@ -20,6 +20,22 @@ class RoadControllerTest < Minitest::Test
     @controller.dispatch(JSON.generate('v' => 1, 'request_id' => "r#{@counter}", 'action' => action, 'payload' => payload))
   end
 
+  # AG-147 : chaque préréglage livré a une famille, une seule ; aucun ne tombe dans « Autres ».
+  def test_every_preset_has_exactly_one_family
+    r = call('init')
+    families = r['result']['families']
+    ids = r['result']['presets'].map { |p| p['id'] }
+    assert_equal ids.sort, families.flat_map { |f| f['ids'] }.sort
+    refute_includes families.map { |f| f['label'] }, Archgen::UI::RoadFamilies::OTHER
+    assert_equal ['Ville', 'Route et campagne', 'Rail et tram', 'Piétons et vélos', 'Eau', 'Côte'], families.map { |f| f['label'] }
+    assert_equal %w[ville boulevard mixte arret-bus], families.first['ids']
+  end
+
+  def test_an_unknown_preset_falls_into_others
+    groups = Archgen::UI::RoadFamilies.group(%w[ville inconnu])
+    assert_equal [['Ville', %w[ville]], ['Autres', %w[inconnu]]], groups.map { |g| g.values_at('label', 'ids') }
+  end
+
   def test_init_gives_catalogues_presets_and_the_starting_profile
     r = call('init')
     assert r['ok']

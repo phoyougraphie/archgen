@@ -95,7 +95,9 @@ Un élément appartient à une bande. Ses positions en travers se répartissent 
 
 ### Préréglages (`road_presets.v1.json`)
 
-Autoroute, route à deux voies, route de campagne à fossés, chemin rural, boulevard planté, rue de ville, rue tram et voitures, tram en site propre, voie ferrée double, voie verte, chemin piéton. Leur composition est figée dans le fichier, dans cet ordre, et chacun est accepté sans avertissement (U23). Le contrôle de couronne a corrigé la maquette : sur un terre-plein de 4 m, l'arbre colonnaire de 14 m du boulevard surplombait une voie à 2,24 m du sol ; le terre-plein mesure donc 6 m.
+Dix-huit préréglages : autoroute, route à deux voies, route de campagne à fossés, chemin rural, boulevard planté, rue de ville, rue tram et voitures, tram en site propre, voie ferrée double, voie verte, chemin piéton (AG-038) ; canal, rivière, fleuve, côtes à falaises et à dunes, plage, rue avec arrêt de bus (ajouts suivants). Leur composition est figée dans le fichier, dans cet ordre, et chacun est accepté sans avertissement (U23). Le contrôle de couronne a corrigé la maquette : sur un terre-plein de 4 m, l'arbre colonnaire de 14 m du boulevard surplombait une voie à 2,24 m du sol ; le terre-plein mesure donc 6 m.
+
+**Familles (AG-147).** Les panneaux les présentent rangés en six familles, liste fermée de `ui/road_families.rb` : Ville (rue de ville, boulevard, tram et voitures, arrêt de bus), Route et campagne, Rail et tram, Piétons et vélos, Eau, Côte. C'est un rangement d'affichage : le fichier de préréglages ne change pas. Un préréglage absent de la liste s'affiche sous « Autres » ; un test exige qu'aucun préréglage livré n'y tombe.
 
 ## Éditeur de coupe
 

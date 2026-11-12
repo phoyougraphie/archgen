@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.36.2
+
+Préréglages de voirie par famille (AG-147, ADR-70).
+
+- Les 18 préréglages du panneau de voirie sont rangés en six rangées titrées : Ville, Route et campagne, Rail et tram, Piétons et vélos, Eau, Côte. La liste « Type de voie » du réseau suit les mêmes groupes.
+
 ## 0.36.1
 
 Panneau de rue en sections (AG-146, ADR-70).
