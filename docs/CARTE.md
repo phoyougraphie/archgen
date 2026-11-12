@@ -334,7 +334,7 @@ Syntaxe : une puce par nœud, indentation de 2 espaces, `Libellé — note (→ 
     - [fait] AG-144 Édifices religieux, RBZ 0.35.0 — clochers, abside, transept ; chapelle, églises romane et gothique, cathédrale. U102 vert. (→ docs/DECISIONS.md)
     - [fait] AG-145 Accès direct et passe d'interface, RBZ 0.36.0 — barre d'outils ARCHGEN (9 boutons), Modifier la sélection, réglages fins en 10 sections, panneau de carte réparé. U103 vert, H47. (→ docs/BILAN_INTERFACE.md)
     - [fait] AG-146 Panneau de rue en sections, RBZ 0.36.1 — Rue et parcelles en tête ; Détails de façade et Variété repliables. Vu dans SketchUp : non (session du propriétaire en cours). (→ docs/BILAN_INTERFACE.md)
-    - [fait] AG-147 Préréglages de voirie par famille, RBZ 0.36.2 — six familles, une rangée chacune ; groupes dans la liste du réseau. Tests de contrôleur verts. (→ docs/VOIRIE_CONTRACT.md)
+    - [fait] AG-147 Préréglages de voirie par famille, RBZ 0.36.2 — six familles, une rangée chacune ; groupes dans la liste du réseau. Tests de contrôleur verts ; vu dans SketchUp (voirie et réseau). (→ docs/VOIRIE_CONTRACT.md)
   - J21 Intérieur, reporté — ADR-52, ADR-53 : après EXT-06, 12, 09, 08 et J22 ; au cas par cas, au clic droit. AG-110 à 114. (→ docs/INTERIEUR_CONTRACT.md)
     - [afaire] AG-110 Planchers et calque Intérieur — interior.floors, catégories floor/stair/partition, tag.
     - [afaire] AG-111 Escalier et trémies — deux volées, trémie, cage contre le mur latéral.
