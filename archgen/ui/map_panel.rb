@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'fileutils'
 
 module Archgen
   module UI
@@ -60,10 +59,7 @@ module Archgen
       def self.save(name, bytes)
         path = ::Sketchup.active_model.path.to_s
         directory = path.empty? ? File.join(Dir.home, 'Documents', 'ARCHGEN') : File.dirname(path)
-        FileUtils.mkdir_p(directory)
-        target = File.join(directory, name)
-        File.binwrite(target, bytes)
-        target
+        Adapters::SketchUp::LocalFiles.write(File.join(directory, name), bytes)
       end
 
       # Repère de la carte vers le modèle géolocalisé : rotation du nord de SketchUp, lue par sa propre

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'fileutils'
 
 module Archgen
   module UI
@@ -28,7 +27,7 @@ module Archgen
         return unless ::UI.messagebox(confirmation(plan, size), MB_OKCANCEL) == IDOK
 
         directory = File.join(cache_root(model), format('fond_%<lat>.5f_%<lon>.5f', lat: origin[0], lon: origin[1]))
-        FileUtils.mkdir_p(directory)
+        Adapters::SketchUp::LocalFiles.mkdir(directory)
         queue = plan.values.flat_map { |layer| layer['tiles'] }
         download(queue, directory, {}, queue.size) { |files| finish(model, plan, files, queue.size) }
       end
@@ -68,7 +67,7 @@ module Archgen
         @request.start do |_req, response|
           body = response.body.to_s.b
           if response.status_code == 200 && !body.empty?
-            File.binwrite(target, body)
+            Adapters::SketchUp::LocalFiles.write(target, body)
             files[tile['file']] = target
           end
           ::UI.start_timer(0, false) { download(rest, directory, files, total, &done) }

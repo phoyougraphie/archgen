@@ -76,6 +76,7 @@ module Archgen
         'recipe_too_large' => 'Cette recette dépasse %{max} Ko.',
         'recipe_unknown' => 'Cette recette n’existe plus.',
         'recipe_unavailable' => 'Les recettes ne sont pas disponibles ici.',
+        'recipe_write' => 'La recette n’a pas pu être écrite sur ce poste.',
         # Structure
         'required' => 'Cette valeur est obligatoire.',
         'unknown_key' => 'Ce réglage n’existe pas.',

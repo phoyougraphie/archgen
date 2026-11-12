@@ -13,35 +13,27 @@ module Archgen
       MAX_NAME = 60
       MAX_BYTES = 65_536
 
-      # Préférences de SketchUp : aucun fichier écrit par ARCHGEN, une clé par genre. read_default
-      # évalue la valeur stockée comme du Ruby (vu dans SketchUp 2026) : un JSON n'y relit pas et un nom
-      # hostile y deviendrait du code. Le texte y est donc rangé en Base64, dont l'alphabet ne forme
-      # aucun code, et toute erreur de relecture rend une valeur absente.
-      class PreferenceStore
-        SECTION = 'ARCHGEN'
-        BASE64 = %r{\A[A-Za-z0-9+/]*={0,2}\z}
-
-        # host : ::Sketchup par défaut ; un double en test.
-        def initialize(host = nil)
-          @host = host
+      # Un fichier JSON par genre, dans %APPDATA%\ARCHGEN\recettes (le dossier personnel hors
+      # Windows). Les préférences de SketchUp ne conviennent pas : read_default évalue la valeur comme
+      # du Ruby, et SketchUp 2026 n'a gardé aucune valeur d'une session à l'autre (AG-148, vu dans l'hôte).
+      class FileStore
+        def initialize(directory = nil)
+          @directory = directory
         end
 
-        def host
-          @host || ::Sketchup
+        def directory
+          @directory || File.join(ENV['APPDATA'] || Dir.home, 'ARCHGEN', 'recettes')
         end
 
         def read(key)
-          value = host.read_default(SECTION, key)
-          return nil unless value.is_a?(String) && value.match?(BASE64)
-
-          text = value.unpack1('m0').force_encoding(Encoding::UTF_8)
-          text.valid_encoding? ? text : nil
-        rescue ScriptError, StandardError
+          path = File.join(directory, "#{key}.json")
+          File.file?(path) ? File.binread(path).force_encoding(Encoding::UTF_8) : nil
+        rescue SystemCallError, IOError
           nil
         end
 
         def write(key, value)
-          host.write_default(SECTION, key, [value.to_s.b].pack('m0'))
+          Adapters::SketchUp::LocalFiles.write(File.join(directory, "#{key}.json"), value.to_s)
         end
       end
 
@@ -62,7 +54,7 @@ module Archgen
         end
       end
 
-      def initialize(kind, store: PreferenceStore.new)
+      def initialize(kind, store: FileStore.new)
         raise ArgumentError, "Genre de recette inconnu : #{kind}" unless KINDS.include?(kind)
 
         @kind = kind
@@ -93,18 +85,14 @@ module Archgen
         recipes = state[:recipes].reject { |recipe| recipe['name'] == clean }
         return refuse('/name', 'recipe_full', max: MAX_COUNT) if recipes.size >= MAX_COUNT
 
-        keep_unreadable(state)
-        @store.write(key, serialize(recipes << { 'name' => clean, 'data' => data }))
-        Core::Result.ok(list)
+        store(state, recipes << { 'name' => clean, 'data' => data })
       end
 
       def delete(name)
         state = read
         return refuse('/name', 'recipe_unknown') unless name.is_a?(String) && state[:recipes].any? { |recipe| recipe['name'] == name }
 
-        keep_unreadable(state)
-        @store.write(key, serialize(state[:recipes].reject { |recipe| recipe['name'] == name }))
-        Core::Result.ok(list)
+        store(state, state[:recipes].reject { |recipe| recipe['name'] == name })
       end
 
       private
@@ -135,6 +123,14 @@ module Archgen
 
       def serialize(recipes)
         JSON.generate('schema_version' => SCHEMA_VERSION, 'recipes' => recipes)
+      end
+
+      def store(state, recipes)
+        keep_unreadable(state)
+        @store.write(key, serialize(recipes))
+        Core::Result.ok(list)
+      rescue SystemCallError, IOError
+        refuse('/name', 'recipe_write')
       end
 
       # Une valeur illisible n'est jamais écrasée sans copie : elle passe sous une clé voisine.

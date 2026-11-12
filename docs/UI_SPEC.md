@@ -26,7 +26,7 @@ Les panneaux du bâtiment, de la rue et de la voirie ont un bloc repliable **Mes
 - **Rue :** les réglages de la rue ; le tracé en cours décide si la disposition (rue ouverte) ou les accès (rue fermée) s'appliquent. Les réglages propres posés au clic droit n'en font pas partie.
 - **Voirie :** la coupe composée ; le nom de la recette devient celui de la coupe. Ces coupes apparaissent aussi dans la liste « Type de voie » du réseau, sous **Mes coupes**.
 
-Stockage sur ce poste, dans les préférences de SketchUp (section `ARCHGEN`, clés `recipes_building`, `recipes_street`, `recipes_road`) : un JSON `{schema_version:1,recipes:[{name,data}]}` encodé en Base64, car `Sketchup.read_default` évalue la valeur stockée comme du Ruby. Nom de 1 à 60 caractères, sans caractère de contrôle ; 40 recettes et 64 Ko par recette au plus. Une valeur illisible est copiée sous la clé suffixée `_illisible` avant d'être remplacée.
+Stockage sur ce poste, un fichier par genre dans `%APPDATA%\ARCHGEN\recettes` : `recipes_building.json`, `recipes_street.json`, `recipes_road.json`, au format `{schema_version:1,recipes:[{name,data}]}`. Écriture atomique (fichier temporaire puis renommé) par le seul module d'écriture d'ARCHGEN. Les préférences de SketchUp ont été écartées : `Sketchup.read_default` évalue la valeur stockée comme du Ruby, et SketchUp 2026 n'a gardé aucune valeur d'une session à l'autre. Nom de 1 à 60 caractères, sans caractère de contrôle ; 40 recettes et 64 Ko par recette au plus. Un fichier illisible est copié en `_illisible.json` avant d'être remplacé ; une écriture impossible est refusée avec un message.
 
 ## Contrat du pont
 

@@ -2,12 +2,13 @@
 
 require_relative '../test_helper'
 require_relative '../support/fake_sketchup'
+require 'tmpdir'
 
 Archgen::Loader.load_adapter
 
 # U104 : recettes (AG-148, ADR-71) : réglages enregistrés sous un nom sur ce poste, remplacés,
-# effacés ; noms et tailles bornés ; une valeur illisible n'est jamais perdue ; les coupes
-# enregistrées apparaissent dans le réseau.
+# effacés ; noms et tailles bornés ; une valeur illisible n'est jamais perdue ; un fichier par
+# genre, relu par une nouvelle instance ; les coupes enregistrées apparaissent dans le réseau.
 class RecipesTest < Minitest::Test
   R = Archgen::UI::Recipes
   ROAD = { 'road_profile_version' => 1, 'bands' => [{ 'type' => 'lane', 'width_m' => 3.5 }] }.freeze
@@ -55,36 +56,23 @@ class RecipesTest < Minitest::Test
     assert_equal ['neuve'], @recipes.list.map { |r| r['name'] }
   end
 
-  # Double des préférences : comme SketchUp, la relecture échoue sur un texte qui n'est pas du Ruby.
-  class Host
-    attr_reader :values
-
-    def initialize
-      @values = {}
-    end
-
-    def write_default(section, key, value)
-      @values[[section, key]] = value
-    end
-
-    def read_default(section, key)
-      value = @values[[section, key]]
-      raise SyntaxError, 'texte non Ruby' if value.is_a?(String) && value.match?(/[{}"\\]/)
-
-      value
+  def test_file_store_keeps_quotes_and_accents_and_survives_a_new_instance
+    Dir.mktmpdir do |directory|
+      name = 'Façade « 1900 » "à guillemets" #{system}'
+      assert R.new('building', store: R::FileStore.new(directory)).save(name, { 'note' => 'é\\"' }).ok?
+      assert_equal ['recipes_building.json'], Dir.children(directory)
+      again = R.new('building', store: R::FileStore.new(directory))
+      assert_equal [name], again.list.map { |r| r['name'] }
+      assert_equal 'é\\"', again.list.first['data']['note']
+      assert_empty R.new('road', store: R::FileStore.new(directory)).list
     end
   end
 
-  def test_preferences_hold_only_base64_and_survive_quotes_and_accents
-    host = Host.new
-    recipes = R.new('building', store: R::PreferenceStore.new(host))
-    assert recipes.save('Façade « 1900 » "à guillemets" #{system}', { 'profile' => { 'id' => 'haussmann' }, 'note' => 'é\\"' }).ok?
-    stored = host.values[%w[ARCHGEN recipes_building]]
-    assert_match R::PreferenceStore::BASE64, stored
-    assert_equal ['Façade « 1900 » "à guillemets" #{system}'], recipes.list.map { |r| r['name'] }
-    assert_equal 'é\\"', recipes.list.first['data']['note']
-    host.values[%w[ARCHGEN recipes_building]] = '{"ancien":"json"}'
-    assert_empty recipes.list, 'une valeur que SketchUp ne relit pas donne une liste vide, sans erreur'
+  def test_a_failed_write_is_refused_and_keeps_the_list
+    store = R::MemoryStore.new
+    def store.write(*) = raise(Errno::EACCES)
+    result = R.new('road', store: store).save('a', { 'b' => 1 })
+    assert_equal 'recipe_write', reason(result)
   end
 
   def test_road_controller_saves_and_lists_recipes

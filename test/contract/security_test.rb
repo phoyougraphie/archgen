@@ -227,11 +227,19 @@ class SecurityTest < Minitest::Test
     File.read(path, encoding: 'UTF-8').lines.reject { |line| line.strip.start_with?('#', '//', '*') }
   end
 
+  # ADR-71 : un seul module écrit des fichiers, dans des dossiers fixés par ses appelants.
+  WRITER = 'archgen/adapters/sketchup/local_files.rb'
+
   def test_shipped_ruby_uses_no_dangerous_call
-    offenders = shipped('*.rb').flat_map do |path|
+    offenders = (shipped('*.rb') - [repo_path(*WRITER.split('/'))]).flat_map do |path|
       code_lines(path).select { |line| FORBIDDEN_RUBY.match?(line) }.map { |line| "#{path}: #{line.strip}" }
     end
     assert_empty offenders
+  end
+
+  def test_the_file_writer_only_creates_folders_and_writes_atomically
+    calls = code_lines(repo_path(*WRITER.split('/'))).select { |line| FORBIDDEN_RUBY.match?(line) }.map(&:strip)
+    assert_equal ['FileUtils.mkdir_p(directory)', 'File.binwrite(temporary, bytes)', 'File.rename(temporary, path)'], calls
   end
 
   def test_shipped_scripts_use_no_dangerous_call

@@ -20,7 +20,7 @@ module Archgen
           def exist?(path) = File.exist?(path)
 
           def write(path, bytes)
-            File.binwrite(path, bytes)
+            LocalFiles.write(path, bytes)
           end
         end
 

@@ -16,7 +16,7 @@ L'extension fonctionne hors ligne et n'envoie aucune donnée.
 
 ## Mes recettes
 
-Dans les panneaux du bâtiment, de la rue et de la voirie, le bloc **Mes recettes** garde vos réglages sous un nom. Tapez un nom puis **Enregistrer** (ou Entrée) ; un nom déjà pris propose **Remplacer**. Pour réutiliser une recette, choisissez-la puis **Appliquer** : la saisie est remplacée et l'aperçu recalculé. **Effacer** demande une confirmation. Les recettes restent sur ce poste et servent dans tous vos modèles. Les coupes de voirie enregistrées se retrouvent dans le réseau, sous **Mes coupes**. Une recette de bâtiment ne garde pas le nom du bâtiment.
+Dans les panneaux du bâtiment, de la rue et de la voirie, le bloc **Mes recettes** garde vos réglages sous un nom. Tapez un nom puis **Enregistrer** (ou Entrée) ; un nom déjà pris propose **Remplacer**. Pour réutiliser une recette, choisissez-la puis **Appliquer** : la saisie est remplacée et l'aperçu recalculé. **Effacer** demande une confirmation. Les recettes restent sur ce poste (dossier `%APPDATA%\ARCHGEN\recettes`, à sauvegarder si vous changez d'ordinateur) et servent dans tous vos modèles. Les coupes de voirie enregistrées se retrouvent dans le réseau, sous **Mes coupes**. Une recette de bâtiment ne garde pas le nom du bâtiment.
 
 ## Créer un bâtiment
 

@@ -6,6 +6,7 @@ Recettes (AG-148, ADR-71).
 
 - Bloc **Mes recettes** dans les panneaux du bâtiment, de la rue et de la voirie : enregistrez vos réglages sous un nom, appliquez-les plus tard, remplacez-les ou effacez-les (avec confirmation). Elles restent sur ce poste, disponibles dans tous vos modèles.
 - Les coupes de voirie enregistrées apparaissent aussi dans le réseau, sous **Mes coupes**.
+- Fichiers des recettes : `%APPDATA%\ARCHGEN\recettes`. Toutes les écritures de fichiers d'ARCHGEN passent désormais par un seul module, à écriture atomique ; le test de sécurité redevient vert.
 
 ## 0.36.2
 
