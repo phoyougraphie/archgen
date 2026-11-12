@@ -30,7 +30,21 @@
     <div class="field"><label for="s-height">Hauteur courante, m (vide : selon le style)</label><input id="s-height" inputmode="decimal"></div>
   </fieldset>
   <fieldset>
-    <legend>Détails (LOD 1, toute la rue)</legend>
+    <legend>Rue et parcelles</legend>
+    <div class="field wide"><label for="s-side">Côté bâti (Ctrl dans la vue)</label><select id="s-side"><option value="left">À gauche du tracé</option><option value="right">À droite du tracé</option><option value="both">Des deux côtés</option></select></div>
+    <div class="field" id="s-street-field" hidden><label for="s-street">Largeur de rue (m)</label><input id="s-street" inputmode="decimal"></div>
+    <div class="field"><label for="s-target">Largeur de parcelle (m)</label><input id="s-target" inputmode="decimal"></div>
+    <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
+    <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
+    <div class="field wide check"><input type="checkbox" id="s-detached"><label for="s-detached">Bâtiments isolés sur leur terrain (jardin autour, profondeur = terrain)</label></div>
+    <div class="field"><label for="s-gap">Écart aux limites (m)</label><input id="s-gap" inputmode="decimal" data-detached="1" placeholder="3"></div>
+    <div class="field"><label for="s-setback">Retrait sur rue (m)</label><input id="s-setback" inputmode="decimal" data-detached="1" placeholder="5"></div>
+    <div class="field"><label for="s-bdepth">Profondeur du bâtiment (m)</label><input id="s-bdepth" inputmode="decimal" data-detached="1" placeholder="10"></div>
+  </fieldset>
+  <details id="s-details-section" class="section">
+  <summary>Détails de façade</summary>
+  <fieldset>
+    <p class="hint">Pour toute la rue ; ils n’apparaissent qu’au LOD 1.</p>
     <div class="field check"><input type="checkbox" id="s-glazing" data-detail="glazing"><label for="s-glazing">Vitrage</label></div>
     <div class="field check"><input type="checkbox" id="s-chimneys" data-detail="chimneys"><label for="s-chimneys">Cheminées</label></div>
     <div class="field check"><input type="checkbox" id="s-muntins" data-detail="muntins"><label for="s-muntins">Petits bois</label></div>
@@ -50,21 +64,11 @@
     <div class="field check"><input type="checkbox" id="s-shop" data-detail="shop"><label for="s-shop">Commerces au rez-de-chaussée</label></div>
     <div class="field" id="s-shop-height-field" hidden><label for="s-shop-height">Hauteur des commerces, m (vide : selon le style)</label><input id="s-shop-height" inputmode="decimal"></div>
   </fieldset>
+  </details>
   <div class="field wide check" id="s-custom-field" hidden><input type="checkbox" id="s-custom"><label for="s-custom" id="s-custom-label">Retirer les réglages propres des bâtiments personnalisés</label></div>
+  <details id="s-variety-section" class="section">
+  <summary>Variété</summary>
   <fieldset>
-    <legend>Rue et parcelles</legend>
-    <div class="field wide"><label for="s-side">Côté bâti (Ctrl dans la vue)</label><select id="s-side"><option value="left">À gauche du tracé</option><option value="right">À droite du tracé</option><option value="both">Des deux côtés</option></select></div>
-    <div class="field" id="s-street-field" hidden><label for="s-street">Largeur de rue (m)</label><input id="s-street" inputmode="decimal"></div>
-    <div class="field"><label for="s-target">Largeur de parcelle (m)</label><input id="s-target" inputmode="decimal"></div>
-    <div class="field"><label for="s-depth">Profondeur (m)</label><input id="s-depth" inputmode="decimal"></div>
-    <div class="field"><label for="s-bay">Largeur de travée (m)</label><input id="s-bay" inputmode="decimal"></div>
-    <div class="field wide check"><input type="checkbox" id="s-detached"><label for="s-detached">Bâtiments isolés sur leur terrain (jardin autour, profondeur = terrain)</label></div>
-    <div class="field"><label for="s-gap">Écart aux limites (m)</label><input id="s-gap" inputmode="decimal" data-detached="1" placeholder="3"></div>
-    <div class="field"><label for="s-setback">Retrait sur rue (m)</label><input id="s-setback" inputmode="decimal" data-detached="1" placeholder="5"></div>
-    <div class="field"><label for="s-bdepth">Profondeur du bâtiment (m)</label><input id="s-bdepth" inputmode="decimal" data-detached="1" placeholder="10"></div>
-  </fieldset>
-  <fieldset>
-    <legend>Variété</legend>
     <div class="field wide check"><input type="checkbox" id="s-ground"><label for="s-ground">Rez-de-chaussée variés (porte et largeur des fenêtres tirées par bâtiment)</label></div>
     <div class="field"><label for="s-shopshare">Part de commerces, % (vide : selon la case Commerces)</label><input id="s-shopshare" inputmode="numeric"></div>
     <div class="field wide check"><input type="checkbox" id="s-variety"><label for="s-variety">Varier les bâtiments (niveaux et toits tirés par parcelle)</label></div>
@@ -76,14 +80,18 @@
     <div class="field check"><input type="checkbox" id="s-roof-gable" data-variety="1" data-roof="gable"><label for="s-roof-gable" id="s-roof-gable-label">Deux pans</label></div>
     <div class="field check"><input type="checkbox" id="s-roof-mansard" data-variety="1" data-roof="mansard"><label for="s-roof-mansard" id="s-roof-mansard-label">Mansarde</label></div>
   </fieldset>
-  <fieldset id="s-access-fields" hidden>
-    <legend>Accès à la cour</legend>
+  </details>
+  <details id="s-access-fields" class="section" open hidden>
+  <summary>Accès à la cour</summary>
+  <fieldset>
     <div class="field"><label for="s-access-count">Nombre</label><select id="s-access-count"><option value="auto">Selon le périmètre</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
     <div class="field"><label for="s-access-width">Largeur (m)</label><input id="s-access-width" inputmode="decimal"></div>
     <div class="field"><label for="s-access-height">Hauteur d'un porche (m)</label><input id="s-access-height" inputmode="decimal"></div>
   </fieldset>
-<fieldset id="s-terrain" hidden>
-  <legend>Terrain</legend>
+  </details>
+  <details id="s-terrain" class="section" open hidden>
+  <summary>Terrain</summary>
+  <fieldset>
   <p id="site-hint" class="hint wide">Une plateforme par parcelle, à partir de l'ensemble enregistré. Sélectionnez le terrain, retenez-le, puis resélectionnez l'ensemble et rechargez. Le terrain n'est pas modifié.</p>
   <div class="actions wide"><button type="button" id="site-retain">Retenir ce terrain</button></div>
   <div class="field"><label for="s-site-policy">Altitude de plateforme</label><select id="s-site-policy" data-site="1"><option value="high">Point haut de la parcelle</option><option value="mean">Altitude moyenne de la parcelle</option></select></div>
@@ -98,7 +106,8 @@
     <button type="button" id="site-remove" disabled>Retirer l'assise</button>
   </div>
   <ul id="site-lines" class="wide" hidden></ul>
-</fieldset>
+  </fieldset>
+  </details>
   <div class="street-footer">
   <section aria-labelledby="result-title">
     <h2 id="result-title">Résultat</h2>

@@ -27,10 +27,10 @@ Passe faite dans SketchUp 2026 avec ARCHGEN 0.35.0, puis 0.36.0, sur un écran d
 | 9 | **Réseau** : couleurs et tailles en pixels écrites en dur, d'une autre allure que le reste ; plan figé à 640 px de haut. | Le panneau prend les couleurs et les boîtes communes, et le plan suit la hauteur de la fenêtre. |
 | 10 | Rien n'identifiait les fenêtres ARCHGEN parmi celles de SketchUp. | Marque ARCHGEN dans l'en-tête de chaque panneau. |
 | 11 | Le clic droit ne proposait rien sur une voie ou un réseau. | « Modifier cette voie » et « Modifier ce réseau » sont ajoutés. |
+| 12 | **Panneau de rue** : 52 champs à plat, dont 17 cases de détails avant les réglages de la rue elle-même (0.36.1, AG-146). | Bâtiments et Rue et parcelles en tête, toujours ouverts ; Détails de façade et Variété repliables ; Accès à la cour et Terrain ouverts quand ils s'appliquent. |
 
 ## Ce qui ne va pas encore
 
-- **Panneau de rue** : 52 champs à plat, dont 17 cases de détails. Les mêmes sections repliables que le bâtiment lui conviendraient.
 - **Voirie** : 20 préréglages forment un mur de boutons. Les grouper par famille (ville, campagne, rail, eau, côte) les rendrait lisibles.
 - **Réseau** : la vue en plan est vide au départ, sans consigne dans le cadre ; la consigne n'est que dans la barre d'état.
 - **Positions d'ouverture** : elles sont fixes. Le panneau de voirie (1 100 px) déborde un écran de 1 456 points, et la console Ruby passe sous les panneaux.

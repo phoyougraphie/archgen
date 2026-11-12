@@ -270,6 +270,7 @@ Contrat : [CARTOGRAPHIE_CONTRACT](../docs/CARTOGRAPHIE_CONTRACT.md). Décisions 
 | **AG-143 — Détails de La Baule, RBZ 0.34.0** | AG-142, ADR-68 | Bandeaux, lucarnes passantes, tourelle, balconnets, bow-window de rez-de-chaussée ; palettes. | U101, U52 verts. |
 | **AG-144 — Édifices religieux, RBZ 0.35.0** | AG-143, ADR-69 | Clochers, abside, transept ; chapelle, églises romane et gothique, cathédrale. | U102 vert. |
 | **AG-145 — Accès direct et passe d'interface, RBZ 0.36.0** | AG-144, ADR-70 | Barre d'outils ARCHGEN, menu regroupé, réglages fins en sections, corrections de voirie, réseau et carte ; bilan docs/BILAN_INTERFACE.md. | U103 vert, H47. |
+| **AG-146 — Panneau de rue en sections, RBZ 0.36.1** | AG-145, ADR-70 | Rue et parcelles en tête, Détails de façade et Variété repliables, Accès et Terrain ouverts quand ils s'appliquent. | panel_assets_test et street_controller_test verts. |
 
 ## J21 — Intérieur
 

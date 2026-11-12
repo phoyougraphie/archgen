@@ -1,5 +1,11 @@
 # Journal des versions
 
+## 0.36.1
+
+Panneau de rue en sections (AG-146, ADR-70).
+
+- **Bâtiments** et **Rue et parcelles** en tête, toujours ouverts ; **Détails de façade** et **Variété** repliables ; **Accès à la cour** et **Terrain** ouverts quand ils s'appliquent.
+
 ## 0.36.0
 
 Accès direct et passe d'interface (AG-145, ADR-70). Bilan : docs/BILAN_INTERFACE.md.
